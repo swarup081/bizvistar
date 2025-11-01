@@ -175,7 +175,12 @@ export default function StepOne() {
 
     const handleSuggestionClick = (suggestion) => {
         setSearchValue(suggestion);
+        localStorage.setItem('businessType', suggestion);
         setSuggestions([]); // Hide suggestions on click
+    };
+
+    const handleContinue = () => {
+        localStorage.setItem('businessType', searchValue);
     };
 
     return (
@@ -232,6 +237,7 @@ export default function StepOne() {
                             <Link href="/get-started/1" passHref>
                                 <button 
                                     disabled={!searchValue}
+                                    onClick={handleContinue}
                                     className="px-8 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
                                     >
                                     Continue
@@ -275,4 +281,3 @@ export default function StepOne() {
         </div>
     );
 }
-

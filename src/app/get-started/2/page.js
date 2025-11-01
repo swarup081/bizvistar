@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 // --- Reusable UI Components ---
@@ -41,6 +41,14 @@ const ChoiceChip = ({ id, label, isSelected, onChange }) => (
 
 export default function StepThree() {
   const [selectedWords, setSelectedWords] = useState({});
+  const [storeName, setStoreName] = useState('your business');
+
+  useEffect(() => {
+    const storedStoreName = localStorage.getItem('storeName');
+    if (storedStoreName) {
+      setStoreName(storedStoreName);
+    }
+  }, []);
 
   const businessVibes = [
     { id: 'luxury', label: 'Luxury' },
@@ -78,7 +86,7 @@ export default function StepThree() {
               Step 2 of 3
             </p>
             <h2 className="text-4xl font-bold text-gray-800 mb-3">
-              Which words best describe your business?
+              Which words best describe {storeName}?
             </h2>
             <p className="text-lg text-gray-500 mb-10">
               Select a few to help us understand your brand's personality.

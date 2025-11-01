@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 // --- Data for the templates ---
@@ -116,14 +116,21 @@ const TemplateCard = ({ title, description, desktopImage, mobileImage }) => {
 
 // --- Main Page ---
 export default function TemplatesPage() {
-  const businessName = "Your Business"; 
+  const [storeName, setStoreName] = useState("Your Business"); 
+
+  useEffect(() => {
+    const storedStoreName = localStorage.getItem('storeName');
+    if (storedStoreName) {
+      setStoreName(storedStoreName);
+    }
+  }, []);
 
   return (
     <div className="bg-white font-sans">
       <div className="mx-auto max-w-screen-2xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div className="text-center">
             <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Choose a Template for {businessName}
+              Choose a Template for {storeName}
             </h2>
             <p className="mx-auto mt-5 max-w-2xl text-xl text-gray-600">
                 Each template is professionally designed to be the perfect starting point for your new website.

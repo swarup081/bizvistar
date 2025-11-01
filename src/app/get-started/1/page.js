@@ -1,10 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function StepTwo() {
   const [storeName, setStoreName] = useState('');
+  const [businessType, setBusinessType] = useState('store');
+
+  useEffect(() => {
+    const storedBusinessType = localStorage.getItem('businessType');
+    if (storedBusinessType) {
+      setBusinessType(storedBusinessType.toLowerCase());
+    }
+  }, []);
+
+  const handleContinue = () => {
+    localStorage.setItem('storeName', storeName);
+  };
 
   // A component for the step indicator
   const Step = ({ number, isCurrent }) => (
@@ -42,14 +54,14 @@ export default function StepTwo() {
               Step 1 of 3
             </p>
             <h2 className="text-4xl font-bold text-gray-800 mb-3">
-              What's your store name?
+              What's your {businessType} name?
             </h2>
             <p className="text-lg text-gray-500 mb-10">
               We'll tailor content and advice to your site needs.
             </p>
 
             <label htmlFor="storeName" className="font-semibold text-gray-700 mb-2 block">
-              Store Name
+              {businessType.charAt(0).toUpperCase() + businessType.slice(1)} Name
             </label>
             <input
               id="storeName"
@@ -68,6 +80,7 @@ export default function StepTwo() {
           </Link>
           <Link href="/get-started/2">
             <button
+                            onClick={handleContinue}
                             className="px-8 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
                             disabled={!storeName}
             >
