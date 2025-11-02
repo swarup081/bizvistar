@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { businessData as initialBusinessData } from './data.js'; // Import the data
 
-// --- Reusable UI Components ---
+// --- Reusable UI Components (No changes needed here) ---
 
 const Header = ({ business, cartCount, onCartClick }) => (
     <header className="bg-brand-bg/80 backdrop-blur-sm sticky top-0 z-40 w-full border-b border-brand-primary">
@@ -52,13 +53,11 @@ const MenuItem = ({ item, cartQuantity, increaseQuantity, decreaseQuantity }) =>
 
 
 const CartModal = ({ isOpen, onClose, cart, menuData, updateCart, business }) => {
-    // State for form inputs
     const [customerName, setCustomerName] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [customerAddress, setCustomerAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Reset form when modal is closed
     useEffect(() => {
         if (!isOpen) {
             setCustomerName('');
@@ -70,7 +69,6 @@ const CartModal = ({ isOpen, onClose, cart, menuData, updateCart, business }) =>
 
     if (!isOpen) return null;
 
-    // Calculate totals
     const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
     const totalPrice = Object.entries(cart).reduce((sum, [id, qty]) => {
         const item = menuData.find(p => p.id == id);
@@ -102,8 +100,8 @@ const CartModal = ({ isOpen, onClose, cart, menuData, updateCart, business }) =>
         const whatsappUrl = `https://wa.me/${business.whatsappNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
 
-        updateCart({}); // Clear cart
-        onClose(); // Close modal
+        updateCart({});
+        onClose();
         alert("Redirecting to WhatsApp to finalize your order!");
     };
 
@@ -165,68 +163,17 @@ const CartModal = ({ isOpen, onClose, cart, menuData, updateCart, business }) =>
     );
 };
 
+
 // --- Main Page Component ---
 
 export default function FlavorNestPage() {
     
-    // --- STATE MANAGEMENT ---
-    const [businessData, setBusinessData] = useState(null);
+    const [businessData] = useState(initialBusinessData); // Use the imported data
     const [cart, setCart] = useState({});
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
-    // --- DATA FETCHING (SIMULATED) ---
     useEffect(() => {
-        const fetchBusinessData = () => {
-            const data = {
-                name: "FlavorNest",
-                logo: "/images/flavornest_logo.jpeg",
-                whatsappNumber: "917896025128", 
-                navigation: [
-                    { href: "#home", label: "Home" },
-                    { href: "#menu", label: "Menu" },
-                    { href: "#reviews", label: "Reviews" },
-                ],
-                hero: {
-                    title: "Handcrafted Delicacies, Made with Love",
-                    subtitle: "Experience the authentic taste of homemade sweets and savories, crafted with the freshest ingredients and a touch of tradition.",
-                    cta: "Explore Our Menu"
-                },
-                about: {
-                    title: "Where Taste Finds a Home",
-                    text: "FlavorNest started from a simple passion for cooking, balanced with the hustle of student life. Every dish we create is a piece of our heart, made with the same care and quality we'd want for our own family. Thank you for supporting a small dream and letting us share our flavors with you."
-                },
-                menu: {
-                    title: "Our Signature Offerings",
-                    items: [
-                        { id: 1, name: "Kesar Mawa Modak (Pre Order)", description: "Delicate homemade mawa modaks with kesar and premium dry fruits.", price: 129, unit: "6 Pieces", image: "/images/modak_productimage.jpeg" },
-                        { id: 2, name: "Shahi Mawa Rolls (Pre Order)", description: "Rich rolls stuffed with fresh mawa, fried in ghee and coated in sugar syrup.", price: 149, unit: "4 Pieces", image: "/images/shahi_mava_rolls_productimage.jpeg" },
-                        { id: 4, name: "Milk Shondesh/ Sandesh (Pre Order)", description: "Soft Milk Shondesh, with a subtle fusion twist, a classic sweet.", price: 109, unit: "6 Pieces", image: "/images/Sandesh_productimage.jpeg" },
-                        { id: 5, name: "Thekua (Pre Order)", description: "Authentic handmade Thekua made with 100% whole wheat atta.", price: 249, unit: "200 grams", image: "/images/thakua_productimage.jpeg" },
-                        { id: 6, name: "Kesar Elaichi Shondesh (Pre Order)", description: "Delicately flavored with premium saffron and cardamom.", price: 129, unit: "6 Pieces", image: "/images/Kesar_Elaichi_Shondesh_product_image.jpeg" },
-                        { id: 7, name: "Chocolate Coconut Burfi (Pre Order)", description: "A rich two-layer fusion of tradition and indulgence.", price: 312, unit: "12 Pieces", image: "/images/Chocolate_Coconut_Burfi.jpeg" }
-                    ]
-                },
-                reviews: {
-                    title: "What Our Customers Say",
-                    items: [
-                        { author: "Muskan B.", text: "The Kesar Mawa Modaks were absolutely divine! So fresh and perfectly sweet. You can taste the quality in every bite." },
-                        { author: "Anjali P.", text: "FlavorNest is my go-to for festive sweets now. The packaging is beautiful, making it perfect for gifting." },
-                        { author: "Rohan D.", text: "Incredible taste and so hygienic. It feels so good to support a local, student-run business that puts so much love into their food." }
-                    ]
-                },
-                footer: {
-                    copyright: "© 2025 FlavorNest. All Rights Reserved",
-                    madeBy: "Swarup",
-                    madeByLink: "https://www.instagram.com/swarup_81",
-                    socialLink: "https://www.instagram.com/_flavornest_",
-                    socialText: "Follow our journey on Instagram"
-                }
-            };
-            setBusinessData(data);
-        };
-        
-        fetchBusinessData();
         const savedCart = localStorage.getItem('flavorNestCart');
         if (savedCart) {
             setCart(JSON.parse(savedCart));

@@ -3,9 +3,9 @@
 
 export const businessData = {
     // --- GENERAL BUSINESS INFO ---
-    name: "FlavorNest",
-    logo: "/images/flavornest_logo.jpeg",
-    whatsappNumber: "917896025128",
+    name: "Flavor Nest",
+    logo: "https://flavornestfoods.netlify.app/flavornest_logo.jpeg", // Corrected path
+    whatsappNumber: "91123456789",
 
     // --- NEW THEME SECTION ---
     // This controls the look and feel.
@@ -41,12 +41,12 @@ export const businessData = {
     menu: {
         title: "Our Signature Offerings",
         items: [
-            { id: 1, name: "Kesar Mawa Modak (Pre Order)", description: "Delicate homemade mawa modaks with kesar and premium dry fruits.", price: 129, unit: "6 Pieces", image: "/images/modak_productimage.jpeg" },
-            { id: 2, name: "Shahi Mawa Rolls (Pre Order)", description: "Rich rolls stuffed with fresh mawa, fried in ghee and coated in sugar syrup.", price: 149, unit: "4 Pieces", image: "/images/shahi_mava_rolls_productimage.jpeg" },
-            { id: 4, name: "Milk Shondesh/ Sandesh (Pre Order)", description: "Soft Milk Shondesh, with a subtle fusion twist, a classic sweet.", price: 109, unit: "6 Pieces", image: "/images/Sandesh_productimage.jpeg" },
-            { id: 5, name: "Thekua (Pre Order)", description: "Authentic handmade Thekua made with 100% whole wheat atta.", price: 249, unit: "200 grams", image: "/images/thakua_productimage.jpeg" },
-            { id: 6, name: "Kesar Elaichi Shondesh (Pre Order)", description: "Delicately flavored with premium saffron and cardamom.", price: 129, unit: "6 Pieces", image: "/images/Kesar_Elaichi_Shondesh_product_image.jpeg" },
-            { id: 7, name: "Chocolate Coconut Burfi (Pre Order)", description: "A rich two-layer fusion of tradition and indulgence.", price: 312, unit: "12 Pieces", image: "/images/Chocolate_Coconut_Burfi.jpeg" }
+            { id: 1, name: "Kesar Mawa Modak (Pre Order)", description: "...", price: 129, unit: "6 Pieces", image: "/flavournestImage/modak_productimage.jpeg" }, // Corrected path
+            { id: 2, name: "Shahi Mawa Rolls (Pre Order)", description: "...", price: 149, unit: "4 Pieces", image: "/flavournestImage/shahi_mava_rolls_productimage.jpeg" }, // Corrected path
+            { id: 4, name: "Milk Shondesh/ Sandesh (Pre Order)", description: "...", price: 109, unit: "6 Pieces", image: "/flavournestImage/Sandesh_productimage.jpeg" }, // Corrected path
+            { id: 5, name: "Thekua (Pre Order)", description: "...", price: 249, unit: "200 grams", image: "/flavournestImage/thakua_productimage.jpeg" }, // Corrected path
+            { id: 6, name: "Kesar Elaichi Shondesh (Pre Order)", description: "...", price: 129, unit: "6 Pieces", image: "/flavournestImage/Kesar_Elaichi_Shondesh_product_image.jpeg" }, // Corrected path
+            { id: 7, name: "Chocolate Coconut Burfi (Pre Order)", description: "...", price: 312, unit: "12 Pieces", image: "/flavournestImage/Chocolate_Coconut_Burfi.jpeg" } // Corrected path
         ]
     },
     reviews: {
