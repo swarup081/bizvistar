@@ -6,17 +6,92 @@
  * Tailwind v4 will automatically create utility classes from these
  * e.g., --color-brand-primary creates bg-brand-primary, text-brand-primary, etc.
  */
- @theme {
-   --color-brand-bg: #FFF8F2; /* Creamy off-white */
-   --color-brand-text: #5D4037; /* Warm brown text */
-   --color-brand-primary: #F9EBE4; /* Soft Peach/Pink */
-   --color-brand-secondary: #6D4C41; /* Darker warm brown */
- 
-   --font-sans: 'Inter', sans-serif;
-   --font-serif: 'Playfair Display', serif;
- }
- 
- /* ... rest of your css */
+@theme {
+  --color-brand-bg: #FFF8F2; /* Creamy off-white */
+  --color-brand-text: #5D4037; /* Warm brown text */
+  --color-brand-primary: #F9EBE4; /* Soft Peach/Pink */
+  --color-brand-secondary: #6D4C41; /* Darker warm brown */
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+/*
+ * 2. Apply base styles to elements like `body` and `h1`
+ * These are fundamental styles for your entire application.
+ */
+@layer base {
+  body {
+    background-color: theme(colors.brand-bg);
+    color: theme(colors.brand-text);
+    font-family: theme(fontFamily.sans);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: theme(fontFamily.serif);
+  }
+}
+
+/*
+ * 3. Define reusable component classes like buttons
+ * This keeps your styling consistent.
+ */
+@layer components {
+  .btn {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  .btn-primary {
+    @apply bg-brand-secondary text-white font-medium;
+  }
+  .btn-primary:hover {
+    @apply bg-brand-text -translate-y-0.5 shadow-lg;
+  }
+  .active-nav {
+    @apply text-brand-secondary font-semibold;
+  }
+  .inactive-nav {
+    color: #A1887F; /* You can also make this a theme color if you want */
+  }
+  .modal {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+  .modal-content {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+}
+
+/*
+ * 4. Add custom responsive utilities
+ * This uses Tailwind's screen sizes for consistency.
+ */
+@layer utilities {
+  @media (max-width: 768px) {
+    #reviews .grid {
+      @apply flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; /* Firefox */
+    }
+    #reviews .grid::-webkit-scrollbar {
+      display: none; /* Hide scrollbar for Chrome, Safari */
+    }
+    #reviews .grid > div {
+      @apply flex-shrink-0 w-11/12 snap-start;
+    }
+
+    #cart-modal .modal-content {
+      @apply p-4;
+    }
+
+    #cart-items-container .flex.justify-between {
+      @apply flex-wrap gap-y-2;
+    }
+
+    #cart-items-container .flex.justify-between > div:last-child {
+      @apply w-full justify-end;
+    }
+  }
+}
+
 /* Custom scrollbar for autocomplete */
 .autocomplete-scrollbar {
   /* For Firefox */
