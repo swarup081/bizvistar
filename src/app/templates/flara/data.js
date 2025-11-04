@@ -8,7 +8,7 @@ export const businessData = {
 
     // --- THEME SECTION ---
     theme: {
-        colorPalette: 'candlea-beige',
+        colorPalette: 'sage-green',
         font: {
             heading: 'Lora',
             body: 'Montserrat'
@@ -31,7 +31,11 @@ export const businessData = {
         image: "/flaraImage/hero_image.jpg" // From screenshot
     },
     
-    infoBar: "Ready to ignite a fresh experience?", // Updated text
+    infoBar: [
+        "Ready to ignite a fresh experience?",
+        "Handcrafted with love.",
+        "Discover your new favorite scent."
+    ],// Updated text
 
     feature1: {
         title: "Crafting warmth & serenity in every flame",

@@ -62,12 +62,37 @@
   --color-brand-secondary: #000000; /* Buttons and accents (black) */
 }
 
-/* 8. NEW: Subtle Greenish (POINT 1) */
 .theme-sage-green {
   --color-brand-bg: #F7F9F5;     /* Soft sage background */
   --color-brand-text: #344E41;    /* Deep forest green */
   --color-brand-primary: #EBF2E8;  /* Lighter sage */
   --color-brand-secondary: #588157; /* Rich, earthy green */
+}
+
+/* --- ADDING NEW THEMES --- */
+
+/* 9. NEW: Lavender Bliss (Soft purple/blue) */
+.theme-lavender-bliss {
+  --color-brand-bg: #F5F3FF;
+  --color-brand-text: #43389F;
+  --color-brand-primary: #EDE9FE;
+  --color-brand-secondary: #6D28D9;
+}
+
+/* 10. NEW: Mint & Chocolate (Modern, fresh) */
+.theme-mint-chocolate {
+  --color-brand-bg: #F0FDF4;
+  --color-brand-text: #374151;
+  --color-brand-primary: #DCFCE7;
+  --color-brand-secondary: #166534;
+}
+
+/* 11. NEW: Peach & Cream (Soft, elegant) */
+.theme-peach-cream {
+  --color-brand-bg: #FFF7F5;
+  --color-brand-text: #7C2D12;
+  --color-brand-primary: #FFE4DE;
+  --color-brand-secondary: #EA580C;
 }
 @theme {
   --color-brand-bg: var(--color-brand-bg);
@@ -86,6 +111,9 @@
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: theme(fontFamily.serif);
+    /* --- UPDATED HEADING STYLE --- */
+    font-style: italic;
+    /* --- END OF UPDATE --- */
   }
 }
 
@@ -96,7 +124,7 @@
 /* --- MARQUEE ANIMATION (FOR POINT 3) --- */
 @layer utilities {
   .marquee {
-    animation: marquee 20s linear infinite;
+    animation: marquee 10s linear infinite;
   }
   @keyframes marquee {
     0% { transform: translateX(0%); }
@@ -105,6 +133,24 @@
 }
 /* ... (rest of your globals.css file) ... */
 
+/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
+/* ... (rest of your globals.css file) ... */
+
+/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
+@layer utilities {
+  .marquee {
+    /* --- THIS IS THE FIX --- */
+    animation: marquee 40s linear infinite; /* Changed 20s to 40s */
+    /* --- END OF FIX --- */
+    flex-shrink: 0; 
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}
+/* ... (rest of your globals.css file) ... */
+/* ... (rest of your globals.css file) ... */
 /* Custom scrollbar for autocomplete */
 .autocomplete-scrollbar {
   /* For Firefox */

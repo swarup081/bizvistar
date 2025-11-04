@@ -168,21 +168,22 @@ export default function CandleaPage() {
                     </div>
                 </section>
                 
-                {/* --- Info Bar (FIXED: Point 3) --- */}
-                <section className="py-6 bg-brand-bg border-y border-brand-primary/20 overflow-hidden">
+             {/* --- Info Bar (UPDATED for dynamic, infinite scroll) --- */}
+             <section className="py-6 bg-brand-bg border-y border-brand-primary/20 overflow-hidden">
                     <div className="flex whitespace-nowrap">
                         <div className="flex marquee items-center">
-                            {/* Content is duplicated for a seamless loop */}
-                            {[1, 2, 3, 4].map(i => (
+                            {/* Content is rendered once */}
+                            {businessData.infoBar.map((text, i) => (
                                 <div key={i} className="flex items-center justify-center gap-4 mx-8">
                                     <ShippingIcon />
-                                    <p className="font-medium text-brand-text opacity-80 text-lg">{businessData.infoBar}</p>
+                                    <p className="font-medium text-brand-text opacity-80 text-lg">{text}</p>
                                 </div>
                             ))}
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i+4} className="flex items-center justify-center gap-4 mx-8">
+                            {/* Content is duplicated for a seamless loop */}
+                            {businessData.infoBar.map((text, i) => (
+                                <div key={`dup-${i}`} className="flex items-center justify-center gap-4 mx-8" aria-hidden="true">
                                     <ShippingIcon />
-                                    <p className="font-medium text-brand-text opacity-80 text-lg">{businessData.infoBar}</p>
+                                    <p className="font-medium text-brand-text opacity-80 text-lg">{text}</p>
                                 </div>
                             ))}
                         </div>
