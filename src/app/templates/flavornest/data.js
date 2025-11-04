@@ -14,7 +14,7 @@ export const businessData = {
 theme: {
     // Choose any: 'warm-bakery', 'strawberry-cream', 'chocolate-caramel',
     // 'cinnamon-spice', 'earl-grey', 'dark-roast'
-    colorPalette: 'chocolate-caramel',
+    colorPalette: 'earl-grey',
 
     font: {
         heading: 'Poppins',

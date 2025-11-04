@@ -118,7 +118,12 @@
 }
 
 @layer components {
-  /* ... (your existing btn-primary, inactive-nav, etc.) ... */
+  .btn-primary {
+    @apply bg-brand-secondary font-medium;
+    color: var(--color-brand-bg); /* Smart text color */
+  }
+  .theme-dark-roast .btn-primary {
+      color: #211A16; /* Darker text for light buttons */
 }
 
 /* --- MARQUEE ANIMATION (FOR POINT 3) --- */
@@ -131,10 +136,7 @@
     100% { transform: translateX(-100%); }
   }
 }
-/* ... (rest of your globals.css file) ... */
 
-/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
-/* ... (rest of your globals.css file) ... */
 
 /* --- MARQUEE ANIMATION (FOR POINT 3) --- */
 @layer utilities {
@@ -149,14 +151,13 @@
     100% { transform: translateX(-50%); }
   }
 }
-/* ... (rest of your globals.css file) ... */
-/* ... (rest of your globals.css file) ... */
 /* Custom scrollbar for autocomplete */
 .autocomplete-scrollbar {
   /* For Firefox */
   scrollbar-width: none;
   /* For Internet Explorer and Edge */
   -ms-overflow-style: none;
+}
 }
 
 /* Hide scrollbar for WebKit browsers (Chrome, Safari) */

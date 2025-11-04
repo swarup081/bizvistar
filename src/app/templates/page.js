@@ -14,8 +14,8 @@ const templates = [
   {
     title: 'Lanily',
     description: 'Give site visitors eye-catching design, appointment booking, and shopping in one seamless experience.',
-    url: '/templates/lanily',
-    previewUrl: '/preview/flavornest', // Added leading slash for consistency
+    url: '/templates/flara',
+    previewUrl: '/preview/flara', // Added leading slash for consistency
   },
   {
     title: 'Karl Bewick',
