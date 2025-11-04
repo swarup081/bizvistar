@@ -126,7 +126,7 @@ export default function CandleaPage() {
     
     return (
         <div 
-          className={`antialiased font-sans bg-brand-bg text-brand-text ${themeClassName}`}
+          className={`antialiased bg-brand-bg text-brand-text ${themeClassName}`}
           style={fontVariables}
         >
             <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">
@@ -206,7 +206,7 @@ export default function CandleaPage() {
                             <p className="text-base text-brand-text opacity-70 mt-4 max-w-lg">{businessData.feature1.subtext}</p>
                             <a 
                                 href="#about"
-                                className="mt-8 inline-flex items-center gap-2 btn btn-primary text-m w-fit font-medium tracking-wider uppercase border border-brand-secondary text-brand-text hover:bg-brand-secondary hover:text-brand-bg transition-all duration-300 px-4 py-2 "
+                                className="mt-8 inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-4 py-2 "
                             >
                                 <span>{businessData.feature1.cta}</span>
                                 <ArrowRightIcon />
@@ -255,7 +255,7 @@ export default function CandleaPage() {
                         </div>
                         <a 
                             href="#shop"
-                            className="mt-16 inline-flex items-center gap-2 btn btn-primary text-sm w-fit font-medium tracking-wider uppercase border border-brand-secondary text-brand-text hover:bg-brand-secondary hover:text-brand-bg transition-all duration-300 px-6 py-3 "
+                            className="mt-16 inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-6 py-3 "
                         >
                             <span>Shop Now</span>
                             <ArrowRightIcon />
@@ -291,8 +291,7 @@ export default function CandleaPage() {
                     </div>
                 </section>
 
-                {/* --- Eco-Friendly Section (FIXED: Point 5) --- */}
-                {/* This section has been REMOVED as requested. */}
+               
 
                 {/* --- Blog (Screenshot 4) --- */}
                 <section id="blog" className="py-24 bg-brand-primary">

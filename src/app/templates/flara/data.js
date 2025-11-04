@@ -8,9 +8,9 @@ export const businessData = {
 
     // --- THEME SECTION ---
     theme: {
-        colorPalette: 'sage-green',
+        colorPalette: 'strawberry-cream',
         font: {
-            heading: 'Lora',
+            heading: 'playfair',
             body: 'Montserrat'
         }
     },
