@@ -2,12 +2,12 @@
 
 export const businessData = {
     // --- GENERAL BUSINESS INFO ---
-    name: "NIXIV",
-    logoText: "NIXIV",
+    name: "AVENIX",
+    logoText: "Avenix",
     
     // --- THEME SECTION ---
     theme: {
-        colorPalette: 'nixiv-minimal', 
+        colorPalette: 'avenix-minimal', 
         font: {
             heading: 'Cormorant Garamond', 
             body: 'DM Sans'              
@@ -31,19 +31,19 @@ export const businessData = {
     
     // --- Heels Hero Section (from ...8.21.16...) ---
     heelsHero: {
-        line1: "Keep your head",
-        line2: "HEELS",
-        line3: "& standards",
-        bentText: "HIGH",
+        line1: "Keep your thread,",
+        line2: "tight",
+        line3: "tough &",
+        bentText: "trendy",
         buttonText: "VIEW TRENDS",
         image: "/avenix/pew-nguyen-Ib0H1MGt5yw-unsplash.jpg",
-        accentColor: "#4F46E5", // text-indigo-600
-        buttonColor: "#D3FB52"  // Lime green from screenshot
+        accentColor: "var(--color-brand-accent)", // UPDATED: This will be the dusty rose
+        buttonColor: "var(--color-brand-secondary)"  // Lime green from screenshot
     },
 
     // --- About Section (from ...8.14.47...) ---
     about: {
-        heading: "ABOUT NIXIV",
+        heading: "ABOUT AVENIX",
         subheading: {
             part1: "A fashion space where style meets comfort,",
             part2: "bringing timeless trends and modern looks for every mood and occasion."
@@ -53,7 +53,7 @@ export const businessData = {
             "/avenix/jason-briscoe-w2uvoJo_woE-unsplash.jpg", 
             "/avenix/stefan-stefancik-w_Mj-SsE1mI-unsplash.jpg"  
         ],
-        statement: "Nixiv delivers fashion that fits your mood & moment",
+        statement: "Avenix delivers fashion that fits your mood & moment",
         largeImage: "/avenix/micheile-henderson-FpPcoOAk5PI-unsplash.jpg" 
     },
 
@@ -99,7 +99,7 @@ export const businessData = {
     ], 
 
     brands: {
-        heading: "Nixiv helps you dress with purpose and personality",
+        heading: "Avenix helps you dress with purpose and personality",
         text: "We collaborate with trusted brands to bring you fashion that combines quality, style, and authenticity.",
         logos: [] 
     },
@@ -148,7 +148,7 @@ export const businessData = {
     },
 
     stats: {
-        title: "Nixiv in Numbers",
+        title: "Avenix in Numbers",
         text: "Our numbers reflect a growing global community that values fashion, comfort, and confidence.",
         items: [
             { number: "85k+", label: "Happy Customers" },
@@ -178,7 +178,7 @@ export const businessData = {
 
     // --- *** FOOTER DATA CHANGED *** ---
     footer: {
-        logo: "NIXIV",
+        logo: "AVENIX",
         description: "Designed by Nixar. Powered by Webflow",
         contact: {
             phone: "+(123) 456-7890",
@@ -206,7 +206,7 @@ export const businessData = {
             title: "Stay updated with new arrivals",
             cta: "GET UPDATES"
         },
-        copyright: "© 2025 Νίχιν,",
+        copyright: "© 2025 Avenix,",
         // --- THIS IS THE NEW DYNAMIC PART ---
         // Add your full URLs here.
         // Use "instagram", "facebook", "youtube", or "twitter" as the platform name.

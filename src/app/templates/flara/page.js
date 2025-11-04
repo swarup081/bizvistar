@@ -216,6 +216,7 @@ export default function CandleaPage() {
                 </section>
                 
                 {/* --- Collection Section (Screenshot 2) --- */}
+       {/* --- Collection Section (Screenshot 2) --- */}
                 <section id="collection" className="py-24 bg-brand-bg">
                     <div className="container mx-auto px-6">
                         <div className="flex justify-between items-center mb-12">
@@ -227,14 +228,32 @@ export default function CandleaPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {businessData.collection.items.map(item => (
-                                <a href="#" key={item.id} className="group relative block overflow-hidden shadow-lg aspect-[4/5]">
+                                // THE FIX: Apply rounding and transition to the parent <a> tag.
+                                <a 
+                                  href="#" 
+                                  key={item.id} 
+                                  className="group relative block overflow-hidden shadow-lg aspect-[4/5] hover:rounded-t-full  "
+                                >
+                                    
+                                    {/* Image no longer needs rounding, just scaling */}
                                     <img 
                                         src={item.image} 
                                         alt={item.name} 
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        className="w-full h-full object-cover transition-transform duration-300"
                                     />
+                                    
+                                    {/* Gradient no longer needs rounding */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                    
+                                    {/* Original text */}
                                     <h3 className="absolute bottom-6 left-6 text-3xl font-bold text-white font-serif">{item.name}</h3>
+
+                                    {/* "Shop Now" button (no change needed) */}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <span className="bg-brand-bg text-brand-text px-6 py-3 font-semibold uppercase tracking-wider shadow-lg">
+                                            Shop Now
+                                        </span>
+                                    </div>
                                 </a>
                             ))}
                         </div>

@@ -97,13 +97,42 @@
 
 /* ... (add this at the end, after your other theme classes) ... */
 
-/* 12. NEW: Nixiv Minimal */
-.theme-nixiv-minimal {
+/* 12. NEW: avenix Minimal */
+.theme-avenix-minimal {
   --color-brand-bg: #F8F7F5;     /* Light beige/off-white */
   --color-brand-text: #1A1A1A;    /* Dark charcoal text */
   --color-brand-primary: #FFFFFF;  /* Card backgrounds, etc. */
-  --color-brand-secondary: #000000; /* Black for buttons & footer */
+  --color-brand-secondary: #000; /* Black for buttons & footer */
+  --color-brand-accent: #D81B60;    /* ADD THIS LINE: Sets accent to black */
+
 }
+
+.theme-avenix-rose {
+  --color-brand-bg: #F8F7F5;     /* Light beige/off-white */
+  --color-brand-text: #1A1A1A;    /* Dark charcoal text */
+  --color-brand-primary: #FFFFFF;  /* Card backgrounds, etc. */
+  --color-brand-secondary: #611c1c; /* Black for buttons & footer */
+  --color-brand-accent: #321010;    /* ADD THIS LINE: Sets accent to black */
+
+}
+
+/* Special rule for dark theme button text */
+.theme-avenix-minimal .btn-primary {
+  color: var(--color-brand-bg); /* Light text on dark button */
+}
+
+
+/* --- 13. ADD THIS NEW PALETTE --- 
+  A beautiful palette with a new accent color.
+*/
+.theme-elegant-botanics {
+  --color-brand-bg: #FCFBF9;       /* Light warm off-white */
+  --color-brand-text: #4B413E;      /* Dark, warm grey-brown */
+  --color-brand-primary: #F4ECE8;    /* Light dusty rose */
+  --color-brand-secondary: #8A9A8C;  /* Muted sage green */
+  --color-brand-accent: #B98B7F;      /* Stronger dusty rose (for HEELS/HIGH) */
+}
+
 
 /* Special rule for dark theme button text */
 .theme-nixiv-minimal .btn-primary {
@@ -115,6 +144,7 @@
   --color-brand-text: var(--color-brand-text);
   --color-brand-primary: var(--color-brand-primary);
   --color-brand-secondary: var(--color-brand-secondary);
+  --color-brand-accent: var(--color-brand-accent); /* <-- ADD THIS LINE */
   --font-sans: var(--font-body), sans-serif;
   --font-serif: var(--font-heading), serif;
 }

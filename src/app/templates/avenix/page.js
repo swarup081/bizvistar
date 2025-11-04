@@ -115,6 +115,8 @@ const Header = ({ business }) => (
 );
 
 // --- NEW: Heels Hero Component (from ...8.21.16...) ---
+// --- NEW: Heels Hero Component (from ...8.21.16...) ---
+// --- NEW: Heels Hero Component (from ...8.21.16...) ---
 const HeelsHero = ({ heroData }) => {
     // Splits the bent text ("HIGH") into an array of letters: ['H', 'I', 'G', 'H']
     const bentLetters = heroData.bentText.split('');
@@ -129,13 +131,15 @@ const HeelsHero = ({ heroData }) => {
                         <h2 className="text-6xl lg:text-7xl font-serif font-medium text-brand-text leading-tight">
                           {heroData.line1}
                           <br />
+                          {/* UPDATED: Uses the accentColor prop */ }
                           <span style={{ color: heroData.accentColor }} className="font-bold">{heroData.line2}</span> {heroData.line3}
                           <div className="relative inline-block ml-4">
                             {bentLetters.map((letter, index) => (
                               <span 
                                 key={index}
+                                // UPDATED: Uses the accentColor prop
                                 style={{ color: heroData.accentColor }}
-                                className={`relative inline-block text-6xl lg:text-7xl font-serif font-bold 
+                                className={`relative inline-block text-6xl lg:text-7xl font-serif font-bold
                                   ${index === 0 ? '-rotate-12 -translate-y-2' : ''}
                                   ${index === 1 ? '-rotate-6' : ''}
                                   ${index === 2 ? 'rotate-6' : ''}
@@ -159,8 +163,9 @@ const HeelsHero = ({ heroData }) => {
                         </h2>
                         <a 
                           href="#" 
+                          // UPDATED: Uses the buttonColor prop
                           style={{ backgroundColor: heroData.buttonColor }}
-                          className="inline-flex items-center gap-3 bg-brand-secondary text-brand-bg px-8 py-4 font-sans font-medium text-base uppercase tracking-wider rounded-full mt-10 hover:opacity-80 transition-all"
+                          className="inline-flex items-center gap-3 text-brand-bg px-8 py-4 font-sans font-medium text-base uppercase tracking-wider rounded-full mt-10 hover:opacity-80 transition-all"
                         >
                           <span className="w-2.5 h-2.5 bg-white rounded-full"></span>
                           {heroData.buttonText}
@@ -208,7 +213,7 @@ const ProductCard = ({ item }) => (
 
 
 // --- Main Page Component ---
-export default function NixivPage() {
+export default function AvenixPage() {
     
     const [businessData, setBusinessData] = useState(initialBusinessData); 
     
@@ -246,8 +251,8 @@ export default function NixivPage() {
                 {/* --- 1. REPLACED Hero Section --- */}
                 <HeelsHero heroData={businessData.heelsHero} />
                 
-                {/* --- 2. About Section (Pixel-perfect from ...8.14.47...) --- */}
-                <section id="story" className="py-24 overflow-hidden bg-brand-primary"> 
+               {/* --- 2. About Section (Pixel-perfect from ...8.14.47...) --- */}
+               <section id="story" className="py-24 overflow-hidden bg-brand-primary"> 
                     <div className="container mx-auto px-6">
                         
                         {/* --- CHANGED: Removed max-w-5xl --- */}
@@ -285,14 +290,16 @@ export default function NixivPage() {
                         </div>
 
                         {/* Bottom Part: Two-column layout (Text left, Image right) */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[500px]">
+                        {/* UPDATED: Reduced min-h-[500px] to min-h-[400px] */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[400px]">
                             <div className="text-left">
                                 <h2 className="text-4xl lg:text-5xl font-serif font-medium text-brand-text leading-tight">
                                     {businessData.about.statement}
                                 </h2>
                             </div>
                             <div className="flex justify-center md:justify-end">
-                                <div className="w-full max-w-lg h-[400px] overflow-hidden rounded-2xl">
+                                {/* UPDATED: Reduced h-[400px] to h-[300px] */}
+                                <div className="w-full max-w-lg h-[300px] overflow-hidden rounded-2xl">
                                     <img 
                                         src={businessData.about.largeImage} 
                                         alt="Nixiv hoodies" 
@@ -521,8 +528,8 @@ export default function NixivPage() {
 
             </main>
 
-            {/* --- Footer (from PDF) --- */}
-            {/* --- Footer (Cleaner Layout) --- */}
+            {/* --- Footer  --- */}
+            {/* --- Footer  --- */}
             <footer id="contact" className="py-20 pb-12 bg-brand-secondary text-brand-bg font-sans">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
