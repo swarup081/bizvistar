@@ -94,6 +94,22 @@
   --color-brand-primary: #FFE4DE;
   --color-brand-secondary: #EA580C;
 }
+
+/* ... (add this at the end, after your other theme classes) ... */
+
+/* 12. NEW: Nixiv Minimal */
+.theme-nixiv-minimal {
+  --color-brand-bg: #F8F7F5;     /* Light beige/off-white */
+  --color-brand-text: #1A1A1A;    /* Dark charcoal text */
+  --color-brand-primary: #FFFFFF;  /* Card backgrounds, etc. */
+  --color-brand-secondary: #000000; /* Black for buttons & footer */
+}
+
+/* Special rule for dark theme button text */
+.theme-nixiv-minimal .btn-primary {
+  color: var(--color-brand-bg); /* Light text on dark button */
+}
+
 @theme {
   --color-brand-bg: var(--color-brand-bg);
   --color-brand-text: var(--color-brand-text);
