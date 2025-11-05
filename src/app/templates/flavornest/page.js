@@ -183,6 +183,12 @@ export default function FlavorNestPage() {
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
+        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
+        //changing the style of all headings
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+        });
         const storedStoreName = localStorage.getItem('storeName');
         if (storedStoreName) {
             setBusinessData(prevData => ({
@@ -190,7 +196,7 @@ export default function FlavorNestPage() {
                 name: storedStoreName,
                 footer: {
                     ...prevData.footer,
-                    copyright: `© ${new Date().getFullYear()} ${storedStoreName}. All Rights Reserved`
+                    copyright: `©️ ${new Date().getFullYear()} ${storedStoreName}. All Rights Reserved`
                 }
             }));
         }
@@ -198,7 +204,14 @@ export default function FlavorNestPage() {
         if (savedCart) {
             setCart(JSON.parse(savedCart));
         }
-    }, []); 
+        return () => {
+            headings.forEach(heading => {
+                heading.style.fontFamily = '';
+            });
+            document.body.style.fontFamily = '';
+
+        };
+    }, []);
 
     const updateCartAndLocalStorage = (newCart) => {
         const cleanedCart = Object.fromEntries(

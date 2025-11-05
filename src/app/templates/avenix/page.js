@@ -218,6 +218,12 @@ export default function AvenixPage() {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
     
     useEffect(() => {
+        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
+        //changing the style of all headings
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+        });
         const storedStoreName = localStorage.getItem('storeName');
         if (storedStoreName) {
             setBusinessData(prevData => ({
@@ -226,6 +232,13 @@ export default function AvenixPage() {
                 logoText: storedStoreName,
             }));
         }
+        return () => {
+            headings.forEach(heading => {
+                heading.style.fontFamily = '';
+            });
+            document.body.style.fontFamily = '';
+
+        };
     }, []); 
 
     const createFontVariable = (fontName) => {

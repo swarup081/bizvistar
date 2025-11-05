@@ -10,7 +10,7 @@ export const businessData = {
     theme: {
         colorPalette: 'strawberry-cream',
         font: {
-            heading: 'playfair',
+            heading: 'poppins',
             body: 'Montserrat'
         }
     },

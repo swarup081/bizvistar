@@ -95,6 +95,12 @@ export default function CandleaPage() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     
     useEffect(() => {
+        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
+        //changing the style of all headings
+        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        headings.forEach(heading => {
+            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+        });
         const storedStoreName = localStorage.getItem('storeName');
         if (storedStoreName) {
             setBusinessData(prevData => ({
@@ -107,6 +113,13 @@ export default function CandleaPage() {
                 }
             }));
         }
+        return () => {
+            headings.forEach(heading => {
+                heading.style.fontFamily = '';
+            });
+            document.body.style.fontFamily = '';
+
+        };
     }, []); 
 
     const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
