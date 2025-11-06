@@ -1,20 +1,35 @@
 'use client';
 // This page is now fully dynamic and uses the new data structure.
 
-import { businessData } from './data.js';
+import { useTemplateContext } from './templateContext.js'; // Use context
 import { ArrowRightIcon, ShippingIcon, ProductCard } from './components.js';
 import Link from 'next/link';
 
 // Helper: Get product details from the master list by their IDs
-const getProductsByIds = (ids) => {
-    return ids.map(id => businessData.allProducts.find(p => p.id === id)).filter(Boolean); // .filter(Boolean) removes any undefined
+// NOW takes allProducts as an argument
+const getProductsByIds = (allProducts, ids) => {
+    if (!allProducts || !ids) return []; // Guard against undefined data
+    return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 };
 
 export default function CandleaPage() {
     
+    // Get businessData from the context
+    const { businessData } = useTemplateContext();
+
+    // Guard against undefined properties during initial render or data mismatch
+    const allProducts = businessData?.allProducts || [];
+    const collectionItemIDs = businessData?.collection?.itemIDs || [];
+    const bestSellerItemIDs = businessData?.bestSellers?.itemIDs || [];
+    
     // Get the actual product objects for each section
-    const collectionProducts = getProductsByIds(businessData.collection.itemIDs);
-    const bestSellerProducts = getProductsByIds(businessData.bestSellers.itemIDs);
+    const collectionProducts = getProductsByIds(allProducts, collectionItemIDs);
+    const bestSellerProducts = getProductsByIds(allProducts, bestSellerItemIDs);
+
+    // Render null or a loading state if core data is missing
+    if (!businessData || !businessData.hero) {
+        return <div>Loading preview...</div>; 
+    }
 
     return (
         <>
@@ -48,13 +63,13 @@ export default function CandleaPage() {
             <section className="py-6 bg-brand-bg border-y border-brand-primary/20 overflow-hidden">
                 <div className="flex whitespace-nowrap">
                     <div className="flex marquee items-center">
-                        {businessData.infoBar.map((text, i) => (
+                        {(businessData.infoBar || []).map((text, i) => (
                             <div key={i} className="flex items-center justify-center gap-4 mx-8">
                                 <ShippingIcon />
                                 <p className="font-medium text-brand-text opacity-80 text-lg">{text}</p>
                             </div>
                         ))}
-                        {businessData.infoBar.map((text, i) => (
+                        {(businessData.infoBar || []).map((text, i) => (
                             <div key={`dup-${i}`} className="flex items-center justify-center gap-4 mx-8" aria-hidden="true">
                                 <ShippingIcon />
                                 <p className="font-medium text-brand-text opacity-80 text-lg">{text}</p>
@@ -147,8 +162,8 @@ export default function CandleaPage() {
                 </div>
             </section>
 
-            {/* --- Feature Section 2 --- */}
-            <section className="py-24 overflow-hidden bg-brand-bg">
+            {/* --- Feature Section 2 (RE-ADDED) --- */}
+            <section id="feature2" className="py-24 overflow-hidden bg-brand-bg">
                  <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:items-end">
                     <div className="relative">
                         <div className="w-full aspect-[4/5] rounded-t-full overflow-hidden">
@@ -180,13 +195,10 @@ export default function CandleaPage() {
                 <div className="container mx-auto px-6">
                     <div className="flex justify-between items-center mb-12">
                         <h2 className="text-4xl font-bold text-brand-text font-serif">{businessData.blog.title}</h2>
-                        <a href="#" className="inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-4 py-2 ">
-                            <span>See All</span>
-                            <ArrowRightIcon />
-                        </a>
+                        {/* "See All" Link Removed */}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {businessData.blog.items.map(post => (
+                        {(businessData.blog.items || []).map(post => (
                             <div key={post.title} className="group">
                                 <a href="#" className="block overflow-hidden aspect-video bg-brand-bg">
                                     <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />

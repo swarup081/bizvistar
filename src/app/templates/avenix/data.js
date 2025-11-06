@@ -67,6 +67,14 @@ const categories = [
       // --- NEW: Master Lists ---
       categories: categories,
       allProducts: allProducts,
+
+      // --- NEW: Page Definitions ---
+      pages: [
+        { name: 'Home', path: '/templates/avenix' },
+        { name: 'Shop', path: '/templates/avenix/shop' },
+        { name: 'Product (Example)', path: '/templates/avenix/product/1' },
+        { name: 'Checkout', path: '/templates/avenix/checkout' }
+      ],
       
       // --- THEME SECTION ---
       theme: {

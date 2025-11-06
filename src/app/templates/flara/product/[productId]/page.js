@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { businessData } from '../../data.js'; // Go up two levels
-import { useCart } from '../../cartContext.js'; // Import the cart hook
+import { useTemplateContext } from '../../templateContext.js'; // Import the context hook
+import { useCart } from '../../cartContext.js';
 import Link from 'next/link';
 
 export default function ProductDetailPage() {
     const params = useParams();
     const { productId } = params;
-    const { addToCart } = useCart(); // Get the addToCart function
-    
+    const { addToCart } = useCart();
+    const { businessData } = useTemplateContext(); // Get data from context
+
     // Find the product from the master list
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
     
     // --- DYNAMIC CATEGORY ---
-    // Find the category object based on the product's category ID
     const category = product 
         ? businessData.categories.find(c => c.id === product.category) 
         : null;
@@ -38,6 +38,7 @@ export default function ProductDetailPage() {
 
     return (
         <div className="container mx-auto px-6 py-20">
+            {/* ... (rest of the component JSX remains the same) ... */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                 {/* Image Gallery */}
                 <div>

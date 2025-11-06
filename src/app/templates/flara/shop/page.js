@@ -1,29 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { businessData } from '../data.js'; // Go up one level
-import { ProductCard } from '../components.js'; // Go up one level
+import { useTemplateContext } from '../templateContext.js'; // Import the context hook
+import { ProductCard } from '../components.js';
 
 export default function ShopPage() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const { businessData } = useTemplateContext(); // Get data from context
     
-    // Get master lists from data.js
+    // Get master lists from dynamic data
     const allProducts = businessData.allProducts; 
     
     // --- DYNAMIC CATEGORIES ---
-    // Create categories list, starting with "All"
     const categories = [
         { id: 'all', name: 'All' }, 
         ...businessData.categories
     ];
     
-    // Filter products based on selected category ID
+    // Filter products
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
         : allProducts.filter(p => p.category === selectedCategoryId);
 
     return (
         <div className="container mx-auto px-6 py-16">
+            {/* ... (rest of the component JSX remains the same) ... */}
             <h1 className="text-5xl font-bold text-brand-text font-serif text-center mb-12">Shop Our Collection</h1>
             
             {/* Category Filters (Now dynamic) */}

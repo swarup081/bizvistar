@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer, CartIcon } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -7,6 +8,7 @@ import { CartProvider, useCart } from './cartContext.js';
 // Inner component to access cart context
 function CartLayout({ children }) {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
+    const router = useRouter(); // Initialize router
     
     const { 
         cartCount, 
@@ -32,25 +34,50 @@ function CartLayout({ children }) {
             heading.style.fontFamily = `'${businessData.theme.font.heading}', serif`;
         });
 
-        const storedStoreName = localStorage.getItem('storeName');
-        
-        if (storedStoreName) {
-            setBusinessData(prevData => ({
-                ...prevData,
-                name: storedStoreName,
-                logoText: storedStoreName,
-                footer: {
-                    ...prevData.footer,
-                    copyright: `© ${new Date().getFullYear()} ${storedStoreName}. All Rights Reserved.`
+        // --- DYNAMIC DATA LOGIC ---
+        const isEditor = window.self !== window.top;
+
+        if (isEditor) {
+            // We are inside the editor iframe
+            const handleMessage = (event) => {
+                if (event.data.type === 'UPDATE_DATA') {
+                    setBusinessData(event.data.payload);
                 }
-            }));
+                if (event.data.type === 'CHANGE_PAGE') {
+                    router.push(event.data.payload.path);
+                }
+            };
+            window.addEventListener('message', handleMessage);
+
+            // Tell the parent editor that the iframe is ready to receive data
+            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
+
+            return () => window.removeEventListener('message', handleMessage);
+        
+        } else {
+            // We are on the live site
+            const storedStoreName = localStorage.getItem('storeName');
+            
+            if (storedStoreName) {
+                setBusinessData(prevData => ({
+                    ...prevData,
+                    name: storedStoreName,
+                    logoText: storedStoreName,
+                    footer: {
+                        ...prevData.footer,
+                        copyright: `© ${new Date().getFullYear()} ${storedStoreName}. All RightsReserved.`
+                    }
+                }));
+            }
         }
+        // --- END DYNAMIC DATA LOGIC ---
+
 
         return () => {
             headings.forEach(heading => heading.style.fontFamily = '');
             document.body.style.fontFamily = '';
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading]);
+    }, [businessData.theme.font.body, businessData.theme.font.heading, router]); // Added router
 
     const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(/ /g, '-')})`;
     

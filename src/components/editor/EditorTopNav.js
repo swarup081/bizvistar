@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import {
-  Monitor, Smartphone, Eye, ChevronDown, Rocket
+  Monitor, Smartphone, ChevronDown, Rocket
 } from 'lucide-react';
 
 // A simple reusable button component for the nav
@@ -28,23 +29,34 @@ const IconRedo = () => (
 );
 // --- End Custom Icons ---
 
-// --- UPDATED: Reusable Vertical Separator ---
 const VerticalSeparator = () => (
-  // UPDATED: Changed h-6 to h-[50px] for full height
   <div className="w-px h-[50px] bg-gray-300"></div>
 );
-// --- End Separator ---
 
 
-export default function EditorTopNav({ templateName, view, onViewChange }) {
-  const currentPage = 'Home';
+export default function EditorTopNav({ 
+    templateName, 
+    view, 
+    onViewChange, 
+    activePage, 
+    pages, 
+    onPageChange 
+}) {
+  const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
+  
+  const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
   const siteUrl = `https://www.bizvistar.com/mysite/${templateName}`;
+
+  const handlePageSelect = (path) => {
+    onPageChange(path);
+    setIsPageDropdownOpen(false);
+  };
 
   return (
     <header className="w-full bg-white shadow-sm">
-      {/* Top-most Bar (Wix, Hire, Help, Actions) */}
+      {/* Top-most Bar */}
       <div className="w-full h-[65px] border-b border-gray-200 px-4 flex items-center justify-between">
-        {/* Left Side: Logo, Nav */}
+        {/* Left Side */}
         <div className="flex items-center gap-6">
           <div className="text-xl font-bold text-gray-900">
             BizVistar
@@ -73,19 +85,38 @@ export default function EditorTopNav({ templateName, view, onViewChange }) {
         </div>
       </div>
 
-      {/* Second Bar (Page, Devices, URL, Tools) */}
-      {/* This 'items-center' will vertically center the 50px tall separators */}
+      {/* Second Bar */}
       <div className="w-full h-[50px] border-b border-gray-200 px-4 flex items-center">
         
         {/* Left: Page & Devices */}
         <div className="flex items-center gap-4">
-          {/* Page Selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Page:</span>
-            <button className="flex items-center gap-1 font-medium text-gray-900">
-              {currentPage}
-              <ChevronDown size={16} />
-            </button>
+          
+          {/* Page Selector (Now Functional) */}
+          <div className="relative">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Page:</span>
+              <button 
+                onClick={() => setIsPageDropdownOpen(prev => !prev)}
+                className="flex items-center gap-1 font-medium text-gray-900"
+              >
+                {currentPageName}
+                <ChevronDown size={16} />
+              </button>
+            </div>
+            {/* Page Dropdown */}
+            {isPageDropdownOpen && (
+              <div className="absolute top-full mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                {pages.map(page => (
+                  <button
+                    key={page.path}
+                    onClick={() => handlePageSelect(page.path)}
+                    className={`w-full text-left px-3 py-2 text-sm ${activePage === page.path ? 'bg-blue-50 text-blue-600' : 'text-gray-700'} hover:bg-gray-100`}
+                  >
+                    {page.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <VerticalSeparator />
@@ -109,7 +140,7 @@ export default function EditorTopNav({ templateName, view, onViewChange }) {
           <VerticalSeparator />
         </div>
 
-        {/* Center: URL Bar (Fills remaining space) */}
+        {/* Center: URL Bar */}
         <div className="flex-grow min-w-0 mx-4">
           <div className="bg-gray-50 border border-gray-300 rounded-4xl px-3 py-2 text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap">
             {siteUrl}
@@ -120,7 +151,6 @@ export default function EditorTopNav({ templateName, view, onViewChange }) {
         {/* Right: Tools */}
         <div className="flex items-center gap-2 text-gray-600">
           <VerticalSeparator />
-
           <button className="p-2  rounded-md text-gray-500 ">
             <IconUndo />
           </button>

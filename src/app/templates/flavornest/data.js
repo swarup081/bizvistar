@@ -73,6 +73,13 @@ export const businessData = {
     categories: categories,
     allProducts: allProducts,
 
+    // --- NEW: Page Definitions ---
+    pages: [
+        { name: 'Home', path: '/templates/flavornest' },
+        { name: 'Shop', path: '/templates/flavornest/shop' },
+        { name: 'Checkout', path: '/templates/flavornest/checkout' }
+    ],
+
     // --- THEME SECTION ---
     theme: {
         colorPalette: 'warm-bakery',

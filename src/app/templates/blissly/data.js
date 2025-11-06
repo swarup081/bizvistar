@@ -86,6 +86,14 @@ export const businessData = {
     categories: categories,
     allProducts: allProducts,
 
+    // --- NEW: Page Definitions ---
+    pages: [
+        { name: 'Home', path: '/templates/blissly' },
+        { name: 'Shop', path: '/templates/blissly/shop' },
+        { name: 'Product (Example)', path: '/templates/blissly/product/1' },
+        { name: 'Checkout', path: '/templates/blissly/checkout' }
+    ],
+
     // --- THEME SECTION ---
     theme: {
         colorPalette: 'elegant-botanics', 

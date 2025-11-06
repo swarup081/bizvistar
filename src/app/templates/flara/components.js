@@ -1,45 +1,38 @@
 'use client';
-import { useCart } from './cartContext.js'; // Import the cart hook
-import { businessData } from './data.js'; // Import data to find category names
+import { useCart } from './cartContext.js';
+import { useTemplateContext } from './templateContext.js'; // Import the new context
 
+// ... (All SVG Icons remain the same) ...
 // --- Reusable SVG Icons ---
 export const CartIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
     </svg>
 );
-
+// ... (rest of icons) ...
 export const ArrowRightIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
     </svg>
 );
 export const ShippingIcon = () => (
-    // This component now contains the actual candle icon
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-6 w-6 opacity-80"
-      viewBox="0 0 100 140" // Keeps the candle's proportions
+      viewBox="0 0 100 140"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2" // Matches the stroke width from your component
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* Glass Jar */}
       <ellipse cx="50" cy="25" rx="40" ry="10" />
       <path d="M 10 25 L 10 115" />
       <path d="M 90 25 L 90 115" />
       <path d="M 10 115 A 40 10 0 0 0 90 115" />
       <path d="M 8 122 A 42 10 0 0 0 92 122" />
-      
-      {/* Wax */}
       <path d="M 12 45 A 38 8 0 0 0 88 45" />
-      
-      {/* Wick */}
       <line x1="50" y1="45" x2="50" y2="28" />
-      
-      {/* Flame */}
       <g>
         <path d="M 50 30 Q 46 22 50 10 Q 54 22 50 30 Z" />
         <path d="M 50 27 Q 48.5 22 50 16" />
@@ -47,7 +40,9 @@ export const ShippingIcon = () => (
     </svg>
   );
 
+
 // --- Header Component ---
+// No context needed here, props are passed from layout
 export const Header = ({ business, cartCount, onCartClick }) => (
     <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full">
         <div className="container mx-auto px-6 py-5 flex justify-between items-center">
@@ -75,16 +70,16 @@ export const Header = ({ business, cartCount, onCartClick }) => (
 
 // --- Product Card Component (with dynamic category and 2 buttons) ---
 export const ProductCard = ({ item, templateName }) => {
-    const { addItem } = useCart(); // Get the addItem function from context
+    const { addItem } = useCart(); // Get the addItem function from cart context
+    const { businessData } = useTemplateContext(); // Get businessData from template context
     
-    // Function to handle adding to cart
     const handleAddToCart = (e) => {
-        e.preventDefault(); // Stop the link from navigating
-        e.stopPropagation(); // Stop any parent link events
-        addItem(item); // Add this specific item
+        e.preventDefault(); 
+        e.stopPropagation();
+        addItem(item);
     };
     
-    // Find the category name from the master list
+    // Find the category name from the master list in businessData
     const category = businessData.categories.find(c => c.id === item.category);
 
     return (
@@ -133,7 +128,11 @@ export const ProductCard = ({ item, templateName }) => {
 
 
 // --- Footer Component ---
-export const Footer = ({ businessData }) => (
+export const Footer = () => {
+    // Get dynamic businessData from context
+    const { businessData } = useTemplateContext();
+
+    return (
      <footer id="contact" className="bg-brand-text text-brand-bg pt-20 pb-10">
         <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
@@ -198,4 +197,5 @@ export const Footer = ({ businessData }) => (
             </div>
         </div>
     </footer>
-);
+    );
+};
