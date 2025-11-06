@@ -47,12 +47,11 @@ const SectionTitle = ({ label }) => (
 // This now uses the correct placeholder logic.
 const EditorInput = ({ label, value, onChange, isRequired = false }) => {
     const [localValue, setLocalValue] = useState(""); // Local state for typing
-    const [isFocused, setIsFocused] = useState(false);
 
     const onBlur = () => {
-        setIsFocused(false);
-        // Only update if localValue is not empty AND is different from the original value
-        if (localValue.trim() !== "" && localValue.trim() !== value) {
+        // Only update if localValue is not empty.
+        // If it's empty, it means "no change".
+        if (localValue.trim() !== "") {
             onChange({ target: { value: localValue } });
         }
         // Clear local value on blur
@@ -60,10 +59,10 @@ const EditorInput = ({ label, value, onChange, isRequired = false }) => {
     };
 
     const onFocus = () => {
-        setIsFocused(true);
-        // Set local value to the real value when focusing
-        // This allows editing the current text
-        setLocalValue(value || ""); 
+        // On focus, just set localValue to empty string,
+        // allowing user to type new value.
+        // The placeholder will show the current value.
+        setLocalValue(""); 
     };
 
     return (
@@ -73,7 +72,7 @@ const EditorInput = ({ label, value, onChange, isRequired = false }) => {
             </label>
             <input
                 type="text"
-                value={isFocused ? localValue : ""} // Show local value only when focused
+                value={localValue} // Always show localValue
                 onChange={(e) => setLocalValue(e.target.value)}
                 onFocus={onFocus}
                 onBlur={onBlur}
@@ -88,19 +87,19 @@ const EditorInput = ({ label, value, onChange, isRequired = false }) => {
 // Now uses the correct placeholder logic and removes resize handle.
 const EditorTextArea = ({ label, value, onChange }) => {
     const [localValue, setLocalValue] = useState("");
-    const [isFocused, setIsFocused] = useState(false);
 
     const onBlur = () => {
-        setIsFocused(false);
-        if (localValue.trim() !== "" && localValue.trim() !== value) {
+        // Only update if localValue is not empty.
+        // If it's empty, it means "no change".
+        if (localValue.trim() !== "") {
             onChange({ target: { value: localValue } });
         }
         setLocalValue("");
     };
 
     const onFocus = () => {
-        setIsFocused(true);
-        setLocalValue(value || "");
+        // On focus, just set localValue to empty string,
+        setLocalValue("");
     };
 
     return (
@@ -109,7 +108,7 @@ const EditorTextArea = ({ label, value, onChange }) => {
                 {label}
             </label>
             <textarea
-                value={isFocused ? localValue : ""}
+                value={localValue} // Always show localValue
                 onChange={(e) => setLocalValue(e.target.value)}
                 onFocus={onFocus}
                 onBlur={onBlur}
