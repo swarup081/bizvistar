@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, Palette, Settings, Home, Store, Calendar, Tag, MessageCircle, Contact, Plus, FileText, Info, Image as ImageIcon, ShoppingBag, Pencil, ChevronDown, CheckCircle, UploadCloud, Trash, Search, X, Columns
+  LayoutDashboard, Settings, Home, Store, Calendar, Tag, MessageCircle, Contact, Plus, FileText, Info, Image as ImageIcon, ShoppingBag, Pencil, ChevronDown, CheckCircle, UploadCloud, Trash, Search, X, Columns,
+  Paintbrush, // Changed from Palette
+  Check
 } from 'lucide-react';
 
 // Reusable tab button
@@ -232,6 +234,56 @@ const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children }) => {
     );
 };
 
+// --- NEW: Color Swatch Button (from screenshot) ---
+// This component is now simpler: no border, no name.
+const ColorSwatchButton = ({ palette, isSelected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`block w-full text-left p-2 rounded-lg transition-all ${
+      isSelected 
+        ? 'bg-blue-50' // Selected state background
+        : 'bg-transparent hover:bg-gray-100' // Default and hover state
+    }`}
+  >
+    {/* Grid of 5 swatches. */}
+    <div className="grid grid-cols-5 h-12 w-full rounded-md overflow-hidden border border-gray-300">
+      <div style={{ backgroundColor: palette.colors[0] }}></div>
+      <div style={{ backgroundColor: palette.colors[1] }}></div>
+      <div style={{ backgroundColor: palette.colors[2] }}></div>
+      <div style={{ backgroundColor: palette.colors[3] }}></div>
+      <div style={{ backgroundColor: palette.colors[4] }}></div>
+    </div>
+  </button>
+);
+
+
+// --- NEW: Font options (Must match names in layout.js) ---
+const fontOptions = [
+  { value: 'Poppins', label: 'Poppins' },
+  { value: 'Montserrat', label: 'Montserrat' },
+  { value: 'Lora', label: 'Lora' },
+  { value: 'Lato', label: 'Lato' },
+  { value: 'Playfair_Display', label: 'Playfair Display' },
+  { value: 'Cormorant_Garamond', label: 'Cormorant Garamond' },
+  { value: 'DM_Sans', label: 'DM Sans' },
+  { value: 'Kalam', label: 'Kalam' },
+  { value: 'Roboto', label: 'Roboto' },
+  { value: 'Inter', label: 'Inter' },
+];
+
+// --- NEW: Curated list of 8 color palettes (with 5 colors each) ---
+const colorPalettes = [
+  { name: 'Sage Green', class: 'sage-green', colors: ['#F7F9F5', '#EBF2E8', '#A5D6A7', '#588157', '#344E41'] },
+  { name: 'Elegant Botanics', class: 'elegant-botanics', colors: ['#FCFBF9', '#F4ECE8', '#B98B7F', '#8A9A8C', '#4B413E'] },
+  { name: 'Avenix Minimal', class: 'avenix-minimal', colors: ['#F8F7F5', '#FFFFFF', '#D81B60', '#1A1A1A', '#000000'] },
+  { name: 'Brewhaven Cream', class: 'brewhaven-cream', colors: ['#FBF9F3', '#F5EFE6', '#F5A623', '#8A6E63', '#4B3832'] },
+  { name: 'Warm Bakery', class: 'warm-bakery', colors: ['#FFF8F2', '#F9EBE4', '#A14D2A', '#8D6E63', '#5D4037'] },
+  { name: 'Dark Roast', class: 'dark-roast', colors: ['#F3EFE9', '#E4A757', '#3D2F28', '#211A16', '#000000'] },
+  { name: 'Sky Blue', class: 'sky-blue', colors: ['#F0F9FF', '#E0F2FE', '#38bdf8', '#0284C7', '#075985'] },
+  { name: 'Strawberry Cream', class: 'strawberry-cream', colors: ['#FFF7F9', '#FDE8EF', '#ec4899', '#D81B60', '#502D39'] },
+];
+
 
 export default function EditorSidebar({ 
   activeTab, 
@@ -280,7 +332,14 @@ export default function EditorSidebar({
         // Also update copyright string intelligently
         if (newData.footer?.copyright) {
             const year = new Date().getFullYear();
-            newData.footer.copyright = `© ${year} ${newValue}. All Rights Reserved`;
+            // Handle different copyright formats
+            if (newData.footer.copyright.includes('All Rights Reserved')) {
+              newData.footer.copyright = `© ${year} ${newValue}. All Rights Reserved`;
+            } else if (newData.footer.copyright.endsWith(',')) {
+              newData.footer.copyright = `© ${year} ${newValue},`;
+            } else {
+              newData.footer.copyright = `© ${year} ${newValue}.`;
+            }
         }
         return newData;
     });
@@ -300,11 +359,11 @@ export default function EditorSidebar({
         // This is a simplified example; you might need to make this more robust
         // based on your data structure.
         const sectionIdMap = {
-            'about': businessData.aboutSectionId,
-            'collection': businessData.collectionSectionId,
-            'feature2': businessData.feature2SectionId,
-            'footer': businessData.footerSectionId,
-            'products': businessData.bestSellersSectionId || businessData.collectionSectionId,
+            'about': businessData.aboutSectionId || businessData.feature1?.title, // Fallback
+            'collection': businessData.collectionSectionId || businessData.collection?.title,
+            'feature2': businessData.feature2SectionId || businessData.feature2?.title,
+            'footer': businessData.footerSectionId || 'contact',
+            'products': businessData.bestSellersSectionId || businessData.collectionSectionId || 'shop',
             'hero': 'home' // Special case for hero
         };
 
@@ -368,6 +427,10 @@ export default function EditorSidebar({
       // Also remove from homepage collections if it's there
       handleDataChange('collection.itemIDs', (businessData.collection?.itemIDs || []).filter(id => id !== productId));
       handleDataChange('bestSellers.itemIDs', (businessData.bestSellers?.itemIDs || []).filter(id => id !== productId));
+      handleDataChange('newArrivals.itemIDs', (businessData.newArrivals?.itemIDs || []).filter(id => id !== productId));
+      handleDataChange('featured.itemIDs', (businessData.featured?.itemIDs || []).filter(id => id !== productId));
+      handleDataChange('specialty.itemIDs', (businessData.specialty?.itemIDs || []).filter(id => id !== productId));
+      handleDataChange('menu.itemIDs', (businessData.menu?.itemIDs || []).filter(id => id !== productId));
   };
   
   // --- Dynamic property access ---
@@ -384,9 +447,24 @@ export default function EditorSidebar({
   
   const collectionIDs = getSafe(businessData, 'collection.itemIDs', []);
   const bestSellerIDs = getSafe(businessData, 'bestSellers.itemIDs', []);
+  const newArrivalsIDs = getSafe(businessData, 'newArrivals.itemIDs', []);
+  const featuredIDs = getSafe(businessData, 'featured.itemIDs', []);
+  const specialtyIDs = getSafe(businessData, 'specialty.itemIDs', []);
+  const menuIDs = getSafe(businessData, 'menu.itemIDs', []);
+  
+  // Create a combined list of all product IDs used on the homepage
+  const homepageProductIDs = [
+    ...collectionIDs, 
+    ...bestSellerIDs, 
+    ...newArrivalsIDs, 
+    ...featuredIDs,
+    ...specialtyIDs,
+    ...menuIDs
+  ];
 
-  const bestSellerOptions = productOptions.filter(
-      p => !collectionIDs.includes(p.value)
+  // Options for homepage sections should not include products already selected in *any* homepage section
+  const homepageProductOptions = productOptions.filter(
+      p => !homepageProductIDs.includes(p.value)
   );
 
 
@@ -401,7 +479,7 @@ export default function EditorSidebar({
           onClick={() => onTabChange('website')}
         />
         <MainTab
-          icon={Palette}
+          icon={Paintbrush} // <-- ICON CHANGED HERE
           label="Theme"
           isActive={activeTab === 'theme'}
           onClick={() => onTabChange('theme')}
@@ -451,40 +529,42 @@ export default function EditorSidebar({
                 onChange={(e) => handleDataChange('whatsappNumber', e.target.value)}
               />
             </AccordionItem>
-
-            <AccordionItem
-              title="Hero Section"
-              icon={ImageIcon}
-              isOpen={activeAccordion === 'hero'}
-              onClick={() => toggleAccordion('hero')}
-            >
-              <EditorInput
-                label="Title"
-                value={getSafe(businessData, 'hero.title')}
-                onChange={(e) => handleDataChange('hero.title', e.target.value)}
-                isRequired={true}
-              />
-              <EditorTextArea
-                label="Subtitle"
-                value={getSafe(businessData, 'hero.subtitle')}
-                onChange={(e) => handleDataChange('hero.subtitle', e.target.value)}
-              />
-              <EditorInput
-                label="Button Text"
-                value={getSafe(businessData, 'hero.cta')}
-                onChange={(e) => handleDataChange('hero.cta', e.target.value)}
-              />
-              <EditorImageUpload
-                label="Hero Image"
-                value={getSafe(businessData, 'hero.image')}
-                onChange={(e) => handleDataChange('hero.image', e.target.value)}
-              />
-            </AccordionItem>
+            
+            {businessData?.hero && (
+              <AccordionItem
+                title="Hero Section"
+                icon={ImageIcon}
+                isOpen={activeAccordion === 'hero'}
+                onClick={() => toggleAccordion('hero')}
+              >
+                <EditorInput
+                  label="Title"
+                  value={getSafe(businessData, 'hero.title')}
+                  onChange={(e) => handleDataChange('hero.title', e.target.value)}
+                  isRequired={true}
+                />
+                <EditorTextArea
+                  label="Subtitle"
+                  value={getSafe(businessData, 'hero.subtitle')}
+                  onChange={(e) => handleDataChange('hero.subtitle', e.target.value)}
+                />
+                <EditorInput
+                  label="Button Text"
+                  value={getSafe(businessData, 'hero.cta')}
+                  onChange={(e) => handleDataChange('hero.cta', e.target.value)}
+                />
+                <EditorImageUpload
+                  label="Hero Image"
+                  value={getSafe(businessData, 'hero.image')}
+                  onChange={(e) => handleDataChange('hero.image', e.target.value)}
+                />
+              </AccordionItem>
+            )}
 
             {/* A more generic way to handle sections if they exist */}
             {businessData?.feature1 && (
               <AccordionItem
-                title="About Section"
+                title="About Section (Feature 1)"
                 icon={Home}
                 isOpen={activeAccordion === 'about'}
                 onClick={() => toggleAccordion('about')}
@@ -514,7 +594,7 @@ export default function EditorSidebar({
             
             {businessData?.feature2 && (
                <AccordionItem
-                title="Feature Section"
+                title="Feature Section 2"
                 icon={Columns}
                 isOpen={activeAccordion === 'feature2'}
                 onClick={() => toggleAccordion('feature2')}
@@ -628,37 +708,106 @@ export default function EditorSidebar({
                 </button>
             </AccordionItem>
             
-            {businessData?.collection && (
+            {/* --- GENERIC HOMEPAGE COLLECTION MANAGER --- */}
+            {homepageProductIDs.length > 0 && (
               <AccordionItem
                 title="Home Page Collections"
                 icon={LayoutDashboard}
                 isOpen={activeAccordion === 'collection'}
                 onClick={() => toggleAccordion('collection')}
               >
-                  <h4 className="text-base font-semibold text-gray-800 mb-2">"Our Collection" Section</h4>
-                  <p className="text-xs text-gray-500 mb-3">Select the products to show on the homepage.</p>
-                  {collectionIDs.map((id, index) => (
-                      <EditorSelect
-                          key={index}
-                          label={`Collection Slot ${index + 1}`}
-                          value={id}
-                          onChange={(e) => handleDataChange(`collection.itemIDs.${index}`, Number(e.target.value))}
-                          options={productOptions} // Can select any product
-                          placeholder="Select a product"
-                      />
-                  ))}
+                  <p className="text-xs text-gray-500 mb-3">Select the products to feature on your homepage.</p>
+                  
+                  {businessData?.collection && (
+                    <>
+                      <h4 className="text-base font-semibold text-gray-800 mb-2">"Our Collection" Section</h4>
+                      {collectionIDs.map((id, index) => (
+                          <EditorSelect
+                              key={`coll-${index}`}
+                              label={`Collection Slot ${index + 1}`}
+                              value={id}
+                              onChange={(e) => handleDataChange(`collection.itemIDs.${index}`, Number(e.target.value))}
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]} // Show current + available
+                              placeholder="Select a product"
+                          />
+                      ))}
+                    </>
+                  )}
                   
                   {businessData?.bestSellers && (
                     <>
                       <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">"Best Sellers" Section</h4>
-                      <p className="text-xs text-gray-500 mb-3">Select the products to show on the homepage.</p>
                       {bestSellerIDs.map((id, index) => (
                           <EditorSelect
-                              key={index}
+                              key={`best-${index}`}
                               label={`Best Seller Slot ${index + 1}`}
                               value={id}
                               onChange={(e) => handleDataChange(`bestSellers.itemIDs.${index}`, Number(e.target.value))}
-                              options={bestSellerOptions} // <-- USES THE FILTERED LIST
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]}
+                              placeholder="Select a product"
+                          />
+                      ))}
+                    </>
+                  )}
+
+                  {businessData?.newArrivals && (
+                    <>
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">"New Arrivals" Section</h4>
+                      {newArrivalsIDs.map((id, index) => (
+                          <EditorSelect
+                              key={`new-${index}`}
+                              label={`New Arrival Slot ${index + 1}`}
+                              value={id}
+                              onChange={(e) => handleDataChange(`newArrivals.itemIDs.${index}`, Number(e.target.value))}
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]}
+                              placeholder="Select a product"
+                          />
+                      ))}
+                    </>
+                  )}
+
+                  {businessData?.featured && (
+                    <>
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">"Featured Products" Section</h4>
+                      {featuredIDs.map((id, index) => (
+                          <EditorSelect
+                              key={`feat-${index}`}
+                              label={`Featured Slot ${index + 1}`}
+                              value={id}
+                              onChange={(e) => handleDataChange(`featured.itemIDs.${index}`, Number(e.target.value))}
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]}
+                              placeholder="Select a product"
+                          />
+                      ))}
+                    </>
+                  )}
+
+                  {businessData?.specialty && (
+                    <>
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">"Our Specialty" Section</h4>
+                      {specialtyIDs.map((id, index) => (
+                          <EditorSelect
+                              key={`spec-${index}`}
+                              label={`Specialty Slot ${index + 1}`}
+                              value={id}
+                              onChange={(e) => handleDataChange(`specialty.itemIDs.${index}`, Number(e.target.value))}
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]}
+                              placeholder="Select a product"
+                          />
+                      ))}
+                    </>
+                  )}
+
+                  {businessData?.menu?.itemIDs && (
+                    <>
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">"Signature Menu" Section</h4>
+                      {menuIDs.map((id, index) => (
+                          <EditorSelect
+                              key={`menu-${index}`}
+                              label={`Menu Slot ${index + 1}`}
+                              value={id}
+                              onChange={(e) => handleDataChange(`menu.itemIDs.${index}`, Number(e.target.value))}
+                              options={[...productOptions.filter(p => p.value === id), ...homepageProductOptions]}
                               placeholder="Select a product"
                           />
                       ))}
@@ -700,13 +849,43 @@ export default function EditorSidebar({
           </section>
         )}
 
-        {/* THEME Panel */}
+        {/* --- THEME Panel (UI UPDATED) --- */}
         {activeTab === 'theme' && (
           <div className="p-4">
-            <SectionTitle label="Theme Settings" />
-            <p className="text-gray-600 text-sm">Color palettes and font controls will go here.</p>
+            <SectionTitle label="Color Palette" />
+            
+            {/* --- NEW: Two-column grid for swatches --- */}
+            <div className="grid grid-cols-2 gap-3">
+              {colorPalettes.map((palette) => (
+                <ColorSwatchButton
+                  key={palette.class}
+                  palette={palette}
+                  isSelected={getSafe(businessData, 'theme.colorPalette') === palette.class}
+                  onClick={() => handleDataChange('theme.colorPalette', palette.class)}
+                />
+              ))}
+            </div>
+            {/* --- End of new grid --- */}
+
+            <SectionTitle label="Fonts" />
+            <EditorSelect
+              label="Heading Font"
+              value={getSafe(businessData, 'theme.font.heading')}
+              onChange={(e) => handleDataChange('theme.font.heading', e.target.value)}
+              options={fontOptions}
+              placeholder="Select a heading font"
+            />
+            <EditorSelect
+              label="Body Font"
+              value={getSafe(businessData, 'theme.font.body')}
+              onChange={(e) => handleDataChange('theme.font.body', e.target.value)}
+              options={fontOptions}
+              placeholder="Select a body font"
+            />
           </div>
         )}
+        {/* --- END OF THEME Panel --- */}
+
 
         {/* SETTINGS Panel (With Refactored Shortcuts) */}
         {activeTab === 'settings' && (

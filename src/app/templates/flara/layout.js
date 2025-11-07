@@ -24,11 +24,17 @@ function CartLayout({ children }) {
     } = useCart();
 
     useEffect(() => {
-        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
-        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headings.forEach(heading => {
-            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+        // --- THIS IS THE NEW THEME LOGIC ---
+        // 1. Set the color palette class on the <body> element
+        // Remove old theme classes first
+        document.body.classList.forEach(className => {
+            if (className.startsWith('theme-')) {
+                document.body.classList.remove(className);
+            }
         });
+        // Add the new theme class
+        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
+        // --- END OF NEW THEME LOGIC ---
 
         const isEditor = window.self !== window.top;
 
@@ -59,18 +65,26 @@ function CartLayout({ children }) {
             }
         }
 
+        // Cleanup function
         return () => {
-            headings.forEach(heading => heading.style.fontFamily = '');
-            document.body.style.fontFamily = '';
+            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading, router]);
+    }, [businessData.theme.colorPalette, router]); // Only depends on colorPalette
 
-    const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(' ', '-')})`;
+    
+    // --- FONT LOGIC (BUG FIX) ---
+    // This function now correctly formats font names for CSS variables
+    const createFontVariable = (fontName) => {
+        if (!fontName) return '';
+        // Replaces spaces and underscores with hyphens
+        return `var(--font-${fontName.toLowerCase().replace(/[\s_]+/g, '-')})`;
+    };
     
     const fontVariables = {
         '--font-heading': createFontVariable(businessData.theme.font.heading),
         '--font-body': createFontVariable(businessData.theme.font.body),
     };
+    // --- END FONT LOGIC ---
 
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
@@ -78,13 +92,15 @@ function CartLayout({ children }) {
         // Wrap the entire layout content in the TemplateContext.Provider
         <TemplateContext.Provider value={{ businessData, setBusinessData }}>
             <div 
-              className={`antialiased bg-brand-bg text-brand-text ${themeClassName}`}
-              style={fontVariables}
+              className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
+              style={fontVariables} // Apply font variables here
             >
                 {/* --- THIS IS NOW DYNAMIC --- */}
-                <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">
-                    {businessData.announcementBar}
-                </div>
+                {businessData.announcementBar && (
+                    <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">
+                        {businessData.announcementBar}
+                    </div>
+                )}
                 
                 <Header 
                     business={{ logoText: businessData.logoText, navigation: businessData.navigation }} 
