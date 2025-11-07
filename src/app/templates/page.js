@@ -6,40 +6,39 @@ import Link from 'next/link';
 // --- Data for the templates ---
 const templates = [
   {
-    title: 'Parlence',
+    title: 'flavornest',
     description: 'Focus on a single to promote upcoming releases with a coming soon approach that has a modern layout.',
     url: '/templates/flavornest',
     previewUrl: '/preview/flavornest', // Added leading slash for consistency
+    editor:'/editor/flavornest',
+
   },
   {
-    title: 'Lanily',
+    title: 'flara',
     description: 'Give site visitors eye-catching design, appointment booking, and shopping in one seamless experience.',
     url: '/templates/flara',
     previewUrl: '/preview/flara', // Added leading slash for consistency
+    editor:'/editor/flara',
   },
   {
-    title: 'Karl Bewick',
+    title: 'avenix',
     description: 'A bold, minimalist portfolio template to showcase your creative work and professional journey.',
     url: '/templates/avenix',
     previewUrl: '/preview/avenix', // Added leading slash for consistency
+    editor:'/editor/avenix',
   },
   {
-    title: 'Factory',
+    title: 'blissly',
     description: 'A modern, dark-themed storefront perfect for apparel brands and high-end fashion retailers.',
     url: '/templates/blissly',
     previewUrl: '/preview/blissly', // Added leading slash for consistency
-  },
-  {
-    title: 'XYZ Store',
-    description: 'A modern, dark-themed storefront perfect for apparel brands and high-end fashion retailers.',
-    url: '/templates/xyz',
-    previewUrl: '/preview/flavornest', // Added leading slash for consistency
+    editor:'/editor/blissly',
   }
 ];
 
 // --- Reusable Template Card Component with Animation ---
 // FIX: Added 'previewUrl' to the component's props destructuring
-const TemplateCard = ({ title, description, url, previewUrl }) => {
+const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
   return (
     <motion.div
       className="group max-w-xl cursor-pointer"
@@ -111,7 +110,7 @@ const TemplateCard = ({ title, description, url, previewUrl }) => {
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 text-base leading-relaxed text-gray-600">{description}</p>
         <div className="mt-6 flex items-center gap-3">
-            <Link href={`${url}/edit`}>
+            <Link href={`${editor}`}>
               <button className="rounded-lg bg-gray-900 px-6 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-gray-800">
                   Start Editing
               </button>
