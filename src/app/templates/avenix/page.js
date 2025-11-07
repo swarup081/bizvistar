@@ -218,8 +218,8 @@ export default function AvenixPage() {
                     </div>
                 </section>
                 
-                {/* --- 4. CTA Section --- */}
-                <section className="py-24 overflow-hidden">
+                {/* --- 4. CTA Section (ID ADDED) --- */}
+                <section id="cta" className="py-24 overflow-hidden">
                     <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                         <div className="text-left">
                             <h2 className="text-6xl font-serif font-medium text-brand-text max-w-lg leading-tight">
@@ -307,7 +307,8 @@ export default function AvenixPage() {
                     </div>
                 </section>
 
-                <section className="py-24">
+                {/* --- Stats Section (ID ADDED) --- */}
+                <section id="stats" className="py-24">
                     <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                         <div className="text-left">
                             <h2 className="text-5xl font-serif font-medium text-brand-text">{businessData.stats.title}</h2>

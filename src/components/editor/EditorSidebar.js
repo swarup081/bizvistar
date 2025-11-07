@@ -357,20 +357,21 @@ export default function EditorSidebar({
         const homePath = homePage?.path || businessData.pages[0]?.path;
         let path = homePath;
         
-        // Logic to jump to sections on the homepage
-        // This is a simplified example; you might need to make this more robust
-        // based on your data structure.
+        // --- THIS IS THE FIX ---
+        // This map now correctly checks the businessData object for the *real* ID
+        // before falling back to a hardcoded guess.
         const sectionIdMap = {
-            'about': businessData.aboutSectionId || businessData.feature1?.title || 'story', // Fallback
-            'collection': businessData.collectionSectionId || businessData.collection?.title || 'collection',
-            'feature2': businessData.feature2SectionId || businessData.feature2?.title,
+            'about': businessData.aboutSectionId || 'story',
+            'collection': businessData.collectionSectionId || 'collection',
+            'feature2': businessData.feature2SectionId, // Avenix doesn't have this, so it will be undefined (fine)
             'footer': businessData.footerSectionId || 'contact',
             'products': businessData.bestSellersSectionId || businessData.collectionSectionId || 'shop',
             'hero': 'home', // Special case for hero
-            'cta': 'cta-final', // Added for blissly/avenix
-            'stats': 'stats', // Added for avenix
-            'blog': 'blogs' // Added for avenix
+            'cta': businessData.ctaSectionId || 'cta', // <-- NOW USES DATA FILE
+            'stats': businessData.statsSectionId || 'stats', // <-- NOW USES DATA FILE
+            'blog': businessData.blogSectionId || 'blogs' // <-- NOW USES DATA FILE
         };
+        // --- END OF FIX ---
 
         const sectionId = sectionIdMap[newActiveId];
 

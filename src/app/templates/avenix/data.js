@@ -1,3 +1,4 @@
+'use client';
 // --- DYNAMIC CATEGORIES ---
 // Define all your categories in one place.
 const categories = [
@@ -75,6 +76,16 @@ const categories = [
         { name: 'Product (Example)', path: '/templates/avenix/product/1' },
         { name: 'Checkout', path: '/templates/avenix/checkout' }
       ],
+
+      // --- ADDED SECTION IDs FOR EDITOR NAVIGATION ---
+      aboutSectionId: "story",
+      collectionSectionId: "collection",
+      ctaSectionId: "cta",
+      statsSectionId: "stats",
+      blogSectionId: "blogs",
+      footerSectionId: "contact",
+      bestSellersSectionId: "shop", // This ID is on the "New Arrivals" section
+      // --- END OF ADDED SECTION ---
       
       // --- THEME SECTION ---
       theme: {
