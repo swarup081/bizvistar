@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { businessData } from '../../data.js'; // Go up two levels
-import { useCart } from '../../cartContext.js'; // Import the cart hook
+import { useTemplateContext } from '../../templateContext.js'; // Import the context hook
+import { useCart } from '../../cartContext.js'; 
 import Link from 'next/link';
 import { ProductCard } from '../../components.js';
 
@@ -11,9 +11,15 @@ export default function ProductDetailPage() {
     const params = useParams();
     const { productId } = params;
     const { addToCart } = useCart();
+    const { businessData } = useTemplateContext(); // Get data from context
     
+    // Find the product from the master list
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
-    const category = product ? businessData.categories.find(c => c.id === product.category) : null;
+    
+    // --- DYNAMIC CATEGORY ---
+    const category = product 
+        ? businessData.categories.find(c => c.id === product.category) 
+        : null;
     
     const [quantity, setQuantity] = useState(1);
     

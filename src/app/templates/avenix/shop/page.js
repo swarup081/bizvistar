@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { businessData } from '../data.js';
+import { useTemplateContext } from '../templateContext.js'; // Import the context hook
 import { ProductCard } from '../components.js';
 
 export default function ShopPage() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const { businessData } = useTemplateContext(); // Get data from context
     
-    // Get master lists from data.js
+    // Get master lists from dynamic data
     const allProducts = businessData.allProducts; 
     
     // Create categories list, starting with "All"

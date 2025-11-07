@@ -1,14 +1,15 @@
 'use client';
-import { businessData } from './data.js';
+import { useTemplateContext } from './templateContext.js'; // Import the context hook
 import { 
     BlogCard, 
     ProductCard 
-} from './components.js'; // Import from new components file
+} from './components.js'; 
 import Link from 'next/link';
 
 // Helper: Get product details from the master list by their IDs
-const getProductsByIds = (ids) => {
-    return ids.map(id => businessData.allProducts.find(p => p.id === id)).filter(Boolean);
+const getProductsByIds = (allProducts, ids) => {
+    if (!allProducts || !ids) return []; // Guard against undefined data
+    return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 };
 
 // --- Reusable SVG Icons (KEPT HERE, as they are unique to this page) ---
@@ -88,12 +89,17 @@ const HeelsHero = ({ heroData }) => {
 // --- Main Page Component ---
 export default function AvenixPage() {
     
-    // Header, Footer, theme logic, and state are removed.
-    // They are now handled by layout.js
+    // Get businessData from the context
+    const { businessData } = useTemplateContext();
+
+    // Guard against undefined properties during initial render or data mismatch
+    if (!businessData || !businessData.heelsHero) {
+        return <div>Loading preview...</div>; 
+    }
 
     // --- NEW: Get dynamic products ---
-    const featuredProducts = getProductsByIds(businessData.featured.itemIDs);
-    const newArrivalsProducts = getProductsByIds(businessData.newArrivals.itemIDs);
+    const featuredProducts = getProductsByIds(businessData.allProducts, businessData.featured.itemIDs);
+    const newArrivalsProducts = getProductsByIds(businessData.allProducts, businessData.newArrivals.itemIDs);
 
     return (
         <> 

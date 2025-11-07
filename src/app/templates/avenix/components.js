@@ -1,6 +1,6 @@
 'use client';
-import { useCart } from './cartContext.js'; // Import the cart hook
-import { businessData } from './data.js'; // Import data to find category names
+import { useCart } from './cartContext.js';
+import { useTemplateContext } from './templateContext.js'; // Import the context hook
 
 // --- Reusable SVG Icons ---
 export const CartIcon = () => (
@@ -48,48 +48,53 @@ const IconYouTube = () => (
 
 // --- Reusable Components ---
 
-export const Header = ({ business, cartCount, onCartClick }) => (
-    <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full font-sans">
-        <div className="container mx-auto px-6 py-6 flex justify-between items-center relative">
-            {/* Left Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-                {business.navigation.main.map(navItem => (
-                    <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
-                        {navItem.label}
-                    </a>
-                ))}
-            </nav>
-            
-            {/* Center Logo */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <a href="/templates/avenix" className="text-3xl font-bold text-brand-text tracking-wider font-serif">
-                    {business.logoText}
-                </a>
-            </div>
-            
-             {/* Right Nav & Icons */}
-            <div className="flex-1 flex justify-end items-center gap-8">
+export const Header = ({ cartCount, onCartClick }) => {
+    // Get business data from context
+    const { businessData } = useTemplateContext();
+
+    return (
+        <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full font-sans">
+            <div className="container mx-auto px-6 py-6 flex justify-between items-center relative">
+                {/* Left Nav */}
                 <nav className="hidden md:flex items-center gap-8">
-                    {business.navigation.secondary.map(navItem => (
+                    {businessData.navigation.main.map(navItem => (
                         <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
                             {navItem.label}
                         </a>
                     ))}
                 </nav>
-                <div className="flex items-center gap-6">
-                    <button onClick={onCartClick} className="relative text-brand-text hover:opacity-70 transition-opacity">
-                        <CartIcon />
-                        {cartCount > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-brand-secondary text-brand-bg text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
+                
+                {/* Center Logo */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <a href="/templates/avenix" className="text-3xl font-bold text-brand-text tracking-wider font-serif">
+                        {businessData.logoText}
+                    </a>
+                </div>
+                
+                 {/* Right Nav & Icons */}
+                <div className="flex-1 flex justify-end items-center gap-8">
+                    <nav className="hidden md:flex items-center gap-8">
+                        {businessData.navigation.secondary.map(navItem => (
+                            <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
+                                {navItem.label}
+                            </a>
+                        ))}
+                    </nav>
+                    <div className="flex items-center gap-6">
+                        <button onClick={onCartClick} className="relative text-brand-text hover:opacity-70 transition-opacity">
+                            <CartIcon />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-brand-secondary text-brand-bg text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
-);
+        </header>
+    );
+};
 
 export const BlogCard = ({ post, size = 'small' }) => (
     <div className="group text-left">
@@ -121,6 +126,7 @@ export const BlogCard = ({ post, size = 'small' }) => (
 // --- DYNAMIC PRODUCT CARD (Avenix Style) ---
 export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart(); // Get the addItem function from context
+    const { businessData } = useTemplateContext(); // Get businessData from context
 
     const handleAddToCart = (e) => {
         e.preventDefault(); // Stop the link from navigating
@@ -174,88 +180,93 @@ export const ProductCard = ({ item, templateName }) => {
 };
 
 
-export const Footer = ({ businessData }) => (
-    <footer id="contact" className="py-20 pb-12 bg-brand-secondary text-brand-bg font-sans">
-        <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                
-                {/* Column 1: Brand & Socials */}
-                <div>
-                    <h3 className="text-3xl font-bold tracking-wider mb-4 font-serif">{businessData.footer.logo}</h3>
-                    <p className="text-brand-bg/70 text-sm mb-6">{businessData.footer.description}</p>
+export const Footer = () => {
+    // Get business data from context
+    const { businessData } = useTemplateContext();
+
+    return (
+        <footer id="contact" className="py-20 pb-12 bg-brand-secondary text-brand-bg font-sans">
+            <div className="container mx-auto px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
                     
-                    {/* NEW: Social Icons */}
-                    <div className="flex items-center gap-5">
-                        {businessData.footer.socials.map((social) => (
-                            social.url && social.url !== "#" && (
-                                <a 
-                                    key={social.platform} 
-                                    href={social.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="text-brand-bg/70 hover:text-brand-bg transition-colors"
-                                >
-                                    <span className="sr-only">{social.platform}</span>
-                                    <SocialIcon platform={social.platform} />
-                                </a>
-                            )
-                        ))}
+                    {/* Column 1: Brand & Socials */}
+                    <div>
+                        <h3 className="text-3xl font-bold tracking-wider mb-4 font-serif">{businessData.footer.logo}</h3>
+                        <p className="text-brand-bg/70 text-sm mb-6">{businessData.footer.description}</p>
+                        
+                        {/* NEW: Social Icons */}
+                        <div className="flex items-center gap-5">
+                            {businessData.footer.socials.map((social) => (
+                                social.url && social.url !== "#" && (
+                                    <a 
+                                        key={social.platform} 
+                                        href={social.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-brand-bg/70 hover:text-brand-bg transition-colors"
+                                    >
+                                        <span className="sr-only">{social.platform}</span>
+                                        <SocialIcon platform={social.platform} />
+                                    </a>
+                                )
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Column 2: Main Links */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">LINKS</h4>
+                        <ul className="space-y-3 text-sm">
+                            {businessData.footer.links.main.map(link => (
+                                <li key={link.name}>
+                                    <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    {/* Column 3: Utility Links */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">UTILITY PAGES</h4>
+                        <ul className="space-y-3 text-sm">
+                            {businessData.footer.links.utility.map(link => (
+                                <li key={link.name}>
+                                    <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Column 4: Subscribe & Contact */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.subscribe.title}</h4>
+                        <form className="flex mb-6">
+                            <input 
+                                type="email" 
+                                placeholder="Type your email" 
+                                className="w-full bg-brand-bg/10 border border-brand-bg/30 py-3 px-4 text-brand-bg placeholder:text-brand-bg/50 focus:ring-0 focus:border-brand-bg outline-none"
+                            />
+                            <button 
+                                type="submit" 
+                                className="px-6 py-3 bg-brand-bg text-brand-secondary font-semibold text-sm hover:opacity-80"
+                            >
+                                {businessData.footer.subscribe.cta}
+                            </button>
+                        </form>
+                        
+                        <h4 className="text-sm font-semibold mt-8 mb-4 uppercase tracking-wider">CONTACT</h4>
+                        <ul className="space-y-2 text-brand-bg/70 text-sm">
+                            <li>{businessData.footer.contact.phone}</li>
+                            <li>{businessData.footer.contact.email}</li>
+                        </ul>
                     </div>
                 </div>
 
-                {/* Column 2: Main Links */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">LINKS</h4>
-                    <ul className="space-y-3 text-sm">
-                        {businessData.footer.links.main.map(link => (
-                            <li key={link.name}>
-                                <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                
-                {/* Column 3: Utility Links */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">UTILITY PAGES</h4>
-                    <ul className="space-y-3 text-sm">
-                        {businessData.footer.links.utility.map(link => (
-                            <li key={link.name}>
-                                <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Column 4: Subscribe & Contact */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.subscribe.title}</h4>
-                    <form className="flex mb-6">
-                        <input 
-                            type="email" 
-                            placeholder="Type your email" 
-                            className="w-full bg-brand-bg/10 border border-brand-bg/30 py-3 px-4 text-brand-bg placeholder:text-brand-bg/50 focus:ring-0 focus:border-brand-bg outline-none"
-                        />
-                        <button 
-                            type="submit" 
-                            className="px-6 py-3 bg-brand-bg text-brand-secondary font-semibold text-sm hover:opacity-80"
-                        >
-                            {businessData.footer.subscribe.cta}
-                        </button>
-                    </form>
-                    
-                    <h4 className="text-sm font-semibold mt-8 mb-4 uppercase tracking-wider">CONTACT</h4>
-                    <ul className="space-y-2 text-brand-bg/70 text-sm">
-                        <li>{businessData.footer.contact.phone}</li>
-                        <li>{businessData.footer.contact.email}</li>
-                    </ul>
+                {/* Bottom Footer Bar */}
+                <div className="text-center border-t border-brand-bg/20 mt-16 pt-8 text-sm">
+                    <p className="text-brand-bg/70">{businessData.footer.copyright}</p>
                 </div>
             </div>
-
-            {/* Bottom Footer Bar */}
-            <div className="text-center border-t border-brand-bg/20 mt-16 pt-8 text-sm">
-                <p className="text-brand-bg/70">{businessData.footer.copyright}</p>
-            </div>
-        </div>
-    </footer>
-);
+        </footer>
+    );
+};
