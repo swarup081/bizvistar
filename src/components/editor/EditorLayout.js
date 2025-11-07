@@ -29,15 +29,62 @@ export default function EditorLayout({ templateName }) {
     return JSON.parse(JSON.stringify(templateDataMap[templateName] || {}));
   }, [templateName]);
 
+  // --- START: Undo/Redo State Management ---
   const [businessData, setBusinessData] = useState(initialData);
-  const [activePage, setActivePage] = useState(initialData?.pages?.[0]?.path || `/templates/${templateName}`);
-  const [previewUrl, setPreviewUrl] = useState(initialData?.pages?.[0]?.path || `/templates/${templateName}`);
+  const [history, setHistory] = useState([initialData]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
+  // This function replaces the simple setBusinessData
+  // It updates the state AND manages the history stack
+  const handleDataUpdate = (updaterFn) => {
+    setBusinessData(prevData => {
+      // Get the new state, whether it's from a value or a function
+      const newData = typeof updaterFn === 'function' ? updaterFn(prevData) : updaterFn;
+
+      // If the new data is the same as the current data, do nothing
+      // This prevents duplicate history entries
+      if (JSON.stringify(newData) === JSON.stringify(prevData)) {
+        return prevData;
+      }
+
+      // Clear the "redo" history by slicing
+      const newHistory = [...history.slice(0, historyIndex + 1), newData];
+      
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+      
+      return newData;
+    });
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setBusinessData(history[newIndex]);
+      // The useEffect below will send this to the iframe
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setBusinessData(history[newIndex]);
+      // The useEffect below will send this to the iframe
+    }
+  };
+  // --- END: Undo/Redo State Management ---
+
 
   // 1. Load initial data when templateName changes
   useEffect(() => {
     const data = JSON.parse(JSON.stringify(templateDataMap[templateName] || {}));
     if (data) {
+      // Reset all state when template changes
       setBusinessData(data);
+      setHistory([data]);
+      setHistoryIndex(0);
       const homePage = data.pages?.[0]?.path || `/templates/${templateName}`;
       setActivePage(homePage);
       setPreviewUrl(homePage);
@@ -61,7 +108,7 @@ export default function EditorLayout({ templateName }) {
     }, 250); // 250ms debounce
 
     return () => clearTimeout(handler);
-  }, [businessData]);
+  }, [businessData]); // This now triggers on direct set, undo, and redo
 
   // 4. Handle messages from the iframe
   useEffect(() => {
@@ -75,6 +122,9 @@ export default function EditorLayout({ templateName }) {
   }, [businessData]); // Pass businessData to ensure sendDataToIframe has the latest state
 
   // 5. Handle page change request from TopNav OR Sidebar
+  const [activePage, setActivePage] = useState(initialData?.pages?.[0]?.path || `/templates/${templateName}`);
+  const [previewUrl, setPreviewUrl] = useState(initialData?.pages?.[0]?.path || `/templates/${templateName}`);
+  
   const handlePageChange = (path) => {
     if (!path) return; // Do nothing if path is invalid
     setActivePage(path); // Update active state
@@ -101,6 +151,11 @@ export default function EditorLayout({ templateName }) {
             activePage={activePage}
             pages={businessData?.pages || []} // Pass pages to TopNav
             onPageChange={handlePageChange} // Pass page change handler
+            // --- Pass Undo/Redo props ---
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            canUndo={historyIndex > 0}
+            canRedo={historyIndex < history.length - 1}
           />
         </div>
 
@@ -130,8 +185,8 @@ export default function EditorLayout({ templateName }) {
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
           businessData={businessData}
-          setBusinessData={setBusinessData}
-          onPageChange={handlePageChange} // <-- PROP ADDED
+          setBusinessData={handleDataUpdate} // <-- Pass the history-aware updater
+          onPageChange={handlePageChange}
         />
       </div>
     </div>
