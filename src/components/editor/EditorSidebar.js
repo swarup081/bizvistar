@@ -454,7 +454,11 @@ export default function EditorSidebar({
 
     const sectionIdMap = {
       about: businessData.aboutSectionId || 'story' || 'about',
-      collection: businessData.collectionSectionId || 'collection',
+      // --- FIX: Added fallbacks for collection ---
+      collection:
+        businessData.collectionSectionId ||
+        businessData.bestSellersSectionId ||
+        'collection',
       feature2: businessData.feature2SectionId,
       footer: businessData.footerSectionId || 'contact',
       products:
@@ -475,17 +479,9 @@ export default function EditorSidebar({
 
     const sectionId = sectionIdMap[id];
 
+    // --- FIX: Removed the `else if (id === 'products')` block ---
     if (sectionId && sectionId !== 'home') {
       path = `${homePath}#${sectionId}`;
-    } else if (id === 'products') {
-      const shopPage = businessData.pages.find((p) =>
-        p.name.toLowerCase().includes('shop')
-      );
-      if (shopPage) {
-        path = shopPage.path;
-      } else if (sectionId) {
-        path = `${homePath}#${sectionId}`;
-      }
     } else {
       path = homePath; // Default to home
     }

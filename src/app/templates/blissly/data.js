@@ -101,6 +101,7 @@ export const businessData = {
     menuSectionId: "menu",
     testimonialsSectionId: "testimonials",
     bestSellersSectionId: "specialty", // Links "Products" accordion to the "Our Specialty" section
+    collectionSectionId: "specialty", // <-- ADDED THIS LINE
     ctaSectionId: "cta-final", // Links "CTA" accordion to the "cta-final" section
     footerSectionId: "contact",
     // --- END OF NEW BLOCK ---

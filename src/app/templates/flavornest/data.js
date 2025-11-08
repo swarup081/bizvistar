@@ -86,7 +86,8 @@ export const businessData = {
     menuSectionId: "menu", // Links "Homepage Menu" to the "menu" section
     reviewsSectionId: "reviews",
     bestSellersSectionId: "menu", // Links "Products" accordion to the "menu" section
-    footerSectionId: "contact", // <-- ADDED THIS LINE
+    collectionSectionId: "menu", // <-- ADDED THIS LINE
+    footerSectionId: "contact", 
     // --- END OF FIX ---
 
     // --- THEME SECTION ---

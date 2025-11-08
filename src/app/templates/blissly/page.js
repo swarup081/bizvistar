@@ -108,7 +108,7 @@ export default function BrewhavenPage() {
                       />
                   </div>
                   <div className="md:pl-10 text-center md:text-left items-center md:items-start flex flex-col">
-                      <h2 className="text-4xl md:text-5xl font-bold text-brand-text leading-tight">{businessData.about.title}</h2>
+                      <h2 className="text-4xl md:text-5xl font-bold text-brand-text leading-tight"> {businessData.about.title}</h2>
                       <p className="text-lg text-brand-text opacity-70 mt-6 max-w-lg">{businessData.about.text}</p>
                       <div className="mt-8 space-y-6">
                           {businessData.about.features.map((feature, index) => (
@@ -199,7 +199,7 @@ export default function BrewhavenPage() {
             </section>
             
             {/* --- Specialty Section (NOW DYNAMIC) --- */}
-            <section id="specialty" className="py-24">
+            <section id="collection" className="py-24">
                 <div className="container mx-auto px-6 text-center">
                     <h2 className="text-4xl md:text-5xl font-bold text-brand-text mb-16">{businessData.specialty.title}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
