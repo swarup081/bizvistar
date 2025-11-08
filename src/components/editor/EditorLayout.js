@@ -153,22 +153,40 @@ export default function EditorLayout({ templateName }) {
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
   const [previewUrl, setPreviewUrl] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
   
+  // --- BUG FIX IS HERE ---
   const handlePageChange = (path) => {
     if (!path) return; // Do nothing if path is invalid
-    setActivePage(path); // Update active state
+    
+    const [basePath, anchorId] = path.split('#');
+    setActivePage(path); // Update active state (e.g., /templates/flara#about)
+
     if (iframeRef.current) {
-      if (iframeRef.current.src.includes(path.split('#')[0])) {
-        // If iframe is already on this page (e.g., an anchor link #), just post the message
+      // Get the iframe's current base path (ignoring any existing anchor)
+      const currentBasePath = iframeRef.current.src.split('#')[0];
+
+      // Check if the iframe's src *ends with* the new base path.
+      // This is safer than .includes()
+      if (currentBasePath.endsWith(basePath) && anchorId) {
+        // We are already on the right page (e.g., /templates/flara),
+        // and we just want to scroll to an anchor.
+        // Send a direct scroll command instead of relying on router.push().
         iframeRef.current.contentWindow.postMessage({
-          type: 'CHANGE_PAGE',
-          payload: { path }
+          type: 'SCROLL_TO_SECTION',
+          payload: { sectionId: anchorId }
         }, '*');
-      } else {
-        // If it's a new page, update the src
+      } else if (!currentBasePath.endsWith(basePath)) {
+        // We are on a different page (e.g., /templates/flara/shop)
+        // and need to navigate back to the home page (or another page).
+        // Reload the iframe to the new path (which includes the anchor).
         setPreviewUrl(path);
+      } else if (currentBasePath.endsWith(basePath) && !anchorId) {
+        // This handles clicking "Home" from the top nav when already on an anchor
+        // It reloads the page without the anchor
+        setPreviewUrl(basePath);
       }
     }
   };
+  // --- END OF BUG FIX ---
   
   // This effect is necessary to reset the preview URL when the template changes
   useEffect(() => {

@@ -40,6 +40,14 @@ function FlavorNestLayout({ children }) {
                 if (event.data.type === 'UPDATE_DATA') {
                     setBusinessData(event.data.payload);
                 }
+                // --- BUG FIX: ADDED SCROLL HANDLER ---
+                if (event.data.type === 'SCROLL_TO_SECTION') {
+                    const element = document.getElementById(event.data.payload.sectionId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+                // --- This handles page changes from the TopNav dropdown ---
                 if (event.data.type === 'CHANGE_PAGE') {
                     router.push(event.data.payload.path);
                 }

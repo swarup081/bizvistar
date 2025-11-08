@@ -1,6 +1,6 @@
 'use client';
 import { useCart } from './cartContext.js';
-import { businessData } from './data.js';
+import { useTemplateContext } from './templateContext.js'; // <-- 1. IMPORT THE CONTEXT
 
 // --- Reusable SVG Icons ---
 export const StarIcon = () => (
@@ -94,6 +94,8 @@ export const Header = ({ business, cartCount, onCartClick }) => (
 // --- Product Card Component (MODIFIED) ---
 export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart();
+    // --- 2. GET DATA FROM CONTEXT ---
+    const { businessData } = useTemplateContext();
     
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -101,6 +103,7 @@ export const ProductCard = ({ item, templateName }) => {
         addItem(item);
     };
     
+    // --- 3. FIND CATEGORY FROM CONTEXT DATA ---
     const category = businessData.categories.find(c => c.id === item.category);
 
     return (
@@ -120,6 +123,7 @@ export const ProductCard = ({ item, templateName }) => {
             {/* 2. Content Area (flex-grow to push buttons to bottom) */}
             <div className="p-4 flex flex-col flex-grow">
                 <div className="flex-grow">
+                    {/* 4. DISPLAY CATEGORY NAME */}
                     {category && (
                         <p className="text-brand-text/60 text-sm">{category.name}</p>
                     )}
@@ -144,74 +148,86 @@ export const ProductCard = ({ item, templateName }) => {
 };
 
 
-// --- Footer Component ---
-export const Footer = ({ businessData }) => (
-    <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50">
-        <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-                
-                {/* Column 1: Subscribe & Contact */}
-                <div>
-                    <h4 className="text-lg font-bold font-serif mb-4">{businessData.footer.promoTitle}</h4>
-                    <form className="flex mb-6">
-                        <input 
-                            type="email" 
-                            placeholder="Enter your email" 
-                            className="w-full bg-brand-primary border border-brand-secondary/30 py-3 px-4 text-brand-text placeholder:text-brand-text/50 focus:ring-0 focus:border-brand-secondary outline-none rounded-l-md"
-                        />
-                        <button 
-                            type="submit" 
-                            className="px-4 py-3 bg-brand-secondary text-brand-bg font-semibold text-sm rounded-r-md hover:opacity-90"
-                        >
-                            <ArrowRightIcon className="ml-0" />
-                        </button>
-                    </form>
-                    <ul className="space-y-2 text-brand-text/80 text-sm">
-                        <li className="flex items-center"><PhoneIcon /> {businessData.footer.contact.phone}</li>
-                        <li className="flex items-center"><EmailIcon /> {businessData.footer.contact.email}</li>
-                    </ul>
+// --- Footer Component (Corrected) ---
+export const Footer = () => {
+    // --- 1. GET DATA FROM CONTEXT ---
+    const { businessData } = useTemplateContext();
+
+    // --- 2. ADD A GUARD ---
+    // This prevents the "cannot read 'footer'" error during initial load or state mismatch
+    if (!businessData?.footer) {
+        return <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50"></footer>;
+    }
+
+    // --- 3. USE GUARDED ACCESS (?. optional chaining) ---
+    return (
+        <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50">
+            <div className="container mx-auto px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                    
+                    {/* Column 1: Subscribe & Contact */}
+                    <div>
+                        <h4 className="text-lg font-bold font-serif mb-4">{businessData.footer.promoTitle}</h4>
+                        <form className="flex mb-6">
+                            <input 
+                                type="email" 
+                                placeholder="Enter your email" 
+                                className="w-full bg-brand-primary border border-brand-secondary/30 py-3 px-4 text-brand-text placeholder:text-brand-text/50 focus:ring-0 focus:border-brand-secondary outline-none rounded-l-md"
+                            />
+                            <button 
+                                type="submit" 
+                                className="px-4 py-3 bg-brand-secondary text-brand-bg font-semibold text-sm rounded-r-md hover:opacity-90"
+                            >
+                                <ArrowRightIcon className="ml-0" />
+                            </button>
+                        </form>
+                        <ul className="space-y-2 text-brand-text/80 text-sm">
+                            <li className="flex items-center"><PhoneIcon /> {businessData.footer.contact?.phone}</li>
+                            <li className="flex items-center"><EmailIcon /> {businessData.footer.contact?.email}</li>
+                        </ul>
+                    </div>
+
+                    {/* Column 2: Page Links */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Page Links</h4>
+                        <ul className="space-y-3 text-sm">
+                            {businessData.footer.links?.pages?.map(link => (
+                                <li key={link.name}>
+                                    <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    {/* Column 3: Utility Links */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Utility Links</h4>
+                        <ul className="space-y-3 text-sm">
+                            {businessData.footer.links?.utility?.map(link => (
+                                <li key={link.name}>
+                                    <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Column 4: Location */}
+                    <div>
+                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.location?.title}</h4>
+                        <p className="text-brand-text/70 text-sm mb-4 flex">
+                            <MapPinIcon className="flex-shrink-0 mt-1"/>
+                            <span>{businessData.footer.location?.address}</span>
+                        </p>
+                        <h5 className="text-sm font-semibold mt-6 mb-2 uppercase tracking-wider">Opening hours</h5>
+                        <p className="text-brand-text/70 text-sm whitespace-pre-line">{businessData.footer.location?.hours}</p>
+                    </div>
                 </div>
 
-                {/* Column 2: Page Links */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Page Links</h4>
-                    <ul className="space-y-3 text-sm">
-                        {businessData.footer.links.pages.map(link => (
-                            <li key={link.name}>
-                                <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                
-                {/* Column 3: Utility Links */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Utility Links</h4>
-                    <ul className="space-y-3 text-sm">
-                        {businessData.footer.links.utility.map(link => (
-                            <li key={link.name}>
-                                <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Column 4: Location */}
-                <div>
-                    <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.location.title}</h4>
-                    <p className="text-brand-text/70 text-sm mb-4 flex">
-                        <MapPinIcon className="flex-shrink-0 mt-1"/>
-                        <span>{businessData.footer.location.address}</span>
-                    </p>
-                    <h5 className="text-sm font-semibold mt-6 mb-2 uppercase tracking-wider">Opening hours</h5>
-                    <p className="text-brand-text/70 text-sm whitespace-pre-line">{businessData.footer.location.hours}</p>
+                {/* Bottom Footer Bar */}
+                <div className="text-center border-t border-brand-primary/50 mt-16 pt-8 text-sm">
+                    <p className="text-brand-text/70">{businessData.footer.copyright}</p>
                 </div>
             </div>
-
-            {/* Bottom Footer Bar */}
-            <div className="text-center border-t border-brand-primary/50 mt-16 pt-8 text-sm">
-                <p className="text-brand-text/70">{businessData.footer.copyright}</p>
-            </div>
-        </div>
-    </footer>
-);
+        </footer>
+    );
+};

@@ -452,43 +452,47 @@ export default function EditorSidebar({
     const homePath = homePage?.path || businessData.pages[0]?.path;
     let path = homePath;
 
+    // --- THIS IS THE FIX ---
+    // The sectionIdMap now correctly uses the businessData
+    // properties to find the *actual* ID for the section.
     const sectionIdMap = {
-      about: businessData.aboutSectionId || 'story' || 'about',
-      // --- FIX: Added fallbacks for collection ---
+      hero: 'home', // Special case for hero
+      global: 'home', // Scroll to top for global
+      about: businessData.aboutSectionId || 'about',
+      events: businessData.eventsSectionId || 'events',
+      menu: businessData.menuSectionId || 'menu',
+      testimonials: businessData.testimonialsSectionId || 'testimonials',
       collection:
         businessData.collectionSectionId ||
         businessData.bestSellersSectionId ||
         'collection',
-      feature2: businessData.feature2SectionId,
+      feature2: businessData.feature2SectionId || 'feature2',
       footer: businessData.footerSectionId || 'contact',
-      products:
-        businessData.bestSellersSectionId ||
+      // 'products' is a special case handled in toggleAccordion
+      products: 
+        businessData.bestSellersSectionId || 
         businessData.collectionSectionId ||
         'shop',
-      hero: 'home', // Special case for hero
       cta: businessData.ctaSectionId || 'cta',
       stats: businessData.statsSectionId || 'stats',
-      blog: businessData.blogSectionId || 'blogs',
-      events: 'events',
-      testimonials: 'testimonials',
-      reviews: 'reviews',
-      specialty: 'specialty',
-      menu: 'menu',
-      global: 'home', // Scroll to top for global
+      blog: businessData.blogSectionId || 'blog',
+      reviews: businessData.reviewsSectionId || 'reviews',
+      specialty: businessData.specialtySectionId || 'specialty',
     };
+    // --- END OF FIX ---
 
     const sectionId = sectionIdMap[id];
 
-    // --- FIX: Removed the `else if (id === 'products')` block ---
     if (sectionId && sectionId !== 'home') {
       path = `${homePath}#${sectionId}`;
     } else {
       path = homePath; // Default to home
     }
-
+    
     onPageChange(path);
   };
 
+  // --- THIS IS THE FIX for Products/Categories ---
   // This function now handles accordion state AND calls the focus/scroll function
   const toggleAccordion = (id) => {
     const newActiveId = activeAccordion === id ? null : id;
@@ -496,10 +500,24 @@ export default function EditorSidebar({
 
     // Always scroll to the section when it's opened
     if (newActiveId) {
-      handleSectionFocus(newActiveId);
+      if (newActiveId === 'products') {
+        // SPECIAL CASE: Find the 'Shop' page and navigate to it
+        const shopPage = businessData.pages.find(
+          (p) => p.name.toLowerCase() === 'shop'
+        );
+        if (shopPage) {
+          onPageChange(shopPage.path);
+        } else {
+          // Fallback if no shop page (shouldn't happen)
+          handleSectionFocus('products');
+        }
+      } else {
+        // Default behavior: scroll to homepage section
+        handleSectionFocus(newActiveId);
+      }
     }
   };
-  // --- END REFACTOR ---
+  // --- END OF FIX ---
 
 
   // --- Handlers for dynamic lists ---
@@ -1714,10 +1732,10 @@ export default function EditorSidebar({
               </AccordionItem>
             )}
 
-            {/* --- GENERIC BLOG SECTION --- */}
-            {businessData?.blog && (
+            {/* --- THIS IS THE FIX: AVENIX BLOG --- */}
+            {businessData?.blog?.heading && businessData?.blog?.items?.[0]?.category && (
               <AccordionItem
-                title="Blog Section"
+                title="Blog Section (Avenix)"
                 icon={Pencil}
                 isOpen={activeAccordion === 'blog'}
                 onClick={() => toggleAccordion('blog')}
@@ -1738,12 +1756,125 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('blog')}
                 />
-                <p className="text-xs text-gray-500 mb-3 mt-4">
-                  Blog post content must be edited in the full Blog Manager
-                  (coming soon).
-                </p>
+                
+                {/* Post 1 */}
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
+                  Blog Post 1
+                </h4>
+                <div className="p-3 border rounded-md mb-2 bg-white">
+                  <EditorInput
+                    label="Post 1 Title"
+                    value={getSafe(businessData, 'blog.items.0.title')}
+                    onChange={(e) => handleDataChange('blog.items.0.title', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorInput
+                    label="Post 1 Date"
+                    value={getSafe(businessData, 'blog.items.0.date')}
+                    onChange={(e) => handleDataChange('blog.items.0.date', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorInput
+                    label="Post 1 Category"
+                    value={getSafe(businessData, 'blog.items.0.category')}
+                    onChange={(e) => handleDataChange('blog.items.0.category', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorImageUpload
+                    label="Post 1 Image"
+                    value={getSafe(businessData, 'blog.items.0.image')}
+                    onChange={(e) => handleDataChange('blog.items.0.image', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                </div>
+                
+                {/* Post 2 */}
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
+                  Blog Post 2
+                </h4>
+                <div className="p-3 border rounded-md mb-2 bg-white">
+                  <EditorInput
+                    label="Post 2 Title"
+                    value={getSafe(businessData, 'blog.items.1.title')}
+                    onChange={(e) => handleDataChange('blog.items.1.title', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorInput
+                    label="Post 2 Date"
+                    value={getSafe(businessData, 'blog.items.1.date')}
+                    onChange={(e) => handleDataChange('blog.items.1.date', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorInput
+                    label="Post 2 Category"
+                    value={getSafe(businessData, 'blog.items.1.category')}
+                    onChange={(e) => handleDataChange('blog.items.1.category', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                  <EditorImageUpload
+                    label="Post 2 Image"
+                    value={getSafe(businessData, 'blog.items.1.image')}
+                    onChange={(e) => handleDataChange('blog.items.1.image', e.target.value)}
+                    onFocus={() => handleSectionFocus('blog')}
+                  />
+                </div>
               </AccordionItem>
             )}
+            
+            {/* --- THIS IS THE FIX: FLARA BLOG --- */}
+            {businessData?.blog?.title && businessData?.blog?.items?.[0]?.text && (
+              <AccordionItem
+                title="Blog Section (Flara)"
+                icon={Pencil}
+                isOpen={activeAccordion === 'blog'}
+                onClick={() => toggleAccordion('blog')}
+              >
+                <EditorInput
+                  label="Section Title"
+                  value={getSafe(businessData, 'blog.title')}
+                  onChange={(e) =>
+                    handleDataChange('blog.title', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('blog')}
+                />
+
+                {[0, 1, 2, 3].map((index) => (
+                  <div key={index}>
+                    <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
+                      Blog Post {index + 1}
+                    </h4>
+                    <div className="p-3 border rounded-md mb-2 bg-white">
+                      <EditorInput
+                        label={`Post ${index + 1} Date`}
+                        value={getSafe(businessData, `blog.items.${index}.date`)}
+                        onChange={(e) => handleDataChange(`blog.items.${index}.date`, e.target.value)}
+                        onFocus={() => handleSectionFocus('blog')}
+                      />
+                      <EditorInput
+                        label={`Post ${index + 1} Title`}
+                        value={getSafe(businessData, `blog.items.${index}.title`)}
+                        onChange={(e) => handleDataChange(`blog.items.${index}.title`, e.target.value)}
+                        onFocus={() => handleSectionFocus('blog')}
+                      />
+                      <EditorTextArea
+                        label={`Post ${index + 1} Text`}
+                        value={getSafe(businessData, `blog.items.${index}.text`)}
+                        onChange={(e) => handleDataChange(`blog.items.${index}.text`, e.target.value)}
+                        onFocus={() => handleSectionFocus('blog')}
+                      />
+                      <EditorImageUpload
+                        label={`Post ${index + 1} Image`}
+                        value={getSafe(businessData, `blog.items.${index}.image`)}
+                        onChange={(e) => handleDataChange(`blog.items.${index}.image`, e.target.value)}
+                        onFocus={() => handleSectionFocus('blog')}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </AccordionItem>
+            )}
+            {/* --- END OF BLOG FIX --- */}
+
 
             {/* --- FLARA FOOTER --- */}
             {businessData?.footer?.links?.about && (

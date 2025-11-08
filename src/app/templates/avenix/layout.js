@@ -40,9 +40,17 @@ function CartLayout({ children }) {
                 if (event.data.type === 'UPDATE_DATA') {
                     setBusinessData(event.data.payload);
                 }
+                // --- THIS IS THE FIX ---
+                if (event.data.type === 'SCROLL_TO_SECTION') {
+                    const element = document.getElementById(event.data.payload.sectionId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
                 if (event.data.type === 'CHANGE_PAGE') {
                     router.push(event.data.payload.path);
                 }
+                // --- END OF FIX ---
             };
             window.addEventListener('message', handleMessage);
             window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
@@ -78,6 +86,8 @@ function CartLayout({ children }) {
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
+        // --- THIS IS THE FIX ---
+        // The provider now correctly wraps the layout
         <TemplateContext.Provider value={{ businessData, setBusinessData }}>
             <div 
               className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
@@ -93,6 +103,7 @@ function CartLayout({ children }) {
                     {children}
                 </main>
                 
+                {/* Footer will now get data from context */}
                 <Footer />
 
                 {/* Cart Modal... */}
