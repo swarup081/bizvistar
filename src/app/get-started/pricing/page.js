@@ -409,7 +409,8 @@ export default function PricingPage() {
 
         {/* --- "Compare Plan Features" Section --- */}
         <div id="compare" className="mt-32 scroll-mt-20">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
+          {/* This h2 is now hidden, as the title is in the table header */}
+          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
             Compare Plan Features
           </h2>
           <AllFeaturesTable InfoTooltip={InfoTooltip} featureTooltips={featureTooltips} featureList={featureList} />
@@ -449,7 +450,7 @@ const PlanCard = ({ plan, isYearly, className }) => (
   >
     {plan.isRecommended && (
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-6 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">
-        MOST POPULAR
+        Recommended
       </div>
     )}
     
@@ -531,25 +532,76 @@ const PlanCard = ({ plan, isYearly, className }) => (
 );
 
 // --- Sub-component: AllFeaturesTable (Scroll-linked sticky header section) ---
-// --- Updated to use scroll-linked sticky section as header, per instructions ---
+// --- UPDATED to match the screenshot style ---
 const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
   <div className="border border-gray-200  bg-white ">
     <div className="relative">
       <div className="sticky top-0 z-30 bg-white">
-        <div className="grid grid-cols-4 bg-gray-50 border-b border-gray-200">
-          <div className="p-6"></div>
-          <div className="p-6 text-center border-l border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900">Starter</h3>
-            <p className="text-gray-500 font-medium mt-1">₹299/mo</p>
+        <div className="grid grid-cols-4 border-b border-gray-200 bg-gray-50">
+          
+          {/* --- Empty First Column (for feature names) --- */}
+          <div className="p-6 flex items-end">
+            <h2 className="text-4xl font-bold text-gray-900">
+              Compare plans
+            </h2>
           </div>
-          <div className="p-6 text-center border-l border-gray-200 bg-purple-50">
-            <h3 className="text-2xl font-bold text-purple-700">Pro</h3>
-            <p className="text-purple-600 font-medium mt-1">₹799/mo</p>
+
+          {/* --- Starter Plan --- */}
+          <div className="p-6 text-center border-l border-gray-200 bg-white flex flex-col justify-between h-full">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+              <div className="flex justify-center items-center gap-1 mb-4">
+                <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
+                <span className="text-4xl font-extrabold text-gray-900 tracking-tight">299</span>
+                <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
+              </div>
+            </div>
+            <Link href="/sign-up">
+              <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
+                Select
+              </button>
+            </Link>
           </div>
-          <div className="p-6 text-center border-l border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900">Growth</h3>
-            <p className="text-gray-500 font-medium mt-1">₹1499/mo</p>
+          
+          {/* --- Pro Plan (Recommended) --- */}
+          <div className="p-6 text-center border-l border-gray-200 relative bg-white shadow-lg z-10 flex flex-col justify-between h-full">
+            <div>
+              <div className="absolute top-0 left-0 right-0 flex justify-center">
+                <div className="inline-block bg-purple-600 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
+                  Recommended
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2 mt-8">Pro</h3>
+              <div className="flex justify-center items-center gap-1 mb-4">
+                <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
+                <span className="text-4xl font-extrabold text-gray-900 tracking-tight">799</span>
+                <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
+              </div>
+            </div>
+            <Link href="/sign-up">
+              <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-purple-600 hover:bg-purple-700 transition-colors mt-4">
+                Select
+              </button>
+            </Link>
           </div>
+          
+          {/* --- Growth Plan --- */}
+          <div className="p-6 text-center border-l border-gray-200 bg-white flex flex-col justify-between h-full">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth</h3>
+              <div className="flex justify-center items-center gap-1 mb-4">
+                <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
+                <span className="text-4xl font-extrabold text-gray-900 tracking-tight">1499</span>
+                <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
+              </div>
+            </div>
+            <Link href="/sign-up">
+              <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
+                Select
+              </button>
+            </Link>
+          </div>
+          
         </div>
       </div>
       <div className="divide-y divide-gray-100">
@@ -579,6 +631,8 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
     </div>
   </div>
 );
+// --- END OF MODIFIED COMPONENT ---
+
 
 // --- FIX: Helper for Feature Rows --- (Added justify-between)
 const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
@@ -599,69 +653,75 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
               <span>{featureName}</span>
               {featureInfo && <InfoTooltip info={featureInfo} />}
             </div>
-            <div className="p-5 flex items-center justify-center border-l border-gray-100">{renderCell(starter, false)}</div>
-            <div className="p-5 flex items-center justify-center border-l border-gray-100 bg-purple-50/30">{renderCell(pro, true)}</div>
-            <div className="p-5 flex items-center justify-center border-l border-gray-100">{renderCell(growth, false)}</div>
+            <div className="p-5 flex items-center justify-center border-l border-gray-200">{renderCell(starter, false)}</div>
+            <div className="p-5 flex items-center justify-center border-l border-gray-200 bg-purple-50/30">{renderCell(pro, true)}</div>
+            <div className="p-5 flex items-center justify-center border-l border-gray-200">{renderCell(growth, false)}</div>
         </div>
     );
 };
 
 // --- Sub-component: ComparisonTable (Sticky header like AllFeaturesTable) ---
 const ComparisonTable = () => (
-  <div className="border border-gray-200 bg-white">
-    <div className="relative">
-      <div className="sticky top-0 z-30 bg-white">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="text-left text-lg font-bold text-gray-900 p-6 w-1/4">Features</th>
-              <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">
-                DIY Builders<br/><span className="text-sm font-normal text-gray-500">(Wix/GoDaddy)</span>
-              </th>
-              <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Local Agencies</th>
-              <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">
-                BizVistaar<br/><span className="text-sm font-normal text-purple-600">(Your Partner)</span>
-              </th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-      <div className="overflow-y-auto">
-        <table className="min-w-full">
-          <tbody className="divide-y divide-gray-100">
-            <tr>
-              <td className="font-semibold p-6 text-gray-700">Who Builds the Site?</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>You spend 40+ hours learning complex tools.</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do 100%</strong><br/>A full-service, hands-off experience.</td>
-              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It Together</strong><br/>Our AI builds the site in 60s. You do the fun edits.</td>
-            </tr>
-            <tr>
-              <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>They give you a tool, but you do all the work.</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br/>They create and post for you.</td>
-              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It (on Pro+)</strong><br/>Our plan includes "done-for-you" posts.</td>
-            </tr>
-            <tr>
-              <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br/>You wait in a queue to talk to a stranger.</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br/>Great support for a very high price.</td>
-              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>A WhatsApp Partner</strong><br/>Priority support from a local expert.</td>
-            </tr>
-            <tr>
-              <td className="font-semibold p-6 text-gray-700">The Price</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br/>(₹800 - ₹2,300/mo)</td>
-              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br/>(₹10,000 - ₹20,000/mo)</td>
-              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>Simple, Affordable Price</strong><br/>(Just ₹26 a day!)</td>
-            </tr>
-            <tr>
-              <td className="font-bold p-6 text-gray-900">The Verdict</td>
-              <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
-              <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
-              <td className="text-center p-6 text-purple-700 font-bold border-l border-gray-100 bg-purple-50/50">Low Cost, High Service</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div className="border border-gray-300 bg-white">
+          {/* Outer wrapper handles horizontal overflow, not vertical */}
+          <div className="relative">
+            <table className="min-w-full border-collapse">
+              <thead className="sticky top-0 z-200 bg-white shadow-sm">
+                <tr className="bg-gray-50 border-b border-gray-300">
+                  <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Features</th>
+                  <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">
+                    DIY Builders<br />
+                    <span className="text-sm font-normal text-gray-500">(Wix/GoDaddy)</span>
+                  </th>
+                  <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Local Agencies<br/>
+                  <span className="text-sm font-normal text-gray-500">(Freelancers)</span>
+                  </th>
+                  <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">
+                    BizVistaar<br />
+                    <span className="text-sm font-normal text-purple-600">(Your Partner)</span>
+                  </th>
+                </tr>
+              </thead>
+      
+              <tbody className="divide-y divide-gray-300">
+                <tr>
+                  <td className="font-semibold p-6 text-gray-700">Who Builds the Site?</td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>You Do 100%</strong><br />You spend 40+ hours learning complex tools.
+                  </td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>They Do 100%</strong><br />A full-service, hands-off experience.
+                  </td>
+                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30">
+                    <strong>We Do It Together</strong><br />Our AI builds the site in 60s. You do the fun edits.
+                  </td>
+                </tr>
+          <tr>
+            <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br />They give you a tool, but you do all the work.</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br />They create and post for you.</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It (on Pro+)</strong><br />Our plan includes "done-for-you" posts.</td>
+          </tr>
+          <tr>
+            <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br />You wait in a queue to talk to a stranger.</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br />Great support for a very high price.</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>A WhatsApp Partner</strong><br />Priority support from a local expert.</td>
+          </tr>
+          <tr>
+            <td className="font-semibold p-6 text-gray-700">The Price</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br />(₹800 - ₹2,300/mo)</td>
+            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br />(₹10,000 - ₹20,000/mo)</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>Simple, Affordable Price</strong><br />(Just ₹26 a day!)</td>
+          </tr>
+          <tr>
+            <td className="font-bold p-6 text-gray-900">The Verdict</td>
+            <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
+            <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
+            <td className="text-center p-6 text-purple-700 font-bold border-l border-gray-100 bg-purple-50/50">Cost-Effective, High Service</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 );
