@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
-import { TemplateContext } from './templateContext.js'; // Import the new context
-import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
+import { TemplateContext } from './templateContext.js';
+import { Editable } from '@/components/editor/Editable';
 
-// Inner component to access cart context
 function FlavorNestLayout({ children }) {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
     const router = useRouter();
@@ -34,9 +33,27 @@ function FlavorNestLayout({ children }) {
             heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
         });
 
-        const isEditor = window.self !== window.top;
+        document.body.classList.forEach(className => {
+            if (className.startsWith('theme-')) {
+                document.body.classList.remove(className);
+            }
+        });
+        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
+
+        // --- NEW CONTEXT-AWARE LOGIC ---
+        let parentPath = '';
+        try {
+            parentPath = window.parent.location.pathname;
+        } catch (e) {
+            // Not in an iframe
+        }
+
+        const isEditor = parentPath.startsWith('/editor/');
+        const isPreview = parentPath.startsWith('/preview/');
+        const isLiveSite = !isEditor && !isPreview;
 
         if (isEditor) {
+            // --- 1. We are in the EDITOR's iframe ---
             const handleMessage = (event) => {
                 if (event.data.type === 'UPDATE_DATA') {
                     setBusinessData(event.data.payload);
@@ -55,7 +72,21 @@ function FlavorNestLayout({ children }) {
             window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
             return () => window.removeEventListener('message', handleMessage);
         
-        } else {
+        } else if (isPreview) {
+            // --- 2. We are in the PREVIEW's iframe ---
+            const editorDataKey = `editorData_flavornest`; // Template-specific key
+            const savedData = localStorage.getItem(editorDataKey);
+            
+            if (savedData) {
+                try {
+                    setBusinessData(JSON.parse(savedData));
+                } catch (e) {
+                    console.error("Error parsing preview data", e);
+                }
+            }
+        
+        } else if (isLiveSite) {
+            // --- 3. We are on the LIVE site ---
             const storedStoreName = localStorage.getItem('storeName');
             if (storedStoreName) {
                 setBusinessData(prevData => ({
@@ -69,12 +100,14 @@ function FlavorNestLayout({ children }) {
                 }));
             }
         }
+        // --- END OF NEW LOGIC ---
 
         return () => {
             headings.forEach(heading => heading.style.fontFamily = '');
             document.body.style.fontFamily = '';
+            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading, router]);
+    }, [businessData.theme.font.body, businessData.theme.font.heading, businessData.theme.colorPalette, router]);
 
     const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(' ', '-')})`;
     
@@ -105,13 +138,10 @@ function FlavorNestLayout({ children }) {
                     {children}
                 </main>
                 
-                {/* --- WRAP FOOTER WITH EDITABLE --- */}
                 <Editable focusId="footer">
                     <Footer />
                 </Editable>
-                {/* --- END OF WRAP --- */}
 
-                {/* Cart Modal... */}
                 {isCartOpen && (
                     <div className="modal fixed inset-0 bg-gray-900/50 flex justify-end z-50" onClick={closeCart}>
                         <div className="bg-white w-full max-w-md h-full p-6 flex flex-col" onClick={e => e.stopPropagation()}>
@@ -182,7 +212,6 @@ function FlavorNestLayout({ children }) {
                     </div>
                 )}
                 
-                {/* Toast... */}
                 <div className={`fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                     Item added to cart!
                 </div>
@@ -191,7 +220,6 @@ function FlavorNestLayout({ children }) {
     );
 }
 
-// Wrap the layout in the provider
 export default function RootLayout({ children }) {
     return (
         <CartProvider>

@@ -1,16 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer, CartIcon } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
-import { TemplateContext } from './templateContext.js'; // Import the new context
-import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
+import { TemplateContext } from './templateContext.js';
+import { Editable } from '@/components/editor/Editable';
 
-// Inner component to access cart context
 function CartLayout({ children }) {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
     
     const { 
         cartCount, 
@@ -28,46 +27,67 @@ function CartLayout({ children }) {
     } = useCart();
 
     useEffect(() => {
-        // Set fonts
         document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
         const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
         headings.forEach(heading => {
-            // Apply kalam font, but keep existing style (no italic override)
             heading.style.fontFamily = `'${businessData.theme.font.heading}', serif`;
         });
 
-        // --- DYNAMIC DATA LOGIC ---
-        const isEditor = window.self !== window.top;
+        document.body.classList.forEach(className => {
+            if (className.startsWith('theme-')) {
+                document.body.classList.remove(className);
+            }
+        });
+        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
+
+        // --- NEW CONTEXT-AWARE LOGIC ---
+        let parentPath = '';
+        try {
+            parentPath = window.parent.location.pathname;
+        } catch (e) {
+            // Not in an iframe
+        }
+
+        const isEditor = parentPath.startsWith('/editor/');
+        const isPreview = parentPath.startsWith('/preview/');
+        const isLiveSite = !isEditor && !isPreview;
 
         if (isEditor) {
-            // We are inside the editor iframe
+            // --- 1. We are in the EDITOR's iframe ---
             const handleMessage = (event) => {
                 if (event.data.type === 'UPDATE_DATA') {
                     setBusinessData(event.data.payload);
                 }
-                // --- THIS IS THE FIX ---
                 if (event.data.type === 'SCROLL_TO_SECTION') {
                     const element = document.getElementById(event.data.payload.sectionId);
                     if (element) {
                         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 }
-                // --- END OF FIX ---
                 if (event.data.type === 'CHANGE_PAGE') {
                     router.push(event.data.payload.path);
                 }
             };
             window.addEventListener('message', handleMessage);
-
-            // Tell the parent editor that the iframe is ready to receive data
             window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-
             return () => window.removeEventListener('message', handleMessage);
         
-        } else {
-            // We are on the live site
-            const storedStoreName = localStorage.getItem('storeName');
+        } else if (isPreview) {
+            // --- 2. We are in the PREVIEW's iframe ---
+            const editorDataKey = `editorData_blissly`; // Template-specific key
+            const savedData = localStorage.getItem(editorDataKey);
             
+            if (savedData) {
+                try {
+                    setBusinessData(JSON.parse(savedData));
+                } catch (e) {
+                    console.error("Error parsing preview data", e);
+                }
+            }
+        
+        } else if (isLiveSite) {
+            // --- 3. We are on the LIVE site ---
+            const storedStoreName = localStorage.getItem('storeName');
             if (storedStoreName) {
                 setBusinessData(prevData => ({
                     ...prevData,
@@ -80,14 +100,14 @@ function CartLayout({ children }) {
                 }));
             }
         }
-        // --- END DYNAMIC DATA LOGIC ---
-
+        // --- END OF NEW LOGIC ---
 
         return () => {
             headings.forEach(heading => heading.style.fontFamily = '');
             document.body.style.fontFamily = '';
+            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading, router]); // Added router
+    }, [businessData.theme.font.body, businessData.theme.font.heading, businessData.theme.colorPalette, router]);
 
     const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(/ /g, '-')})`;
     
@@ -118,13 +138,10 @@ function CartLayout({ children }) {
                     {children}
                 </main>
                 
-                {/* --- WRAP FOOTER WITH EDITABLE --- */}
                 <Editable focusId="footer">
                     <Footer /> 
                 </Editable>
-                {/* --- END OF WRAP --- */}
 
-                {/* --- Cart Modal (Blissly Style) --- */}
                 {isCartOpen && (
                     <div className="modal fixed inset-0 bg-black/50 flex justify-end z-50" onClick={closeCart}>
                         <div className="bg-brand-bg w-full max-w-lg h-full p-8 flex flex-col" onClick={e => e.stopPropagation()}>
@@ -195,7 +212,6 @@ function CartLayout({ children }) {
                     </div>
                 )}
                 
-                {/* --- Add to Cart Toast --- */}
                 <div className={`fixed bottom-8 right-8 z-50 bg-brand-text text-brand-bg px-5 py-3 shadow-lg transition-all duration-300 rounded-lg ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'}`}>
                     Item added to cart!
                 </div>
@@ -204,7 +220,6 @@ function CartLayout({ children }) {
     );
 }
 
-// Wrap the layout in the provider
 export default function BlisslyLayout({ children }) {
     return (
         <CartProvider>

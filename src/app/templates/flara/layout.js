@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
-import { TemplateContext } from './templateContext.js'; // Import the new context
-import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
+import { TemplateContext } from './templateContext.js';
+import { Editable } from '@/components/editor/Editable';
 
-// Inner component to access cart context
 function CartLayout({ children }) {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
     const router = useRouter(); 
@@ -25,33 +24,39 @@ function CartLayout({ children }) {
     } = useCart();
 
     useEffect(() => {
-        // --- THIS IS THE NEW THEME LOGIC ---
-        // 1. Set the color palette class on the <body> element
-        // Remove old theme classes first
+        // --- THEME LOGIC ---
         document.body.classList.forEach(className => {
             if (className.startsWith('theme-')) {
                 document.body.classList.remove(className);
             }
         });
-        // Add the new theme class
         document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
-        // --- END OF NEW THEME LOGIC ---
 
-        const isEditor = window.self !== window.top;
+        // --- NEW CONTEXT-AWARE LOGIC ---
+        let parentPath = '';
+        try {
+            // Check if we are in an iframe and get parent URL
+            parentPath = window.parent.location.pathname;
+        } catch (e) {
+            // Not in an iframe (e.g., live site)
+        }
+
+        const isEditor = parentPath.startsWith('/editor/');
+        const isPreview = parentPath.startsWith('/preview/');
+        const isLiveSite = !isEditor && !isPreview;
 
         if (isEditor) {
+            // --- 1. We are in the EDITOR's iframe ---
             const handleMessage = (event) => {
                 if (event.data.type === 'UPDATE_DATA') {
                     setBusinessData(event.data.payload);
                 }
-                // --- BUG FIX: ADDED SCROLL HANDLER ---
                 if (event.data.type === 'SCROLL_TO_SECTION') {
                     const element = document.getElementById(event.data.payload.sectionId);
                     if (element) {
                         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 }
-                // --- This handles page changes from the TopNav dropdown ---
                 if (event.data.type === 'CHANGE_PAGE') {
                     router.push(event.data.payload.path);
                 }
@@ -59,7 +64,24 @@ function CartLayout({ children }) {
             window.addEventListener('message', handleMessage);
             window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
             return () => window.removeEventListener('message', handleMessage);
-        } else {
+        
+        } else if (isPreview) {
+            // --- 2. We are in the PREVIEW's iframe ---
+            // Load data directly from the editor's localStorage key
+            const editorDataKey = `editorData_flara`; // Template-specific key
+            const savedData = localStorage.getItem(editorDataKey);
+            
+            if (savedData) {
+                try {
+                    setBusinessData(JSON.parse(savedData));
+                } catch (e) {
+                    console.error("Error parsing preview data", e);
+                }
+            }
+        
+        } else if (isLiveSite) {
+            // --- 3. We are on the LIVE site (or local dev) ---
+            // Fallback to basic startup info
             const storedStoreName = localStorage.getItem('storeName');
             if (storedStoreName) {
                 setBusinessData(prevData => ({
@@ -73,19 +95,15 @@ function CartLayout({ children }) {
                 }));
             }
         }
+        // --- END OF NEW LOGIC ---
 
-        // Cleanup function
         return () => {
             document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.colorPalette, router]); // Only depends on colorPalette
+    }, [businessData.theme.colorPalette, router]);
 
-    
-    // --- FONT LOGIC (BUG FIX) ---
-    // This function now correctly formats font names for CSS variables
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
-        // Replaces spaces and underscores with hyphens
         return `var(--font-${fontName.toLowerCase().replace(/[\s_]+/g, '-')})`;
     };
     
@@ -93,18 +111,15 @@ function CartLayout({ children }) {
         '--font-heading': createFontVariable(businessData.theme.font.heading),
         '--font-body': createFontVariable(businessData.theme.font.body),
     };
-    // --- END FONT LOGIC ---
 
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
-        // Wrap the entire layout content in the TemplateContext.Provider
         <TemplateContext.Provider value={{ businessData, setBusinessData }}>
             <div 
               className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
-              style={fontVariables} // Apply font variables here
+              style={fontVariables}
             >
-                {/* --- THIS IS NOW DYNAMIC --- */}
                 <Editable focusId="global">
                     {businessData.announcementBar && (
                         <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">
@@ -123,13 +138,10 @@ function CartLayout({ children }) {
                     {children}
                 </main>
                 
-                {/* --- WRAP FOOTER WITH EDITABLE --- */}
                 <Editable focusId="footer">
                     <Footer /> 
                 </Editable>
-                {/* --- END OF WRAP --- */}
 
-                {/* Cart Modal... */}
                 {isCartOpen && (
                     <div className="modal fixed inset-0 bg-gray-900/50 flex justify-end z-50" onClick={closeCart}>
                         <div className="bg-white w-full max-w-md h-full p-6 flex flex-col" onClick={e => e.stopPropagation()}>
@@ -188,7 +200,6 @@ function CartLayout({ children }) {
                     </div>
                 )}
                 
-                {/* Toast... */}
                 <div className={`fixed bottom-8 right-8 z-50 bg-brand-text text-brand-bg px-5 py-3 shadow-lg transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'}`}>
                     Item added to cart!
                 </div>
@@ -197,7 +208,6 @@ function CartLayout({ children }) {
     );
 }
 
-// Wrap the layout in the provider
 export default function FlaraLayout({ children }) {
     return (
         <CartProvider>

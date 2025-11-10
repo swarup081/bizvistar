@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
-  Monitor, Smartphone, ChevronDown, Info // Use Info icon for modal
+  Monitor, Smartphone, ChevronDown, Info
 } from 'lucide-react';
 
 // A simple reusable button component for the nav
@@ -202,14 +203,21 @@ export default function EditorTopNav({
             </NavButton>
           </Tooltip>
 
+          {/* --- THIS IS THE LINK TO THE PREVIEW PAGE --- */}
           <Tooltip
             title="Preview"
             description="See what your live site will look like to visitors."
           >
-            <NavButton className="text-blue-500">
+            <Link 
+              href={`/preview/${templateName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm font-medium text-blue-500 px-3 py-2 rounded-md transition-colors hover:bg-blue-50"
+            >
               Preview
-            </NavButton>
+            </Link>
           </Tooltip>
+          {/* --- END OF LINK --- */}
           
           <button className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors">
             Publish

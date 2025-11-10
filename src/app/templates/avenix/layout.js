@@ -4,10 +4,9 @@ import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
-import { TemplateContext } from './templateContext.js'; // Import the new context
-import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
+import { TemplateContext } from './templateContext.js';
+import { Editable } from '@/components/editor/Editable';
 
-// Inner component to access cart context
 function CartLayout({ children }) {
     const [businessData, setBusinessData] = useState(initialBusinessData); 
     const router = useRouter();
@@ -28,13 +27,25 @@ function CartLayout({ children }) {
     } = useCart();
 
     useEffect(() => {
-        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
-        const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headings.forEach(heading => {
-            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+        // --- THEME LOGIC ---
+        document.body.classList.forEach(className => {
+            if (className.startsWith('theme-')) {
+                document.body.classList.remove(className);
+            }
         });
+        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
 
-        const isEditor = window.self !== window.top;
+        // --- NEW CONTEXT-AWARE LOGIC ---
+        let parentPath = '';
+        try {
+            parentPath = window.parent.location.pathname;
+        } catch (e) {
+            // Not in an iframe
+        }
+
+        const isEditor = parentPath.startsWith('/editor/');
+        const isPreview = parentPath.startsWith('/preview/');
+        const isLiveSite = !isEditor && !isPreview;
 
         if (isEditor) {
             const handleMessage = (event) => {
@@ -54,7 +65,19 @@ function CartLayout({ children }) {
             window.addEventListener('message', handleMessage);
             window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
             return () => window.removeEventListener('message', handleMessage);
-        } else {
+        
+        } else if (isPreview) {
+            const editorDataKey = `editorData_avenix`;
+            const savedData = localStorage.getItem(editorDataKey);
+            if (savedData) {
+                try {
+                    setBusinessData(JSON.parse(savedData));
+                } catch (e) {
+                    console.error("Error parsing preview data", e);
+                }
+            }
+        
+        } else if (isLiveSite) {
             const storedStoreName = localStorage.getItem('storeName');
             if (storedStoreName) {
                 setBusinessData(prevData => ({
@@ -70,12 +93,14 @@ function CartLayout({ children }) {
         }
 
         return () => {
-            headings.forEach(heading => heading.style.fontFamily = '');
-            document.body.style.fontFamily = '';
+            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading, router]);
+    }, [businessData.theme.colorPalette, router]);
 
-    const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(/ /g, '-')})`;
+    const createFontVariable = (fontName) => {
+        if (!fontName) return '';
+        return `var(--font-${fontName.toLowerCase().replace(/[\s_]+/g, '-')})`;
+    };
     
     const fontVariables = {
         '--font-heading': createFontVariable(businessData.theme.font.heading),
@@ -100,13 +125,10 @@ function CartLayout({ children }) {
                     {children}
                 </main>
                 
-                {/* --- WRAP FOOTER WITH EDITABLE --- */}
                 <Editable focusId="footer">
                     <Footer />
                 </Editable>
-                {/* --- END OF WRAP --- */}
 
-                {/* Cart Modal... */}
                 {isCartOpen && (
                     <div className="modal fixed inset-0 bg-black/50 flex justify-end z-50" onClick={closeCart}>
                         <div className="bg-brand-bg w-full max-w-lg h-full p-8 flex flex-col" onClick={e => e.stopPropagation()}>
@@ -177,7 +199,6 @@ function CartLayout({ children }) {
                     </div>
                 )}
                 
-                {/* Toast... */}
                 <div className={`fixed bottom-8 right-8 z-50 bg-brand-text text-brand-bg px-5 py-3 shadow-lg transition-all duration-300 rounded-lg ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'}`}>
                     Item added to cart!
                 </div>
@@ -186,7 +207,6 @@ function CartLayout({ children }) {
     );
 }
 
-// Wrap the layout in the provider
 export default function AvenixLayout({ children }) {
     return (
         <CartProvider>
