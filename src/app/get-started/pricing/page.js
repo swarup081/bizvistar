@@ -32,7 +32,7 @@ export default function PricingPage() {
         name: 'Starter',
         subtitle: 'The Digital Business Card',
         price: '299',
-        dailyRate: 'Just ₹10 a day!',
+        dailyRate: 'Just ₹10 a day',
         cta: 'Get Started',
         isRecommended: false,
         features: [
@@ -48,7 +48,7 @@ export default function PricingPage() {
         name: 'Pro',
         subtitle: 'The "Done-with-You" Partner',
         price: '799',
-        dailyRate: 'Just ₹26 a day!',
+        dailyRate: 'Just ₹26 a day',
         cta: 'Start Your Pro Plan',
         isRecommended: true,
         features: [
@@ -63,7 +63,7 @@ export default function PricingPage() {
         name: 'Growth',
         subtitle: 'The "Done-for-You" Service',
         price: '1499',
-        dailyRate: 'Just ₹50 a day!',
+        dailyRate: 'Just ₹50 a day',
         cta: 'Go for Growth',
         isRecommended: false,
         features: [
@@ -72,6 +72,7 @@ export default function PricingPage() {
           'Access to All Business Tools',
           'Free Custom Domain (First Year)',
           'Priority Onboarding Call',
+          'AI Website Analytics',
         ],
       },
     ],
@@ -108,7 +109,7 @@ export default function PricingPage() {
           'Instant WhatsApp Order Notifications',
           'Priority WhatsApp Support',
           '2 Advanced Business Tools',
-          'Basic Website Analytics',
+          'Website Analytics',
         ],
       },
       {
@@ -126,6 +127,7 @@ export default function PricingPage() {
           'Access to All Business Tools',
           'Free Custom Domain (First Year)',
           'Priority Onboarding Call',
+          'AI Website Analytics',
         ],
       },
     ],
@@ -324,26 +326,29 @@ const PlanCard = ({ plan, isYearly, className }) => (
       <h3 className="text-3xl font-bold text-gray-900">{plan.name}</h3>
       <p className="text-gray-500 font-medium mt-2">{plan.subtitle}</p>
 
-      {/* Price Section */}
+      {/* --- THIS IS THE UPDATED PRICE SECTION --- */}
       <div className="my-8">
         {isYearly && plan.originalPrice && (
-          <p className="text-lg font-medium text-gray-400 line-through mb-1">
+          <p className="text-lg font-medium text-gray-400 line-through">
             ₹{plan.originalPrice}/mo
           </p>
         )}
-        <div className="flex items-start justify-center">
-            <span className="text-3xl mt-2 font-bold text-gray-900">₹</span>
-            <span className="text-7xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-        </div>
-        <p className="text-gray-500 font-medium mt-2">per month</p>
 
-        {/* Yearly Savings Pill */}
+        {/* This is the new one-line price */}
+        <div className="flex items-baseline justify-center gap-1">
+          <span className="text-3xl font-bold text-gray-900">₹</span>
+          <span className="text-6xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
+          <span className="text-xl font-medium text-gray-500">/month</span>
+        </div>
+
+        {/* Yearly Savings Pill (no change) */}
          {isYearly && plan.savings && (
              <div className="mt-4 inline-block bg-green-100 text-green-700 text-sm font-bold px-4 py-1 rounded-full">
                  {plan.savings}
              </div>
          )}
       </div>
+      {/* --- END OF UPDATED PRICE SECTION --- */}
 
       <Link href="/sign-up" className="w-full">
         <button 
@@ -359,7 +364,7 @@ const PlanCard = ({ plan, isYearly, className }) => (
       </Link>
       
        {!isYearly && (
-         <p className="text-sm font-medium text-gray-500 mt-4">{plan.dailyRate}</p>
+         <p className="text-base font-semibold text-blue-600 mt-4">{plan.dailyRate}</p>
       )}
       {isYearly && (
            <p className="text-sm font-medium text-gray-500 mt-4">{plan.yearlyTotal}</p>
@@ -370,6 +375,17 @@ const PlanCard = ({ plan, isYearly, className }) => (
     {/* Features List */}
     <div className="p-10 pt-0">
        <div className="border-t border-gray-100 pt-8">
+          {/* --- Dynamic Feature Heading --- */}
+          {plan.name === 'Starter' && (
+            <h4 className="text-base font-semibold text-gray-800 mb-4">Includes:</h4>
+          )}
+          {plan.name === 'Pro' && (
+            <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Starter, plus:</h4>
+          )}
+          {plan.name === 'Growth' && (
+            <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Pro, plus:</h4>
+          )}
+          {/* --- END: Dynamic Feature Heading --- */}
           <ul className="space-y-4">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start text-left">
