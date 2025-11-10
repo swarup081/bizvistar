@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Minus, ChevronDown, ShieldCheck, Heart, Zap, Layers, BarChart2, Headset } from 'lucide-react';
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -12,16 +12,41 @@ const Dash = () => <div className="flex justify-center"><Minus className="w-5 h-
 // --- Payment Icons (Professional SVGs) ---
 const VisaIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.386 25.105L19.69 16.978H23.906L22.602 25.105H18.386Z" fill="#0A2540"/><path d="M33.492 17.13C33.105 16.978 32.332 16.826 31.344 16.826C28.743 16.826 26.918 18.234 26.918 20.941C26.918 22.88 28.699 23.945 30.117 24.63C31.578 25.352 32.051 25.808 32.051 26.53C32.051 27.633 30.761 28.127 29.516 28.127C28.314 28.127 27.584 27.937 27.069 27.709L26.338 31.127C27.24 31.545 28.872 31.887 30.547 31.887C33.381 31.887 35.272 30.48 35.272 27.594C35.272 25.883 34.198 24.667 32.609 23.907C31.15 23.185 30.591 22.767 30.591 21.893C30.591 21.133 31.45 20.525 32.266 20.525C33.082 20.525 33.597 20.639 33.898 20.791L34.37 18.51L33.492 17.13Z" fill="#0A2540"/><path d="M41.812 16.978H38.505C37.474 16.978 37.216 17.244 36.83 18.232L31.536 31.649H35.962L36.864 29.065H42.412L42.928 31.649H46.922L43.788 16.978H41.812ZM39.622 21.232L41.554 26.708H38.376L39.622 21.232Z" fill="#0A2540"/><path d="M12.387 16.978H8.306C8.048 16.978 7.704 17.054 7.532 17.434L4.31 31.649H8.692L12.387 16.978Z" fill="#0A2540"/><path d="M3.452 16.978L0 17.168L0.516 19.865C0.946 20.967 4.052 25.523 4.052 25.523L4.782 22.255L6.286 16.978H3.452Z" fill="#0A2540"/></svg>;
 const MasterCardIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.783 42C21.943 42 25.771 40.413 28.677 37.761C25.811 34.94 24 31.033 24 26.702C24 21.879 26.189 17.563 29.605 14.559C26.639 11.752 22.58 10 18.101 10C9.147 10 1.885 17.346 1.885 26.406C1.885 35.016 8.86 42 17.783 42Z" fill="#FF5F00"/><path d="M34.536 42C43.146 42 50.123 35.016 50.123 26.406C50.123 17.346 42.861 10 33.908 10C29.883 10 26.207 11.413 23.329 13.774C26.67 16.883 28.793 21.388 28.793 26.385C28.793 30.983 26.996 35.161 24.127 38.172C27.002 40.587 30.612 42 34.536 42Z" fill="#EB001B"/><path d="M29.605 14.559C26.189 17.563 24 21.879 24 26.702C24 31.033 25.811 34.94 28.677 37.761C26.996 35.161 28.793 30.983 28.793 26.385C28.793 21.388 26.67 16.883 23.329 13.774C25.394 14.036 27.503 14.29 29.605 14.559Z" fill="#F79E1B"/></svg>;
-const UpiIcon = () => (
-    <svg className="h-8 w-auto" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="64" height="32" rx="4" fill="white"/>
-        <path d="M8.5 25.5V8.5L20.5 8.5L20.5 11.5L11.5 11.5V22.5H20.5V25.5H8.5Z" fill="#097939"/>
-        <path d="M24.5 8.5H36.5L36.5 11.5L27.5 11.5V15.5H35.5V18.5H27.5V25.5H24.5V8.5Z" fill="#E66D2C"/>
-        <path d="M40.5 25.5V8.5L52.5 8.5L52.5 11.5L43.5 11.5V15.5H51.5V18.5H43.5V25.5H40.5Z" fill="#097939"/>
-        <path d="M14 14.5L17.5 20.5H10.5L14 14.5Z" fill="#E66D2C"/>
+
+// --- NEW ICONS TO MATCH SCREENSHOT ---
+const AmexIcon = () => (
+  <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="32" rx="4" fill="#006FCF"/>
+    <rect x="5" y="5" width="38" height="22" rx="2" fill="#006FCF" stroke="white" strokeWidth="2"/>
+    <path d="M24 10H18V22H24V18H30V14H24V10Z" fill="white"/>
+    <path d="M30 10H36V22H30V18H36V14H30V10Z" fill="white"/>
+    <path d="M12 10H18V12H12V10Z" fill="white"/>
+    <path d="M12 20H18V22H12V20Z" fill="white"/>
+    <path d="M12 15H18V17H12V15Z" fill="white"/>
+  </svg>
+);
+
+const MoneyBackIcon = () => (
+  <svg className="w-10 h-10 text-gray-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M14.5 9.16669C14.1667 9.05557 13.5 8.83335 12 8.83335C10.1667 8.83335 9 9.75002 9 11.0834C9 12.4167 10.1667 13.1667 11.3333 13.5834C12.5 14 13.1667 14.5 13.1667 15.4167C13.1667 16.1667 12.5 16.6667 11.5 16.6667C10.5 16.6667 10.0833 16.5 9.75 16.4167" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 7V18.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 16H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 12H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 8H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.5 16H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.5 12H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.5 8H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const SslShieldIcon = () => (
+    <svg className="w-10 h-10 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L3 5V11C3 16.5 7.5 21.5 12 22C16.5 21.5 21 16.5 21 11V5L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 );
-// ... (You can add more icons or use an image sprite for "More")
+// --- END NEW ICONS ---
 
 // --- Plan Data (Moved inside component to avoid reference error) ---
 
@@ -196,85 +221,93 @@ export default function PricingPage() {
            </Link>
         </div>
 
-        {/* --- TRUST & ENTERPRISE GRID (Side-by-Side) --- */}
-        <div className="max-w-7xl mx-auto mt-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            
-            {/* LEFT: Trust Badges & Enterprise Offer */}
-            <div className="space-y-12">
-                 {/* Enterprise Offer (Matches screenshot UI) */}
-                 <div className="bg-gray-50 rounded-3xl p-10 text-left">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">BizVistar Enterprise solutions</h3>
-                    <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                        Launch exceptional sites faster, manage your business better, and work more freely.
-                    </p>
-                    <Link href="/enterprise">
-                        <button className="px-8 py-3 bg-white border-2 border-gray-900 text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-colors">
-                            Book a Call
-                        </button>
-                    </Link>
-                 </div>
-                
-                {/* Cancel Anytime */}
-                <div className="flex gap-5 items-start">
-                    <div className="p-3 bg-blue-50 rounded-full">
-                        <Heart className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <div>
-                        <h4 className="text-xl font-semibold text-gray-900 mb-2">Cancel Anytime</h4>
-                        <p className="text-gray-600 leading-relaxed">No contracts, no-hassle. You are in complete control of your subscription.</p>
-                    </div>
-                </div>
-                
-                {/* SSL Secure */}
-                <div className="flex gap-5 items-start">
-                     <div className="p-3 bg-green-50 rounded-full">
-                        <ShieldCheck className="w-8 h-8 text-green-600" />
-                    </div>
-                    <div>
-                        <h4 className="text-xl font-semibold text-gray-900 mb-2">SSL Secure Payment</h4>
-                        <p className="text-gray-600 leading-relaxed">Your information is protected by 256-bit SSL encryption.</p>
-                    </div>
-                </div>
+        {/* --- NEW SECTION: Enterprise & Trust (matches screenshot) --- */}
+        <div className="max-w-7xl mx-auto mt-24">
+          
+          {/* Top Grid: Enterprise Offer + Features */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start p-10 bg-gray-50 rounded-3xl">
+              
+              {/* LEFT: Enterprise Offer */}
+              <div className="text-left">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">BizVistar Enterprise solutions</h3>
+                  <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+                      Launch exceptional sites faster, manage your business better, and work more freely.
+                  </p>
+                  <Link href="/enterprise">
+                      {/* Screenshot button is white with black text and border */}
+                      <button className="px-8 py-3 bg-white border-2 border-gray-900 text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-colors">
+                          Book a Call
+                      </button>
+                  </Link>
+              </div>
 
-                 {/* Payment Methods */}
-                 <div className="pt-8 border-t border-gray-200">
-                    <h5 className="text-sm font-bold text-gray-400 tracking-widest uppercase mb-4">ACCEPTED PAYMENT METHODS</h5>
-                    <div className="flex items-center gap-6 opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                        <VisaIcon />
-                        <MasterCardIcon />
-                        <UpiIcon />
-                        <span className="text-gray-500 font-medium">+ More</span>
-                    </div>
-                </div>
-            </div>
+              {/* RIGHT: Enterprise Features Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-12">
+                  <div>
+                      <Zap className="w-8 h-8 text-purple-600 mb-4" />
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">Faster content deployment</h4>
+                      <p className="text-gray-600 leading-relaxed text-[15px]">Launch sites at scale with custom templates and reusable components.</p>
+                  </div>
+                  <div>
+                      <Layers className="w-8 h-8 text-purple-600 mb-4" />
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">Multi-site management</h4>
+                      <p className="text-gray-600 leading-relaxed text-[15px]">Streamline ops with shared assets and centralized billing on one dashboard.</p>
+                  </div>
+                  <div>
+                      <BarChart2 className="w-8 h-8 text-purple-600 mb-4" />
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">Custom integrations</h4>
+                      <p className="text-gray-600 leading-relaxed text-[15px]">Seamlessly connect the software tools, apps, and APIs your business relies on.</p>
+                  </div>
+                  <div>
+                      <Headset className="w-8 h-8 text-purple-600 mb-4" />
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">Dedicated account support</h4>
+                      <p className="text-gray-600 leading-relaxed text-[15px]">Get priority support and personalized training for you and your team.</p>
+                  </div>
+              </div>
+          </div>
 
-            {/* RIGHT: Enterprise Features Grid */}
-            <div className="bg-gray-50 rounded-3xl p-10 lg:p-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-16">
-                    <div>
-                        <Zap className="w-10 h-10 text-purple-600 mb-6" />
-                        <h4 className="text-lg font-bold text-gray-900 mb-3">Faster content deployment</h4>
-                        <p className="text-gray-600 leading-relaxed">Launch sites at scale with custom templates and reusable components.</p>
-                    </div>
-                    <div>
-                        <Layers className="w-10 h-10 text-purple-600 mb-6" />
-                        <h4 className="text-lg font-bold text-gray-900 mb-3">Multi-site management</h4>
-                        <p className="text-gray-600 leading-relaxed">Streamline ops with shared assets and centralized billing on one dashboard.</p>
-                    </div>
-                     <div>
-                        <BarChart2 className="w-10 h-10 text-purple-600 mb-6" />
-                        <h4 className="text-lg font-bold text-gray-900 mb-3">Custom integrations</h4>
-                        <p className="text-gray-600 leading-relaxed">Seamlessly connect the software tools, apps, and APIs your business relies on.</p>
-                    </div>
-                    <div>
-                        <Headset className="w-10 h-10 text-purple-600 mb-6" />
-                        <h4 className="text-lg font-bold text-gray-900 mb-3">Dedicated account support</h4>
-                        <p className="text-gray-600 leading-relaxed">Get priority support and personalized training for you and your team.</p>
-                    </div>
-                </div>
-            </div>
+          {/* Disclaimer Text */}
+          <div className="px-6 mt-8">
+            <p className="text-xs text-gray-400">
+              Displayed prices are for yearly subscriptions, paid in full at the time of purchase. Prices do not include applicable taxes, which are determined according to your billing address. The final price can be seen on the purchase page, before payment is completed.
+            </p>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 px-6">
+              {/* 1. Accepted Payments */}
+              <div>
+                  <h5 className="text-sm font-bold text-gray-400 tracking-widest uppercase mb-4">ACCEPTED PAYMENT METHODS</h5>
+                  <div className="flex items-center gap-4 opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+                      <VisaIcon />
+                      <MasterCardIcon />
+                      <AmexIcon />
+                      <span className="text-gray-500 font-medium">+ More</span>
+                  </div>
+              </div>
+              
+              {/* 2. Money Back Guarantee */}
+              <div className="flex gap-4 items-start">
+                  <MoneyBackIcon />
+                  <div>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">MONEY BACK GUARANTEE</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">Try BizVistar plans for 14 days and if you're not 100% satisfied, get your money back.</p>
+                  </div>
+              </div>
+
+              {/* 3. SSL Secure Payment */}
+              <div className="flex gap-4 items-start">
+                  <SslShieldIcon />
+                  <div>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">SSL SECURE PAYMENT</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">Your information is protected by 256-bit SSL encryption.</p>
+                  </div>
+              </div>
+          </div>
 
         </div>
+        {/* --- END OF NEW SECTION --- */}
+
 
         {/* --- "Compare Plan Features" Section --- */}
         <div id="compare" className="mt-32 scroll-mt-20">
