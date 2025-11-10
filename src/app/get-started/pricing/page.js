@@ -1,9 +1,11 @@
+// src/app/get-started/pricing/page.js
 'use client';
 
 import { useState } from 'react';
-import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset } from 'lucide-react';
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react'; // Added Info icon
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence
 
 // --- Reusable Icons ---
 const CheckMark = () => <div className="flex justify-center"><Check className="w-5 h-5 text-blue-600" strokeWidth={2.5} /></div>;
@@ -13,7 +15,6 @@ const Dash = () => <div className="flex justify-center"><Minus className="w-5 h-
 const VisaIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.386 25.105L19.69 16.978H23.906L22.602 25.105H18.386Z" fill="#0A2540"/><path d="M33.492 17.13C33.105 16.978 32.332 16.826 31.344 16.826C28.743 16.826 26.918 18.234 26.918 20.941C26.918 22.88 28.699 23.945 30.117 24.63C31.578 25.352 32.051 25.808 32.051 26.53C32.051 27.633 30.761 28.127 29.516 28.127C28.314 28.127 27.584 27.937 27.069 27.709L26.338 31.127C27.24 31.545 28.872 31.887 30.547 31.887C33.381 31.887 35.272 30.48 35.272 27.594C35.272 25.883 34.198 24.667 32.609 23.907C31.15 23.185 30.591 22.767 30.591 21.893C30.591 21.133 31.45 20.525 32.266 20.525C33.082 20.525 33.597 20.639 33.898 20.791L34.37 18.51L33.492 17.13Z" fill="#0A2540"/><path d="M41.812 16.978H38.505C37.474 16.978 37.216 17.244 36.83 18.232L31.536 31.649H35.962L36.864 29.065H42.412L42.928 31.649H46.922L43.788 16.978H41.812ZM39.622 21.232L41.554 26.708H38.376L39.622 21.232Z" fill="#0A2540"/><path d="M12.387 16.978H8.306C8.048 16.978 7.704 17.054 7.532 17.434L4.31 31.649H8.692L12.387 16.978Z" fill="#0A2540"/><path d="M3.452 16.978L0 17.168L0.516 19.865C0.946 20.967 4.052 25.523 4.052 25.523L4.782 22.255L6.286 16.978H3.452Z" fill="#0A2540"/></svg>;
 const MasterCardIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.783 42C21.943 42 25.771 40.413 28.677 37.761C25.811 34.94 24 31.033 24 26.702C24 21.879 26.189 17.563 29.605 14.559C26.639 11.752 22.58 10 18.101 10C9.147 10 1.885 17.346 1.885 26.406C1.885 35.016 8.86 42 17.783 42Z" fill="#FF5F00"/><path d="M34.536 42C43.146 42 50.123 35.016 50.123 26.406C50.123 17.346 42.861 10 33.908 10C29.883 10 26.207 11.413 23.329 13.774C26.67 16.883 28.793 21.388 28.793 26.385C28.793 30.983 26.996 35.161 24.127 38.172C27.002 40.587 30.612 42 34.536 42Z" fill="#EB001B"/><path d="M29.605 14.559C26.189 17.563 24 21.879 24 26.702C24 31.033 25.811 34.94 28.677 37.761C26.996 35.161 28.793 30.983 28.793 26.385C28.793 21.388 26.67 16.883 23.329 13.774C25.394 14.036 27.503 14.29 29.605 14.559Z" fill="#F79E1B"/></svg>;
 
-// --- NEW ICONS TO MATCH SCREENSHOT ---
 const AmexIcon = () => (
   <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="48" height="32" rx="4" fill="#006FCF"/>
@@ -46,9 +47,88 @@ const SslShieldIcon = () => (
         <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 );
-// --- END NEW ICONS ---
 
-// --- Plan Data (Moved inside component to avoid reference error) ---
+// --- NEW: Info Tooltip Component (Light theme) ---
+const InfoTooltip = ({ info }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  return (
+    <div 
+      className="relative inline-flex items-center ml-1"
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-20 w-64 bg-white text-gray-600 text-sm p-4 rounded-lg shadow-xl ring-1 ring-gray-900/5"
+          >
+            {/* Arrow (pointing down) */}
+            <svg 
+              className="absolute top-full left-1/2 -translate-x-1/2 w-4 h-4 text-white"
+              style={{ filter: 'drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))' }}
+              viewBox="0 0 16 8" 
+              fill="currentColor"
+            >
+               <path d="M0 0 L8 8 L16 0" />
+            </svg>
+            {info}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- NEW: Tooltip Data ---
+const featureTooltips = {
+  'AI-Powered Website Builder': 'Our AI instantly generates a professional website with text and images based on your business type, so you don\'t have to start from scratch.',
+  'Easy-to-Use Editor': 'Our simple editor allows you to click on any text or image on your site and change it instantly, no code required.',
+  'Secure Web Hosting': 'We handle all the technical details, providing fast and secure hosting for your website, included in your plan.',
+  'Professional Subdomain': 'Get a website address like "yourname.bizvistar.com" to share with your customers instantly.',
+  'Free Custom Domain (1st Year)': 'Get a professional domain like "yourname.com" for free for the first year (with annual Growth plan).',
+  'Products': 'The number of products (like t-shirts, cakes, or services) you can list on your e-commerce store.',
+  'Business Tools': 'Tools to help you run your business, such as an Appointment Booker, Order Manager, or Contact Form.',
+  'Order Dashboard': 'A central place to view and manage all your incoming orders from customers.',
+  'Visitor Analytics': 'See how many people visit your site. Advanced analytics show where they come from and what pages they view.',
+  'Order Confirmation Emails': 'Your customers will automatically receive a confirmation email every time they place an order.',
+  'Dashboard Order Sound': 'Get an audible "cha-ching" or notification sound in your dashboard when a new order arrives.',
+  'WhatsApp Notifications': 'Receive an instant notification on your WhatsApp number as soon as a new order comes in.',
+  'Email Support': 'Get help from our support team via email.',
+  'WhatsApp Support': 'Get priority help directly via a dedicated WhatsApp chat number.',
+  'Social Media Posts': 'Our team will design and write professional posts for your social media (like Instagram or Facebook) every month.',
+  'Google Maps Management': 'We will set up and optimize your Google My Business profile to help you get found in local searches.',
+  'Priority Onboarding Call': 'A dedicated 1-on-1 call with our team to help you get your site and store set up perfectly.',
+};
+
+// --- NEW: Features List Structure ---
+const featureList = [
+  { category: 'CORE PLATFORM' },
+  { name: 'AI-Powered Website Builder', starter: true, pro: true, growth: true },
+  { name: 'Easy-to-Use Editor', starter: true, pro: true, growth: true },
+  { name: 'Secure Web Hosting', starter: true, pro: true, growth: true },
+  { name: 'Professional Subdomain', starter: true, pro: true, growth: true },
+  { name: 'Free Custom Domain (1st Year)', starter: false, pro: false, growth: true },
+  { category: 'BUSINESS & E-COMMERCE' },
+  { name: 'Products', starter: '10', pro: 'Unlimited', growth: 'Unlimited' },
+  { name: 'Business Tools', starter: '1Tool', pro: '2 Tools', growth: 'All Tools' },
+  { name: 'Order Dashboard', starter: true, pro: true, growth: true },
+  { name: 'Visitor Analytics', starter: false, pro: 'Basic', growth: 'Advanced' },
+  { category: 'AUTOMATION' },
+  { name: 'Order Confirmation Emails', starter: true, pro: true, growth: true },
+  { name: 'Dashboard Order Sound', starter: true, pro: true, growth: true },
+  { name: 'WhatsApp Notifications', starter: false, pro: true, growth: true },
+  { category: 'DONE-FOR-YOU SERVICES' },
+  { name: 'Email Support', starter: 'Standard', pro: 'Priority', growth: 'Priority' },
+  { name: 'WhatsApp Support', starter: false, pro: true, growth: true },
+  { name: 'Social Media Posts', starter: false, pro: '3 / mo', growth: '8 / mo' },
+  { name: 'Google Maps Management', starter: false, pro: false, growth: true },
+  { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
+];
 
 export default function PricingPage() {
   const plans = {
@@ -175,28 +255,46 @@ export default function PricingPage() {
             Choose a plan to go live and start growing your business. All plans are risk-free. Cancel anytime.
           </p>
           
-          {/* --- SLIM & WIDE Toggle --- */}
-          <div className="inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
+          {/* --- ANIMATED Toggle --- */}
+          <div className="relative inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
              <button
                 onClick={() => setIsYearly(false)}
                 className={cn(
-                  'px-8 py-2 text-base font-medium rounded-full transition-all duration-200',
-                  !isYearly ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                  'relative z-10 px-8 py-2 text-base font-medium rounded-full transition-colors duration-200',
+                  !isYearly ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                Billed monthly
+                {/* --- FIX: Added relative z-10 span --- */}
+                <span className="relative z-10">Billed monthly</span>
+                {/* --- End Fix --- */}
+                {!isYearly && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-white rounded-full shadow-sm"
+                    style={{ zIndex: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
               </button>
               <button
                 onClick={() => setIsYearly(true)}
                 className={cn(
-                  'flex items-center px-8 py-2 text-base font-medium rounded-full transition-all duration-200',
-                  isYearly ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                  'relative z-10 flex items-center px-8 py-2 text-base font-medium rounded-full transition-colors duration-200',
+                  isYearly ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                Billed yearly
-                <span className="ml-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                <span className="relative z-10">Billed yearly</span>
+                <span className="relative z-10 ml-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
                   Save {maxSavings}%
                 </span>
+                {isYearly && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-white rounded-full shadow-sm"
+                    style={{ zIndex: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
               </button>
           </div>
         </div>
@@ -314,7 +412,7 @@ export default function PricingPage() {
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
             Compare Plan Features
           </h2>
-          <AllFeaturesTable />
+          <AllFeaturesTable InfoTooltip={InfoTooltip} featureTooltips={featureTooltips} featureList={featureList} />
         </div>
 
         {/* --- "Why Choose BizVistaar?" Section --- */}
@@ -432,14 +530,14 @@ const PlanCard = ({ plan, isYearly, className }) => (
   </div>
 );
 
-// --- Sub-component: AllFeaturesTable (Clean & Professional) ---
-const AllFeaturesTable = () => (
-  <div className="border border-gray-200 rounded-3xl bg-white shadow-sm overflow-hidden">
-    <div className="overflow-x-auto">
-      <div className="min-w-[1024px]">
-        {/* Header Row */}
+// --- Sub-component: AllFeaturesTable (Scroll-linked sticky header section) ---
+// --- Updated to use scroll-linked sticky section as header, per instructions ---
+const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
+  <div className="border border-gray-200  bg-white ">
+    <div className="relative">
+      <div className="sticky top-0 z-30 bg-white">
         <div className="grid grid-cols-4 bg-gray-50 border-b border-gray-200">
-          <div className="p-6"></div> {/* Empty corner */}
+          <div className="p-6"></div>
           <div className="p-6 text-center border-l border-gray-200">
             <h3 className="text-2xl font-bold text-gray-900">Starter</h3>
             <p className="text-gray-500 font-medium mt-1">₹299/mo</p>
@@ -453,55 +551,54 @@ const AllFeaturesTable = () => (
             <p className="text-gray-500 font-medium mt-1">₹1499/mo</p>
           </div>
         </div>
-
-        {/* Feature Rows Container */}
-        <div className="divide-y divide-gray-100">
-            
-          {/* Section: CORE */}
-          <div className="bg-gray-50/50 p-4 pl-8 font-bold text-gray-900 text-sm tracking-wider uppercase">CORE PLATFORM</div>
-          <FeatureRow feature="AI-Powered Website Builder" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Easy-to-Use Editor" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Secure Web Hosting" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Professional Subdomain" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Free Custom Domain (1st Year)" starter={false} pro={false} growth={true} />
-
-          {/* Section: E-COMMERCE */}
-          <div className="bg-gray-50/50 p-4 pl-8 font-bold text-gray-900 text-sm tracking-wider uppercase border-t border-gray-100">BUSINESS & E-COMMERCE</div>
-          <FeatureRow feature="Products" starter="10" pro="Unlimited" growth="Unlimited" />
-          <FeatureRow feature="Business Tools" starter="1 Tool" pro="2 Tools" growth="All Tools" />
-          <FeatureRow feature="Order Dashboard" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Visitor Analytics" starter={false} pro="Basic" growth="Advanced" />
-
-          {/* Section: AUTOMATION */}
-          <div className="bg-gray-50/50 p-4 pl-8 font-bold text-gray-900 text-sm tracking-wider uppercase border-t border-gray-100">AUTOMATION</div>
-          <FeatureRow feature="Order Confirmation Emails" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="Dashboard Order Sound" starter={true} pro={true} growth={true} />
-          <FeatureRow feature="WhatsApp Notifications" starter={false} pro={true} growth={true} />
-
-           {/* Section: SERVICES */}
-          <div className="bg-gray-50/50 p-4 pl-8 font-bold text-gray-900 text-sm tracking-wider uppercase border-t border-gray-100">DONE-FOR-YOU SERVICES</div>
-          <FeatureRow feature="Email Support" starter="Standard" pro="Priority" growth="Priority" />
-          <FeatureRow feature="WhatsApp Support" starter={false} pro={true} growth={true} />
-          <FeatureRow feature="Social Media Posts" starter={false} pro="3 / mo" growth="8 / mo" />
-          <FeatureRow feature="Google Maps Management" starter={false} pro={false} growth={true} />
-          <FeatureRow feature="Priority Onboarding Call" starter={false} pro={false} growth={true} />
-        </div>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {featureList.map((feature, index) => (
+          feature.category ? (
+            <div 
+              key={index} 
+              className="bg-gray-50/50 p-4 pl-8 font-bold text-gray-900 text-sm tracking-wider uppercase border-t border-gray-100"
+            >
+              {feature.category}
+            </div>
+          ) : (
+            <FeatureRow 
+              key={index}
+              feature={{
+                name: feature.name,
+                info: featureTooltips[feature.name] || null
+              }} 
+              starter={feature.starter}
+              pro={feature.pro}
+              growth={feature.growth}
+              InfoTooltip={InfoTooltip} 
+            />
+          )
+        ))}
       </div>
     </div>
   </div>
 );
 
-// Helper for Feature Rows to keep code clean
-const FeatureRow = ({ feature, starter, pro, growth }) => {
-    const renderCell = (value, isProCol) => { // <-- FIXED
+// --- FIX: Helper for Feature Rows --- (Added justify-between)
+const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
+    const renderCell = (value, isProCol) => { 
         if (value === true) return <CheckMark />;
         if (value === false) return <Dash />;
         return <span className={cn("font-semibold", isProCol ? "text-purple-700" : "text-gray-900")}>{value}</span>;
     };
+    
+    const isObject = typeof feature === 'object' && feature !== null;
+    const featureName = isObject ? feature.name : feature;
+    const featureInfo = isObject ? feature.info : null;
 
     return (
         <div className="grid grid-cols-4 hover:bg-gray-50 transition-colors">
-            <div className="p-5 pl-8 font-medium text-gray-700 flex items-center">{feature}</div>
+            {/* --- FIX: Added justify-between and w-full --- */}
+            <div className="p-5 pl-8 font-medium text-gray-700 flex items-center justify-between w-full">
+              <span>{featureName}</span>
+              {featureInfo && <InfoTooltip info={featureInfo} />}
+            </div>
             <div className="p-5 flex items-center justify-center border-l border-gray-100">{renderCell(starter, false)}</div>
             <div className="p-5 flex items-center justify-center border-l border-gray-100 bg-purple-50/30">{renderCell(pro, true)}</div>
             <div className="p-5 flex items-center justify-center border-l border-gray-100">{renderCell(growth, false)}</div>
@@ -510,9 +607,8 @@ const FeatureRow = ({ feature, starter, pro, growth }) => {
 };
 
 // --- Sub-component: ComparisonTable (Styled to match PDF) ---
-// (Re-using the cleaner FeatureRow logic here would be good, but sticking to the requested table structure for now)
 const ComparisonTable = () => (
-  <div className="overflow-x-auto border border-gray-200 rounded-3xl bg-white shadow-sm">
+  <div className="overflow-x-auto border border-gray-200  bg-white ">
     <table className="min-w-full">
       <thead>
         <tr className="bg-gray-50 border-b border-gray-200">
@@ -573,16 +669,22 @@ const FaqItem = ({ q, a }) => {
           className={cn('h-6 w-6 text-gray-400 transition-transform duration-300', isOpen ? 'rotate-180 text-purple-600' : '')}
         />
       </button>
-      <div
-        className={cn(
-          'overflow-hidden transition-all duration-300 ease-in-out',
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+      {/* --- FIX: Added AnimatePresence and motion.div for smooth animation --- */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="pb-6 pr-12 text-lg text-gray-600 leading-relaxed">
+              {a}
+            </div>
+          </motion.div>
         )}
-      >
-        <div className="pb-6 pr-12 text-lg text-gray-600 leading-relaxed">
-          {a}
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   );
 };
