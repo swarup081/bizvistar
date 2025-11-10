@@ -606,51 +606,63 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
     );
 };
 
-// --- Sub-component: ComparisonTable (Styled to match PDF) ---
+// --- Sub-component: ComparisonTable (Sticky header like AllFeaturesTable) ---
 const ComparisonTable = () => (
-  <div className="overflow-x-auto border border-gray-200  bg-white ">
-    <table className="min-w-full">
-      <thead>
-        <tr className="bg-gray-50 border-b border-gray-200">
-          <th className="text-left text-lg font-bold text-gray-900 p-6 w-1/4">Features</th>
-          <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">DIY Builders<br/><span className="text-sm font-normal text-gray-500">(Wix/GoDaddy)</span></th>
-          <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Local Agencies</th>
-          <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">BizVistaar<br/><span className="text-sm font-normal text-purple-600">(Your Partner)</span></th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100">
-        <tr>
-          <td className="font-semibold p-6 text-gray-700">Who Builds the Site?</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>You spend 40+ hours learning complex tools.</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do 100%</strong><br/>A full-service, hands-off experience.</td>
-          <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It Together</strong><br/>Our AI builds the site in 60s. You do the fun edits.</td>
-        </tr>
-        <tr>
-          <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>They give you a tool, but you do all the work.</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br/>They create and post for you.</td>
-          <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It (on Pro+)</strong><br/>Our plan includes "done-for-you" posts.</td>
-        </tr>
-        <tr>
-          <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br/>You wait in a queue to talk to a stranger.</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br/>Great support for a very high price.</td>
-          <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>A WhatsApp Partner</strong><br/>Priority support from a local expert.</td>
-        </tr>
-        <tr>
-          <td className="font-semibold p-6 text-gray-700">The Price</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br/>(₹800 - ₹2,300/mo)</td>
-          <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br/>(₹10,000 - ₹20,000/mo)</td>
-          <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>Simple, Affordable Price</strong><br/>(Just ₹26 a day!)</td>
-        </tr>
-        <tr>
-          <td className="font-bold p-6 text-gray-900">The Verdict</td>
-          <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
-          <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
-          <td className="text-center p-6 text-purple-700 font-bold border-l border-gray-100 bg-purple-50/50">Low Cost, High Service</td>
-        </tr>
-      </tbody>
-    </table>
+  <div className="border border-gray-200 bg-white">
+    <div className="relative">
+      <div className="sticky top-0 z-30 bg-white">
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200">
+              <th className="text-left text-lg font-bold text-gray-900 p-6 w-1/4">Features</th>
+              <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">
+                DIY Builders<br/><span className="text-sm font-normal text-gray-500">(Wix/GoDaddy)</span>
+              </th>
+              <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Local Agencies</th>
+              <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">
+                BizVistaar<br/><span className="text-sm font-normal text-purple-600">(Your Partner)</span>
+              </th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+      <div className="overflow-y-auto">
+        <table className="min-w-full">
+          <tbody className="divide-y divide-gray-100">
+            <tr>
+              <td className="font-semibold p-6 text-gray-700">Who Builds the Site?</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>You spend 40+ hours learning complex tools.</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do 100%</strong><br/>A full-service, hands-off experience.</td>
+              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It Together</strong><br/>Our AI builds the site in 60s. You do the fun edits.</td>
+            </tr>
+            <tr>
+              <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br/>They give you a tool, but you do all the work.</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br/>They create and post for you.</td>
+              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It (on Pro+)</strong><br/>Our plan includes "done-for-you" posts.</td>
+            </tr>
+            <tr>
+              <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br/>You wait in a queue to talk to a stranger.</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br/>Great support for a very high price.</td>
+              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>A WhatsApp Partner</strong><br/>Priority support from a local expert.</td>
+            </tr>
+            <tr>
+              <td className="font-semibold p-6 text-gray-700">The Price</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br/>(₹800 - ₹2,300/mo)</td>
+              <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br/>(₹10,000 - ₹20,000/mo)</td>
+              <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>Simple, Affordable Price</strong><br/>(Just ₹26 a day!)</td>
+            </tr>
+            <tr>
+              <td className="font-bold p-6 text-gray-900">The Verdict</td>
+              <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
+              <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
+              <td className="text-center p-6 text-purple-700 font-bold border-l border-gray-100 bg-purple-50/50">Low Cost, High Service</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 );
 
