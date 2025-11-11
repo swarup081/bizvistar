@@ -125,7 +125,7 @@ const featureList = [
   { category: 'DONE-FOR-YOU SERVICES' },
   { name: 'Email Support', starter: 'Standard', pro: 'Priority', growth: 'Priority' },
   { name: 'WhatsApp Support', starter: false, pro: true, growth: true },
-  { name: 'Social Media Posts', starter: false, pro: '3 / mo', growth: '8 / mo' },
+  { name: 'Social Media Posts', starter: false, pro: '3 / mo', growth: '5 / mo' },
   { name: 'Google Maps Management', starter: false, pro: false, growth: true },
   { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
 ];
@@ -322,54 +322,14 @@ export default function PricingPage() {
         {/* --- NEW SECTION: Enterprise & Trust (matches screenshot) --- */}
         <div className="max-w-7xl mx-auto mt-24">
           
-          {/* Top Grid: Enterprise Offer + Features */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start p-10 bg-gray-50 rounded-3xl">
-              
-              {/* LEFT: Enterprise Offer */}
-              <div className="text-left">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">BizVistar Enterprise solutions</h3>
-                  <p className="text-gray-600 text-lg mb-8 leading-relaxed">
-                      Launch exceptional sites faster, manage your business better, and work more freely.
-                  </p>
-                  <Link href="/enterprise">
-                      {/* Screenshot button is white with black text and border */}
-                      <button className="px-8 py-3 bg-white border-2 border-gray-900 text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-colors">
-                          Book a Call
-                      </button>
-                  </Link>
-              </div>
-
-              {/* RIGHT: Enterprise Features Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-12">
-                  <div>
-                      <Zap className="w-8 h-8 text-purple-600 mb-4" />
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">Faster content deployment</h4>
-                      <p className="text-gray-600 leading-relaxed text-[15px]">Launch sites at scale with custom templates and reusable components.</p>
-                  </div>
-                  <div>
-                      <Layers className="w-8 h-8 text-purple-600 mb-4" />
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">Multi-site management</h4>
-                      <p className="text-gray-600 leading-relaxed text-[15px]">Streamline ops with shared assets and centralized billing on one dashboard.</p>
-                  </div>
-                  <div>
-                      <BarChart2 className="w-8 h-8 text-purple-600 mb-4" />
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">Custom integrations</h4>
-                      <p className="text-gray-600 leading-relaxed text-[15px]">Seamlessly connect the software tools, apps, and APIs your business relies on.</p>
-                  </div>
-                  <div>
-                      <Headset className="w-8 h-8 text-purple-600 mb-4" />
-                      <h4 className="text-lg font-bold text-gray-900 mb-2">Dedicated account support</h4>
-                      <p className="text-gray-600 leading-relaxed text-[15px]">Get priority support and personalized training for you and your team.</p>
-                  </div>
-              </div>
-          </div>
+          
 
           {/* Disclaimer Text */}
-          <div className="px-6 mt-8">
-            <p className="text-xs text-gray-400">
-              Displayed prices are for yearly subscriptions, paid in full at the time of purchase. Prices do not include applicable taxes, which are determined according to your billing address. The final price can be seen on the purchase page, before payment is completed.
+          <div className="px-6 mt-0">
+            <p className="text-xs text-gray-500">
+              Prices shown do not include applicable taxes. Taxes will be automatically calculated based on your billing address and local regulations. You’ll always see the complete and final amount on the checkout page before you confirm your payment.
             </p>
-          </div>
+          </div>  
 
           {/* Trust Badges */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 px-6">
@@ -384,12 +344,12 @@ export default function PricingPage() {
                   </div>
               </div>
               
-              {/* 2. Money Back Guarantee */}
+              {/* 2. Cancel Anytime*/}
               <div className="flex gap-4 items-start">
                   <MoneyBackIcon />
                   <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">MONEY BACK GUARANTEE</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">Try BizVistar plans for 14 days and if you're not 100% satisfied, get your money back.</p>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">Cancel Anytime                      </h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">End your plan anytime, no questions asked — full control, zero hassle.</p>
                   </div>
               </div>
 
@@ -397,8 +357,8 @@ export default function PricingPage() {
               <div className="flex gap-4 items-start">
                   <SslShieldIcon />
                   <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">SSL SECURE PAYMENT</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">Your information is protected by 256-bit SSL encryption.</p>
+                      <h4 className="text-base font-semibold text-gray-900 mb-1">Smart Business Insights</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">Understand what’s working. Get real-time visitor data and performance insights to grow faster</p>
                   </div>
               </div>
           </div>
@@ -541,9 +501,6 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
           
           {/* --- Empty First Column (for feature names) --- */}
           <div className="p-6 flex items-end">
-            <h2 className="text-4xl font-bold text-gray-900">
-              Compare plans
-            </h2>
           </div>
 
           {/* --- Starter Plan --- */}
