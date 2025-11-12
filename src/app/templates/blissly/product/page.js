@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { businessData } from '../../data.js';
-import { useCart } from '../../cartContext.js';
-import { ProductCard } from '../../components.js'; // Import ProductCard for related items
+import { businessData } from '../data.js'; // CORRECTED: Was ../../data.js
+import { useCart } from '../cartContext.js'; // CORRECTED: Was ../../cartContext.js
+import { ProductCard } from '../components.js'; // CORRECTED: Was ../../components.js
 
 export default function ProductDetailPage() {
     const params = useParams();
