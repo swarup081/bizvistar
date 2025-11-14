@@ -1,0 +1,13 @@
+# This tells Supabase the correct path to each function's entrypoint.
+
+[functions.save-website]
+entrypoint = "./functions/save-website/index.js"
+
+[functions.publish-website]
+entrypoint = "./functions/publish-website/index.js"
+
+[functions.analytics-collector]
+entrypoint = "./functions/analytics-collector/index.js"
+
+[functions.razorpay-webhook]
+entrypoint = "./functions/razorpay-webhook/index.js"

@@ -2,14 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { supabase } from '@/lib/supabaseClient'; // Import your client
 
 // --- Data for the templates ---
 const templates = [
+  // ... (your templates array remains the same) ...
   {
     title: 'flavornest',
     description: 'Focus on a single to promote upcoming releases with a coming soon approach that has a modern layout.',
     url: '/templates/flavornest',
-    previewUrl: '/preview/flavornest', // Added leading slash for consistency
+    previewUrl: '/preview/flavornest',
     editor:'/editor/flavornest',
 
   },
@@ -17,28 +20,80 @@ const templates = [
     title: 'flara',
     description: 'Give site visitors eye-catching design, appointment booking, and shopping in one seamless experience.',
     url: '/templates/flara',
-    previewUrl: '/preview/flara', // Added leading slash for consistency
+    previewUrl: '/preview/flara',
     editor:'/editor/flara',
   },
   {
     title: 'avenix',
     description: 'A bold, minimalist portfolio template to showcase your creative work and professional journey.',
     url: '/templates/avenix',
-    previewUrl: '/preview/avenix', // Added leading slash for consistency
+    previewUrl: '/preview/avenix',
     editor:'/editor/avenix',
   },
   {
     title: 'blissly',
     description: 'A modern, dark-themed storefront perfect for apparel brands and high-end fashion retailers.',
     url: '/templates/blissly',
-    previewUrl: '/preview/blissly', // Added leading slash for consistency
+    previewUrl: '/preview/blissly',
     editor:'/editor/blissly',
   }
 ];
 
-// --- Reusable Template Card Component with Animation ---
-// FIX: Added 'previewUrl' to the component's props destructuring
+// --- Reusable Template Card Component with NEW LOGIC ---
 const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleStartEditing = async () => {
+    setIsCreating(true);
+
+    // 1. Get the logged-in user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      // If no user, send to sign-in
+      router.push('/sign-in');
+      return;
+    }
+
+    try {
+      // 2. Get the template ID from its name (from your 'templates' table)
+      const { data: template, error: templateError } = await supabase
+        .from('templates')
+        .select('id')
+        .eq('name', title) // 'title' is 'flavornest', 'flara', etc.
+        .single();
+
+      if (templateError) throw new Error(`Could not find template: ${templateError.message}`);
+      if (!template) throw new Error('Template not found in database.');
+
+      // 3. Get user info from localStorage
+      const storeName = localStorage.getItem('storeName') || 'My New Site';
+      const site_slug = storeName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(); // Unique slug
+
+      // 4. Create the new website entry in your 'websites' table
+      const { data: newSite, error: insertError } = await supabase
+        .from('websites')
+        .insert({
+          user_id: user.id,
+          template_id: template.id,
+          site_slug: site_slug,
+          website_data: {} // Start with empty data
+        })
+        .select('id') // Ask Supabase to return the 'id' of the new row
+        .single();
+
+      if (insertError) throw new Error(`Could not create site: ${insertError.message}`);
+      if (!newSite) throw new Error('Failed to create site entry.');
+      
+      // 5. Redirect to the editor with the new site_id in the URL
+      router.push(`/editor/${title}?site_id=${newSite.id}`);
+
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+      setIsCreating(false);
+    }
+  };
+
   return (
     <motion.div
       className="group max-w-xl cursor-pointer"
@@ -46,8 +101,9 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
       initial="initial"
       animate="initial"
     >
-      {/* Container for the visual part (iframes). */}
-      <div className="relative h-[320px]">
+      {/* ... (your iframe/preview motion.divs remain unchanged) ... */}
+       {/* Container for the visual part (iframes). */}
+       <div className="relative h-[320px]">
 
         {/* Mobile View - Positioned BEHIND the desktop view */}
         <motion.div
@@ -105,16 +161,21 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
         </motion.div>
       </div>
 
-      {/* --- Hover Info Block --- */}
+
+      {/* --- Hover Info Block (MODIFIED) --- */}
       <div className="mt-8 min-h-[140px] transform px-2 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 text-base leading-relaxed text-gray-600">{description}</p>
         <div className="mt-6 flex items-center gap-3">
-            <Link href={`${editor}`}>
-              <button className="rounded-lg bg-gray-900 px-6 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-gray-800">
-                  Start Editing
-              </button>
-            </Link>
+            {/* THIS IS THE CHANGE: Changed <Link> to <button> with onClick */}
+            <button 
+              onClick={handleStartEditing}
+              disabled={isCreating}
+              className="rounded-lg bg-gray-900 px-6 py-2.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-gray-800 disabled:bg-gray-400"
+            >
+              {isCreating ? 'Creating...' : 'Start Editing'}
+            </button>
+            {/* END OF CHANGE */}
             <Link href={previewUrl} target="_blank" rel="noopener noreferrer">
                 <button className="rounded-lg bg-white px-6 py-2.5 text-base font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 transition-colors hover:bg-gray-50">
                     Preview Site
@@ -127,7 +188,7 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
 };
 
 
-// --- Main Page ---
+// --- Main Page (No changes needed below) ---
 export default function TemplatesPage() {
   const [storeName, setStoreName] = useState("Your Business");
 

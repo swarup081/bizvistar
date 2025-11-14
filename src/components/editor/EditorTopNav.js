@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Monitor, Smartphone, ChevronDown, Info
+  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
 } from 'lucide-react';
 
 // A simple reusable button component for the nav
@@ -15,6 +15,8 @@ const NavButton = ({ children, className = '', ...props }) => (
     {children}
   </button>
 );
+
+// ... (IconUndo, IconRedo, VerticalSeparator, Tooltip components remain the same) ...
 
 // --- Custom SVG Icons ---
 const IconUndo = () => (
@@ -89,6 +91,10 @@ const RestartConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
         <div className="flex items-start">
+          {/* Icon */}
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+            <RotateCcw className="h-6 w-6 text-red-600" aria-hidden="true" />
+          </div>
           <div className="ml-4 text-left">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Reset Template?
@@ -103,7 +109,7 @@ const RestartConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
         <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
           <button
             type="button"
-            className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm"
+            className="w-full inline-flex justify-center rounded-3xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
             onClick={onConfirm}
           >
             Yes, Reset
@@ -125,6 +131,8 @@ const RestartConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
 
 export default function EditorTopNav({ 
     templateName, 
+    websiteId, // <-- NEW PROP
+    saveStatus, // <-- NEW PROP
     view, 
     onViewChange, 
     activePage, 
@@ -140,7 +148,7 @@ export default function EditorTopNav({
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
   
   const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
-  const siteUrl = `https://www.bizvistar.com/mysite/${templateName}`;
+  const siteUrl = `your-site-slug.bizvistar.com`; // Placeholder URL
 
   const handlePageSelect = (path) => {
     onPageChange(path);
@@ -191,14 +199,21 @@ export default function EditorTopNav({
 
           <div className="w-px h-5 bg-gray-300"></div> 
           
-          <Tooltip
-            title="Save"
-            description="Your changes are saved automatically!"
+          {/* --- SAVE STATUS --- */}
+          <div
+            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
+              saveStatus === 'Saved' ? 'text-gray-400' : 'text-blue-600'
+            }`}
           >
-            <NavButton className="text-gray-400">
-              Save
-            </NavButton>
-          </Tooltip>
+            {saveStatus === 'Saved' && <Check size={16} />}
+            {saveStatus === 'Saving...' && (
+              <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            )}
+            {saveStatus}
+          </div>
 
           <Tooltip
             title="Preview"
@@ -214,9 +229,9 @@ export default function EditorTopNav({
             </Link>
           </Tooltip>
           
-          {/* --- THIS IS THE CHANGE --- */}
+          {/* --- UPDATED PUBLISH LINK --- */}
           <Link
-            href="/get-started/pricing" // <-- Navigates to the new page
+            href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
             className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors"
           >
             Publish
@@ -226,7 +241,7 @@ export default function EditorTopNav({
         </div>
       </div>
 
-      {/* Second Bar (No changes) */}
+      {/* ... (Second Bar remains unchanged) ... */}
       <div className="w-full h-[50px] border-b border-gray-200 px-4 flex items-center">
         {/* Left: Page & Devices */}
         <div className="flex items-center gap-4">

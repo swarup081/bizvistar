@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
+import { supabase } from '@/lib/supabaseClient'; // Import your client
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -18,16 +20,21 @@ const templateDataMap = {
   // Add other templates here as they are created
 };
 
+// Main component updated to read site_id
 export default function EditorLayout({ templateName }) {
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
+  const [activeAccordion, setActiveAccordion] = useState('global');
   
-  // --- STATE LIFTED UP ---
-  const [activeAccordion, setActiveAccordion] = useState('global'); 
-  // --- END OF CHANGE ---
+  // Get websiteId from URL query
+  const searchParams = useSearchParams();
+  const websiteId = searchParams.get('site_id');
+  
+  const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
+  const debounceTimer = useRef(null); // For debouncing save
 
-  const editorDataKey = `editorData_${templateName}`;
+  const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 
 
   const defaultData = useMemo(() => {
@@ -38,8 +45,10 @@ export default function EditorLayout({ templateName }) {
   const [history, setHistory] = useState([defaultData]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
+  // Load data
   useEffect(() => {
     try {
+      // We prioritize localStorage to keep unsaved changes
       const savedData = localStorage.getItem(editorDataKey);
       if (savedData) {
         const parsedData = JSON.parse(savedData);
@@ -47,6 +56,7 @@ export default function EditorLayout({ templateName }) {
         setHistory([parsedData]);
         setHistoryIndex(0);
       } else {
+        // If no local data, use default
         setBusinessData(defaultData);
         setHistory([defaultData]);
         setHistoryIndex(0);
@@ -57,17 +67,56 @@ export default function EditorLayout({ templateName }) {
       setHistory([defaultData]);
       setHistoryIndex(0);
     }
-  }, [templateName, defaultData, editorDataKey]); 
+  }, [templateName, websiteId, defaultData, editorDataKey]); 
 
-  useEffect(() => {
-    try {
-      const dataToSave = JSON.stringify(businessData);
-      localStorage.setItem(editorDataKey, dataToSave);
-    } catch (error) {
-      console.error("Failed to save data to localStorage:", error);
+// Auto-save logic
+useEffect(() => {
+  // 1. Save to localStorage immediately
+  try {
+    const dataToSave = JSON.stringify(businessData);
+    localStorage.setItem(editorDataKey, dataToSave);
+    setSaveStatus('Saving...');
+  } catch (error) {
+    console.error("Failed to save data to localStorage:", error);
+  }
+
+  // 2. Debounce saving to Supabase
+  if (debounceTimer.current) {
+    clearTimeout(debounceTimer.current);
+  }
+
+  debounceTimer.current = setTimeout(async () => {
+    if (websiteId) {
+      
+      // --- ADD THIS LINE ---
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // Call the 'save-website' Supabase function
+      const { error } = await supabase.functions.invoke('save-website', {
+        
+        // --- ADD THIS 'headers' OBJECT ---
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        // --- END OF ADDITIONS ---
+        
+        body: { websiteId, websiteData: businessData },
+      });
+
+      if (error) {
+        setSaveStatus('Error');
+        console.error('Error saving to Supabase:', error);
+      } else {
+        setSaveStatus('Saved');
+      }
+    } else {
+      setSaveStatus('Saved (Local)');
     }
-  }, [businessData, editorDataKey]);
+  }, 1500); // Save 1.5 seconds after last change
 
+  return () => clearTimeout(debounceTimer.current);
+
+}, [businessData, editorDataKey, websiteId]);
   
   const handleDataUpdate = (updaterFn) => {
     setBusinessData(prevData => {
@@ -118,6 +167,7 @@ export default function EditorLayout({ templateName }) {
     }
   };
 
+  // Send data to iframe, but not on every keystroke (debounced)
   useEffect(() => {
     const handler = setTimeout(() => {
       sendDataToIframe(businessData);
@@ -126,6 +176,7 @@ export default function EditorLayout({ templateName }) {
     return () => clearTimeout(handler);
   }, [businessData]); 
 
+  // Listen for messages from iframe
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.data.type === 'IFRAME_READY') {
@@ -207,10 +258,7 @@ export default function EditorLayout({ templateName }) {
           const homePage = businessData.pages.find(p => p.name.toLowerCase() === 'home');
           const homePath = homePage?.path || businessData.pages[0]?.path;
           
-          // --- THIS IS THE RUNTIME ERROR FIX ---
-          // It now calls handlePageChange (defined above) instead of onPageChange
           handlePageChange(sectionId === 'home' ? homePath : `${homePath}#${sectionId}`);
-          // --- END OF FIX ---
         }
       }
     }
@@ -225,6 +273,8 @@ export default function EditorLayout({ templateName }) {
         <div className="flex-shrink-0">
           <EditorTopNav
             templateName={templateName}
+            websiteId={websiteId} // Pass websiteId to the nav
+            saveStatus={saveStatus} // Pass saveStatus to the nav
             view={view}
             onViewChange={setView}
             activePage={activePage}

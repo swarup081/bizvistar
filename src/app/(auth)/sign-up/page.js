@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Mail, Lock } from 'lucide-react'; // Import icons
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { User, Mail, Lock } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient'; // Import your new client
+
+// ... (GoogleIcon, AuthInput, AuthDivider components remain the same) ...
 
 // Reusable Google Icon
 const GoogleIcon = () => (
@@ -13,8 +17,6 @@ const GoogleIcon = () => (
     <path d="M43.6111 20.0833H42V20H24V28H35.303C34.535 30.1322 33.2843 32.0079 31.6766 33.466L37.1498 37.8358C41.0913 34.137 43.5 29.3235 43.5 24C43.5 22.6104 43.4072 21.34 43.2332 20.0833H43.6111V20.0833Z" fill="#1976D2"/>
   </svg>
 );
-
-// ** UPDATED: Reusable Input Field with Icon (rounded-lg) **
 const AuthInput = ({ id, label, type, placeholder, value, onChange, icon: Icon }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-800 mb-2">
@@ -36,8 +38,6 @@ const AuthInput = ({ id, label, type, placeholder, value, onChange, icon: Icon }
     </div>
   </div>
 );
-
-// ** UPDATED: Divider Component (more spacing) **
 const AuthDivider = () => (
     <div className="flex items-center my-8">
         <div className="flex-grow border-t border-gray-200"></div>
@@ -48,14 +48,40 @@ const AuthDivider = () => (
     </div>
 );
 
+
 export default function SignUpPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Sign Up attempt:', { fullName, email, password });
+    setLoading(true);
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+
+    if (error) {
+      alert(error.message);
+    } else if (data.user) {
+      // Optional: auto-create profile
+      await supabase.from('profiles').insert({
+        id: data.user.id,
+        full_name: fullName,
+      });
+      // Redirect to the "get-started" flow
+      router.push('/get-started');
+    }
+    setLoading(false);
   };
 
   return (
@@ -67,7 +93,6 @@ export default function SignUpPage() {
         Start your journey with BizVistar today.
       </p>
 
-      {/* ** UPDATED: Button uses rounded-lg ** */}
       <button
         type="button"
         className="w-full flex justify-center items-center gap-3 px-4 py-3 bg-white border border-gray-300 rounded-lg text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:ring-offset-2 transition-colors"
@@ -109,12 +134,12 @@ export default function SignUpPage() {
           icon={Lock}
         />
 
-        {/* ** UPDATED: Button uses rounded-lg ** */}
         <button
           type="submit"
           className="w-full px-8 py-3 bg-blue-600 text-white font-semibold text-lg rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+          disabled={loading}
         >
-          Create Account
+          {loading ? 'Creating...' : 'Create Account'}
         </button>
       </form>
 

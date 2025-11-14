@@ -1,54 +1,27 @@
-// src/app/get-started/pricing/page.js
 'use client';
 
-import { useState } from 'react';
-import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react'; // Added Info icon
+import { useState, Suspense } from 'react'; // Import Suspense
+import { useSearchParams, useRouter } from 'next/navigation'; // Import hooks
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient'; // Import your client
+
+// ... (All sub-components like CheckMark, PlanCard, FaqSection, etc., remain unchanged) ...
+// ... (I'm omitting them here for brevity, but keep them in your file) ...
 
 // --- Reusable Icons ---
 const CheckMark = () => <div className="flex justify-center"><Check className="w-5 h-5 text-blue-600" strokeWidth={2.5} /></div>;
 const Dash = () => <div className="flex justify-center"><Minus className="w-5 h-5 text-gray-300" strokeWidth={2.5} /></div>;
-
-// --- Payment Icons (Professional SVGs) ---
-const VisaIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.386 25.105L19.69 16.978H23.906L22.602 25.105H18.386Z" fill="#0A2540"/><path d="M33.492 17.13C33.105 16.978 32.332 16.826 31.344 16.826C28.743 16.826 26.918 18.234 26.918 20.941C26.918 22.88 28.699 23.945 30.117 24.63C31.578 25.352 32.051 25.808 32.051 26.53C32.051 27.633 30.761 28.127 29.516 28.127C28.314 28.127 27.584 27.937 27.069 27.709L26.338 31.127C27.24 31.545 28.872 31.887 30.547 31.887C33.381 31.887 35.272 30.48 35.272 27.594C35.272 25.883 34.198 24.667 32.609 23.907C31.15 23.185 30.591 22.767 30.591 21.893C30.591 21.133 31.45 20.525 32.266 20.525C33.082 20.525 33.597 20.639 33.898 20.791L34.37 18.51L33.492 17.13Z" fill="#0A2540"/><path d="M41.812 16.978H38.505C37.474 16.978 37.216 17.244 36.83 18.232L31.536 31.649H35.962L36.864 29.065H42.412L42.928 31.649H46.922L43.788 16.978H41.812ZM39.622 21.232L41.554 26.708H38.376L39.622 21.232Z" fill="#0A2540"/><path d="M12.387 16.978H8.306C8.048 16.978 7.704 17.054 7.532 17.434L4.31 31.649H8.692L12.387 16.978Z" fill="#0A2540"/><path d="M3.452 16.978L0 17.168L0.516 19.865C0.946 20.967 4.052 25.523 4.052 25.523L4.782 22.255L6.286 16.978H3.452Z" fill="#0A2540"/></svg>;
-const MasterCardIcon = () => <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.783 42C21.943 42 25.771 40.413 28.677 37.761C25.811 34.94 24 31.033 24 26.702C24 21.879 26.189 17.563 29.605 14.559C26.639 11.752 22.58 10 18.101 10C9.147 10 1.885 17.346 1.885 26.406C1.885 35.016 8.86 42 17.783 42Z" fill="#FF5F00"/><path d="M34.536 42C43.146 42 50.123 35.016 50.123 26.406C50.123 17.346 42.861 10 33.908 10C29.883 10 26.207 11.413 23.329 13.774C26.67 16.883 28.793 21.388 28.793 26.385C28.793 30.983 26.996 35.161 24.127 38.172C27.002 40.587 30.612 42 34.536 42Z" fill="#EB001B"/><path d="M29.605 14.559C26.189 17.563 24 21.879 24 26.702C24 31.033 25.811 34.94 28.677 37.761C26.996 35.161 28.793 30.983 28.793 26.385C28.793 21.388 26.67 16.883 23.329 13.774C25.394 14.036 27.503 14.29 29.605 14.559Z" fill="#F79E1B"/></svg>;
-
-const AmexIcon = () => (
-  <svg className="h-8 w-auto" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="48" height="32" rx="4" fill="#006FCF"/>
-    <rect x="5" y="5" width="38" height="22" rx="2" fill="#006FCF" stroke="white" strokeWidth="2"/>
-    <path d="M24 10H18V22H24V18H30V14H24V10Z" fill="white"/>
-    <path d="M30 10H36V22H30V18H36V14H30V10Z" fill="white"/>
-    <path d="M12 10H18V12H12V10Z" fill="white"/>
-    <path d="M12 20H18V22H12V20Z" fill="white"/>
-    <path d="M12 15H18V17H12V15Z" fill="white"/>
-  </svg>
-);
-
-const MoneyBackIcon = () => (
-  <svg className="w-10 h-10 text-gray-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 2C6.477 2 2 6.477 2 12C2 17.523 6.477 22 12 22C17.523 22 22 17.523 22 12C22 6.477 17.523 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M14.5 9.16669C14.1667 9.05557 13.5 8.83335 12 8.83335C10.1667 8.83335 9 9.75002 9 11.0834C9 12.4167 10.1667 13.1667 11.3333 13.5834C12.5 14 13.1667 14.5 13.1667 15.4167C13.1667 16.1667 12.5 16.6667 11.5 16.6667C10.5 16.6667 10.0833 16.5 9.75 16.4167" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 7V18.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 16H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 12H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 8H6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.5 16H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.5 12H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M17.5 8H19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
+// ... (all other icon components) ...
 const SslShieldIcon = () => (
     <svg className="w-10 h-10 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2L3 5V11C3 16.5 7.5 21.5 12 22C16.5 21.5 21 16.5 21 11V5L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 );
-
-// --- NEW: Info Tooltip Component (Light theme) ---
+// ... (InfoTooltip component) ...
 const InfoTooltip = ({ info }) => {
   const [isVisible, setIsVisible] = useState(false);
   return (
@@ -83,28 +56,7 @@ const InfoTooltip = ({ info }) => {
     </div>
   );
 };
-
-// --- NEW: Tooltip Data ---
-const featureTooltips = {
-  'AI-Powered Website Builder': 'Our AI instantly generates a professional website with text and images based on your business type, so you don\'t have to start from scratch.',
-  'Easy-to-Use Editor': 'Our simple editor allows you to click on any text or image on your site and change it instantly, no code required.',
-  'Secure Web Hosting': 'We handle all the technical details, providing fast and secure hosting for your website, included in your plan.',
-  'Professional Subdomain': 'Get a website address like "yourname.bizvistar.com" to share with your customers instantly.',
-  'Free Custom Domain (1st Year)': 'Get a professional domain like "yourname.com" for free for the first year (with annual Growth plan).',
-  'Products': 'The number of products (like t-shirts, cakes, or services) you can list on your e-commerce store.',
-  'Business Tools': 'Tools to help you run your business, such as an Appointment Booker, Order Manager, or Contact Form.',
-  'Order Dashboard': 'A central place to view and manage all your incoming orders from customers.',
-  'Visitor Analytics': 'See how many people visit your site. Advanced analytics show where they come from and what pages they view.',
-  'Order Confirmation Emails': 'Your customers will automatically receive a confirmation email every time they place an order.',
-  'Dashboard Order Sound': 'Get an audible "cha-ching" or notification sound in your dashboard when a new order arrives.',
-  'WhatsApp Notifications': 'Receive an instant notification on your WhatsApp number as soon as a new order comes in.',
-  'Email Support': 'Get help from our support team via email.',
-  'WhatsApp Support': 'Get priority help directly via a dedicated WhatsApp chat number.',
-  'Social Media Posts': 'Our team will design and write professional posts for your social media (like Instagram or Facebook) every month.',
-  'Google Maps Management': 'We will set up and optimize your Google My Business profile to help you get found in local searches.',
-  'Priority Onboarding Call': 'A dedicated 1-on-1 call with our team to help you get your site and store set up perfectly.',
-};
-
+// ... (featureTooltips and featureList) ...
 // --- NEW: Features List Structure ---
 const featureList = [
   { category: 'CORE PLATFORM' },
@@ -130,7 +82,34 @@ const featureList = [
   { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
 ];
 
-export default function PricingPage() {
+const featureTooltips = {
+  'AI-Powered Website Builder': 'Our AI instantly generates a professional website with text and images based on your business type, so you don\'t have to start from scratch.',
+  'Easy-to-Use Editor': 'Our simple editor allows you to click on any text or image on your site and change it instantly, no code required.',
+  'Secure Web Hosting': 'We handle all the technical details, providing fast and secure hosting for your website, included in your plan.',
+  'Professional Subdomain': 'Get a website address like "yourname.bizvistar.com" to share with your customers instantly.',
+  'Free Custom Domain (1st Year)': 'Get a professional domain like "yourname.com" for free for the first year (with annual Growth plan).',
+  'Products': 'The number of products (like t-shirts, cakes, or services) you can list on your e-commerce store.',
+  'Business Tools': 'Tools to help you run your business, such as an Appointment Booker, Order Manager, or Contact Form.',
+  'Order Dashboard': 'A central place to view and manage all your incoming orders from customers.',
+  'Visitor Analytics': 'See how many people visit your site. Advanced analytics show where they come from and what pages they view.',
+  'Order Confirmation Emails': 'Your customers will automatically receive a confirmation email every time they place an order.',
+  'Dashboard Order Sound': 'Get an audible "cha-ching" or notification sound in your dashboard when a new order arrives.',
+  'WhatsApp Notifications': 'Receive an instant notification on your WhatsApp number as soon as a new order comes in.',
+  'Email Support': 'Get help from our support team via email.',
+  'WhatsApp Support': 'Get priority help directly via a dedicated WhatsApp chat number.',
+  'Social Media Posts': 'Our team will design and write professional posts for your social media (like Instagram or Facebook) every month.',
+  'Google Maps Management': 'We will set up and optimize your Google My Business profile to help you get found in local searches.',
+  'Priority Onboarding Call': 'A dedicated 1-on-1 call with our team to help you get your site and store set up perfectly.',
+};
+// --- Main Content Component ---
+function PricingPageContent() {
+  const [isYearly, setIsYearly] = useState(false); // Default to Monthly
+  const [loadingPlan, setLoadingPlan] = useState(null); // Track which plan is loading
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const websiteId = searchParams.get('site_id'); // Get site_id from URL
+
   const plans = {
     monthly: [
       {
@@ -149,6 +128,7 @@ export default function PricingPage() {
           'Standard Email Support',
         ],
       },
+      // ... (other plans) ...
       {
         name: 'Pro',
         subtitle: 'The "Done-with-You" Partner',
@@ -182,7 +162,8 @@ export default function PricingPage() {
       },
     ],
     yearly: [
-      {
+      // ... (your yearly plans) ...
+       {
         name: 'Starter',
         subtitle: 'The Digital Business Card',
         price: '249',
@@ -238,9 +219,34 @@ export default function PricingPage() {
     ],
   };
 
-  const [isYearly, setIsYearly] = useState(false); // Default to Monthly
   const activePlans = isYearly ? plans.yearly : plans.monthly;
-  const maxSavings = 17; // Hardcoded based on your request "SAVE 17%"
+  const maxSavings = 17; // Hardcoded
+
+  // --- NEW: Publish Function (Bypasses Payment) ---
+  const handleSelectPlan = async (planName) => {
+    setLoadingPlan(planName);
+
+    if (!websiteId) {
+      alert("Error: No website ID found. Please go back to the editor and click 'Publish' again.");
+      setLoadingPlan(null);
+      return;
+    }
+
+    // Call your 'publish-website' function
+    const { error } = await supabase.functions.invoke('publish-website', {
+      body: { websiteId },
+    });
+
+    if (error) {
+      alert(`Error publishing site: ${error.message}`);
+    } else {
+      alert(`Success! Your site is now being published. It may take a few minutes to go live.`);
+      // Redirect to a dashboard or home
+      router.push('/');
+    }
+    
+    setLoadingPlan(null);
+  };
 
   return (
     <div className="py-17 sm:py-25 bg-white font-sans text-gray-900">
@@ -255,7 +261,6 @@ export default function PricingPage() {
             Choose a plan to go live and start growing your business. All plans are risk-free. Cancel anytime.
           </p>
           
-          {/* --- ANIMATED Toggle --- */}
           <div className="relative inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
              <button
                 onClick={() => setIsYearly(false)}
@@ -264,9 +269,7 @@ export default function PricingPage() {
                   !isYearly ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                {/* --- FIX: Added relative z-10 span --- */}
                 <span className="relative z-10">Billed monthly</span>
-                {/* --- End Fix --- */}
                 {!isYearly && (
                   <motion.div
                     layoutId="active-pill"
@@ -299,109 +302,47 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* --- PRICING CARDS (Pro is LARGER) --- */}
+        {/* --- PRICING CARDS (MODIFIED) --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end max-w-6xl mx-auto">
             {activePlans.map((plan, index) => (
               <PlanCard
                 key={plan.name}
                 plan={plan}
                 isYearly={isYearly}
-                // Make the middle card (Pro) physically larger
+                isLoading={loadingPlan === plan.name}
+                onSelect={() => handleSelectPlan(plan.name)} // Pass the new handler
                 className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
               />
             ))}
         </div>
 
-        {/* --- "Compare Plan Features" Button --- */}
-        <div className="mt-20 text-center">
-           <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
-             Compare Plan Features
-           </Link>
-        </div>
-
-        {/* --- NEW SECTION: Enterprise & Trust (matches screenshot) --- */}
-        <div className="max-w-7xl mx-auto mt-24">
-          
-          
-
-          {/* Disclaimer Text */}
-          <div className="px-6 mt-0">
-            <p className="text-xs text-gray-500">
-              Prices shown do not include applicable taxes. Taxes will be automatically calculated based on your billing address and local regulations. You’ll always see the complete and final amount on the checkout page before you confirm your payment.
-            </p>
-          </div>  
-
-          {/* Trust Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 px-6">
-              {/* 1. Accepted Payments */}
-              <div>
-                  <h5 className="text-sm font-bold text-gray-400 tracking-widest uppercase mb-4">ACCEPTED PAYMENT METHODS</h5>
-                  <div className="flex items-center gap-4 opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                      <VisaIcon />
-                      <MasterCardIcon />
-                      <AmexIcon />
-                      <span className="text-gray-500 font-medium">+ More</span>
-                  </div>
-              </div>
-              
-              {/* 2. Cancel Anytime*/}
-              <div className="flex gap-4 items-start">
-                  <MoneyBackIcon />
-                  <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">Cancel Anytime                      </h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">End your plan anytime, no questions asked — full control, zero hassle.</p>
-                  </div>
-              </div>
-
-              {/* 3. SSL Secure Payment */}
-              <div className="flex gap-4 items-start">
-                  <SslShieldIcon />
-                  <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">Smart Business Insights</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">Understand what’s working. Get real-time visitor data and performance insights to grow faster</p>
-                  </div>
-              </div>
-          </div>
-
-        </div>
-        {/* --- END OF NEW SECTION --- */}
-
-
-        {/* --- "Compare Plan Features" Section --- */}
-        <div id="compare" className="mt-32 scroll-mt-20">
-          {/* This h2 is now hidden, as the title is in the table header */}
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
-            Compare Plan Features
-          </h2>
-          <AllFeaturesTable InfoTooltip={InfoTooltip} featureTooltips={featureTooltips} featureList={featureList} />
-        </div>
-
-        {/* --- "Why Choose BizVistaar?" Section --- */}
-        <div className="mt-32">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
-            Why Choose BizVistaar?
-          </h2>
-          <ComparisonTable />
-        </div>
-
-        {/* --- FAQ Section --- */}
-        <div className="mt-32 max-w-7xl mx-auto">
-          {/* h2 is removed and now inside FaqSection */}
-          <FaqSection />
-        </div>
+        {/* ... (Rest of the page: Compare, Trust, FAQ sections) ... */}
+        {/* ... (These components do not need modification for your goal) ... */}
 
       </div>
     </div>
   );
 }
 
-// --- Sub-component: PlanCard (ENHANCED) ---
-const PlanCard = ({ plan, isYearly, className }) => (
+// --- NEW Main Page Component (Wrapped in Suspense) ---
+// This is required because useSearchParams must be used in a Client Component
+// that is a child of <Suspense>
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PricingPageContent />
+    </Suspense>
+  );
+}
+
+
+// --- Sub-component: PlanCard (MODIFIED) ---
+const PlanCard = ({ plan, isYearly, isLoading, onSelect, className }) => (
   <div 
     className={cn(
       'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
       plan.isRecommended 
-        ? 'border-[3px] border-purple-600 shadow-2xl relative' // Highlighted Pro Plan
+        ? 'border-[3px] border-purple-600 shadow-2xl relative'
         : 'border border-gray-200 shadow-lg hover:shadow-xl',
       className
     )}
@@ -416,42 +357,37 @@ const PlanCard = ({ plan, isYearly, className }) => (
       <h3 className="text-5xl font-bold text-gray-900">{plan.name}</h3>
       <p className="text-gray-500 font-medium mt-2">{plan.subtitle}</p>
 
-      {/* --- THIS IS THE UPDATED PRICE SECTION --- */}
       <div className="my-8">
         {isYearly && plan.originalPrice && (
           <p className="text-lg font-medium text-gray-400 line-through">
             ₹{plan.originalPrice}/mo
           </p>
         )}
-
-        {/* This is the new one-line price */}
         <div className="flex items-baseline justify-center gap-1">
           <span className="text-3xl font-bold text-gray-900">₹</span>
           <span className="text-6xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
           <span className="text-xl font-medium text-gray-500">/month</span>
         </div>
-
-        {/* Yearly Savings Pill (no change) */}
          {isYearly && plan.savings && (
              <div className="mt-4 inline-block bg-green-100 text-green-700 text-sm font-bold px-4 py-1 rounded-full">
                  {plan.savings}
              </div>
          )}
       </div>
-      {/* --- END OF UPDATED PRICE SECTION --- */}
 
-      <Link href="/sign-up" className="w-full">
-        <button 
-          className={cn(
-            'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
-            plan.isRecommended
-              ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg'
-              : 'bg-gray-900 text-white hover:bg-gray-800'
-          )}
-        >
-          {plan.cta}
-        </button>
-      </Link>
+      {/* --- THIS BUTTON IS NOW FIXED --- */}
+      <button 
+        onClick={onSelect}
+        disabled={isLoading}
+        className={cn(
+          'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed',
+          plan.isRecommended
+            ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-md hover:shadow-lg'
+            : 'bg-gray-900 text-white hover:bg-gray-800'
+        )}
+      >
+        {isLoading ? 'Publishing...' : plan.cta}
+      </button>
       
        {!isYearly && (
          <p className="text-base font-semibold text-blue-600 mt-4">{plan.dailyRate}</p>
@@ -462,10 +398,8 @@ const PlanCard = ({ plan, isYearly, className }) => (
 
     </div>
     
-    {/* Features List */}
     <div className="p-10 pt-0">
        <div className="border-t border-gray-100 pt-8">
-          {/* --- Dynamic Feature Heading --- */}
           {plan.name === 'Starter' && (
             <h4 className="text-base font-semibold text-gray-800 mb-4">Includes:</h4>
           )}
@@ -475,7 +409,6 @@ const PlanCard = ({ plan, isYearly, className }) => (
           {plan.name === 'Growth' && (
             <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Pro, plus:</h4>
           )}
-          {/* --- END: Dynamic Feature Heading --- */}
           <ul className="space-y-4">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start text-left">
@@ -489,6 +422,7 @@ const PlanCard = ({ plan, isYearly, className }) => (
   </div>
 );
 
+// ... (All other components like AllFeaturesTable, FaqSection, etc. remain unchanged) ...
 // --- Sub-component: AllFeaturesTable (Scroll-linked sticky header section) ---
 // --- UPDATED to match the screenshot style ---
 const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
@@ -799,4 +733,3 @@ const FaqSection = () => {
     </div>
   );
 };
-// --- THIS IS THE END OF THE CHANGED SECTION ---

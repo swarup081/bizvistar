@@ -40,3 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+
+/public/avenix
+/public/blissly
+/public/flaraImage
+/public/flavournestImage
+
+supabase/.temp
