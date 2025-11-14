@@ -1,13 +1,6 @@
 // src/app/site/[slug]/page.js
 import { createClient } from '@supabase/supabase-js';
 
-// --- START OF NEW DEBUG LOGS ---
-console.log("--- New Site Request ---");
-console.log("Checking Vercel Environment Variables...");
-console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL ? "Loaded" : "MISSING!");
-console.log("Service Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Loaded" : "MISSING!");
-// --- END OF NEW DEBUG LOGS ---
-
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -16,8 +9,19 @@ const supabaseAdmin = createClient(
 export default async function LiveSitePage({ params }) {
   const { slug } = params;
 
-  // --- NEW DEBUG LOG ---
-  console.log(`Attempting to fetch site with slug: ${slug}`);
+  // --- THIS IS THE NEW FIX ---
+  // If the slug is literally "undefined" (from a favicon request, etc.),
+  // stop immediately before we query the database.
+  if (!slug || slug === 'undefined') {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h1>404 - Not Found</h1>
+        <p>This page does not exist.</p>
+      </div>
+    );
+  }
+  // --- END OF FIX ---
+
 
   const { data: site, error } = await supabaseAdmin
     .from('websites')
@@ -27,9 +31,8 @@ export default async function LiveSitePage({ params }) {
       template:templates ( name )
     `)
     .eq('site_slug', slug)
-    .single(); // Removed is_published for now to see if we can find it at all
+    .single();
 
-  // --- MODIFIED ERROR HANDLING (to show us the error) ---
   if (error) {
     console.error("Supabase query error:", error.message);
     return (
@@ -48,12 +51,10 @@ export default async function LiveSitePage({ params }) {
         <h1>404 - Site Not Found</h1>
         <p>Query ran, but no site matches this slug:</p>
         <p><strong>{slug}</strong></p>
-        <p>(Check for typos or if the row exists in your 'websites' table)</p>
       </div>
     );
   }
 
-  // Check for publishing *after* finding the site
   if (!site.is_published) {
     console.warn("Site found, but it is not published.");
     return (
@@ -63,8 +64,6 @@ export default async function LiveSitePage({ params }) {
       </div>
     );
   }
-  // --- END OF MODIFICATIONS ---
-
 
   // SUCCESS!
   console.log("Success! Site found and is published.");
