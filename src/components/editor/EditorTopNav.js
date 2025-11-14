@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
 } from 'lucide-react';
@@ -146,6 +148,8 @@ export default function EditorTopNav({
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const router = useRouter();
   
   const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
   const siteUrl = `your-site-slug.bizvistar.com`; // Placeholder URL
@@ -158,6 +162,42 @@ export default function EditorTopNav({
   const handleRestartConfirm = () => {
     onRestart();
     setIsRestartModalOpen(false);
+  };
+
+  const handlePublish = async () => {
+    if (!websiteId) {
+      alert('Missing website ID. Cannot publish.');
+      return;
+    }
+
+    setIsPublishing(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User not authenticated.');
+      }
+
+      const { error } = await supabase.functions.invoke('publish-website', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: { websiteId },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      alert('Your site is being published! Redirecting to the next step.');
+      router.push(`/get-started/pricing?site_id=${websiteId}`);
+
+    } catch (error) {
+      console.error('Failed to publish:', error);
+      alert(`Publishing failed: ${error.message}`);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -230,12 +270,13 @@ export default function EditorTopNav({
           </Tooltip>
           
           {/* --- UPDATED PUBLISH LINK --- */}
-          <Link
-            href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors"
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
-            Publish
-          </Link>
+            {isPublishing ? 'Publishing...' : 'Publish'}
+          </button>
           {/* --- END OF CHANGE --- */}
 
         </div>
