@@ -7,7 +7,8 @@ import FlaraProductPage from '@/app/templates/flara/product/[productId]/page';
 import AvenixLayout from '@/app/templates/avenix/layout';
 import AvenixProductPage from '@/app/templates/avenix/product/[productId]/page';
 import BlisslyLayout from '@/app/templates/blissly/layout';
-import BlisslyProductPage from '@/app/templates/blissly/product/page'; // Note: blissly file is not in a [productId] folder
+// CHANGED: Corrected import path for Blissly product page
+import BlisslyProductPage from '@/app/templates/blissly/product/[productId]/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 // Flavornest does not have a product page, so we would just render the shop
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
@@ -18,8 +19,10 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function LiveProductPage({ params }) {
-  const { slug, productId } = params; // Now we get both
+// CHANGED: The function signature is now (props)
+export default async function LiveProductPage(props) {
+  // CHANGED: We now await props.params to get both parameters
+  const { slug, productId } = await props.params;
 
   if (!slug || slug === 'undefined') {
     return <div>404 - Not Found</div>;

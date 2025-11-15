@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { businessData } from '../data.js'; // CORRECTED: Was ../../data.js
-import { useCart } from '../cartContext.js'; // CORRECTED: Was ../../cartContext.js
-import { ProductCard } from '../components.js'; // CORRECTED: Was ../../components.js
+// FIX: Path changed from ../ to ../../
+import { businessData } from '../../data.js'; 
+// FIX: Path changed from ../ to ../../
+import { useCart } from '../../cartContext.js'; 
+// FIX: Path changed from ../ to ../../
+import { ProductCard } from '../../components.js'; 
 
 export default function ProductDetailPage() {
     const params = useParams();

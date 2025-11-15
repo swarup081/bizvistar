@@ -16,8 +16,10 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function LiveCheckoutPage({ params }) {
-  const { slug } = params;
+// CHANGED: The function signature is now (props)
+export default async function LiveCheckoutPage(props) {
+  // CHANGED: We now await props.params to get the slug
+  const { slug } = await props.params;
 
   if (!slug || slug === 'undefined') {
     return <div>404 - Not Found</div>;
