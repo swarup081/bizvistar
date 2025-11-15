@@ -19,18 +19,54 @@ const supabaseAdmin = createClient(
 export default async function LiveCheckoutPage({ params }) {
   const { slug } = params;
 
-  if (!slug || slug === 'undefined') {
-    return <div>404 - Not Found</div>;
+  if (!slug || slug === "undefined") {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>404 - Not Found</h1>
+        <p>This page does not exist.</p>
+      </div>
+    );
   }
 
+  // Fetch website
   const { data: site, error } = await supabaseAdmin
-    .from('websites')
-    .select(`is_published, website_data, template:templates ( name )`)
-    .eq('site_slug', slug)
+    .from("websites")
+    .select(
+      `
+      is_published,
+      website_data,
+      template:templates ( name )
+      `
+    )
+    .eq("site_slug", slug)
     .single();
 
-  if (error || !site || !site.is_published) {
-    return <div>404 - Site Not Found</div>;
+  if (error) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>500 - Server Error</h1>
+        <p>Could not query database.</p>
+        <p style={{ color: "red" }}>Error: {error.message}</p>
+      </div>
+    );
+  }
+
+  if (!site) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>404 - Site Not Found</h1>
+        <p>No site matches slug: <strong>{slug}</strong></p>
+      </div>
+    );
+  }
+
+  if (!site.is_published) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>Site Not Published</h1>
+        <p>This site is created but not published yet.</p>
+      </div>
+    );
   }
 
   const templateName = site.template.name;

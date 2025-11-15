@@ -1,8 +1,8 @@
-// src/app/templates/blissly/product/page.js
+// src/app/templates/avenix/product/page.js
 'use client';
 import { useTemplateContext } from '../templateContext';
 
-export default function BlisslyProductPage({ product }) {
+export default function AvenixProductPage({ product }) {
   const { data } = useTemplateContext();
 
   if (!product) {

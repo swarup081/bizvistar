@@ -1,8 +1,8 @@
-// src/app/templates/blissly/product/page.js
+// src/app/templates/flara/product/page.js
 'use client';
 import { useTemplateContext } from '../templateContext';
 
-export default function BlisslyProductPage({ product }) {
+export default function FlaraProductPage({ product }) {
   const { data } = useTemplateContext();
 
   if (!product) {
