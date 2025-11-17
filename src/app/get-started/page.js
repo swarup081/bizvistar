@@ -4,69 +4,132 @@ import { useState, useEffect, useRef } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- 1. Smart Skeleton Component (UNCHANGED) ---
+// --- 1. Smart Skeleton Component (Subtle but Distinct Colors) ---
 const TemplateSkeleton = ({ variant }) => {
   
   const renderContent = () => {
     switch (variant) {
       case 'centered':
         return (
-          <div className="flex flex-col items-center text-center mt-4 gap-3 animate-pulse">
-            <div className="h-6 w-2/3 bg-gray-800/10 rounded-lg"></div>
-            <div className="h-3 w-1/2 bg-gray-200 rounded-lg"></div>
-            <div className="h-8 w-32 bg-gray-800/20 rounded-full mt-2"></div>
-            <div className="w-full h-32 bg-orange-50 rounded-xl mt-6 border border-orange-100"></div>
+          <div className="flex flex-col items-center text-center mt-6 gap-3 animate-pulse">
+            <div className="h-6 w-3/4 bg-gray-200 rounded-lg"></div>
+            <div className="h-3 w-1/2 bg-gray-100 rounded-lg"></div>
+            <div className="h-8 w-28 bg-gray-100 rounded-full mt-3"></div>
+            {/* Subtle Orange */}
+            <div className="w-full h-36 bg-orange-100 rounded-xl mt-6 border border-orange-200 mx-auto"></div>
           </div>
         );
       case 'grid':
         return (
-          <div className="flex flex-col gap-4 mt-2 px-2 animate-pulse">
-             <div className="h-8 w-3/4 bg-gray-800/10 rounded-lg"></div>
-             <div className="grid grid-cols-2 gap-2 mt-2">
-                <div className="h-24 bg-green-50 rounded-lg border border-green-100"></div>
-                <div className="h-24 bg-green-50 rounded-lg border border-green-100"></div>
-                <div className="h-24 bg-green-50 rounded-lg border border-green-100"></div>
-                <div className="h-24 bg-green-50 rounded-lg border border-green-100"></div>
+          <div className="flex flex-col gap-3 mt-4 px-1 animate-pulse">
+             <div className="h-8 w-2/3 bg-gray-200 rounded-lg mb-2"></div>
+             <div className="grid grid-cols-2 gap-3">
+                {/* Subtle Green */}
+                <div className="h-24 bg-green-100 rounded-lg border border-green-200"></div>
+                <div className="h-24 bg-green-100 rounded-lg border border-green-200"></div>
+                <div className="h-24 bg-green-100 rounded-lg border border-green-200"></div>
+                <div className="h-24 bg-green-100 rounded-lg border border-green-200"></div>
              </div>
           </div>
         );
       case 'feature':
         return (
-           <div className="flex gap-4 items-center h-48 px-2 mt-2 animate-pulse">
-              <div className="w-5/12 h-full bg-purple-50 rounded-r-xl border-y border-r border-purple-100"></div>
-              <div className="w-7/12 flex flex-col gap-2">
-                  <div className="h-5 w-full bg-gray-800/10 rounded-md"></div>
+           <div className="flex gap-3 items-center h-48 px-1 mt-4 animate-pulse">
+              {/* Subtle Purple */}
+              <div className="w-1/2 h-40 bg-purple-100 rounded-lg border border-purple-200"></div>
+              <div className="w-1/2 flex flex-col gap-2">
+                  <div className="h-5 w-full bg-gray-200 rounded-md"></div>
                   <div className="h-2 w-full bg-gray-100 rounded-md"></div>
-                  <div className="h-2 w-5/6 bg-gray-100 rounded-md"></div>
+                  <div className="h-2 w-4/5 bg-gray-100 rounded-md"></div>
                   <div className="h-2 w-full bg-gray-100 rounded-md"></div>
-                  <div className="h-8 w-24 bg-purple-100 rounded-md mt-2"></div>
+                  <div className="h-8 w-20 bg-purple-100 rounded-md mt-2"></div>
               </div>
            </div>
         );
       case 'minimal':
         return (
-           <div className="flex flex-col px-4 mt-6 animate-pulse gap-6">
-              <div className="h-12 w-10/12 bg-gray-900/5 rounded-xl"></div>
-              <div className="flex gap-3">
-                 <div className="h-20 w-1/3 bg-gray-50 border border-gray-100 rounded-lg"></div>
-                 <div className="h-20 w-1/3 bg-gray-50 border border-gray-100 rounded-lg"></div>
-                 <div className="h-20 w-1/3 bg-gray-50 border border-gray-100 rounded-lg"></div>
+           <div className="flex flex-col px-3 mt-6 animate-pulse gap-5">
+              <div className="h-14 w-full bg-gray-100 rounded-xl border border-gray-200"></div>
+              <div className="flex gap-2">
+                 <div className="h-24 w-1/3 bg-gray-50 border border-gray-200 rounded-lg"></div>
+                 <div className="h-24 w-1/3 bg-gray-50 border border-gray-200 rounded-lg"></div>
+                 <div className="h-24 w-1/3 bg-gray-50 border border-gray-200 rounded-lg"></div>
               </div>
-              <div className="h-32 w-full bg-gray-100 rounded-xl"></div>
+              <div className="h-28 w-full bg-gray-100 border border-gray-200 rounded-xl"></div>
+           </div>
+        );
+      case 'ecommerce':
+        return (
+           <div className="flex flex-col mt-2 animate-pulse px-1">
+              {/* Hero Banner - Subtle Blue */}
+              <div className="w-full h-32 bg-blue-100 rounded-lg mb-4 border border-blue-200 relative">
+                 <div className="absolute bottom-3 left-3 h-4 w-24 bg-white/60 rounded-md"></div>
+              </div>
+              {/* Product Row */}
+              <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <div className="h-16 bg-gray-100 rounded-md border border-gray-200"></div>
+                    <div className="h-2 w-full bg-gray-50 rounded-sm"></div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="h-16 bg-gray-100 rounded-md border border-gray-200"></div>
+                    <div className="h-2 w-full bg-gray-50 rounded-sm"></div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="h-16 bg-gray-100 rounded-md border border-gray-200"></div>
+                    <div className="h-2 w-full bg-gray-50 rounded-sm"></div>
+                  </div>
+              </div>
+           </div>
+        );
+      case 'blog':
+        return (
+           <div className="flex gap-4 mt-4 px-2 animate-pulse h-full">
+              {/* Sidebar */}
+              <div className="w-1/4 flex flex-col gap-2 border-r border-dashed border-gray-200 pr-2">
+                 <div className="h-3 w-full bg-gray-200 rounded-full"></div>
+                 <div className="h-3 w-3/4 bg-gray-100 rounded-full"></div>
+                 <div className="h-3 w-5/6 bg-gray-100 rounded-full"></div>
+                 <div className="h-3 w-4/5 bg-gray-100 rounded-full"></div>
+              </div>
+              {/* Content */}
+              <div className="w-3/4 flex flex-col gap-4">
+                 <div className="h-24 w-full bg-gray-50 border border-gray-200 rounded-lg"></div>
+                 <div className="h-4 w-2/3 bg-gray-200 rounded-md"></div>
+                 <div className="space-y-1">
+                    <div className="h-2 w-full bg-gray-100 rounded"></div>
+                    <div className="h-2 w-full bg-gray-100 rounded"></div>
+                    <div className="h-2 w-5/6 bg-gray-100 rounded"></div>
+                 </div>
+              </div>
+           </div>
+        );
+      case 'portfolio':
+        return (
+           <div className="flex flex-col mt-4 px-1 animate-pulse">
+              <div className="h-6 w-1/2 bg-gray-200 rounded-lg mb-4 self-center"></div>
+              <div className="grid grid-cols-2 gap-2 h-48">
+                  <div className="bg-gray-100 rounded-lg h-full border border-gray-200"></div>
+                  <div className="flex flex-col gap-2 h-full">
+                      <div className="bg-gray-100 rounded-lg h-1/2 border border-gray-200"></div>
+                      <div className="bg-gray-100 rounded-lg h-1/2 border border-gray-200"></div>
+                  </div>
+              </div>
            </div>
         );
       case 'split':
       default:
         return (
-          <div className="flex gap-6 items-center h-40 px-2 animate-pulse">
-             <div className="w-1/2 flex flex-col gap-3">
-                <div className="h-6 w-3/4 bg-gray-800/10 rounded-lg"></div>
-                <div className="h-6 w-1/2 bg-gray-800/10 rounded-lg"></div>
+          <div className="flex gap-4 items-center h-48 px-2 mt-2 animate-pulse">
+             <div className="w-5/12 flex flex-col gap-2">
+                <div className="h-6 w-full bg-gray-200 rounded-lg"></div>
+                <div className="h-6 w-2/3 bg-gray-200 rounded-lg"></div>
                 <div className="h-3 w-full bg-gray-100 rounded-lg mt-1"></div>
-                <div className="h-8 w-28 bg-gray-900/10 rounded-md mt-2"></div>
+                <div className="h-9 w-24 bg-blue-100 rounded-md mt-2"></div>
              </div>
-             <div className="w-1/2 h-full bg-blue-50 rounded-tl-[40px] rounded-br-[40px] border border-blue-100 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent to-blue-100/50"></div>
+             {/* Subtle Blue Split */}
+             <div className="w-7/12 h-40 bg-blue-50 rounded-tl-[30px] rounded-br-[30px] border border-blue-100 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-blue-100/20"></div>
              </div>
           </div>
         );
@@ -76,27 +139,30 @@ const TemplateSkeleton = ({ variant }) => {
   return (
     <div className="w-full h-full flex flex-col bg-white p-4 overflow-hidden">
       {/* Nav Bar Skeleton */}
-      <div className="flex justify-between items-center mb-6 px-2">
-        <div className="h-2 w-20 bg-gray-200 rounded-full"></div>
-        <div className="flex gap-3">
-           <div className="h-2 w-12 bg-gray-100 rounded-full"></div>
-           <div className="h-2 w-12 bg-gray-100 rounded-full"></div>
+      <div className="flex justify-between items-center mb-4 px-1 shrink-0">
+        <div className="h-3 w-24 bg-gray-200 rounded-full"></div>
+        <div className="flex gap-2">
+           <div className="h-2 w-10 bg-gray-100 rounded-full"></div>
+           <div className="h-2 w-10 bg-gray-100 rounded-full"></div>
         </div>
       </div>
 
-      {renderContent()}
+      {/* Main Content Area */}
+      <div className="flex-grow">
+        {renderContent()}
+      </div>
 
       {/* Bottom Grid (Common Footer/Features) */}
-      <div className="grid grid-cols-3 gap-3 mt-auto mb-2 px-2">
-          <div className="h-12 bg-gray-50 rounded-lg border border-gray-100"></div>
-          <div className="h-12 bg-gray-50 rounded-lg border border-gray-100"></div>
-          <div className="h-12 bg-gray-50 rounded-lg border border-gray-100"></div>
+      <div className="grid grid-cols-3 gap-2 mt-auto pt-4 shrink-0">
+          <div className="h-10 bg-gray-50 rounded-md border border-gray-100"></div>
+          <div className="h-10 bg-gray-50 rounded-md border border-gray-100"></div>
+          <div className="h-10 bg-gray-50 rounded-md border border-gray-100"></div>
       </div>
     </div>
   );
 };
 
-// --- 2. Mock Browser Component (UNCHANGED) ---
+// --- 2. Mock Browser Component ---
 const MockBrowser = ({ variant, className }) => {
     return (
         <div 
@@ -210,19 +276,19 @@ export default function StepOne() {
     const templatePairs = [
         [
             { variant: 'split' }, 
-            { variant: 'grid' }
+            { variant: 'ecommerce' }
         ],
         [
             { variant: 'centered' }, 
             { variant: 'feature' }
         ],
         [
-            { variant: 'minimal' }, 
-            { variant: 'split' }
+            { variant: 'blog' },
+            { variant: 'minimal' }
         ],
         [
-            { variant: 'grid' }, 
-            { variant: 'centered' }
+            { variant: 'portfolio' },
+            { variant: 'grid' }
         ]
     ];
 
@@ -231,44 +297,45 @@ export default function StepOne() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setActivePairIndex((prev) => (prev + 1) % templatePairs.length);
-        }, 4000);
+        }, 5000); // 5s duration
 
         return () => clearTimeout(timer);
     }, [activePairIndex]);
 
-    const blinkVariants = {
-        initial: { opacity: 0, scale: 0.98 },
-        animate: { opacity: 1, scale: 1 },
-        exit: { opacity: 0, scale: 1.02 },
+    // Pure Crossfade Variants (Smooth)
+    const fadeVariants = {
+        initial: { opacity: 0 },
+        animate: { 
+            opacity: 1, 
+            transition: { duration: 1.2, ease: "easeInOut" } 
+        },
+        exit: { 
+            opacity: 0, 
+            transition: { duration: 1.2, ease: "easeInOut" } 
+        },
     };
 
     return (
         <div className="flex h-screen font-sans overflow-hidden">
             
-            {/* --- LEFT SIDE (MODIFIED) --- */}
+            {/* --- LEFT SIDE (Unchanged) --- */}
             <div className="w-1/2 flex flex-col justify-between p-16 bg-white z-20 shadow-[10px_0_30px_rgba(0,0,0,0.02)] relative">
                 
-                {/* LOGO: Absolutely positioned top-left */}
                 <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
                     BizVistar
                 </div>
 
-                {/* Main Content Container - Centered Vertically */}
                 <div className="flex flex-col justify-center h-full">
-                    
-                    {/* HEADING */}
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 not-italic leading-snug">
                         What type of website do you want to create?
                     </h2>
                     
-                    {/* SEARCH BAR CONTAINER: Width decreased (max-w-lg) */}
                     <div className="relative ml-5 mb-6 max-w-lg" ref={autocompleteRef}>
                         <div className="flex items-end space-x-4">
                             <div className="relative flex-grow">
                                 <svg className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 text-black-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                                 </svg>
-                                {/* INPUT */}
                                 <input
                                     type="text"
                                     value={searchValue}
@@ -291,7 +358,6 @@ export default function StepOne() {
                                     </ul>
                                 )}
                             </div>
-                            {/* BUTTON */}
                             <Link href="/get-started/1" passHref>
                                 <button 
                                     disabled={!searchValue}
@@ -304,11 +370,9 @@ export default function StepOne() {
                         </div>
                     </div>
                     
-                    {/* EXAMPLES HEADER */}
                     <p className="text-xs  ml-10  font-semibold text-gray-400 mb-2 tracking-widest uppercase pl-0">
                         Examples
                     </p>
-                    {/* EXAMPLES LIST: Increased size (text-lg) & Black Hover */}
                     <ul className="space-y-1.5  ml-10  pl-0 font-normal">
                         {exampleBusinessTypes.map((type) => (
                             <li key={type}>
@@ -323,7 +387,6 @@ export default function StepOne() {
                     </ul>
                 </div>
                 
-                {/* Back Button (Bottom Left) */}
                 <div>
                     <Link href="/">
                         <button className="text-gray-600 hover:text-gray-900 font-medium text-sm flex items-center gap-1">
@@ -333,7 +396,7 @@ export default function StepOne() {
                 </div>
             </div>
 
-            {/* --- RIGHT SIDE (Unchanged) --- */}
+            {/* --- RIGHT SIDE (Enhanced with text and arrow) --- */}
             <div className="w-1/2 bg-gray-50 relative overflow-hidden flex items-center justify-center">
                 {/* 1. Background Grid */}
                 <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
@@ -341,33 +404,43 @@ export default function StepOne() {
                 </div>
 
                 {/* 2. Floating Templates Container */}
-                <div className="relative z-10 w-full h-full flex items-center justify-center">
-                    <AnimatePresence mode='wait'>
+                <div className="relative z-10 w-[900px] h-[650px] flex items-center justify-center">
+                    <AnimatePresence>
                         <motion.div
                             key={activePairIndex}
-                            variants={blinkVariants}
+                            variants={fadeVariants}
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            transition={{ duration: 0.25, ease: "easeInOut" }} 
-                            className="relative w-[900px] h-[650px]"
+                            className="absolute inset-0 w-full h-full"
                         >
                             {/* Card 1 */}
                             <MockBrowser 
                                 variant={templatePairs[activePairIndex][0].variant}
-                                className="top-[5%] left-[8%] w-[300px] h-[420px] z-20 hover:z-30"
+                                className="top-[5%] left-[8%] w-[300px] h-[420px] z-20 hover:z-30 shadow-2xl"
                             />
 
                             {/* Card 2 */}
                             <MockBrowser 
                                 variant={templatePairs[activePairIndex][1].variant}
-                                className="top-[10%] right-[8%] w-[300px] h-[420px] z-20 hover:z-30"
+                                className="top-[10%] right-[8%] w-[300px] h-[420px] z-20 hover:z-30 shadow-2xl"
                             />
-                            
-                            {/* Decorative Blob */}
-                            <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-200/20 rounded-full blur-[80px] z-0 pointer-events-none"></div>
                         </motion.div>
                     </AnimatePresence>
+                    
+                    {/* Decorative Blob */}
+                    <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-200/20 rounded-full blur-[80px] z-0 pointer-events-none"></div>
+
+                    {/* Curved Arrow and Text */}
+                    <div className="absolute bottom-[-1%] left-[50%] translate-x-[-110%] w-[350px] text-gray-700 text-sm leading-relaxed z-30">
+                    <svg className="absolute -top-12 left-10 w-24 h-24 text-gray-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 40 50 Q 60 85 90 65" stroke="currentColor" strokeWidth="2" fill="none" />
+    <path d="M 90 65 L 80 60 M 90 65 L 82 75" stroke="currentColor" strokeWidth="2" fill="none" />
+</svg>
+                        <p className="relative pl-46 pt-2">
+                            **Tell us what you're building, and we'll craft your perfect digital presence!**
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
