@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- 1. Smart Skeleton Component ---
-// Adjusts its layout based on the 'variant' prop to match specific template styles
+// --- 1. Smart Skeleton Component (UNCHANGED) ---
 const TemplateSkeleton = ({ variant }) => {
   
   const renderContent = () => {
@@ -97,7 +96,7 @@ const TemplateSkeleton = ({ variant }) => {
   );
 };
 
-// --- 2. Mock Browser Component ---
+// --- 2. Mock Browser Component (UNCHANGED) ---
 const MockBrowser = ({ variant, className }) => {
     return (
         <div 
@@ -207,8 +206,7 @@ export default function StepOne() {
         localStorage.setItem('businessType', searchValue);
     };
 
-    // --- RIGHT SIDE ANIMATION LOGIC (UPDATED) ---
-    // Added more variants to avoid repetition
+    // --- RIGHT SIDE ANIMATION LOGIC (UNCHANGED) ---
     const templatePairs = [
         [
             { variant: 'split' }, 
@@ -231,7 +229,6 @@ export default function StepOne() {
     const [activePairIndex, setActivePairIndex] = useState(0);
     
     useEffect(() => {
-        // Cycle through templates every 4 seconds (faster blink rate)
         const timer = setTimeout(() => {
             setActivePairIndex((prev) => (prev + 1) % templatePairs.length);
         }, 4000);
@@ -239,7 +236,6 @@ export default function StepOne() {
         return () => clearTimeout(timer);
     }, [activePairIndex]);
 
-    // --- NEW: Blink Animation Variants ---
     const blinkVariants = {
         initial: { opacity: 0, scale: 0.98 },
         animate: { opacity: 1, scale: 1 },
@@ -249,27 +245,37 @@ export default function StepOne() {
     return (
         <div className="flex h-screen font-sans overflow-hidden">
             
-            {/* --- LEFT SIDE (Unchanged) --- */}
-            <div className="w-1/2 flex flex-col justify-between p-16 bg-white z-20 shadow-[10px_0_30px_rgba(0,0,0,0.02)]">
-                <div>
-                    <div className="text-2xl font-bold text-gray-800 mb-12">BizVistar</div>
-                    <h2 className="text-4xl font-semibold text-gray-800 mb-10">
-                        What type of business do you have?
+            {/* --- LEFT SIDE (MODIFIED) --- */}
+            <div className="w-1/2 flex flex-col justify-between p-16 bg-white z-20 shadow-[10px_0_30px_rgba(0,0,0,0.02)] relative">
+                
+                {/* LOGO: Absolutely positioned top-left */}
+                <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
+                    BizVistar
+                </div>
+
+                {/* Main Content Container - Centered Vertically */}
+                <div className="flex flex-col justify-center h-full">
+                    
+                    {/* HEADING */}
+                    <h2 className="text-3xl font-bold text-gray-900 mb-8 not-italic leading-snug">
+                        What type of website do you want to create?
                     </h2>
                     
-                    <div className="relative mb-10" ref={autocompleteRef}>
-                        <div className="flex items-end space-x-6">
+                    {/* SEARCH BAR CONTAINER: Width decreased (max-w-lg) */}
+                    <div className="relative ml-5 mb-6 max-w-lg" ref={autocompleteRef}>
+                        <div className="flex items-end space-x-4">
                             <div className="relative flex-grow">
-                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                <svg className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 text-black-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                                 </svg>
+                                {/* INPUT */}
                                 <input
                                     type="text"
                                     value={searchValue}
                                     onChange={(e) => setSearchValue(e.target.value)}
                                     onFocus={() => getFilteredSuggestions(searchValue)}
                                     placeholder="Search for your business or site type"
-                                    className="w-full bg-transparent border-0 border-b-2 border-gray-300 py-3 pl-12 text-xl text-gray-800 placeholder:text-gray-500 focus:ring-0 focus:border-blue-500 transition-colors duration-300 outline-none"
+                                    className="w-full bg-transparent border-0 border-b-2 border-gray-300 py-2 pl-9 text-lg text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:border-black transition-colors duration-300 outline-none"
                                 />
                                 {suggestions.length > 0 && (
                                     <ul className="autocomplete-scrollbar absolute z-10 w-full mt-2 top-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
@@ -285,11 +291,12 @@ export default function StepOne() {
                                     </ul>
                                 )}
                             </div>
+                            {/* BUTTON */}
                             <Link href="/get-started/1" passHref>
                                 <button 
                                     disabled={!searchValue}
                                     onClick={handleContinue}
-                                    className="px-8 py-3 bg-blue-500 text-white font-semibold text-lg rounded-full hover:bg-blue-600 disabled:bg-gray-300 transition-colors"
+                                    className="px-6 py-2.5 bg-gray-900 text-white font-medium text-sm rounded-full hover:bg-gray-700 disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
                                 >
                                     Continue
                                 </button>
@@ -297,15 +304,17 @@ export default function StepOne() {
                         </div>
                     </div>
                     
-                    <p className="text-xs font-semibold text-gray-400 mb-3 tracking-widest uppercase pl-6">
+                    {/* EXAMPLES HEADER */}
+                    <p className="text-xs  ml-10  font-semibold text-gray-400 mb-2 tracking-widest uppercase pl-0">
                         Examples
                     </p>
-                    <ul className="space-y-2 pl-6">
+                    {/* EXAMPLES LIST: Increased size (text-lg) & Black Hover */}
+                    <ul className="space-y-1.5  ml-10  pl-0 font-normal">
                         {exampleBusinessTypes.map((type) => (
                             <li key={type}>
                                 <button
                                     onClick={() => handleSuggestionClick(type)}
-                                    className="text-gray-500 hover:text-blue-500 text-base cursor-pointer font-normal transition-colors"
+                                    className="text-gray-600 hover:text-black text-m cursor-pointer font-normal transition-colors"
                                 >
                                     {type}
                                 </button>
@@ -313,14 +322,18 @@ export default function StepOne() {
                         ))}
                     </ul>
                 </div>
+                
+                {/* Back Button (Bottom Left) */}
                 <div>
                     <Link href="/">
-                        <button className="text-gray-600 hover:text-gray-900 font-medium text-lg">← Back</button>
+                        <button className="text-gray-600 hover:text-gray-900 font-medium text-sm flex items-center gap-1">
+                             Back
+                        </button>
                     </Link>
                 </div>
             </div>
 
-            {/* --- RIGHT SIDE: The Dual-View Showcase --- */}
+            {/* --- RIGHT SIDE (Unchanged) --- */}
             <div className="w-1/2 bg-gray-50 relative overflow-hidden flex items-center justify-center">
                 {/* 1. Background Grid */}
                 <div className="absolute inset-0 z-0 pointer-events-none opacity-60">
@@ -332,26 +345,26 @@ export default function StepOne() {
                     <AnimatePresence mode='wait'>
                         <motion.div
                             key={activePairIndex}
-                            variants={blinkVariants} // Use new Blink variants
+                            variants={blinkVariants}
                             initial="initial"
                             animate="animate"
                             exit="exit"
-                            transition={{ duration: 0.25, ease: "easeInOut" }} // Fast transition for blink effect
+                            transition={{ duration: 0.25, ease: "easeInOut" }} 
                             className="relative w-[900px] h-[650px]"
                         >
-                            {/* --- Card 1: Top Left (Wider width, No overlap) --- */}
+                            {/* Card 1 */}
                             <MockBrowser 
                                 variant={templatePairs[activePairIndex][0].variant}
                                 className="top-[5%] left-[8%] w-[300px] h-[420px] z-20 hover:z-30"
                             />
 
-                            {/* --- Card 2: Bottom Right (Wider width, No overlap) --- */}
+                            {/* Card 2 */}
                             <MockBrowser 
                                 variant={templatePairs[activePairIndex][1].variant}
                                 className="top-[10%] right-[8%] w-[300px] h-[420px] z-20 hover:z-30"
                             />
                             
-                            {/* Decorative Blob connecting them */}
+                            {/* Decorative Blob */}
                             <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-200/20 rounded-full blur-[80px] z-0 pointer-events-none"></div>
                         </motion.div>
                     </AnimatePresence>
