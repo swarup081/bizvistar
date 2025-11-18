@@ -4,87 +4,115 @@ import { useState, useEffect } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion } from 'framer-motion';
 
-// --- 1. Brand Grid Component ---
-const BrandGrid = ({ storeName, activeVibe }) => {
+// --- 1. Brand Grid Component (Enhanced with Mixed Logic) ---
+const BrandGrid = ({ storeName, selectedVibes, activeVibe }) => {
   
-  // Define styles for every vibe
- const stylesMap = {
+  // Define styles for every vibe with updated fonts and cleaner colors
+  const stylesMap = {
     default: {
       font: 'var(--font-inter)',
-      colors: ['#F3F4F6', '#9CA3AF', '#374151'],
+      colors: ['#F9FAFB', '#D1D5DB', '#374151'], // Cool Grey
       image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=300&q=80',
     },
     elegant: {
-      font: 'var(--font-montserrat)',
-      colors: ['#F8F8F8', '#C6B48E', '#AFAFAF'],
+      font: 'var(--font-playfair-display)',
+      colors: ['#FAFAF9', '#D6CFC7', '#44403C'], // Stone/Warm Grey
       image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=300&q=80',
     },
     cozy: {
       font: 'var(--font-lora)',
-      colors: ['#FFF4EC', '#D9A878', '#B06C3B'],
+      colors: ['#FFF7ED', '#FDBA74', '#9A3412'], // Warm Orange/Cream
       image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=300&q=80',
     },
     modern: {
-      font: 'var(--font-inter)',
-      colors: ['#FFFFFF', '#D9D9D9', '#6292EB'],
+      font: 'var(--font-dm-sans)',
+      colors: ['#FFFFFF', '#E5E7EB', '#2563EB'], // Crisp White/Blue
       image: 'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=300&q=80',
     },
     trusted: {
       font: 'var(--font-roboto)',
-      colors: ['#F2FAFF', '#82B7D9', '#5A8BAF'],
+      colors: ['#F0F9FF', '#BAE6FD', '#0369A1'], // Sky Blue
       image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=300&q=80',
     },
     minimal: {
-      font: 'var(--font-poppins)',
-      colors: ['#FAFAFA', '#D1D1D1', '#8C8C8C'],
+      font: 'var(--font-inter)',
+      colors: ['#FFFFFF', '#F3F4F6', '#111827'], // Monochrome
       image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=300&q=80',
     },
     bold: {
-      font: 'var(--font-dm-sans)',
-      colors: ['#EDEDED', '#B79CE8', '#D8C2F3'],
+      font: 'var(--font-montserrat)',
+      colors: ['#111827', '#FCD34D', '#FFFFFF'], // Dark with Yellow Pop
       image: 'https://images.unsplash.com/photo-1550614000-4b9519e029b9?auto=format&fit=crop&w=300&q=80',
     },
     vintage: {
-      font: 'var(--font-playfair-display)',
-      colors: ['#FDF8F3', '#D2B48C', '#A47C48'],
+      font: 'var(--font-cormorant-garamond)',
+      colors: ['#FEFCE8', '#D4D4D8', '#713F12'], // Old Paper/Brown
       image: 'https://images.unsplash.com/photo-1524234599372-a5bd0194758d?auto=format&fit=crop&w=300&q=80',
     },
     playful: {
-      font: 'var(--font-kalam)',
-      colors: ['#FFF6FA', '#F2A3C6', '#F8C8DD'],
+      font: 'var(--font-Kalam)',
+      colors: ['#FFF1F2', '#FDA4AF', '#BE123C'], // Rose/Pink
       image: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=300&q=80',
     },
     natural: {
       font: 'var(--font-lato)',
-      colors: ['#F3FBF5', '#A9D7B4', '#7CB88D'],
+      colors: ['#F0FDF4', '#86EFAC', '#166534'], // Green/Nature
       image: 'https://images.unsplash.com/photo-1470058869958-2a77ade41c02?auto=format&fit=crop&w=300&q=80',
     },
     handcrafted: {
-      font: 'var(--font-playfair-display)',
-      colors: ['#F7F2EB', '#C9A58E', '#8A6B54'],
+      font: 'var(--font-kalam)',
+      colors: ['#FFedd5', '#fdba74', '#9a3412'], // Earthy clay
       image: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=300&q=80',
     },
     luxury: {
       font: 'var(--font-cormorant-garamond)',
-      colors: ['#F7F7F7', '#D8C27A', '#A8A8A8'],
+      colors: ['#09090b', '#d4d4d8', '#a1a1aa'], // Sophisticated Dark
       image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=300&q=80',
     },
     fast: {
-      font: 'var(--font-roboto)',
-      colors: ['#F6FAFF', '#F28A8A', '#8DA5D9'],
+      font: 'var(--font-poppins)',
+      colors: ['#FEF2F2', '#F87171', '#991B1B'], // Urgent Red
       image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=300&q=80',
     }
   };
 
-  const currentStyle = stylesMap[activeVibe] || stylesMap.default;
+  // --- Mixing Logic ---
+  // 1. Get list of all selected keys (e.g., ['modern', 'natural'])
+  const activeKeys = Object.keys(selectedVibes).filter(key => selectedVibes[key]);
   
-  // 3. Overflow Protection Logic
-  // If name is empty or too long (>8 chars), display "Brand" instead
-  const displayName = (!storeName || storeName.length > 4) ?  storeName.charAt(0).toUpperCase() : storeName;
+  // 2. Determine the primary style (Font/Image) based on the LAST clicked (activeVibe)
+  //    If activeVibe isn't selected (user unselected it), fallback to the last one in the list or default.
+  const primaryKey = activeKeys.includes(activeVibe) 
+    ? activeVibe 
+    : (activeKeys.length > 0 ? activeKeys[activeKeys.length - 1] : 'default');
+  
+  const primaryStyle = stylesMap[primaryKey] || stylesMap.default;
+
+  // 3. Determine Colors (Mixing)
+  //    We need 3 colors. We will cycle through the active keys to pick them.
+  let mixedColors = [...primaryStyle.colors]; // Default to primary
+
+  if (activeKeys.length >= 2) {
+     // Pick background from first selection
+     const style1 = stylesMap[activeKeys[0]];
+     // Pick accent 1 from second selection
+     const style2 = stylesMap[activeKeys[1]];
+     // Pick accent 2 from third selection (or rotate back to first)
+     const style3 = stylesMap[activeKeys[2] || activeKeys[0]];
+
+     mixedColors = [
+        style1.colors[0], // Background
+        style2.colors[1], // Secondary
+        style3.colors[2]  // Text/Accent
+     ];
+  }
+
+  // Overflow Protection for Display Name
+  const displayName = (!storeName || storeName.length > 8) ?  storeName.charAt(0).toUpperCase() : storeName;
 
   return (
     <motion.div 
-      key={activeVibe} // Triggers animation on vibe change
+      key={activeKeys.join('-')} // Triggers animation when mix changes
       initial={{ opacity: 0.8, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
@@ -92,38 +120,38 @@ const BrandGrid = ({ storeName, activeVibe }) => {
     >
       <div className="grid grid-cols-2 gap-3">
         
-        {/* 1. Logo Cell */}
+        {/* 1. Logo Cell (Primary Font) */}
         <div className="aspect-square rounded-xl border border-stone-100 flex items-center justify-center p-2 overflow-hidden bg-white relative group">
           <span 
-            style={{ fontFamily: currentStyle.font }}
-            className="text-4xl font-extrabold text-center leading-tight break-words w-full"
+            style={{ fontFamily: primaryStyle.font }}
+            className="text-4xl font-extrabold text-center leading-tight break-words w-full text-gray-800"
           >
              {displayName}
           </span>
         </div>
 
-        {/* 2. Color Palette Cell */}
+        {/* 2. Color Palette Cell (Mixed Colors) */}
         <div className="aspect-square rounded-xl border border-stone-100 overflow-hidden flex shadow-inner">
-            <div className="h-full w-1/2" style={{ backgroundColor: currentStyle.colors[0] }}></div>
+            <div className="h-full w-1/2" style={{ backgroundColor: mixedColors[0] }}></div>
             <div className="h-full w-1/2 flex flex-col">
-                <div className="h-1/2 w-full" style={{ backgroundColor: currentStyle.colors[1] }}></div>
-                <div className="h-1/2 w-full" style={{ backgroundColor: currentStyle.colors[2] }}></div>
+                <div className="h-1/2 w-full" style={{ backgroundColor: mixedColors[1] }}></div>
+                <div className="h-1/2 w-full" style={{ backgroundColor: mixedColors[2] }}></div>
             </div>
         </div>
 
-        {/* 3. Image Cell */}
+        {/* 3. Image Cell (Primary Image) */}
         <div className="aspect-square rounded-xl border border-stone-100 overflow-hidden relative">
              <img 
-                src={currentStyle.image} 
+                src={primaryStyle.image} 
                 alt="Brand Vibe" 
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
              />
         </div>
 
-        {/* 4. Typography Cell */}
+        {/* 4. Typography Cell (Primary Font + Mixed Accent Color) */}
         <div className="aspect-square rounded-xl border border-stone-100 flex items-center justify-center bg-gray-50">
             <span 
-                style={{ fontFamily: currentStyle.font, color: currentStyle.colors[2] }}
+                style={{ fontFamily: primaryStyle.font, color: mixedColors[2] }}
                 className="text-6xl"
             >
                 Aa
@@ -135,7 +163,7 @@ const BrandGrid = ({ storeName, activeVibe }) => {
   );
 };
 
-// --- 2. Template Skeleton (Visual) ---
+// --- 2. Template Skeleton (Visual - unchanged) ---
 const TemplateSkeleton = ({ storeName }) => {
     return (
         <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-tl-[2rem]">
@@ -200,7 +228,7 @@ const TemplateSkeleton = ({ storeName }) => {
 };
 
 // --- 3. Mock Browser Component ---
-const MockBrowser = ({ storeName, activeVibe, className }) => {
+const MockBrowser = ({ storeName, selectedVibes, activeVibe, className }) => {
     const siteSlug = storeName 
         ? storeName.toLowerCase().replace(/[^a-z0-9]/g, '') 
         : 'your-site';
@@ -214,7 +242,7 @@ const MockBrowser = ({ storeName, activeVibe, className }) => {
         >
             {/* --- Brand Grid placed on the left --- */}
             <div className="absolute -left-[150px] top-[320px] z-50">
-                 <BrandGrid storeName={storeName} activeVibe={activeVibe} />
+                 <BrandGrid storeName={storeName} selectedVibes={selectedVibes} activeVibe={activeVibe} />
             </div>
 
             {/* Browser Header */}
@@ -260,11 +288,11 @@ const ChoiceChip = ({ id, label, isSelected, onChange }) => (
 export default function StepTwo() {
   const [storeName, setStoreName] = useState('your business');
   const [selectedWords, setSelectedWords] = useState({});
-  const [activeVibe, setActiveVibe] = useState('modern'); // Default vibe
+  const [activeVibe, setActiveVibe] = useState('modern'); // Tracks the *latest* clicked vibe
 
   const businessVibes = [
     { id: 'handcrafted', label: 'Handmade' },
-    { id: 'bold', label: 'Trendy' },
+    { id: 'elegant', label: 'Trendy' },
     { id: 'cozy', label: 'Friendly' },
     { id: 'playful', label: 'Fun' },
 
@@ -273,7 +301,6 @@ export default function StepTwo() {
     { id: 'natural', label: 'Eco-Friendly' },
 
     { id: 'minimal', label: 'Clean' },
-   // { id: 'bold', label: 'Strong' },
     { id: 'vintage', label: 'Modern' },
     { id: 'luxury', label: 'Premium' },
     { id: 'fast', label: 'Quick' },
@@ -287,12 +314,11 @@ export default function StepTwo() {
   }, []);
 
   const handleChipChange = (id) => {
-    // 1. Update the selection list (for saving later)
-    setSelectedWords(prev => ({ ...prev, [id]: !prev[id] }));
-    
-    // 2. Update the active vibe for the visual preview immediately
-    // (This fixes the issue where it wasn't updating on click)
+    // 1. Update the active vibe immediately for immediate visual response
     setActiveVibe(id);
+
+    // 2. Toggle the selection in the map
+    setSelectedWords(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const hasSelection = Object.values(selectedWords).some(Boolean);
@@ -372,6 +398,7 @@ export default function StepTwo() {
         <div className="relative w-full h-full">
              <MockBrowser 
                 storeName={storeName}
+                selectedVibes={selectedWords}
                 activeVibe={activeVibe}
                 className="absolute top-[10%] left-[35%] w-[100%] h-[100%] z-20"
              />
@@ -380,4 +407,3 @@ export default function StepTwo() {
     </div>
   );
 }
-
