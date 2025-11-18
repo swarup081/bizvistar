@@ -5,6 +5,56 @@ import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion } from 'framer-motion';
 import { Globe, Sparkles, Palette } from 'lucide-react';
 
+const PencilIcon = ({ className }) => (
+    <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+  
+
+  const GlobeIcon = ({ className }) => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" x2="22" y1="12" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+
+  const ThreeBarsIcon = ({ className }) => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 24 24" 
+      fill="currentColor" 
+      className={className}
+    >
+      {/* Three Vertical Bars */}
+      <rect x="3" y="3" width="4" height="18" />
+      <rect x="10" y="3" width="4" height="18" />
+      <rect x="17" y="3" width="4" height="18" />
+  
+      {/* Mouse Cursor interacting with the first bar */}
+    
+    </svg>
+  );
 // --- 1. Enhanced Template Skeleton with Subtle Colors & Rounded Curves ---
 const TemplateSkeleton = ({ storeName }) => {
   return (
@@ -16,10 +66,18 @@ const TemplateSkeleton = ({ storeName }) => {
             <div className="h-10 w-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-sm">
                 {storeName ? storeName.charAt(0).toUpperCase() : 'B'}
             </div>
-             {/* Nav Links */}
-            <div className="hidden md:flex gap-3">
-                <div className="h-3 w-20 bg-slate-100 rounded-full"></div>
-                <div className="h-3 w-20 bg-slate-100 rounded-full"></div>
+            {/* Nav Links */}
+            <div className="hidden md:flex gap-3 items-center">
+                {storeName ? (
+                    <span className="text-3xl font-extrabold text-slate-500 tracking-wide">
+                        {storeName}
+                    </span>
+                ) : (
+                    <>
+                        <div className="h-3 w-24 bg-slate-100 rounded-full"></div>
+                        <div className="h-3 w-16 bg-slate-100 rounded-full"></div>
+                    </>
+                )}
             </div>
         </div>
         {/* Actions */}
@@ -41,7 +99,7 @@ const TemplateSkeleton = ({ storeName }) => {
 
              {/* Hero Text (Right) */}
              <div className="w-1/2 space-y-5 z-10">
-                <div className="h-4 w-20 bg-blue-50 rounded-full text-xs flex items-center justify-center text-blue-200 font-bold uppercase tracking-wider">NEW</div>
+                <div className="h-4 w-20 bg-blue-50 rounded-full text-xs flex items-center justify-center text-blue-200 font-bold uppercase tracking-wider"></div>
                 <div className="space-y-3">
                     <div className="h-6 w-full bg-slate-200/60 rounded-2xl"></div>
                     <div className="h-6 w-3/4 bg-slate-200/60 rounded-2xl"></div>
@@ -90,9 +148,9 @@ const MockBrowser = ({ storeName, className }) => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white p-5 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 max-w-[255px] flex flex-col justify-center  min-h-[55px]"
+                    className="bg-white p-5 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 max-w-[295px] flex flex-col justify-center  min-h-[55px]"
                 >
-                     <span className="text-sm font-bold text-slate-900">Crafting your brand identity </span>
+                    <span className="text-sm font-bold text-slate-500 flex items-center gap-2"> <PencilIcon className="w-6 h-6 text-slate-700" />Crafting your brand identity </span>
                 </motion.div>
 
                 {/* Connector Line 1 */}
@@ -108,9 +166,9 @@ const MockBrowser = ({ storeName, className }) => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.7 }}
-                    className="bg-white p-4 rounded-lg shadow-[0_6px_24px_rgba(0,0,0,0.05)] border border-slate-200 max-w-[105px] flex flex-col justify-center min-h-[55px]"
+                    className="bg-white p-4 rounded-lg shadow-[0_6px_24px_rgba(0,0,0,0.05)] border border-slate-200 w-auto flex flex-col justify-center min-h-[55px]"
                 >
-                     <span className="text-sm font-bold text-slate-900">Subdomain</span>
+                                  <span className="text-sm font-bold text-slate-500 flex items-center gap-2"> <GlobeIcon className="w-6 h-6 text-slate-800" />Subdomain</span>
                      </motion.div>
 
                 {/* Connector Line 2 */}
@@ -128,7 +186,7 @@ const MockBrowser = ({ storeName, className }) => {
                     transition={{ delay: 0.9 }}
                     className="bg-white p-5 rounded-lg shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 max-w-[255px] flex flex-col justify-center  min-h-[55px]"
                 >
-                     <span className="text-sm font-bold text-slate-900">Infusing your Brand Identity</span>
+                     <span className="text-sm font-bold text-slate-500 flex items-center gap-2"> <ThreeBarsIcon className="w-6 h-6 text-slate-800" />Infusing your Brand </span>
                 </motion.div>
 
             </div>
@@ -180,7 +238,7 @@ export default function StepTwo() {
     <div className="flex h-screen font-sans overflow-hidden bg-white">
       
       {/* --- LEFT SIDE (Form - 40%) --- */}
-         <div className="w-full lg:w-[46%] flex flex-col justify-between p-16 xl:p-20 bg-white z-30 relative shadow-[20px_0_40px_-10px_rgba(0,0,0,0.03)]">
+         <div className="w-full lg:w-[45%] flex flex-col justify-between p-16 xl:p-20 bg-white z-30 relative shadow-[20px_0_40px_-10px_rgba(0,0,0,0.03)]">
         
         {/* Logo - Matched to Get Started Page */}
         <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
@@ -205,13 +263,13 @@ export default function StepTwo() {
                   type="text"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
-                  placeholder={`e.g., ${businessType} Name`}
+                  placeholder={`e.g ${businessType} Name`}
                   className="w-full bg-transparent border-0 border-b-2 border-gray-300 py-3 text-xl text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:border-black transition-colors duration-300 outline-none font-medium"
                   autoFocus
                 />
             </div>
             <p className="text-gray-400 text-sm mb-12">
-              Don't worry, you can always change this later in your settings.
+              Don't worry, you can always change this later.
             </p>
         </div>
 
@@ -236,7 +294,7 @@ export default function StepTwo() {
         </div>
       </div>
       {/* --- RIGHT SIDE (Visuals - 60%) --- */}
-      <div className="hidden lg:block lg:w-[60%] bg-gray-50 relative overflow-hidden border-l border-gray-100">
+      <div className="hidden lg:block lg:w-[55%] bg-gray-50 relative overflow-hidden border-l border-gray-100">
         {/* Background Grid */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
            <GridBackgroundDemo />
@@ -249,7 +307,7 @@ export default function StepTwo() {
                 // Positioned to bleed off right/bottom edges significantly
                 // Starts 15% from left edge of panel, 20% from top edge
                 // Height/Width > 100% ensures cutoff
-                className="absolute top-[10%] left-[42%] w-[100%] h-[100%] z-20"
+                className="absolute top-[10%] left-[35%] w-[100%] h-[100%] z-20"
              />
         </div>
       </div>
