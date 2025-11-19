@@ -16,7 +16,7 @@ const stylesMap = {
   },
   elegant: {
     font: 'var(--font-playfair-display)',
-    colors: ['#FAFAF9', '#E7E5E4', '#44403C'], // Stone 50, 200, 700
+    colors: ['#FAFAF9', '#F0EEE8', '#5A534B'], // Updated: softer background, subtle secondary, richer accent
     image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=300&q=80',
   },
   cozy: {
@@ -26,7 +26,7 @@ const stylesMap = {
   },
   modern: {
     font: 'var(--font-dm-sans)',
-    colors: ['#F8FAFC', '#E2E8F0', '#0F172A'], // Slate 50, 200, 900
+    colors: ['#F8FAFC', '#E8EDF5', '#1E293B'], // Updated: lighter secondary, deeper accent
     image: 'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=300&q=80',
   },
   trusted: {
@@ -41,7 +41,7 @@ const stylesMap = {
   },
   bold: {
     font: 'var(--font-montserrat)',
-    colors: ['#FAFAFA', '#FEF08A', '#000000'], // Neutral 50, Yellow 200, Black
+    colors: ['#F9FAFB', '#E5E7EB', '#1F2937'],
     image: 'https://images.unsplash.com/photo-1550614000-4b9519e029b9?auto=format&fit=crop&w=300&q=80',
   },
   vintage: {
@@ -66,7 +66,7 @@ const stylesMap = {
   },
   luxury: {
     font: 'var(--font-cormorant-garamond)',
-    colors: ['#F8F8F8', '#E4E4E7', '#18181B'], // Off-white, Zinc 200, Zinc 900
+    colors: ['#F9F9F9', '#EDEDF0', '#27272A'], // Updated: slightly brighter background, softer secondary, richer accent
     image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=300&q=80',
   },
   fast: {
@@ -207,9 +207,9 @@ const TemplateSkeleton = ({ storeName, colors }) => {
                 </div>
             </div>
 
-            <div className="flex-grow p-8 flex flex-col gap-8 overflow-y-auto no-scrollbar bg-slate-50/30">
+            <div className="flex-grow p-8 flex flex-col gap-8 overflow-y-auto no-scrollbar bg-slate-50/20">
                 {/* Hero Section */}
-                <div className="w-full aspect-[2.5/1] bg-white rounded-[2.5rem] border border-slate-100 relative overflow-hidden flex p-10 gap-10 items-center shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)]">
+                <div className="w-full aspect-[2.5/1] bg-white/90 rounded-[2.5rem] border border-slate-100 relative overflow-hidden flex p-10 gap-10 items-center shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)]">
                     {/* Hero Image Placeholder - Uses background color tint */}
                     <div className="w-1/2 h-full rounded-[1.5rem] border border-slate-100 relative overflow-hidden transition-colors duration-500" style={{ backgroundColor: colors[0] }}>
                          {/* Subtle Blobs - Only visible as a tint */}
@@ -237,7 +237,6 @@ const TemplateSkeleton = ({ storeName, colors }) => {
                         >
                              {/* Subtle detail inside big card */}
                             <div className="absolute bottom-4 left-4 h-8 w-8 rounded-full bg-white/60"></div>
-                            <div className="absolute bottom-4 left-16 right-4 h-2 top-7 bg-white/60 rounded-full"></div>
                         </div>
                         <div className="space-y-2.5 shrink-0">
                             <div className="h-3 w-1/3 bg-slate-200/80 rounded-full"></div>

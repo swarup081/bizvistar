@@ -1,3 +1,4 @@
+// src/app/get-started/1/page.js
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -55,74 +56,106 @@ const PencilIcon = ({ className }) => (
     
     </svg>
   );
-// --- 1. Enhanced Template Skeleton with Subtle Colors & Rounded Curves ---
+
+// --- 1. Enhanced Template Skeleton (Matches Step 2 Structure) ---
 const TemplateSkeleton = ({ storeName }) => {
   return (
     <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-tl-[2rem]">
-      {/* Navbar */}
-      <div className="h-20 border-b border-slate-100 flex items-center justify-between px-8 shrink-0 bg-white/60 backdrop-blur-sm">
-        <div className="flex gap-4 items-center">
-            {/* Logo Placeholder */}
-            <div className="h-10 w-10 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-sm">
-                {storeName ? storeName.charAt(0).toUpperCase() : 'B'}
-            </div>
-            {/* Nav Links */}
-            <div className="hidden md:flex gap-3 items-center">
-                {storeName ? (
-                    <span className="text-3xl font-extrabold text-slate-500 tracking-wide">
-                        {storeName}
-                    </span>
-                ) : (
-                    <>
-                        <div className="h-3 w-24 bg-slate-100 rounded-full"></div>
-                        <div className="h-3 w-16 bg-slate-100 rounded-full"></div>
-                    </>
-                )}
-            </div>
-        </div>
-        {/* Actions */}
-        <div className="flex gap-4">
-           <div className="h-10 w-10 bg-slate-100 rounded-full"></div>
-           <div className="h-10 w-24 bg-slate-100 rounded-full"></div>
-        </div>
-      </div>
-
-      <div className="flex-grow p-8 flex flex-col gap-8 overflow-y-auto no-scrollbar bg-slate-50/30">
-          {/* Hero Section - SWAPPED LAYOUT (Visual Left, Text Right) */}
-          <div className="w-full aspect-[2.5/1] bg-white rounded-[2.5rem] border border-slate-100 relative overflow-hidden flex p-10 gap-10 items-center shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)]">
-             
-             {/* Hero Visual (Left) */}
-             <div className="w-1/2 h-full bg-slate-50 rounded-[1.5rem] border border-slate-100 relative overflow-hidden">
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-blue-100/50 rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
-                 <div className="absolute top-0 right-0 w-24 h-24 bg-purple-100/50 rounded-full mix-blend-multiply filter blur-2xl opacity-60"></div>
-             </div>
-
-             {/* Hero Text (Right) */}
-             <div className="w-1/2 space-y-5 z-10">
-                <div className="h-4 w-20 bg-blue-50 rounded-full text-xs flex items-center justify-center text-blue-200 font-bold uppercase tracking-wider"></div>
-                <div className="space-y-3">
-                    <div className="h-6 w-full bg-slate-200/60 rounded-2xl"></div>
-                    <div className="h-6 w-3/4 bg-slate-200/60 rounded-2xl"></div>
+        {/* Navbar */}
+        <div 
+            className="h-20 border-b border-slate-100 flex items-center justify-between px-8 shrink-0 bg-white/80 backdrop-blur-sm transition-colors duration-500"
+        >
+            <div className="flex gap-4 items-center">
+                {/* Logo Box */}
+                <div 
+                    className="h-10 w-10 rounded-2xl flex items-center justify-center font-bold text-sm shadow-sm transition-colors duration-500 bg-slate-100 text-slate-500"
+                >
+                    {storeName ? storeName.charAt(0).toUpperCase() : 'B'}
                 </div>
-                <div className="h-12 w-36 bg-slate-900/5 rounded-full mt-4"></div>
-             </div>
+                <div className="hidden md:flex gap-3 items-center">
+                    {storeName ? (
+                        <span className="text-3xl font-extrabold tracking-wide transition-colors duration-500 text-slate-500 opacity-90">
+                            {storeName}
+                        </span>
+                    ) : (
+                        <>
+                            <div className="h-3 w-24 bg-slate-100 rounded-full"></div>
+                            <div className="h-3 w-16 bg-slate-100 rounded-full"></div>
+                        </>
+                    )}
+                </div>
+            </div>
+            <div className="flex gap-4">
+                <div className="h-10 w-10 bg-slate-100 rounded-full"></div>
+                {/* CTA Button */}
+                <div 
+                    className="h-10 w-24 rounded-full transition-colors duration-500 bg-slate-200 opacity-50"
+                ></div>
+            </div>
+        </div>
 
-          </div>
+        <div className="flex-grow p-8 flex flex-col gap-8 overflow-y-auto no-scrollbar bg-slate-50/30">
+            {/* Hero Section */}
+            <div className="w-full aspect-[2.5/1] bg-white rounded-[2.5rem] border border-slate-100 relative overflow-hidden flex p-10 gap-10 items-center shadow-[0_4px_20px_-8px_rgba(0,0,0,0.05)]">
+                {/* Hero Image Placeholder */}
+                <div className="w-1/2 h-full rounded-[1.5rem] border border-slate-100 relative overflow-hidden transition-colors duration-500 bg-slate-50">
+                     {/* Subtle Blobs */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full mix-blend-multiply filter blur-2xl opacity-30 transition-colors duration-500 bg-slate-200"></div>
+                </div>
+                
+                {/* Hero Text Placeholders */}
+                <div className="w-1/2 space-y-5 z-10">
+                    <div className="h-4 w-20 rounded-full text-xs flex items-center justify-center font-bold uppercase tracking-wider transition-colors duration-500 bg-slate-200 text-slate-500 opacity-60"></div>
+                    <div className="space-y-3">
+                        <div className="h-6 w-full bg-slate-200/60 rounded-2xl"></div>
+                        <div className="h-6 w-3/4 bg-slate-200/60 rounded-2xl"></div>
+                    </div>
+                    <div className="h-12 w-36 rounded-full mt-4 transition-colors duration-500 bg-slate-900 opacity-10"></div>
+                </div>
+            </div>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-44 bg-white rounded-[2rem] border border-slate-100 p-8 flex flex-col justify-between shadow-[0_2px_15px_-6px_rgba(0,0,0,0.03)]">
-                      <div className="h-12 w-12 bg-slate-50 rounded-2xl border border-slate-100"></div>
-                      <div className="space-y-2.5">
-                        <div className="h-3 w-1/2 bg-slate-200/80 rounded-full"></div>
+            <div className="grid grid-cols-2 gap-6 auto-rows-[11rem]">
+                
+                {/* 1. Big Integrated Grid (Spans 2 rows) */}
+                <div className="row-span-2 bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col justify-between shadow-[0_2px_15px_-6px_rgba(0,0,0,0.03)] group hover:shadow-md transition-shadow">
+                    <div 
+                        className="w-full flex-grow rounded-2xl border border-slate-50 transition-colors duration-500 mb-4 relative overflow-hidden bg-slate-50"
+                    >
+                         {/* Subtle detail inside big card */}
+                        <div className="absolute bottom-4 left-4 h-8 w-8 rounded-full bg-white/60"></div>
+                        <div className="absolute bottom-4 left-16 right-4 h-2 top-7 bg-white/60 rounded-full"></div>
+                    </div>
+                    <div className="space-y-2.5 shrink-0">
+                        <div className="h-3 w-1/3 bg-slate-200/80 rounded-full"></div>
                         <div className="h-2 w-full bg-slate-100 rounded-full"></div>
                         <div className="h-2 w-3/4 bg-slate-100 rounded-full"></div>
-                      </div>
-                  </div>
-              ))}
-          </div>
-      </div>
+                    </div>
+                </div>
+
+                {/* 2. Top Right Card */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col justify-between shadow-[0_2px_15px_-6px_rgba(0,0,0,0.03)] group hover:shadow-md transition-shadow">
+                    <div 
+                        className="h-10 w-10 rounded-2xl border border-slate-50 transition-colors duration-500 bg-slate-50"
+                    ></div>
+                    <div className="space-y-2.5">
+                        <div className="h-3 w-1/2 bg-slate-200/80 rounded-full"></div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full"></div>
+                    </div>
+                </div>
+
+                {/* 3. Bottom Right Card */}
+                <div className="bg-white rounded-[2rem] border border-slate-100 p-6 flex flex-col justify-between shadow-[0_2px_15px_-6px_rgba(0,0,0,0.03)] group hover:shadow-md transition-shadow">
+                    <div 
+                        className="h-10 w-10 rounded-2xl border border-slate-50 transition-colors duration-500 bg-slate-50"
+                    ></div>
+                    <div className="space-y-2.5">
+                         <div className="h-3 w-1/2 bg-slate-200/80 rounded-full"></div>
+                         <div className="h-2 w-full bg-slate-100 rounded-full"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
   );
 };
