@@ -1,91 +1,262 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import useRouter
-import { supabase } from '@/lib/supabaseClient'; // Import your client
+import { useRouter } from 'next/navigation'; 
+import { supabase } from '@/lib/supabaseClient'; 
+import { Globe, User, ChevronDown, Search, X } from 'lucide-react'; 
+import { cn } from '@/lib/utils'; // Assuming cn is available
 
-// --- Data for the templates ---
+// --- Primary Header Component (Non-Fixed, Scrolls) ---
+const PrimaryHeader = ({ session, onLoginClick }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
+
+  const navLinks = [
+    { label: 'My Sites', href: '#mysites', hasDropdown: false },
+    { label: 'Product', href: '#product', hasDropdown: true },
+    { label: 'Solutions', href: '#solutions', hasDropdown: true },
+    { label: 'Resources', href: '#resources', hasDropdown: true },
+    { label: 'Pricing', href: '/get-started/pricing', hasDropdown: false },
+  ];
+
+  const handleLogOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  return (
+    <header className="h-[65px] bg-white border-b border-gray-200 z-50 font-sans shadow-sm">
+      <div className="mx-auto px-6 h-full flex items-center justify-between">
+        
+        {/* Left: Logo/Title */}
+        <Link href="/" className="flex items-center space-x-2">
+            <span className="text-3xl font-bold text-gray-900 not-italic tracking-tight">
+                BizVistaar
+            </span>
+        </Link>
+        
+        {/* Center: Navigation Links */}
+        <nav className="flex items-center h-full text-gray-800 font-medium text-base gap-6 ml-auto">
+            {navLinks.map((link) => (
+                <a 
+                    key={link.label} 
+                    href={link.href} 
+                    className="flex items-center h-full hover:text-gray-900 transition-colors"
+                >
+                    {link.label}
+                    {link.hasDropdown && <ChevronDown size={18} className="ml-1 text-gray-500" />}
+                </a>
+            ))}
+            <div className="h-6 w-px bg-gray-300 mx-1"></div>
+        </nav>
+
+        {/* Right: Auth & Globe */}
+        <div className="flex items-center ml-6 gap-4">
+            <Globe className="w-5 h-5 text-gray-700 cursor-pointer" />
+            
+            {session ? (
+                <div className="relative">
+                  <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                       <User size={18} className="text-gray-500" />
+                    </div>
+                  </button>
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                      <div className="p-3 text-sm text-gray-700 border-b">
+                         {session.user.email}
+                      </div>
+                      <button 
+                        onClick={handleLogOut}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                         Log Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+            ) : (
+                <button 
+                  onClick={onLoginClick}
+                  className="px-5 py-2.5 text-sm font-semibold text-blue-600 border border-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                >
+                  Log In
+                </button>
+            )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// --- Secondary Navigation Component (Sticky/Floating with Search) ---
+const SecondaryNav = ({ filter, setFilter, defaultSearch, activeFilter }) => {
+    const navItems = [
+        { label: 'Business & Services', hasDropdown: true },
+        { label: 'Store', hasDropdown: true },
+        { label: 'Creative', hasDropdown: true },
+        { label: 'Community', hasDropdown: true },
+        { label: 'Blog', hasDropdown: true },
+    ];
+    
+    // Handler for removing a filter tag (e.g., the pre-filled business type)
+    const handleRemoveFilter = () => {
+        setFilter(''); // Clear the filter
+    }
+
+    return (
+        // Sticky at top-0 after PrimaryHeader scrolls past
+        <nav className="w-full bg-white border-b border-gray-200 text-gray-700 font-medium text-base  sticky top-0 z-40">
+            <div className="mx-auto px-6 max-w-screen-2xl h-14 flex items-center justify-between">
+                
+                {/* Left Side: Navigation Links */}
+                <div className="flex items-center gap-8">
+                    {navItems.map((item) => (
+                        <a 
+                            key={item.label}
+                            href="#"
+                            className={`flex items-center h-full transition-colors ${
+                                item.isActive 
+                                    ? 'text-blue-600 border-b-2 border-blue-600' 
+                                    : 'hover:text-gray-900'
+                            }`}
+                        >
+                            {item.label}
+                            {item.hasDropdown && <ChevronDown size={18} className="ml-1 text-gray-500" />}
+                        </a>
+                    ))}
+                </div>
+                
+                {/* Right Side: All Templates + Search/Filter */}
+                <div className="flex items-center gap-6 h-full">
+                    
+                    {/* All Templates Link */}
+                  
+                    
+                    {/* Search/Filter Area */}
+                    {activeFilter ? (
+                        <div className="flex items-center relative ml-4 border-b-2 border-black-700/80">
+                            {/* Active Filter Pill with X */}
+                            <span className="text-gray-800 text-base py-1">
+                                {activeFilter}
+                            </span>
+                            <X size={18} className="ml-2 text-black cursor-pointer hover:text-black" onClick={handleRemoveFilter} />
+                        </div>
+                    ) : (
+                        // Search Input (Styled like get-started)
+                        <div className="relative flex items-center w-60 ml-4">
+                            <input
+                                type="text"
+                                placeholder="Search all templates"
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                className="w-full bg-transparent border-0 border-b-2 border-gray-300 py-1 text-base text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:border-black transition-colors duration-300 outline-none pr-7"
+                            />
+                            {/* Search Icon on the right */}
+                            <Search size={18} className="absolute right-0 text-gray-400 cursor-pointer hover:text-gray-600" />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </nav>
+    );
+};
+
+// --- Data for the templates (Extended with keywords and recommended status) ---
 const templates = [
-  // ... (your templates array remains the same) ...
   {
     title: 'flavornest',
-    description: 'Focus on a single to promote upcoming releases with a coming soon approach that has a modern layout.',
+    description: 'A modern landing page focusing on delicious food and sweet products, perfect for pre-orders and a coming soon approach.',
     url: '/templates/flavornest',
     previewUrl: '/preview/flavornest',
     editor:'/editor/flavornest',
-
+    keywords: ['Food', 'Sweets', 'Bakery', 'Mithai', 'Coming Soon'],
+    isRecommended: true,
   },
   {
     title: 'flara',
-    description: 'Give site visitors eye-catching design, appointment booking, and shopping in one seamless experience.',
+    description: 'An elegant e-commerce design with a light, clean aesthetic, ideal for physical products like candles, apparel, or handmade goods.',
     url: '/templates/flara',
     previewUrl: '/preview/flara',
     editor:'/editor/flara',
+    keywords: ['Retail', 'E-commerce', 'Candles', 'Handmade', 'Clean']
   },
   {
     title: 'avenix',
-    description: 'A bold, minimalist portfolio template to showcase your creative work and professional journey.',
+    description: 'A bold, minimalist fashion portfolio template to showcase your creative work and professional journey.',
     url: '/templates/avenix',
     previewUrl: '/preview/avenix',
     editor:'/editor/avenix',
+    keywords: ['Fashion', 'Apparel', 'Minimalist', 'Bold', 'Portfolio']
   },
   {
     title: 'blissly',
-    description: 'A modern, dark-themed storefront perfect for apparel brands and high-end fashion retailers.',
+    description: 'A cozy coffee shop/cafe theme, blending modern functionality like event management and product ordering with a warm, inviting feel.',
     url: '/templates/blissly',
     previewUrl: '/preview/blissly',
     editor:'/editor/blissly',
+    keywords: ['Cafe', 'Restaurant', 'Events', 'Booking', 'Coffee']
   }
 ];
 
-// --- Reusable Template Card Component with NEW LOGIC ---
-const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
+// --- Static List of Vibe Pills (from get-started/2) ---
+const businessVibes = [
+    { id: 'handcrafted', label: 'Handmade' },
+    { id: 'elegant', label: 'Trendy' },
+    { id: 'cozy', label: 'Friendly' },
+    { id: 'playful', label: 'Fun' },
+    { id: 'modern', label: 'Stylish' },
+    { id: 'trusted', label: 'Reliable' },
+    { id: 'natural', label: 'Eco-Friendly' },
+    { id: 'minimal', label: 'Clean' },
+    { id: 'vintage', label: 'Modern' },
+    { id: 'luxury', label: 'Premium' },
+    { id: 'fast', label: 'Quick' },
+];
+
+// --- Reusable Template Card Component with Hover Logic ---
+const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, isRecommended }) => {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedKeyword, setSelectedKeyword] = useState(null);
 
   const handleStartEditing = async () => {
     setIsCreating(true);
 
-    // 1. Get the logged-in user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      // If no user, send to sign-in
       router.push('/sign-in');
       return;
     }
 
     try {
-      // 2. Get the template ID from its name (from your 'templates' table)
       const { data: template, error: templateError } = await supabase
         .from('templates')
         .select('id')
-        .eq('name', title) // 'title' is 'flavornest', 'flara', etc.
+        .eq('name', title) 
         .single();
 
       if (templateError) throw new Error(`Could not find template: ${templateError.message}`);
       if (!template) throw new Error('Template not found in database.');
 
-      // 3. Get user info from localStorage
       const storeName = localStorage.getItem('storeName') || 'My New Site';
-      const site_slug = storeName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(); // Unique slug
+      const site_slug = storeName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(); 
 
-      // 4. Create the new website entry in your 'websites' table
       const { data: newSite, error: insertError } = await supabase
         .from('websites')
         .insert({
           user_id: user.id,
           template_id: template.id,
           site_slug: site_slug,
-          website_data: {} // Start with empty data
+          website_data: {} 
         })
-        .select('id') // Ask Supabase to return the 'id' of the new row
+        .select('id') 
         .single();
 
       if (insertError) throw new Error(`Could not create site: ${insertError.message}`);
       if (!newSite) throw new Error('Failed to create site entry.');
       
-      // 5. Redirect to the editor with the new site_id in the URL
       router.push(`/editor/${title}?site_id=${newSite.id}`);
 
     } catch (error) {
@@ -96,13 +267,20 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
 
   return (
     <motion.div
-      className="group max-w-xl cursor-pointer"
+      className="group max-w-xl cursor-pointer relative" 
       whileHover="hover"
       initial="initial"
       animate="initial"
     >
-      {/* ... (your iframe/preview motion.divs remain unchanged) ... */}
-       {/* Container for the visual part (iframes). */}
+      
+      {/* Recommended Badge */}
+      {isRecommended && (
+        <span className="absolute -top-3 left-4 z-20 bg-black text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider">
+          Recommended
+        </span>
+      )}
+
+      {/* Container for the visual part (iframes). */}
        <div className="relative h-[320px]">
 
         {/* Mobile View - Positioned BEHIND the desktop view */}
@@ -162,12 +340,12 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
       </div>
 
 
-      {/* --- Hover Info Block (MODIFIED) --- */}
+      {/* --- Hover Info Block (MODIFIED FOR CONDITIONAL VISIBILITY) --- */}
       <div className="mt-8 min-h-[140px] transform px-2 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 text-base leading-relaxed text-gray-600">{description}</p>
+        
         <div className="mt-6 flex items-center gap-3">
-            {/* THIS IS THE CHANGE: Changed <Link> to <button> with onClick */}
             <button 
               onClick={handleStartEditing}
               disabled={isCreating}
@@ -175,7 +353,6 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
             >
               {isCreating ? 'Creating...' : 'Start Editing'}
             </button>
-            {/* END OF CHANGE */}
             <Link href={previewUrl} target="_blank" rel="noopener noreferrer">
                 <button className="rounded-lg bg-white px-6 py-2.5 text-base font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-300 transition-colors hover:bg-gray-50">
                     Preview Site
@@ -188,35 +365,117 @@ const TemplateCard = ({ title, description, url, previewUrl, editor }) => {
 };
 
 
-// --- Main Page (No changes needed below) ---
+// --- Main Page (Container and Logic) ---
 export default function TemplatesPage() {
   const [storeName, setStoreName] = useState("Your Business");
+  const [session, setSession] = useState(null);
+  const [selectedVibes, setSelectedVibes] = useState({});
+  const [filter, setFilter] = useState(''); // State for the search/filter input
+  const router = useRouter();
 
+  // Load state and session
   useEffect(() => {
     const storedStoreName = localStorage.getItem('storeName');
     if (storedStoreName) {
       setStoreName(storedStoreName);
     }
+    
+    const storedVibes = localStorage.getItem('businessVibes');
+    if (storedVibes) {
+      try {
+        setSelectedVibes(JSON.parse(storedVibes));
+      } catch (e) {
+        console.error("Failed to parse stored businessVibes:", e);
+      }
+    }
+    
+    // Set initial filter to business type
+    const storedBusinessType = localStorage.getItem('businessType');
+    if (storedBusinessType) {
+        setFilter(storedBusinessType);
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+            setSession(session);
+        }
+    );
+    
+    return () => {
+        authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  return (
-    <div className="bg-white font-sans">
-      <div className="mx-auto max-w-screen-2xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-        <div className="text-center">
-            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Choose a Template for {storeName}
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-xl text-gray-600">
-                Each template is professionally designed to be the perfect starting point for your new website.
-            </p>
-        </div>
+  const handleLoginClick = useCallback(() => {
+    router.push('/sign-in');
+  }, [router]);
+  
+  // Logic to determine if a filter is active
+  const activeFilter = filter.trim();
 
-        {/* Updated Grid Container */}
-        <div className="mt-24 grid grid-cols-1 justify-items-start gap-x-16 gap-y-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-28 pl-6">
-          {templates.map((template, index) => (
-            <TemplateCard key={`${template.title}-${index}`} {...template} />
-          ))}
-        </div>
+  return (
+    // Outer container ensures main header and secondary nav backgrounds are pure white
+    <div className="bg-white font-sans min-h-screen">
+      
+      {/* 1. Primary Header (Now scrolls) */}
+      <PrimaryHeader session={session} onLoginClick={handleLoginClick} />
+      
+      {/* 2. Secondary Navigation Bar (Sticky/Floating) */}
+      
+      {/* Main Content Area (Background is now grayish) */}
+      <div className="bg-gray-50 pb-20 pt-16"> {/* Added pt-16 for space below secondary nav */}
+          <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+            
+            {/* Top Content: Title (reverted) and "Sort by" */}
+            <div className="text-left max-w-screen-2xl mx-auto mb-10">
+                <div className="flex flex-col items-center text-center w-full space-y-3">
+                    <h2 className="text-5xl font-bold tracking-tight not-italic text-gray-900">
+                        Choose a Template for <span className="text-gray-500">{storeName}</span>
+                    </h2>
+
+                    <p className="text-gray-600 text-base mt-1">
+                        Pick the perfect starting point for your brand.
+                    </p>
+
+                   
+                </div>
+            </div>
+
+            <div className="text-center">
+                {/* Business Vibe Filter Pills (Dynamically styled based on previous input) */}
+                <div className="flex flex-wrap justify-center gap-3 mt-12 mb-20">
+                   {businessVibes.map(({ id, label }) => {
+                       const isSelected = !!selectedVibes[id];
+                       return (
+                           <button 
+                               key={id}
+                               className={`px-6 py-3 border rounded-full font-semibold transition-colors duration-200 ${
+                                   isSelected
+                                       ? 'bg-gray-900 text-white border-black' 
+                                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900'
+                               }`}
+                           >
+                               {label}
+                           </button>
+                       );
+                   })}
+                </div>
+            </div>
+
+            <SecondaryNav filter={activeFilter} setFilter={setFilter} activeFilter={activeFilter} defaultSearch={localStorage.getItem('businessType') || ''} />
+
+         
+            {/* Template Grid Container */}
+            <div className="mt-24 grid grid-cols-1 justify-items-start gap-x-16 gap-y-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-28 pl-6">
+              {templates.map((template, index) => (
+                <TemplateCard key={`${template.title}-${index}`} {...template} />
+              ))}
+            </div>
+          </div>
       </div>
 
        {/* Floating Contact Us Button */}
