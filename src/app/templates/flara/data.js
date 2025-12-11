@@ -130,6 +130,6 @@ export const businessData = {
             { name: "Returns", url: "#" }
           ]
         },
-        copyright: "© 2025 Candlea. All Rights Reserved"
+        copyright: "© 2026 Candlea. All Rights Reserved"
       }
     };

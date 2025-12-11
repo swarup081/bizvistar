@@ -12,13 +12,14 @@ const getProductsByIds = (allProducts, ids) => {
 
 // "Explore All" Rotating Button
 const ExploreCircle = () => (
-    <div className="relative w-32 h-32 flex items-center justify-center cursor-pointer group">
+   <Link href="./aurora/shop">
+      <div  className="relative w-32 h-32 flex items-center justify-center cursor-pointer group">
         <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
             <svg viewBox="0 0 100 100" width="100%" height="100%">
                 <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
                 <text className="font-sans text-[10px] uppercase tracking-[0.2em] fill-[var(--color-dark)] font-bold">
                     <textPath href="#circlePath" startOffset="0%">
-                        • Explore Collection • Explore Collection •
+                        •  Explore NOW • • Explore NOW • 
                     </textPath>
                 </text>
             </svg>
@@ -27,9 +28,10 @@ const ExploreCircle = () => (
             <ArrowDown size={20} />
         </div>
     </div>
+    </Link>
 );
 
-export default function DiamondBDPage() {
+export default function AuroraPage() {
     const { businessData } = useTemplateContext();
 
     if (!businessData) return <div>Loading...</div>;
@@ -58,7 +60,7 @@ export default function DiamondBDPage() {
                                             New Style
                                             {/* Floating Bracelet Image Graphic */}
                                             <div className="absolute -left-28 top-1/2 -translate-y-1/2 w-24 h-16 hidden lg:block rotate-12 opacity-80">
-                                                <img src="https://img.freepik.com/free-psd/gold-bracelet-isolated-transparent-background_191095-15637.jpg" alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                <img src="/aurora/diamondsimageforaurora.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
                                             </div>
                                         </span>
                                     </h1>
@@ -67,16 +69,6 @@ export default function DiamondBDPage() {
                                 <p className="text-gray-500 text-lg mt-8 mb-10 max-w-md font-light leading-relaxed">
                                     {businessData.hero.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
                                 </p>
-                                
-                                <div className="flex items-center gap-8">
-                                    <Link 
-                                        href="/shop" 
-                                        className="bg-[#0F1C23] text-white px-8 py-4 rounded-[4px] font-medium text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
-                                    >
-                                        See All <ArrowRight size={16} />
-                                    </Link>
-                                   
-                                </div>
                             </div>
 
                             {/* RIGHT COLUMN: Images (Span 6) */}
@@ -100,10 +92,61 @@ export default function DiamondBDPage() {
                                     />
                                 </div>
                                 
-                                {/* Decorative Arc Lines */}
-                                <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 opacity-20 pointer-events-none" viewBox="0 0 500 500">
-                                    <path d="M50,250 Q250,50 450,250" fill="none" stroke="#D4A373" strokeWidth="2" />
+                                {/* --- UPDATED SVG DECORATION --- */}
+                                <svg
+                                    className="absolute inset-0 w-full h-full pointer-events-none -z-10"
+                                    viewBox="0 0 800 320"
+                                    preserveAspectRatio="xMidYMid slice" 
+                                    aria-hidden="true"
+                                >
+                                    <defs>
+                                        <linearGradient id="arcGrad" x1="0" x2="1" y1="0" y2="0">
+                                            <stop offset="0%" stopColor="#D4A373" stopOpacity="0" />
+                                            <stop offset="20%" stopColor="#D4A373" stopOpacity="0.6" />
+                                            <stop offset="50%" stopColor="#D4A373" stopOpacity="1" />
+                                            <stop offset="80%" stopColor="#D4A373" stopOpacity="0.6" />
+                                            <stop offset="100%" stopColor="#D4A373" stopOpacity="0" />
+                                        </linearGradient>
+
+                                        <linearGradient id="edgeFade" x1="0" x2="1" y1="0" y2="0">
+                                            <stop offset="0%" stopColor="black" stopOpacity="0" />
+                                            <stop offset="15%" stopColor="black" stopOpacity="1" />
+                                            <stop offset="85%" stopColor="black" stopOpacity="1" />
+                                            <stop offset="100%" stopColor="black" stopOpacity="0" />
+                                        </linearGradient>
+
+                                        <mask id="fadeMask">
+                                            <rect x="0" y="0" width="100%" height="100%" fill="url(#edgeFade)" />
+                                        </mask>
+                                    </defs>
+
+                                    <g
+                                        mask="url(#fadeMask)"
+                                        fill="none"
+                                        stroke="url(#arcGrad)"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path
+                                            d="M-50,300 C200,50 600,50 850,300"
+                                            strokeWidth="3"
+                                            className="opacity-90"
+                                        />
+                                        <path
+                                            d="M-20,320 C220,100 580,100 820,320"
+                                            strokeWidth="2"
+                                            className="opacity-70"
+                                        />
+                                        <path
+                                            d="M20,340 C240,150 560,150 780,340"
+                                            strokeWidth="1.5"
+                                            strokeDasharray="6 8"
+                                            className="opacity-40"
+                                        />
+                                    </g>
                                 </svg>
+                                {/* --- END UPDATED SVG --- */}
+
                             </div>
                         </div>
                     </div>
@@ -152,26 +195,38 @@ export default function DiamondBDPage() {
             </Editable>
 
 
-            {/* --- FEATURES SECTION --- */}
+            {/* --- FEATURES MARQUEE SECTION (UPDATED) --- */}
             <Editable focusId="features">
-                <section className="py-24 bg-white mt-12 lg:mt-24">
-                    <div className="container mx-auto px-6 lg:px-16">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {businessData.features.map((feature, index) => (
-                                <div key={index} className="flex flex-col items-center text-center group cursor-pointer p-6 hover:bg-gray-50 transition-colors rounded-xl">
-                                    <div className="w-16 h-16 rounded-full bg-[#FAEFE5] flex items-center justify-center mb-6 text-[#0F1C23] group-hover:bg-[#0F1C23] group-hover:text-[#D4A373] transition-colors duration-300">
-                                        <FeatureIcon name={feature.icon} size={24} />
-                                    </div>
-                                    <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-4 text-[#0F1C23]">
-                                        {feature.title}
-                                    </h3>
-                                    <p className="text-gray-500 text-sm leading-relaxed max-w-[200px]">
-                                        {feature.text}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                <section className="py-16 bg-white border-b border-gray-100 mt-12 lg:mt-24 overflow-hidden">
+                  <div className="relative">
+                    <div className="flex whitespace-nowrap">
+                      <div className="flex marquee items-center">
+                        {(businessData.features || []).map((feature, i) => (
+                          <div key={i} className="flex items-center justify-center gap-4 mx-6">
+                            <div className="w-12 h-12 rounded-full bg-[#FAEFE5] flex items-center justify-center text-[#0F1C23]">
+                              <FeatureIcon name={feature.icon} size={20} />
+                            </div>
+                            <div className="text-left">
+                              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">{feature.title}</h3>
+                              <p className="text-gray-500 text-[10px] uppercase tracking-wider mt-1">{feature.text}</p>
+                            </div>
+                          </div>
+                        ))}
+
+                        {(businessData.features || []).map((feature, i) => (
+                          <div key={`dup-${i}`} className="flex items-center justify-center gap-4 mx-6" aria-hidden="true">
+                            <div className="w-12 h-12 rounded-full bg-[#FAEFE5] flex items-center justify-center text-[#0F1C23]">
+                              <FeatureIcon name={feature.icon} size={20} />
+                            </div>
+                            <div className="text-left">
+                              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">{feature.title}</h3>
+                              <p className="text-gray-500 text-[10px] uppercase tracking-wider mt-1">{feature.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+                  </div>
                 </section>
             </Editable>
 
@@ -185,9 +240,15 @@ export default function DiamondBDPage() {
                             <p className="text-gray-600 text-lg leading-loose mb-10 font-light">
                                 {businessData.about.text}
                             </p>
-                            <Link href="#" className="inline-block text-xs font-bold tracking-[0.2em] uppercase border-b border-[#0F1C23] pb-1 hover:text-[#D4A373] hover:border-[#D4A373] transition-all">
-                                {businessData.about.cta}
-                            </Link>
+                            <div className="flex items-center gap-8">
+                                    <Link 
+                                        href="./aurora/shop" 
+                                        className="bg-[#0F1C23] text-white px-8 py-4 rounded-[4px] font-medium text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
+                                    >
+                                       Shop Now <ArrowRight size={16} />
+                                    </Link>
+                                   
+                                </div>
                         </div>
                          <div className="h-[650px] w-full relative order-1 lg:order-2">
                              <div className="absolute inset-0 rounded-t-[300px] overflow-hidden shadow-2xl">

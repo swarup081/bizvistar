@@ -45,5 +45,6 @@ next-env.d.ts
 /public/blissly
 /public/flaraImage
 /public/flavournestImage
+/public/aurora
 
 supabase/.temp

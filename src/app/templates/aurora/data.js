@@ -1,5 +1,22 @@
 'use client';
 
+// Define styles here so they are editable
+const styleConfig = {
+    colors: {
+        primary: "#1A1A1A",       // Dark Charcoal (Headings, Text)
+        secondary: "#D4AF37",     // Gold (Accents, Buttons)
+        background: "#F9F8F6",    // Cream/Off-White (Main Background)
+        surface: "#FFFFFF",       // Pure White (Cards, Sections)
+        textLight: "#666666",     // Grey (Subtitles)
+        footerBg: "#111111",      // Dark Footer
+        footerText: "#EEEEEE"     // Light Footer Text
+    },
+    fonts: {
+        heading: "Playfair Display", // Luxury Serif
+        body: "Lato"                 // Clean Sans-serif
+    }
+};
+
 const categories = [
     { id: 'rings', name: 'Rings' },
     { id: 'necklaces', name: 'Necklaces' },
@@ -14,24 +31,25 @@ const allProducts = [
       price: 1250.00,
       category: 'rings',
       description: "A timeless solitaire diamond ring set in 18k white gold.",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=800"
+      image: "/aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg"
     },
-    { 
-      id: 2, 
-      name: "EMERALD CUT NECKLACE", 
-      price: 890.00,
-      category: 'necklaces',
-      description: "Stunning emerald cut pendant suspended from a delicate gold chain.",
-      image: "https://images.unsplash.com/photo-1599643478518-17488fbbcd75?auto=format&fit=crop&q=80&w=800"
-    },
+  
     { 
       id: 3, 
       name: "GOLD CUFF BRACELET", 
       price: 450.00,
       category: 'bracelets',
       description: "Handcrafted gold cuff bracelet with intricate detailing.",
-      image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=800"
+      image: "/aurora/laura-guldner-rZjRXpDJUdw-unsplash.jpg"
     },
+    { 
+        id: 2, 
+        name: "EMERALD CUT NECKLACE", 
+        price: 890.00,
+        category: 'necklaces',
+        description: "Stunning emerald cut pendant suspended from a delicate gold chain.",
+        image: "/aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg"
+      },
     { 
       id: 4, 
       name: "PEARL DROP EARRINGS", 
@@ -54,20 +72,22 @@ const allProducts = [
         price: 1890.00,
         category: 'necklaces',
         description: "Deep blue sapphire pendant.",
-        image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&q=80&w=800"
+        image: "/aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg"
     },
 ];
 
 export const businessData = {
-    name: "Aurora",
-    logoText: "Aurora",
+    // --- Global Configuration ---
+    name: "AURORA", // Changed from Aurora
+    logoUrl: "",    // Leave empty to use the name as text, or paste an image URL here
+    styleConfig: styleConfig, // Inject styles
     categories: categories,
     allProducts: allProducts,
     
     pages: [
-      { name: 'Home', path: '/templates/diamondbd' },
-      { name: 'Shop', path: '/templates/diamondbd/shop' },
-      { name: 'Checkout', path: '/templates/diamondbd/checkout' }
+      { name: 'Home', path: '/templates/aurora' },
+      { name: 'Shop', path: '/templates/aurora/shop' },
+      { name: 'Checkout', path: '/templates/aurora/checkout' }
     ],
 
     // IDs for Editor Focus
@@ -79,24 +99,21 @@ export const businessData = {
     instagramSectionId: "instagram",
     faqSectionId: "faq",
     blogSectionId: "blog",
-    ctaSectionId: "cta", // NEW ID
+    ctaSectionId: "cta", 
     footerSectionId: "footer",
 
     navigation: {
         main: [
-            { href: "/templates/diamondbd", label: "HOME" },
-            { href: "/templates/diamondbd/shop", label: "COLLECTION" },
-            { href: "/templates/diamondbd#story", label: "ABOUT" },
-            { href: "/templates/diamondbd#blog", label: "BLOG" },
-            { href: "#", label: "PAGES" },
+            { href: "/templates/aurora", label: "HOME" },
+            { href: "/templates/aurora/shop", label: "SHOP" },
         ],
         secondary: []
     },
 
     hero: {
-        titleLine1: "Choose jewelry with",
-        titleLine2: "heart & feelings",
-        subtitle: "Welcome to a realm of timeless beauty and unparalleled craftsmanship. At DiamondBD, we invite you to adorn yourself in the finest expressions of luxury.",
+        titleLine1: "Timeless Beauty,",
+        titleLine2: "Crafted for You",
+        subtitle: "Welcome to a realm of timeless beauty and unparalleled craftsmanship. At Aurora, we invite you to adorn yourself in the finest expressions of luxury.",
         cta: "EXPLORE COLLECTIONS",
         // Large Arch Slideshow Images
         imageArch1: "/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
@@ -117,7 +134,7 @@ export const businessData = {
             icon: "card"
         },
         {
-            title: "CERTIFIED DIAMONDS", 
+            title: "CERTIFIED GEMS", 
             text: "All gems are GIA certified authentic.",
             icon: "certified" 
         },
@@ -129,16 +146,15 @@ export const businessData = {
     ],
 
     about: {
-        title: "The Diamondbd Legacy",
-        text: "Established in 1920, DiamondBD began as a humble atelier in the heart of the artisan district. For over a century, we have remained true to our founding principles: uncompromising quality, artistic innovation, and a deep respect for the gemstones we work with.",
+        title: "The Aurora Legacy",
+        text: "Established in 2020, Aurora began as a humble atelier in the heart of the artisan district. For over a century, we have remained true to our founding principles: uncompromising quality, artistic innovation, and a deep respect for the gemstones we work with.",
         image: "https://images.unsplash.com/photo-1531995811006-35cb42e1a022?auto=format&fit=crop&q=80&w=1000",
-        cta: "LEARN MORE"
     },
 
     collections: {
         title: "Curated Collections",
         subtitle: "Indulge in the opulence of handcrafted necklaces, bracelets, earrings, and rings, each a masterpiece in its own right.",
-        itemIDs: [1, 2, 3]
+        itemIDs: [1, 6, 2]
     },
 
     testimonials: {
@@ -150,14 +166,13 @@ export const businessData = {
                 location: "London, UK"
             },
             {
-                quote: "A good chain in Bangladesh for having diamond jewellery. Staffs are quite friendly and helpful. It is big showroom.",
+                quote: "A beautiful collection for having diamond jewellery. Staff are quite friendly and helpful. It is a big showroom.",
                 author: "Connie H. Tengan",
-                location: "Dhaka, Bangladesh"
+                location: "New York, USA"
             }
         ]
     },
 
-    // NEW CTA SECTION DATA
     newsletterCta: {
         title: "Unlock Exclusive Access",
         text: "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewelry heirloom.",
@@ -166,68 +181,54 @@ export const businessData = {
     },
 
     instagram: {
-        title: "@diamondbd_official",
+        title: "@aurora_official",
         handle: "Follow our journey",
         images: [
             "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=400",
             "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&q=80&w=400",
-            "https://images.unsplash.com/photo-1598560976315-1823d92f6e21?auto=format&fit=crop&q=80&w=400",
+            "/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
             "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&q=80&w=400",
             "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=400",
-            "https://images.unsplash.com/photo-1586104139863-795a12398cb0?auto=format&fit=crop&q=80&w=400"
+            "/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
         ]
     },
 
     faq: {
         title: "Frequently Asked Questions",
-        subtitle: "Embark on a journey of knowledge as we address the most common queries about our exquisite jewelry collection.",
+        subtitle: "Quick answers to the questions our Insta fam asks the most!",
         questions: [
-            { q: "Designed To Match Your Lifestyle?", a: "Yes, our pieces are crafted for daily wear." },
-            { q: "Diamond Jewelry Shopping?", a: "We offer certified diamond jewelry with warranties." },
-            { q: "Gold Jewelry Shopping at Diamond BD", a: "Our gold collection is 100% pure 18k and 22k gold." },
-            { q: "Can I re-size my Ring?", a: "Yes, we offer complimentary resizing within 30 days." },
-            { q: "What if I don't know the ring size?", a: "Visit our store or use our online guide." }
-        ]
-    },
-
-    blog: {
-        title: "The Journal",
-        items: [
-            {
-                title: "Eid Special Collection Sale 2024",
-                date: "JAN 19, 2024",
-                author: "Sajib Hossain",
-                image: "https://images.unsplash.com/photo-1584302179602-e4c3d3fd629d?auto=format&fit=crop&q=80&w=800"
+            { 
+                q: "Is your jewelry suitable for daily wear?", 
+                a: "Absolutely! Our pieces are lightweight, skin-friendly, and designed for everyday styling." 
             },
-            {
-                title: "How To Measure Ring Size at Home",
-                date: "JAN 4, 2024",
-                author: "Mufrat Nir",
-                image: "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&q=80&w=800"
+            { 
+                q: "Will the color fade over time?", 
+                a: "Our jewelry is premium-plated and long-lasting. Just keep it away from water, perfume, and sweat for best durability." 
             },
-            {
-                title: "Investing in Timeless Beauty",
-                date: "JAN 3, 2024",
-                author: "Nila Akter",
-                image: "https://images.unsplash.com/photo-1576158187530-98191b0816d3?auto=format&fit=crop&q=80&w=800"
+            { 
+                q: "How do I take care of my jewelry?", 
+                a: "Wipe it with a soft cloth after use and store it in an airtight pouch. Avoid moisture to keep the shine intact." 
+            },
+            { 
+                q: "Do you offer COD or online payments?", 
+                a: "Yes! We support secure online payments and Cash on Delivery in most locations." 
             }
         ]
     },
 
     footer: {
-        logo: "DIAMONDBD",
         description: "A legacy of brilliance, crafted for eternity.",
         subscribe: {
-            title: "Be the first to know our diamondbd news",
+            title: "Be the first to know our news",
             cta: "SUBMIT"
         },
-        copyright: "© 2024 DiamondBD. All rights reserved.",
+        copyright: "© 2026 Aurora. All rights reserved.",
         links: {
             main: [
-                { name: "Home", url: "/templates/diamondbd" },
-                { name: "About", url: "/templates/diamondbd#story" },
-                { name: "Shop", url: "/templates/diamondbd/shop" },
-                { name: "Blog", url: "/templates/diamondbd#blog" }
+                { name: "Home", url: "/templates/aurora" },
+                { name: "About", url: "/templates/aurora#story" },
+                { name: "Shop", url: "/templates/aurora/shop" },
+                { name: "Journal", url: "/templates/aurora#blog" }
             ],
             utility: [
                 { name: "Terms & Conditions", url: "#" },

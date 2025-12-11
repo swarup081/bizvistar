@@ -245,7 +245,7 @@ const categories = [
               title: "Stay updated with new arrivals",
               cta: "GET UPDATES"
           },
-          copyright: "© 2025 Avenix,",
+          copyright: "© 2026 Avenix,",
           socials: [
               { platform: "instagram", url: "https://instagram.com" },
               { platform: "facebook", url: "https://facebook.com" },

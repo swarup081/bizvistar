@@ -10,14 +10,14 @@ export function CartProvider({ children }) {
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('diamondbdCart');
+    const savedCart = localStorage.getItem('auroraCart');
     if (savedCart) {
       setCartItems(JSON.parse(savedCart));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('diamondbdCart', JSON.stringify(cartItems));
+    localStorage.setItem('auroraCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const openCart = () => setIsCartOpen(true);

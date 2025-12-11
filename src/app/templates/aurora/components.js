@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useCart } from './cartContext.js';
 import { useTemplateContext } from './templateContext.js';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Search, ShoppingBag, Heart, Star } from 'lucide-react';
 
 // --- ICONS ---
@@ -24,18 +25,31 @@ export const FeatureIcon = ({ name, size = 32 }) => {
 export const Header = () => {
     const { businessData } = useTemplateContext();
     const { cartCount, openCart } = useCart();
+    const [scrolled, setScrolled] = useState(false);
+    const pathname = usePathname();
+
+    if (typeof window !== "undefined") {
+        window.addEventListener("scroll", () => {
+            setScrolled(window.scrollY > 20);
+        });
+    }
 
     return (
-        <header className="absolute top-0 left-0 w-full z-50 py-8 px-6 lg:px-16">
+        <header className={`${scrolled ? "fixed bg-white/70 backdrop-blur-md shadow-sm py-4" : "absolute py-8"} top-0 left-0 w-full z-50 px-6 lg:px-16 transition-all duration-300`}>
             <div className="max-w-[1920px] mx-auto flex justify-between items-center">
                 
                 {/* LEFT: Navigation Links */}
                 <nav className="hidden lg:flex items-center gap-10">
-                    {['Home', 'Products', 'Discover', 'Journal'].map((item) => (
+                    {['Home', 'Shop'].map((item) => (
                         <Link 
                             key={item} 
-                            href={item === 'Home' ? '/templates/diamondbd' : `/templates/diamondbd/${item.toLowerCase()}`}
-                            className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors ${item === 'Home' ? 'text-[#0F1C23] border-b-2 border-[#0F1C23] pb-1' : 'text-gray-500 hover:text-[#0F1C23]'}`}
+                            href={item === 'Home' ? '/templates/aurora' : `/templates/aurora/${item.toLowerCase()}`}
+                            className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors ${
+                                (item === 'Home' && pathname === '/templates/aurora') ||
+                                (item === 'Shop' && pathname.startsWith('/templates/aurora/shop'))
+                                    ? 'text-[#0F1C23] border-b-2 border-[#0F1C23] pb-1'
+                                    : 'text-gray-500 hover:text-[#0F1C23]'
+                            }`}
                         >
                             {item}
                         </Link>
@@ -43,10 +57,8 @@ export const Header = () => {
                 </nav>
 
                 {/* CENTER: Logo */}
-                <Link href="/templates/diamondbd" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
-                    <div className="w-9 h-9 rounded-full bg-[#0F1C23] text-white flex items-center justify-center font-serif italic text-xl pt-1">
-                        {businessData.name.charAt(0)}
-                    </div>
+                <Link href="./templates/aurora" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
+                   
                     <span className="font-serif text-3xl text-[#0F1C23] tracking-tight font-medium">
                         {businessData.name}
                     </span>
@@ -54,8 +66,7 @@ export const Header = () => {
 
                 {/* RIGHT: Icons */}
                 <div className="flex items-center gap-8 text-[#0F1C23]">
-                    <button className="hover:scale-110 transition-transform"><Search size={22} strokeWidth={1.5} /></button>
-                    <button className="hover:scale-110 transition-transform"><Heart size={22} strokeWidth={1.5} /></button>
+       
                     <button onClick={openCart} className="hover:scale-110 transition-transform relative">
                         <ShoppingBag size={22} strokeWidth={1.5} />
                         {cartCount > 0 && (
@@ -279,7 +290,7 @@ export const Footer = () => {
                 
                 <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-300 text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
                     <p>{businessData.footer.copyright}</p>
-                    <p>Designed by WebOcean</p>
+                    <p>Designed by BizVistar</p>
                 </div>
             </div>
         </footer>

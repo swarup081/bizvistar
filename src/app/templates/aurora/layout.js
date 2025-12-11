@@ -121,7 +121,7 @@ function CartLayout({ children, serverData }) {
                                         <span>Total</span>
                                         <span>${total.toFixed(2)}</span>
                                     </div>
-                                    <a href="/templates/diamondbd/checkout" className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
+                                    <a href="/templates/aurora/checkout" className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
                                         Checkout
                                     </a>
                                 </div>
@@ -134,6 +134,6 @@ function CartLayout({ children, serverData }) {
     );
 }
 
-export default function DiamondBDLayout({ children, serverData }) {
+export default function AuroraLayout({ children, serverData }) {
     return <CartProvider><CartLayout serverData={serverData}>{children}</CartLayout></CartProvider>;
 }
