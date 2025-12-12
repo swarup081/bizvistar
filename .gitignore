@@ -47,4 +47,6 @@ next-env.d.ts
 /public/flavournestImage
 /public/aurora
 
+src/components/ui
+
 supabase/.temp
