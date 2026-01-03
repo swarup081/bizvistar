@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
 } from 'lucide-react';
@@ -130,6 +132,8 @@ const RestartConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
 
 
 export default function EditorTopNav({ 
+    mode, // 'dashboard' or undefined/null
+    siteSlug, // Passed from DB
     templateName, 
     websiteId, // <-- NEW PROP
     saveStatus, // <-- NEW PROP
@@ -146,9 +150,14 @@ export default function EditorTopNav({
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const router = useRouter();
   
   const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
-  const siteUrl = `your-site-slug.bizvistaar.com`; // Placeholder URL
+  
+  // Use DB slug if in dashboard/available, else default placeholder
+  const displaySlug = siteSlug || 'your-site-slug';
+  const siteUrl = `${displaySlug}.bizvistaar.com`;
 
   const handlePageSelect = (path) => {
     onPageChange(path);
@@ -160,40 +169,89 @@ export default function EditorTopNav({
     setIsRestartModalOpen(false);
   };
 
+  const handlePublish = async () => {
+    if (isPublishing) return;
+    setIsPublishing(true);
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        // Check subscription
+        const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status')
+            .eq('user_id', user.id)
+            .in('status', ['active', 'trialing'])
+            .maybeSingle();
+        
+        if (sub) {
+            // User is subscribed, publish directly
+            const { error } = await supabase.functions.invoke('publish-website', {
+                body: { websiteId }
+            });
+            if (error) {
+                alert('Failed to publish. Please try again.');
+                console.error(error);
+            } else {
+                alert('Website published successfully!');
+            }
+        } else {
+            // Not subscribed, go to pricing
+            router.push(`/get-started/pricing?site_id=${websiteId}`);
+        }
+    } catch (error) {
+        console.error('Publish error:', error);
+        alert('An error occurred.');
+    } finally {
+        setIsPublishing(false);
+    }
+  };
+
   return (
     <header className="w-full bg-white shadow-sm">
       {/* Top-most Bar */}
       <div className="w-full h-[65px] border-b border-gray-200 px-4 flex items-center justify-between">
         {/* Left Side */}
         <div className="flex items-center gap-6">
-          <Link href="/">
-            <span className="text-xl font-bold text-gray-900 cursor-pointer">
-              BizVistaar
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Tooltip
-              title="Hire a Professional"
-              description="Need help with design or content? Our experts are here to assist."
-            >
-              <NavButton>Hire a Professional</NavButton>
-            </Tooltip>
-            <NavButton>Help</NavButton>
-          </div>
+          {mode !== 'dashboard' ? (
+            <>
+              <Link href="/">
+                <span className="text-xl font-bold text-gray-900 cursor-pointer">
+                  BizVistaar
+                </span>
+              </Link>
+              <div className="flex items-center gap-2">
+                <Tooltip
+                  title="Hire a Professional"
+                  description="Need help with design or content? Our experts are here to assist."
+                >
+                  <NavButton>Hire a Professional</NavButton>
+                </Tooltip>
+                <NavButton>Help</NavButton>
+              </div>
+            </>
+          ) : (
+             <span className="text-xl font-bold text-gray-900">
+               Website Editor
+             </span>
+          )}
         </div>
 
         {/* Right Side: Actions */}
         <div className="flex items-center gap-3">
           
           <Tooltip
-            title="Reset Template"
-            description="Reset all changes made to this template back to their original settings."
+            title="Reset "
+            description="Reset all theme customizations back to defaults."
           >
             <button 
               onClick={() => setIsRestartModalOpen(true)}
               className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors"
             >
-              Restart
+              Reset 
             </button>
           </Tooltip>
 
@@ -223,19 +281,29 @@ export default function EditorTopNav({
               href={`/preview/${templateName}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium text-blue-500 px-3 py-2 rounded-md transition-colors hover:bg-blue-50"
+              className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
             >
               Preview
             </Link>
           </Tooltip>
           
           {/* --- UPDATED PUBLISH LINK --- */}
-          <Link
-            href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors"
-          >
-            Publish
-          </Link>
+          {mode === 'dashboard' ? (
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50"
+              >
+                {isPublishing ? 'Publishing...' : 'Publish'}
+              </button>
+          ) : (
+              <Link
+                href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
+                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors"
+              >
+                Publish
+              </Link>
+          )}
           {/* --- END OF CHANGE --- */}
 
         </div>

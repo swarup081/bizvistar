@@ -13,16 +13,18 @@ import {
   User 
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', icon: LayoutGrid, active: true, href: '/dashboard' },
-    { name: 'Website', icon: Globe, active: false, href: '/dashboard/website' },
-    { name: 'Products', icon: Package, active: false, href: '/dashboard/products' },
-    { name: 'Apps', icon: AppWindow, active: false, href: '/dashboard/apps' },
-    { name: 'Analytics', icon: PieChart, active: false, href: '/dashboard/analytics' },
+    { name: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
+    { name: 'Website', icon: Globe, href: '/dashboard/website' },
+    { name: 'Products', icon: Package, href: '/dashboard/products' },
+    { name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
+    { name: 'Analytics', icon: PieChart, href: '/dashboard/analytics' },
   ];
 
   useEffect(() => {
@@ -57,20 +59,23 @@ export default function DashboardLayout({ children }) {
 
         {/* Center: Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium
-                ${item.active 
-                  ? 'bg-[#8A63D2] text-white shadow-md' 
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-            >
-              <item.icon size={18} className={item.active ? 'text-white' : 'text-gray-400'} />
-              {item.name}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium
+                  ${isActive 
+                    ? 'bg-[#8A63D2] text-white shadow-md' 
+                    : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+              >
+                <item.icon size={18} className={isActive ? 'text-white' : 'text-gray-400'} />
+                {item.name}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right: User Controls */}
@@ -91,7 +96,9 @@ export default function DashboardLayout({ children }) {
       </header>
 
       {/* Main Content */}
-      <main className="mt-5 p-10 rounded-[2rem] bg-[#fff] font-sans text-[#333333] min-h-[500px]">
+      <main className={`mt-5 rounded-[2rem] bg-[#fff] font-sans text-[#333333] ${
+        pathname === '/dashboard/website' ? 'p-0 overflow-hidden h-[calc(100vh-140px)]' : 'p-10 min-h-[500px]'
+      }`}>
         {children}
       </main>
     </div>

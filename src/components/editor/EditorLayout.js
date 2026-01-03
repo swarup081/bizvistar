@@ -21,15 +21,15 @@ const templateDataMap = {
 };
 
 // Main component updated to read site_id
-export default function EditorLayout({ templateName }) {
+export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
   
-  // Get websiteId from URL query
+  // Get websiteId from URL query or prop
   const searchParams = useSearchParams();
-  const websiteId = searchParams.get('site_id');
+  const websiteId = propWebsiteId || searchParams.get('site_id');
   
   const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
   const debounceTimer = useRef(null); // For debouncing save
@@ -41,8 +41,13 @@ export default function EditorLayout({ templateName }) {
     return JSON.parse(JSON.stringify(templateDataMap[templateName] || {}));
   }, [templateName]);
 
-  const [businessData, setBusinessData] = useState(defaultData);
-  const [history, setHistory] = useState([defaultData]);
+  const [businessData, setBusinessData] = useState(() => {
+     // Priority: initialData (from DB) > defaultData
+     // Note: LocalStorage logic is in useEffect, but we might want to initialize with initialData first
+     return initialData || defaultData;
+  });
+  
+  const [history, setHistory] = useState([initialData || defaultData]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
   // Load data
@@ -55,8 +60,13 @@ export default function EditorLayout({ templateName }) {
         setBusinessData(parsedData); 
         setHistory([parsedData]);
         setHistoryIndex(0);
+      } else if (initialData) {
+         // If we have initialData passed prop (e.g. from Dashboard), use it.
+         setBusinessData(initialData);
+         setHistory([initialData]);
+         setHistoryIndex(0);
       } else {
-        // If no local data, use default
+        // If no local data and no initialData, use default
         setBusinessData(defaultData);
         setHistory([defaultData]);
         setHistoryIndex(0);
@@ -167,8 +177,13 @@ useEffect(() => {
     }
   };
 
-  // Send data to iframe, but not on every keystroke (debounced)
+  // Send data to iframe immediately on initial load and when businessData changes (debounced)
   useEffect(() => {
+    // Immediate send if it's the first load or if needed
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+        sendDataToIframe(businessData);
+    }
+    
     const handler = setTimeout(() => {
       sendDataToIframe(businessData);
     }, 250); 
@@ -265,13 +280,15 @@ useEffect(() => {
   };
 
   return (
-    <div className="grid grid-cols-[1fr_auto] h-screen bg-gray-50">
+    <div className={`grid grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
       
       {/* Column 1: Main Content (Nav + Preview) */}
-      <div className="flex flex-col h-screen overflow-hidden">
+      <div className={`flex flex-col overflow-hidden ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
         
         <div className="flex-shrink-0">
           <EditorTopNav
+            mode={mode}
+            siteSlug={siteSlug}
             templateName={templateName}
             websiteId={websiteId} // Pass websiteId to the nav
             saveStatus={saveStatus} // Pass saveStatus to the nav
@@ -308,7 +325,7 @@ useEffect(() => {
       </div>
 
       {/* Column 2: Sidebar (Full Height) */}
-      <div className="h-screen bg-white border-l border-gray-200 overflow-y-auto">
+      <div className={`bg-white border-l border-gray-200 overflow-y-auto ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
         <EditorSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 

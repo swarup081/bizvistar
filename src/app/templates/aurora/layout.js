@@ -15,7 +15,7 @@ function CartLayout({ children, serverData }) {
         if (serverData) return;
         let parentPath = '';
         try { parentPath = window.parent.location.pathname; } catch (e) {}
-        const isEditor = parentPath.startsWith('/editor/');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
         
         if (isEditor) {
              const handleMessage = (event) => {

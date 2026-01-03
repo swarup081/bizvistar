@@ -50,7 +50,7 @@ function FlavorNestLayout({ children, serverData }) { // 1. Accept serverData
             // Not in an iframe
         }
 
-        const isEditor = parentPath.startsWith('/editor/');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
         const isPreview = parentPath.startsWith('/preview/');
         const isLiveSite = !isEditor && !isPreview;
 

@@ -44,7 +44,7 @@ function CartLayout({ children, serverData }) {
             parentPath = window.parent.location.pathname;
         } catch (e) { /* Not in iframe */ }
 
-        const isEditor = parentPath.startsWith('/editor/');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
         const isPreview = parentPath.startsWith('/preview/');
 
         if (isEditor) {
