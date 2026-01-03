@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import EditorLayout from '@/components/editor/EditorLayout';
 import Link from 'next/link';
@@ -9,6 +10,9 @@ export default function WebsiteDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [website, setWebsite] = useState(null);
   const [error, setError] = useState(null);
+
+  const searchParams = useSearchParams();
+  const slugParam = searchParams.get('slug');
 
   useEffect(() => {
     async function fetchUserWebsite() {
@@ -24,11 +28,19 @@ export default function WebsiteDashboardPage() {
         }
 
         // 2. Fetch website for this user
-        const { data: site, error: dbError } = await supabase
+        let query = supabase
           .from('websites')
           .select('id, site_slug, template_id, website_data')
-          .eq('user_id', user.id)
-          .maybeSingle();
+          .eq('user_id', user.id);
+
+        if (slugParam) {
+           query = query.eq('site_slug', slugParam).single();
+        } else {
+           // Default: Most recent
+           query = query.order('updated_at', { ascending: false }).limit(1).maybeSingle();
+        }
+
+        const { data: site, error: dbError } = await query;
 
         if (dbError) {
              console.error('Error fetching website:', JSON.stringify(dbError, null, 2));
