@@ -106,6 +106,7 @@ export default function WebsiteDashboardPage() {
         templateName={website.templateName}
         websiteId={website.id}
         initialData={website.data}
+        siteSlug={website.slug}
     />
   );
 }

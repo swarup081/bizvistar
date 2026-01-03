@@ -21,7 +21,7 @@ const templateDataMap = {
 };
 
 // Main component updated to read site_id
-export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData }) {
+export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
@@ -288,6 +288,7 @@ useEffect(() => {
         <div className="flex-shrink-0">
           <EditorTopNav
             mode={mode}
+            siteSlug={siteSlug}
             templateName={templateName}
             websiteId={websiteId} // Pass websiteId to the nav
             saveStatus={saveStatus} // Pass saveStatus to the nav

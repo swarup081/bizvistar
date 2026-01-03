@@ -133,6 +133,7 @@ const RestartConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
 
 export default function EditorTopNav({ 
     mode, // 'dashboard' or undefined/null
+    siteSlug, // Passed from DB
     templateName, 
     websiteId, // <-- NEW PROP
     saveStatus, // <-- NEW PROP
@@ -153,7 +154,10 @@ export default function EditorTopNav({
   const router = useRouter();
   
   const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
-  const siteUrl = `your-site-slug.bizvistaar.com`; // Placeholder URL
+
+  // Use DB slug if in dashboard/available, else default placeholder
+  const displaySlug = siteSlug || 'your-site-slug';
+  const siteUrl = `${displaySlug}.bizvistaar.com`;
 
   const handlePageSelect = (path) => {
     onPageChange(path);
@@ -240,14 +244,14 @@ export default function EditorTopNav({
         <div className="flex items-center gap-3">
           
           <Tooltip
-            title="Reset Template"
-            description="Reset all changes made to this template back to their original settings."
+            title="Reset Theme"
+            description="Reset all theme customizations back to defaults."
           >
             <button 
               onClick={() => setIsRestartModalOpen(true)}
               className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors"
             >
-              Restart
+              Reset Theme
             </button>
           </Tooltip>
 
@@ -277,7 +281,7 @@ export default function EditorTopNav({
               href={`/preview/${templateName}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium text-blue-500 px-3 py-2 rounded-md transition-colors hover:bg-blue-50"
+              className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-md transition-colors hover:bg-purple-50"
             >
               Preview
             </Link>
@@ -288,14 +292,14 @@ export default function EditorTopNav({
               <button
                 onClick={handlePublish}
                 disabled={isPublishing}
-                className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-purple-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-purple-700 transition-colors disabled:opacity-50"
               >
                 {isPublishing ? 'Publishing...' : 'Publish'}
               </button>
           ) : (
               <Link
                 href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
-                className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 bg-purple-600 text-white text-sm font-medium px-6 py-2 rounded-4xl hover:bg-purple-700 transition-colors"
               >
                 Publish
               </Link>
