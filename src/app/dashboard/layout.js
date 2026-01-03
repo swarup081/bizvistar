@@ -10,7 +10,8 @@ import {
   PieChart, 
   Bell, 
   MessageCircle, 
-  User 
+  User,
+  Tag
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -22,7 +23,8 @@ export default function DashboardLayout({ children }) {
   const navItems = [
     { name: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
     { name: 'Website', icon: Globe, href: '/dashboard/website' },
-    { name: 'Products', icon: Package, href: '/dashboard/products' },
+    { name: 'Orders', icon: Package, href: '/dashboard/orders' },
+    { name: 'Products', icon: Tag, href: '/dashboard/products' },
     { name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
     { name: 'Analytics', icon: PieChart, href: '/dashboard/analytics' },
   ];
@@ -80,11 +82,9 @@ export default function DashboardLayout({ children }) {
 
         {/* Right: User Controls */}
         <div className="flex items-center gap-4">
-          <button className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
+         
+        <button className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
             <Bell size={20} />
-          </button>
-          <button className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-            <MessageCircle size={20} />
           </button>
           <div className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm">
              {/* Placeholder User Image */}
