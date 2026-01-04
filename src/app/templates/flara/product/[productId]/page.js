@@ -23,8 +23,12 @@ export default function ProductDetailPage() {
     const [selectedImage, setSelectedImage] = useState(product?.image || null);
 
     // --- Stock Logic ---
-    const stock = product?.stock !== undefined ? product.stock : Infinity;
-    const isUnlimited = product?.is_unlimited === true;
+    // If stock is undefined, treat as 0 (safety) or legacy unlimited?
+    // JSON sync ensures stock is present. If -1, it's unlimited.
+    const rawStock = product?.stock;
+    const isUnlimited = rawStock === -1;
+    const stock = isUnlimited ? Infinity : (rawStock || 0);
+
     const isOutOfStock = !isUnlimited && stock === 0;
     const isLowStock = !isUnlimited && stock > 0 && stock < 10;
     
@@ -108,7 +112,6 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                      {relatedProducts.map(item => (
                         <div key={item.id} className="group text-left">
-                            {/* --- THIS IS THE FIX --- */}
                             <Link href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] h-80">
                                 <img 
                                     src={item.image} 
@@ -118,7 +121,6 @@ export default function ProductDetailPage() {
                             </Link>
                             <div className="mt-4">
                                 <h3 className="text-xl font-serif font-medium text-brand-text">
-                                    {/* --- THIS IS THE FIX --- */}
                                     <Link href={`${basePath}/product/${item.id}`} className="hover:text-brand-secondary">{item.name}</Link>
                                 </h3>
                                 <p className="text-brand-text font-medium text-base mt-1">₹{item.price.toFixed(2)}</p>

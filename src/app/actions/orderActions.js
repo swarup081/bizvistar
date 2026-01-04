@@ -23,7 +23,6 @@ async function syncStockToJSON(websiteId, productMap) {
         let updated = false;
 
         const newAllProducts = allProducts.map(p => {
-            // productMap keys are DB IDs, values are New Stock integers
             if (productMap.has(p.id)) {
                  updated = true;
                  return { ...p, stock: productMap.get(p.id) };
@@ -108,7 +107,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
 
       const { data: byId } = await supabaseAdmin
          .from('products')
-         .select('id, stock, is_unlimited')
+         .select('id, stock')
          .eq('website_id', websiteId)
          .eq('id', item.id)
          .maybeSingle();
@@ -119,7 +118,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
           // Fallback to name
           const { data: byName } = await supabaseAdmin
              .from('products')
-             .select('id, stock, is_unlimited')
+             .select('id, stock')
              .eq('website_id', websiteId)
              .eq('name', item.name)
              .limit(1)
@@ -130,8 +129,8 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       if (productData) {
         dbProductMap.set(item.id, productData.id);
 
-        // DECREMENT STOCK IF NOT UNLIMITED
-        if (!productData.is_unlimited) {
+        // DECREMENT STOCK IF NOT UNLIMITED (Stock = -1)
+        if (productData.stock !== -1) {
             const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
             await supabaseAdmin
                 .from('products')
@@ -151,8 +150,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
             description: item.description || 'Imported from order',
             image_url: item.image,
             category_id: null,
-            stock: 0,
-            is_unlimited: false // Default to limited
+            stock: 0
           })
           .select('id')
           .single();

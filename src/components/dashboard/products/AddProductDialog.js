@@ -11,7 +11,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     name: '',
     price: '',
     stock: '',
-    isUnlimited: false, // ADDED FLAG
+    isUnlimited: false,
     categoryId: '',
     description: '',
     imageUrl: '',
@@ -33,6 +33,12 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Logic: If user types in stock, ensure it's positive.
+    if (name === 'stock') {
+        if (value.includes('-')) return; // Prevent negative input
+    }
+
     setFormData(prev => ({
         ...prev,
         [name]: type === 'checkbox' ? checked : value
@@ -58,7 +64,10 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       const res = await addProduct({
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0,
+        // If unlimited is checked, logic inside action sets it to -1
+        // We pass local state as is.
+        stock: formData.stock,
+        isUnlimited: formData.isUnlimited,
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
       });
 
@@ -155,16 +164,23 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                         <span className="text-xs text-gray-500">Unlimited</span>
                      </label>
                  </div>
-                <input
-                  name="stock"
-                  type="number"
-                  min="0"
-                  value={formData.stock}
-                  onChange={handleChange}
-                  disabled={formData.isUnlimited}
-                  placeholder={formData.isUnlimited ? "∞" : "0"}
-                  className={`w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${formData.isUnlimited ? 'bg-gray-100 text-gray-400' : ''}`}
-                />
+                 {/* Note to user */}
+                 {formData.isUnlimited ? (
+                     <div className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 text-sm italic">
+                         Stock is unlimited
+                     </div>
+                 ) : (
+                    <input
+                    name="stock"
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={handleChange}
+                    placeholder="Enter stock amount..."
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                    />
+                 )}
+                 <p className="text-[10px] text-gray-400">Leave blank or check unlimited for made-to-order items.</p>
               </div>
             </div>
 

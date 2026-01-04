@@ -36,10 +36,14 @@ export function CartProvider({ children }) {
   // --- Stock Helpers ---
   const getProductStock = (productId) => {
     const product = businessData?.allProducts?.find(p => p.id === productId);
-    // If undefined, assume unlimited/legacy. If is_unlimited flag is true, return Infinity.
+    // If undefined, assume unlimited/legacy.
     if (!product) return 0;
-    if (product.is_unlimited) return Infinity;
-    return product.stock !== undefined ? product.stock : Infinity;
+    // Check sentinel value -1 for unlimited
+    const rawStock = product.stock;
+    const isUnlimited = rawStock === -1;
+    if (isUnlimited) return Infinity;
+
+    return rawStock !== undefined ? rawStock : Infinity;
   };
 
   const addToCart = (product, quantity) => {
@@ -65,7 +69,7 @@ export function CartProvider({ children }) {
       }
     });
 
-    // Trigger toast only if logic ostensibly passed (React state is async so this always fires, fine for now)
+    // Trigger toast only if logic ostensibly passed
     triggerToast();
   };
   
