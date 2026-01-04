@@ -125,6 +125,7 @@ export function CartProvider({ children }) {
     removeFromCart,
     openCart,
     closeCart,
+    clearCart: () => setCartItems([]),
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

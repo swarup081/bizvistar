@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -11,9 +11,27 @@ function CartLayout({ children, serverData }) {
     // --- FIX: `useState` typo corrected ---
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
     const router = useRouter(); 
+    const pathname = usePathname();
     
     // Define the base path for links
-    const basePath = serverData ? '.' : '/templates/flara';
+    // If serverData exists, we are on a live site (e.g., /site/test0001 or /site/test0001/shop)
+    // We need to determine the root slug path (e.g., /site/test0001) so links to /shop become /site/test0001/shop
+    let basePath = '/templates/flara'; // Default for editor/preview
+
+    if (serverData) {
+        // Simple logic: If pathname contains /site/, extract the first 3 segments
+        // e.g. /site/test0001/shop -> /site/test0001
+        // e.g. /site/test0001 -> /site/test0001
+        if (pathname && pathname.startsWith('/site/')) {
+            const parts = pathname.split('/');
+            if (parts.length >= 3) {
+                 basePath = `/${parts[1]}/${parts[2]}`;
+            }
+        } else {
+             // Fallback to relative if not under /site/ (unlikely for live site)
+             basePath = '.';
+        }
+    }
     
     const { 
         cartCount, 
