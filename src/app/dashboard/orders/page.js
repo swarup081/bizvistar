@@ -152,13 +152,19 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                             <p className="text-gray-600">{order.customers?.email}</p>
                             <div className="border-t border-gray-200 my-2 pt-2 text-gray-500">
                                 <p className="font-medium text-xs text-gray-400 uppercase mb-1">Shipping Address</p>
-                                {/* Handle JSONB address safely */}
-                                {order.customers?.shipping_address && typeof order.customers.shipping_address === 'object' ? (
-                                    <>
-                                        <p>{order.customers.shipping_address.address}</p>
-                                        <p>{order.customers.shipping_address.city}, {order.customers.shipping_address.state} {order.customers.shipping_address.zipCode}</p>
-                                        <p>Phone: {order.customers.shipping_address.phone}</p>
-                                    </>
+                                {/* Handle JSONB address safely - Prefer order snapshot, fallback to customer profile */}
+                                {(order.shipping_address || order.customers?.shipping_address) ? (
+                                    (() => {
+                                        const addr = order.shipping_address || order.customers.shipping_address;
+                                        if (typeof addr !== 'object') return <p>Invalid address format</p>;
+                                        return (
+                                            <>
+                                                <p>{addr.address}</p>
+                                                <p>{addr.city}, {addr.state} {addr.zipCode}</p>
+                                                <p>Phone: {addr.phone}</p>
+                                            </>
+                                        );
+                                    })()
                                 ) : <p>No address details</p>}
                             </div>
                         </div>

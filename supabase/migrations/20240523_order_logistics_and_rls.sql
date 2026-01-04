@@ -4,7 +4,11 @@ ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
--- 2. Create Deliveries Table
+-- 2. Add shipping_address to orders (Snapshot of address at purchase time)
+ALTER TABLE public.orders
+ADD COLUMN IF NOT EXISTS shipping_address jsonb;
+
+-- 3. Create Deliveries Table
 CREATE TABLE IF NOT EXISTS public.deliveries (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   order_id bigint REFERENCES public.orders(id) ON DELETE CASCADE NOT NULL,
@@ -17,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.deliveries (
 
 ALTER TABLE public.deliveries ENABLE ROW LEVEL SECURITY;
 
--- 3. Create/Update Policies for Dashboard Access (Read/Write)
+-- 4. Create/Update Policies for Dashboard Access (Read/Write)
 
 -- Helper: Users can see data related to their websites
 -- Note: These policies assume a 'websites' table linking 'user_id' exists.
@@ -81,13 +85,8 @@ FOR ALL USING (
   )
 );
 
--- 4. Public Access Policies (For Checkout/Storefront)
+-- 5. Public Access Policies (For Checkout/Storefront)
 -- Assuming 'websites.is_published' handles visibility, but for data fetching via API:
-
--- Allow public (anon) to create orders/customers (handled via Service Role usually, but if client-side):
--- NOTE: The server actions use SUPABASE_SERVICE_ROLE_KEY, which bypasses RLS.
--- So we generally don't need INSERT policies for 'anon' if using server actions.
--- But if the frontend fetches products directly:
 
 DROP POLICY IF EXISTS "Public can view products of published sites" ON public.products;
 CREATE POLICY "Public can view products of published sites" ON public.products
