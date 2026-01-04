@@ -242,7 +242,14 @@ export default function OrdersPage() {
     if (!user) return; // Handle auth redirect if needed
 
     // 2. Get Website ID
-    const { data: website } = await supabase.from('websites').select('id').eq('user_id', user.id).single();
+    // Use maybeSingle to avoid 406 if multiple sites exist (though unlikely in this context, robustness is key)
+    const { data: website } = await supabase
+        .from('websites')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
     if (!website) {
         setLoading(false);
         return;

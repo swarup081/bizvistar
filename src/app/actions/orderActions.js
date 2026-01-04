@@ -104,8 +104,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
         website_id: websiteId,
         customer_id: customerId,
         total_amount: totalAmount,
-        status: 'pending',
-        shipping_address: customerDetails
+        status: 'pending'
       })
       .select('id')
       .single();
