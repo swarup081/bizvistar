@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import * as Dialog from '@radix-ui/react-dialog';
-import { updateOrderStatus, addOrderLogistics } from '@/app/actions/orderActions';
+// removed insecure imports
 
 // --- Order Details Modal Component ---
 function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
@@ -25,11 +25,18 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
 
   if (!order) return null;
 
+  // Updated to use Client-Side Supabase (respects RLS)
   const handleStatusUpdate = async (newStatus) => {
     if(!confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
     setIsUpdating(true);
     try {
-        await updateOrderStatus(order.id, newStatus);
+        const { error } = await supabase
+            .from('orders')
+            .update({ status: newStatus })
+            .eq('id', order.id);
+
+        if (error) throw error;
+
         onUpdate(); // Refresh parent
         onClose();
     } catch (e) {
@@ -39,15 +46,31 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
     }
   };
 
+  // Updated to use Client-Side Supabase (respects RLS)
   const handleAddLogistics = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-        await addOrderLogistics(order.id, order.website_id, {
-            provider: providerInput,
-            trackingNumber: trackingInput,
-            date: new Date().toISOString()
-        });
+        // 1. Add delivery record
+        const { error: deliveryError } = await supabase
+            .from('deliveries')
+            .insert({
+                order_id: order.id,
+                provider: providerInput,
+                tracking_number: trackingInput,
+                status: 'shipped'
+            });
+
+        if (deliveryError) throw deliveryError;
+
+        // 2. Update order status
+        const { error: orderError } = await supabase
+            .from('orders')
+            .update({ status: 'shipped' })
+            .eq('id', order.id);
+
+        if (orderError) throw orderError;
+
         alert('Logistics added!');
         onUpdate();
     } catch(e) {
