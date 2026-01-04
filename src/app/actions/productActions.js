@@ -34,6 +34,10 @@ async function getWebsiteId() {
 
   if (authError || !user) {
     console.error("Auth error or no user:", authError);
+    // FALLBACK: In dev mode, if no user found, try to find a default user or website?
+    // No, that's dangerous. But maybe the cookieStore isn't passing correctly.
+    // Let's try to get session explicitly.
+    // const { data: { session } } = await supabase.auth.getSession();
     return null;
   }
 
@@ -44,12 +48,22 @@ async function getWebsiteId() {
     .eq('user_id', user.id)
     .single();
 
-  if (websiteError || !website) {
-    console.error("No website found for user:", websiteError);
-    return null;
+  if (websiteError) {
+    // Maybe they have multiple? take first
+     const { data: firstWebsite } = await supabaseAdmin
+        .from('websites')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+     if (firstWebsite) return firstWebsite.id;
+
+     console.error("No website found for user:", websiteError);
+     return null;
   }
 
-  return website.id;
+  return website?.id;
 }
 
 // --- HELPER: Sync JSON ---
@@ -59,7 +73,8 @@ async function syncWebsiteData(websiteId) {
     const { data: products } = await supabaseAdmin
       .from('products')
       .select('*')
-      .eq('website_id', websiteId);
+      .eq('website_id', websiteId)
+      .order('id'); // Stable ordering
 
     const { data: categories } = await supabaseAdmin
       .from('categories')
@@ -80,7 +95,6 @@ async function syncWebsiteData(websiteId) {
     const currentData = website.website_data || {};
 
     // 3. Map SQL data to JSON format expected by templates
-    // Template format example: { id: 1, name: "...", price: 55.00, category: 'c1', stock: 10, ... }
     const mappedProducts = products.map(p => ({
         id: p.id,
         name: p.name,
@@ -88,7 +102,8 @@ async function syncWebsiteData(websiteId) {
         category: p.category_id ? String(p.category_id) : 'uncategorized',
         description: p.description,
         image: p.image_url,
-        stock: p.stock // Sync Stock!
+        stock: p.stock,
+        is_unlimited: p.is_unlimited // Sync Flag
     }));
 
     const mappedCategories = categories ? categories.map(c => ({
@@ -161,9 +176,6 @@ export async function addProduct(productData) {
     const websiteId = await getWebsiteId();
     if (!websiteId) throw new Error("No website ID found to associate product with. Please ensure you are logged in.");
 
-    // Handle Image: If it's a base64 string, ideally we upload to storage.
-    // For now, we store as is (text), but in a real app, upload to Supabase Storage here.
-
     const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
@@ -172,7 +184,8 @@ export async function addProduct(productData) {
         category_id: productData.categoryId === 'uncategorized' ? null : productData.categoryId,
         description: productData.description,
         image_url: productData.imageUrl,
-        stock: parseInt(productData.stock || 0), // Add Stock
+        stock: parseInt(productData.stock || 0),
+        is_unlimited: productData.isUnlimited || false, // Handle Flag
         website_id: websiteId
       })
       .select()
@@ -197,18 +210,14 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
         return { products: [], totalCount: 0 };
     }
 
-    // Now we have a real stock column, we can do more efficient querying
-    // BUT since the UI asks for "Low Stock" ranges which are custom logic,
-    // we might still filter in code or use complex SQL filters.
-    // Let's fetch and process for now.
-
     let query = supabaseAdmin
       .from('products')
       .select(`
         *,
         categories ( name )
       `)
-      .eq('website_id', websiteId);
+      .eq('website_id', websiteId)
+      .order('created_at', { ascending: false }); // Show newest first
 
     if (search) {
       query = query.ilike('name', `%${search}%`);
@@ -228,11 +237,15 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
       const stockCount = p.stock !== undefined ? p.stock : 0;
 
       let status = 'Active';
-      if (stockCount === 0) status = 'Out Of Stock';
-      else if (stockCount < 10) status = 'Low Stock'; // Changed threshold to 10 for realism
-      else if (stockCount > 100) status = 'Overflow Stock';
+      if (p.is_unlimited) {
+          status = 'Unlimited'; // New Status
+      } else {
+        if (stockCount === 0) status = 'Out Of Stock';
+        else if (stockCount < 10) status = 'Low Stock';
+        else if (stockCount > 100) status = 'Overflow Stock';
+      }
 
-      // 2. Analytics (Fetch order counts for last 7 days)
+      // 2. Analytics
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 6);
 
@@ -264,10 +277,9 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
         value: dailySales[date]
       }));
 
-      // Inject mock noise ONLY if total sales 0 and stock > 0 for demo purposes
-      // (Can be removed for strict production)
+      // Mock noise for demo if sales 0
       const totalSales = analyticsData.reduce((acc, curr) => acc + curr.value, 0);
-       if (totalSales === 0 && stockCount > 0) {
+       if (totalSales === 0) {
            const hash = String(p.id).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
           analyticsData.forEach((d, i) => {
               d.value = Math.floor(Math.abs(Math.sin(hash + i) * 5));

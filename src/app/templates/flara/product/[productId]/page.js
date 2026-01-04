@@ -11,7 +11,6 @@ export default function ProductDetailPage() {
     const { productId } = params;
     const { addToCart } = useCart();
     
-    // --- THIS IS THE FIX ---
     const { businessData, basePath } = useTemplateContext(); 
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
@@ -22,6 +21,12 @@ export default function ProductDetailPage() {
     
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(product?.image || null);
+
+    // --- Stock Logic ---
+    const stock = product?.stock !== undefined ? product.stock : Infinity;
+    const isUnlimited = product?.is_unlimited === true;
+    const isOutOfStock = !isUnlimited && stock === 0;
+    const isLowStock = !isUnlimited && stock > 0 && stock < 10;
     
     const relatedProducts = product 
         ? businessData.allProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3)
@@ -39,13 +44,20 @@ export default function ProductDetailPage() {
         <div className="container mx-auto px-6 py-20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                 {/* Image Gallery */}
-                <div>
+                <div className="relative">
                     <div className="bg-brand-primary aspect-[4/5] overflow-hidden">
                         <img 
                             src={selectedImage} 
                             alt={product.name} 
                             className="w-full h-full object-cover"
                         />
+                        {isOutOfStock && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span className="bg-red-600 text-white px-6 py-2 rounded font-bold uppercase tracking-wider">
+                                    Out of Stock
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 
@@ -56,6 +68,17 @@ export default function ProductDetailPage() {
                     )}
                     <h1 className="text-5xl font-bold text-brand-text font-serif mt-2">{product.name}</h1>
                     <p className="text-3xl text-brand-text font-serif mt-4">₹{product.price.toFixed(2)}</p>
+
+                    {/* Stock Status Badge */}
+                    <div className="mt-4">
+                        {isOutOfStock ? (
+                             <span className="text-red-600 font-medium uppercase tracking-wide text-sm">Sold Out</span>
+                        ) : isLowStock ? (
+                             <span className="text-orange-600 font-medium uppercase tracking-wide text-sm">Only {stock} left!</span>
+                        ) : (
+                             <span className="text-green-600 font-medium uppercase tracking-wide text-sm">In Stock</span>
+                        )}
+                    </div>
                     
                     <p className="text-brand-text/80 text-lg mt-6">
                         {product.description}
@@ -63,16 +86,17 @@ export default function ProductDetailPage() {
                     
                     {/* Quantity & Add to Cart */}
                     <div className="flex items-center gap-4 mt-8">
-                        <div className="flex items-center border border-brand-text/30">
+                        <div className={`flex items-center border border-brand-text/30 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary">-</button>
                             <span className="w-12 h-12 flex items-center justify-center text-lg font-bold border-x border-brand-text/30">{quantity}</span>
-                            <button onClick={() => setQuantity(q => q + 1)} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary">+</button>
+                            <button onClick={() => setQuantity(q => isUnlimited ? q + 1 : Math.min(stock, q + 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary">+</button>
                         </div>
                         <button 
                             onClick={handleAddToCart}
-                            className="flex-grow h-12 bg-brand-secondary text-brand-bg font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity"
+                            disabled={isOutOfStock}
+                            className={`flex-grow h-12 bg-brand-secondary text-brand-bg font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                            Add to Cart
+                            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                         </button>
                     </div>
                 </div>

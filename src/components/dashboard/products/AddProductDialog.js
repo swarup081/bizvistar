@@ -10,7 +10,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    stock: '', // ADDED STOCK
+    stock: '',
+    isUnlimited: false, // ADDED FLAG
     categoryId: '',
     description: '',
     imageUrl: '',
@@ -21,7 +22,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       setFormData({
         name: '',
         price: '',
-        stock: '0', // Default to 0
+        stock: '0',
+        isUnlimited: false,
         categoryId: categories?.[0]?.id || '',
         description: '',
         imageUrl: '',
@@ -30,8 +32,11 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
   }, [isOpen, categories]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleImageUpload = (e) => {
@@ -53,7 +58,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       const res = await addProduct({
         ...formData,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock) || 0, // Pass stock
+        stock: parseInt(formData.stock) || 0,
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
       });
 
@@ -135,17 +140,30 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">Stock</label>
+
+              <div className="space-y-2">
+                 <div className="flex items-center justify-between">
+                     <label className="text-sm font-medium text-gray-700">Stock</label>
+                     <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                           type="checkbox"
+                           name="isUnlimited"
+                           checked={formData.isUnlimited}
+                           onChange={handleChange}
+                           className="w-3 h-3 text-[#8A63D2] rounded focus:ring-[#8A63D2]"
+                        />
+                        <span className="text-xs text-gray-500">Unlimited</span>
+                     </label>
+                 </div>
                 <input
                   name="stock"
                   type="number"
                   min="0"
                   value={formData.stock}
                   onChange={handleChange}
-                  required
-                  placeholder="0"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                  disabled={formData.isUnlimited}
+                  placeholder={formData.isUnlimited ? "∞" : "0"}
+                  className={`w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm ${formData.isUnlimited ? 'bg-gray-100 text-gray-400' : ''}`}
                 />
               </div>
             </div>

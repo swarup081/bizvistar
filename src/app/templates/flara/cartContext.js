@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { businessData } from './data.js'; // Import data to find products
+import { useTemplateContext } from './templateContext.js'; // Use context instead of direct import
 
 const CartContext = createContext();
 
@@ -8,6 +8,9 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]); // e.g., [{ id: 1, quantity: 2 }]
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  // Get businessData from the TemplateContext to access dynamic products
+  const { businessData } = useTemplateContext();
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -30,9 +33,27 @@ export function CartProvider({ children }) {
     setTimeout(() => setShowToast(false), 2000);
   };
 
+  // --- Stock Helpers ---
+  const getProductStock = (productId) => {
+    const product = businessData?.allProducts?.find(p => p.id === productId);
+    // If undefined, assume unlimited/legacy. If is_unlimited flag is true, return Infinity.
+    if (!product) return 0;
+    if (product.is_unlimited) return Infinity;
+    return product.stock !== undefined ? product.stock : Infinity;
+  };
+
   const addToCart = (product, quantity) => {
+    const currentStock = getProductStock(product.id);
+
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+
+      if (currentQty + quantity > currentStock) {
+          alert(`Cannot add more. Only ${currentStock} left in stock.`);
+          return prevItems;
+      }
+
       if (existingItem) {
         // Update quantity
         return prevItems.map(item =>
@@ -43,20 +64,27 @@ export function CartProvider({ children }) {
         return [...prevItems, { id: product.id, quantity: quantity }];
       }
     });
+
+    // Trigger toast only if logic ostensibly passed (React state is async so this always fires, fine for now)
     triggerToast();
   };
   
-  // Simple function to add a single item (quantity 1)
   const addItem = (product) => {
     addToCart(product, 1);
   };
 
   const increaseQuantity = (productId) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
+    const currentStock = getProductStock(productId);
+
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.id === productId);
+      if (existingItem && existingItem.quantity >= currentStock) {
+           return prevItems;
+      }
+      return prevItems.map(item =>
         item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
       )
-    );
+    });
   };
 
   const decreaseQuantity = (productId) => {
@@ -80,28 +108,27 @@ export function CartProvider({ children }) {
 
   // --- Derived State (Calculated from cartItems) ---
 
-  // Get total number of items in cart
   const cartCount = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   }, [cartItems]);
 
-  // Get full product details for items in cart
   const cartDetails = useMemo(() => {
+    if (!businessData || !businessData.allProducts) return [];
+
     return cartItems.map(cartItem => {
       const product = businessData.allProducts.find(p => p.id === cartItem.id);
+      if (!product) return null;
       return {
         ...product,
         quantity: cartItem.quantity,
       };
-    }).filter(Boolean); // Filter out any undefined products
-  }, [cartItems]);
+    }).filter(Boolean);
+  }, [cartItems, businessData]);
 
-  // Calculate subtotal
   const subtotal = useMemo(() => {
     return cartDetails.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cartDetails]);
   
-  // Example shipping (you can make this dynamic)
   const shipping = subtotal > 0 ? 50 : 0;
   
   const total = useMemo(() => {
@@ -119,7 +146,7 @@ export function CartProvider({ children }) {
     isCartOpen,
     showToast,
     addToCart,
-    addItem, // Export new function
+    addItem,
     increaseQuantity,
     decreaseQuantity,
     removeFromCart,

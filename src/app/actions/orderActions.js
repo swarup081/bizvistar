@@ -23,14 +23,8 @@ async function syncStockToJSON(websiteId, productMap) {
         let updated = false;
 
         const newAllProducts = allProducts.map(p => {
-            // Check if this product was ordered
-            // productMap keys are cart IDs, values are DB IDs.
-            // We need to map DB ID -> Quantity bought.
-            // Wait, productMap maps CartID -> DBID.
-            // We need to know how much stock was reduced for which DBID.
-            // We don't have that map readily here passed to this function.
-            // Let's pass a map of DbProductId -> NewStock
-            if (productMap.has(p.id)) { // Assuming p.id in JSON matches DB ID (which we set in productActions sync)
+            // productMap keys are DB IDs, values are New Stock integers
+            if (productMap.has(p.id)) {
                  updated = true;
                  return { ...p, stock: productMap.get(p.id) };
             }
@@ -109,22 +103,14 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
     const stockUpdateMap = new Map(); // dbProductId -> newStockValue
 
     for (const item of cartDetails) {
-      // Find product by name (fallback) or ID if we had it
-      // Ideally cartDetails item has ID that matches DB if synced.
-      // But if it came from older JSON, ID might be '1', '2'.
-      // If synced, ID is big int.
-
-      let productId = item.id;
-
-      // Try to find by ID first if it looks like a DB ID (number/string)
-      // Or by Name if ID lookup fails
+      // Find product
       let productData = null;
 
       const { data: byId } = await supabaseAdmin
          .from('products')
-         .select('id, stock')
+         .select('id, stock, is_unlimited')
          .eq('website_id', websiteId)
-         .eq('id', productId)
+         .eq('id', item.id)
          .maybeSingle();
 
       if (byId) {
@@ -133,7 +119,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
           // Fallback to name
           const { data: byName } = await supabaseAdmin
              .from('products')
-             .select('id, stock')
+             .select('id, stock, is_unlimited')
              .eq('website_id', websiteId)
              .eq('name', item.name)
              .limit(1)
@@ -144,18 +130,18 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       if (productData) {
         dbProductMap.set(item.id, productData.id);
 
-        // DECREMENT STOCK
-        const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
-        await supabaseAdmin
-            .from('products')
-            .update({ stock: newStock })
-            .eq('id', productData.id);
-
-        stockUpdateMap.set(productData.id, newStock);
+        // DECREMENT STOCK IF NOT UNLIMITED
+        if (!productData.is_unlimited) {
+            const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
+            await supabaseAdmin
+                .from('products')
+                .update({ stock: newStock })
+                .eq('id', productData.id);
+            stockUpdateMap.set(productData.id, newStock);
+        }
 
       } else {
-        // Create product (legacy support) - Default stock 0? or -quantity?
-        // We set stock to 0 to be safe.
+        // Create product (legacy support)
         const { data: newProduct, error: productError } = await supabaseAdmin
           .from('products')
           .insert({
@@ -165,7 +151,8 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
             description: item.description || 'Imported from order',
             image_url: item.image,
             category_id: null,
-            stock: 0
+            stock: 0,
+            is_unlimited: false // Default to limited
           })
           .select('id')
           .single();
@@ -203,8 +190,10 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
 
     if (itemsError) throw new Error('Failed to create order items: ' + itemsError.message);
 
-    // 6. SYNC JSON Stock
-    await syncStockToJSON(websiteId, stockUpdateMap);
+    // 6. SYNC JSON Stock (only if updates happened)
+    if (stockUpdateMap.size > 0) {
+        await syncStockToJSON(websiteId, stockUpdateMap);
+    }
 
     return { success: true, orderId: order.id };
 
