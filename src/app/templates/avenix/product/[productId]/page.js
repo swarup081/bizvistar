@@ -23,6 +23,11 @@ export default function ProductDetailPage() {
     
     const [quantity, setQuantity] = useState(1);
     
+    // --- Stock Logic ---
+    const stock = product?.stock !== undefined ? product.stock : Infinity;
+    const isOutOfStock = stock === 0;
+    const isLowStock = stock > 0 && stock < 10;
+
     // --- "You Might Also Like" Fix ---
     let relatedProducts = [];
     if (product) {
@@ -54,12 +59,19 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                 
                 {/* --- FIX: Image (padding and bg removed) --- */}
-                <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg">
+                <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg relative">
                     <img 
                         src={product.image} 
                         alt={product.name} 
                         className="w-full h-full object-cover"
                     />
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="bg-red-600 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider">
+                                Out of Stock
+                            </span>
+                        </div>
+                    )}
                 </div>
                 
                 {/* Product Info */}
@@ -70,22 +82,34 @@ export default function ProductDetailPage() {
                     <h1 className="text-5xl font-serif font-medium text-brand-text mt-2">{product.name}</h1>
                     <p className="text-3xl text-brand-text font-sans mt-4">${product.price.toFixed(2)}</p>
                     
+                    {/* Stock Status Badge */}
+                    <div className="mt-4">
+                        {isOutOfStock ? (
+                             <span className="text-red-600 font-medium">Currently Unavailable</span>
+                        ) : isLowStock ? (
+                             <span className="text-orange-600 font-medium">Only {stock} left in stock!</span>
+                        ) : (
+                             <span className="text-green-600 font-medium">In Stock</span>
+                        )}
+                    </div>
+
                     <p className="text-brand-text/80 text-lg mt-6">
                         {product.description}
                     </p>
                     
                     {/* Quantity & Add to Cart */}
                     <div className="flex items-stretch gap-4 mt-8">
-                        <div className="flex items-center border border-brand-text/20 rounded-full">
+                        <div className={`flex items-center border border-brand-text/20 rounded-full ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-full">-</button>
                             <span className="w-12 h-12 flex items-center justify-center text-lg font-bold border-x border-brand-text/20">{quantity}</span>
-                            <button onClick={() => setQuantity(q => q + 1)} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary rounded-r-full">+</button>
+                            <button onClick={() => setQuantity(q => Math.min(stock, q + 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary rounded-r-full">+</button>
                         </div>
                         <button 
                             onClick={handleAddToCart}
-                            className="flex-grow h-12 bg-brand-secondary text-brand-bg font-medium uppercase tracking-wider hover:opacity-80 transition-opacity rounded-full"
+                            disabled={isOutOfStock}
+                            className={`flex-grow h-12 bg-brand-secondary text-brand-bg font-medium uppercase tracking-wider hover:opacity-80 transition-opacity rounded-full disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                            Add to Cart
+                            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                         </button>
                     </div>
                 </div>

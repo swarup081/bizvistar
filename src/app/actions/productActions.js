@@ -9,6 +9,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// --- HELPER: Get Current Website ID ---
 async function getWebsiteId() {
   const cookieStore = await cookies();
 
@@ -22,9 +23,7 @@ async function getWebsiteId() {
            try {
              cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
            } catch {
-             // The `setAll` method was called from a Server Component.
-             // This can be ignored if you have middleware refreshing
-             // user sessions.
+             // Pass
            }
         },
       },
@@ -53,6 +52,70 @@ async function getWebsiteId() {
   return website.id;
 }
 
+// --- HELPER: Sync JSON ---
+async function syncWebsiteData(websiteId) {
+  try {
+    // 1. Fetch all products and categories from SQL
+    const { data: products } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .eq('website_id', websiteId);
+
+    const { data: categories } = await supabaseAdmin
+      .from('categories')
+      .select('id, name')
+      .eq('website_id', websiteId);
+
+    if (!products) return;
+
+    // 2. Fetch current website data JSON
+    const { data: website } = await supabaseAdmin
+      .from('websites')
+      .select('website_data')
+      .eq('id', websiteId)
+      .single();
+
+    if (!website) return;
+
+    const currentData = website.website_data || {};
+
+    // 3. Map SQL data to JSON format expected by templates
+    // Template format example: { id: 1, name: "...", price: 55.00, category: 'c1', stock: 10, ... }
+    const mappedProducts = products.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: Number(p.price),
+        category: p.category_id ? String(p.category_id) : 'uncategorized',
+        description: p.description,
+        image: p.image_url,
+        stock: p.stock // Sync Stock!
+    }));
+
+    const mappedCategories = categories ? categories.map(c => ({
+        id: String(c.id),
+        name: c.name
+    })) : [];
+
+    // 4. Update JSON structure
+    const newData = {
+        ...currentData,
+        allProducts: mappedProducts,
+        categories: mappedCategories.length > 0 ? mappedCategories : (currentData.categories || [])
+    };
+
+    // 5. Save back to SQL
+    await supabaseAdmin
+      .from('websites')
+      .update({ website_data: newData })
+      .eq('id', websiteId);
+
+  } catch (err) {
+    console.error("Error syncing website data:", err);
+  }
+}
+
+// --- ACTIONS ---
+
 export async function getCategories() {
   const websiteId = await getWebsiteId();
   if (!websiteId) return [];
@@ -70,25 +133,56 @@ export async function getCategories() {
   return data;
 }
 
+export async function addCategory(name) {
+    try {
+        const websiteId = await getWebsiteId();
+        if (!websiteId) throw new Error("No website ID found.");
+
+        const { data, error } = await supabaseAdmin
+            .from('categories')
+            .insert({ name, website_id: websiteId })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Sync
+        await syncWebsiteData(websiteId);
+
+        return { success: true, category: data };
+    } catch (err) {
+        console.error('Error adding category:', err);
+        return { success: false, error: err.message };
+    }
+}
+
 export async function addProduct(productData) {
   try {
     const websiteId = await getWebsiteId();
-    if (!websiteId) throw new Error("No website ID found to associate product with.");
+    if (!websiteId) throw new Error("No website ID found to associate product with. Please ensure you are logged in.");
+
+    // Handle Image: If it's a base64 string, ideally we upload to storage.
+    // For now, we store as is (text), but in a real app, upload to Supabase Storage here.
 
     const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
         name: productData.name,
         price: productData.price,
-        category_id: productData.categoryId,
+        category_id: productData.categoryId === 'uncategorized' ? null : productData.categoryId,
         description: productData.description,
         image_url: productData.imageUrl,
+        stock: parseInt(productData.stock || 0), // Add Stock
         website_id: websiteId
       })
       .select()
       .single();
 
     if (error) throw error;
+
+    // Sync to Website JSON
+    await syncWebsiteData(websiteId);
+
     return { success: true, product: data };
   } catch (err) {
     console.error('Error adding product:', err);
@@ -99,14 +193,14 @@ export async function addProduct(productData) {
 export async function getProducts({ page = 1, limit = 10, search = '', categoryId = null, stockStatus = [] }) {
   try {
     const websiteId = await getWebsiteId();
-    // If no website found (e.g. not logged in), return empty to be safe
     if (!websiteId) {
         return { products: [], totalCount: 0 };
     }
 
-    // Since we need to filter by 'mocked' stock status, we must fetch all products matching the DB filters first,
-    // then filter by stock in memory, then paginate.
-    // This is inefficient for large datasets but necessary given the schema constraints (missing stock column).
+    // Now we have a real stock column, we can do more efficient querying
+    // BUT since the UI asks for "Low Stock" ranges which are custom logic,
+    // we might still filter in code or use complex SQL filters.
+    // Let's fetch and process for now.
 
     let query = supabaseAdmin
       .from('products')
@@ -124,20 +218,18 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
       query = query.eq('category_id', categoryId);
     }
 
-    // Fetch all matching DB records
     const { data: products, error } = await query;
 
     if (error) throw error;
 
-    // Process products (Mock Stock + Analytics)
+    // Process products
     const processedProducts = await Promise.all(products.map(async (p) => {
-      // 1. Mock Stock (Deterministic based on ID)
-      const hash = String(p.id).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-      const stockCount = Math.abs(hash % 150); // 0 to 149
+      // 1. Real Stock
+      const stockCount = p.stock !== undefined ? p.stock : 0;
 
       let status = 'Active';
       if (stockCount === 0) status = 'Out Of Stock';
-      else if (stockCount < 20) status = 'Low Stock';
+      else if (stockCount < 10) status = 'Low Stock'; // Changed threshold to 10 for realism
       else if (stockCount > 100) status = 'Overflow Stock';
 
       // 2. Analytics (Fetch order counts for last 7 days)
@@ -172,11 +264,13 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
         value: dailySales[date]
       }));
 
-      // Inject mock noise if empty for demo
+      // Inject mock noise ONLY if total sales 0 and stock > 0 for demo purposes
+      // (Can be removed for strict production)
       const totalSales = analyticsData.reduce((acc, curr) => acc + curr.value, 0);
-      if (totalSales === 0 && stockCount > 0) {
+       if (totalSales === 0 && stockCount > 0) {
+           const hash = String(p.id).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
           analyticsData.forEach((d, i) => {
-              d.value = Math.floor(Math.abs(Math.sin(hash + i) * 10));
+              d.value = Math.floor(Math.abs(Math.sin(hash + i) * 5));
           });
       }
 
@@ -189,13 +283,13 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
       };
     }));
 
-    // Filter by Stock Status in Memory
+    // Filter by Stock Status
     let finalProducts = processedProducts;
     if (stockStatus && stockStatus.length > 0) {
       finalProducts = finalProducts.filter(p => stockStatus.includes(p.stockStatus));
     }
 
-    // Paginate in Memory
+    // Paginate
     const totalCount = finalProducts.length;
     const from = (page - 1) * limit;
     const to = from + limit;

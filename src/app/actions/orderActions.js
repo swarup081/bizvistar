@@ -8,6 +8,52 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Helper to sync stock back to website JSON
+async function syncStockToJSON(websiteId, productMap) {
+    try {
+        const { data: website } = await supabaseAdmin
+            .from('websites')
+            .select('website_data')
+            .eq('id', websiteId)
+            .single();
+
+        if (!website || !website.website_data || !website.website_data.allProducts) return;
+
+        const allProducts = website.website_data.allProducts;
+        let updated = false;
+
+        const newAllProducts = allProducts.map(p => {
+            // Check if this product was ordered
+            // productMap keys are cart IDs, values are DB IDs.
+            // We need to map DB ID -> Quantity bought.
+            // Wait, productMap maps CartID -> DBID.
+            // We need to know how much stock was reduced for which DBID.
+            // We don't have that map readily here passed to this function.
+            // Let's pass a map of DbProductId -> NewStock
+            if (productMap.has(p.id)) { // Assuming p.id in JSON matches DB ID (which we set in productActions sync)
+                 updated = true;
+                 return { ...p, stock: productMap.get(p.id) };
+            }
+            return p;
+        });
+
+        if (updated) {
+            await supabaseAdmin
+                .from('websites')
+                .update({
+                    website_data: {
+                        ...website.website_data,
+                        allProducts: newAllProducts
+                    }
+                })
+                .eq('id', websiteId);
+        }
+
+    } catch (e) {
+        console.error("Error syncing stock to JSON:", e);
+    }
+}
+
 export async function submitOrder({ siteSlug, cartDetails, customerDetails, totalAmount }) {
   try {
     // 1. Resolve Website ID
@@ -23,7 +69,6 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
     const websiteId = website.id;
 
     // 2. Upsert Customer
-    // Check if customer exists by email for this website
     const { data: existingCustomer } = await supabaseAdmin
       .from('customers')
       .select('id')
@@ -36,8 +81,6 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
 
     if (existingCustomer) {
       customerId = existingCustomer.id;
-      // Optional: Update address if changed? For now, we keep the existing ID.
-      // But strictly, we should probably update the address.
       await supabaseAdmin
         .from('customers')
         .update({ 
@@ -52,7 +95,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
           website_id: websiteId,
           email: customerDetails.email,
           name: `${customerDetails.firstName} ${customerDetails.lastName}`,
-          shipping_address: customerDetails // storing full details JSON
+          shipping_address: customerDetails
         })
         .select('id')
         .single();
@@ -61,24 +104,58 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       customerId = newCustomer.id;
     }
 
-    // 3. Process Products (Ensure they exist)
-    const productMap = new Map(); // cartItemId -> dbProductId
+    // 3. Process Products & Update Stock
+    const dbProductMap = new Map(); // cartItemId -> dbProductId
+    const stockUpdateMap = new Map(); // dbProductId -> newStockValue
 
     for (const item of cartDetails) {
-      // Check if product exists
-      // We assume item.name is the unique key for matching if IDs don't match backend
-      const { data: existingProduct } = await supabaseAdmin
-        .from('products')
-        .select('id')
-        .eq('website_id', websiteId)
-        .eq('name', item.name)
-        .limit(1)
-        .maybeSingle();
+      // Find product by name (fallback) or ID if we had it
+      // Ideally cartDetails item has ID that matches DB if synced.
+      // But if it came from older JSON, ID might be '1', '2'.
+      // If synced, ID is big int.
 
-      if (existingProduct) {
-        productMap.set(item.id, existingProduct.id);
+      let productId = item.id;
+
+      // Try to find by ID first if it looks like a DB ID (number/string)
+      // Or by Name if ID lookup fails
+      let productData = null;
+
+      const { data: byId } = await supabaseAdmin
+         .from('products')
+         .select('id, stock')
+         .eq('website_id', websiteId)
+         .eq('id', productId)
+         .maybeSingle();
+
+      if (byId) {
+          productData = byId;
       } else {
-        // Create product
+          // Fallback to name
+          const { data: byName } = await supabaseAdmin
+             .from('products')
+             .select('id, stock')
+             .eq('website_id', websiteId)
+             .eq('name', item.name)
+             .limit(1)
+             .maybeSingle();
+          productData = byName;
+      }
+
+      if (productData) {
+        dbProductMap.set(item.id, productData.id);
+
+        // DECREMENT STOCK
+        const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
+        await supabaseAdmin
+            .from('products')
+            .update({ stock: newStock })
+            .eq('id', productData.id);
+
+        stockUpdateMap.set(productData.id, newStock);
+
+      } else {
+        // Create product (legacy support) - Default stock 0? or -quantity?
+        // We set stock to 0 to be safe.
         const { data: newProduct, error: productError } = await supabaseAdmin
           .from('products')
           .insert({
@@ -87,13 +164,14 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
             price: item.price,
             description: item.description || 'Imported from order',
             image_url: item.image,
-            category_id: null // or find a default category
+            category_id: null,
+            stock: 0
           })
           .select('id')
           .single();
 
         if (productError) throw new Error('Failed to create product: ' + productError.message);
-        productMap.set(item.id, newProduct.id);
+        dbProductMap.set(item.id, newProduct.id);
       }
     }
 
@@ -114,7 +192,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
     // 5. Create Order Items
     const orderItemsData = cartDetails.map(item => ({
       order_id: order.id,
-      product_id: productMap.get(item.id),
+      product_id: dbProductMap.get(item.id),
       quantity: item.quantity,
       price: item.price
     }));
@@ -124,6 +202,9 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       .insert(orderItemsData);
 
     if (itemsError) throw new Error('Failed to create order items: ' + itemsError.message);
+
+    // 6. SYNC JSON Stock
+    await syncStockToJSON(websiteId, stockUpdateMap);
 
     return { success: true, orderId: order.id };
 
@@ -144,22 +225,17 @@ export async function updateOrderStatus(orderId, newStatus) {
 }
 
 export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
-    // Updated: Insert into 'deliveries' table
-    // trackingDetails has { provider, trackingNumber, date }
-    // We map date -> created_at or ignore, usually created_at is auto.
     const { error } = await supabaseAdmin
         .from('deliveries')
         .insert({
             order_id: orderId,
             provider: trackingDetails.provider,
             tracking_number: trackingDetails.trackingNumber,
-            // tracking_url can be derived or passed if available
             status: 'shipped'
         });
 
     if (error) throw new Error(error.message);
     
-    // Also update order status to shipped
     await supabaseAdmin.from('orders').update({ status: 'shipped' }).eq('id', orderId);
 
     return { success: true };

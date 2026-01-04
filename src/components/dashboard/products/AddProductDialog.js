@@ -10,17 +10,18 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    stock: '', // ADDED STOCK
     categoryId: '',
     description: '',
-    imageUrl: '', // For now, simple URL or base64
+    imageUrl: '',
   });
 
-  // Reset form when opened
   useEffect(() => {
     if (isOpen) {
       setFormData({
         name: '',
         price: '',
+        stock: '0', // Default to 0
         categoryId: categories?.[0]?.id || '',
         description: '',
         imageUrl: '',
@@ -36,7 +37,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Convert to Base64 for now as per plan
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({ ...prev, imageUrl: reader.result }));
@@ -53,6 +53,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       const res = await addProduct({
         ...formData,
         price: parseFloat(formData.price),
+        stock: parseInt(formData.stock) || 0, // Pass stock
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
       });
 
@@ -89,7 +90,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Image Upload */}
             <div className="flex justify-center mb-6">
               <div className="relative group w-32 h-32 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-colors cursor-pointer">
                 {formData.imageUrl ? (
@@ -109,8 +109,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
+            <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">Product Name</label>
                 <input
                   name="name"
@@ -120,7 +119,9 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                   placeholder="e.g. Leather Pouch"
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
                 />
-              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700">Price</label>
                 <input
@@ -131,6 +132,19 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                   onChange={handleChange}
                   required
                   placeholder="0.00"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Stock</label>
+                <input
+                  name="stock"
+                  type="number"
+                  min="0"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                  placeholder="0"
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
                 />
               </div>
