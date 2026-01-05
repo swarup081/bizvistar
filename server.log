@@ -1,0 +1,91 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Ready in 1511ms
+ ○ Compiling /_not-found/page ...
+ GET /login 404 in 7.0s (compile: 6.7s, render: 353ms)
+ GET /dashboard/apps 200 in 1834ms (compile: 1589ms, render: 245ms)
+ ○ Compiling /dashboard/apps/quick-invoice ...
+ ⨯ ./src/app/dashboard/apps/quick-invoice/page.js:4:1
+Module not found: Can't resolve '../../actions/posActions'
+[0m [90m 2 |[39m [36mimport[39m [33mReact[39m[33m,[39m { useState[33m,[39m useEffect[33m,[39m useRef } [36mfrom[39m [32m'react'[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { [33mSearch[39m[33m,[39m [33mPlus[39m[33m,[39m [33mTrash2[39m[33m,[39m [33mPrinter[39m[33m,[39m [33mSave[39m[33m,[39m [33mLoader2[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { createQuickInvoiceOrder[33m,[39m searchProducts[33m,[39m getShopDetails } [36mfrom[39m [32m'../../actions/posActions'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 5 |[39m [36mimport[39m jsPDF [36mfrom[39m [32m'jspdf'[39m[33m;[39m
+ [90m 6 |[39m [36mimport[39m [33mLink[39m [36mfrom[39m [32m'next/link'[39m[33m;[39m
+ [90m 7 |[39m[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/dashboard/apps/quick-invoice/page.js [Client Component Browser]
+    ./src/app/dashboard/apps/quick-invoice/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/dashboard/apps/quick-invoice/page.js [Client Component SSR]
+    ./src/app/dashboard/apps/quick-invoice/page.js [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /dashboard/apps/quick-invoice 500 in 6.5s (compile: 6.2s, render: 320ms)
+ ⨯ ./src/app/dashboard/apps/offer-poster/page.js:5:1
+Module not found: Can't resolve '../../actions/posActions'
+[0m [90m 3 |[39m [36mimport[39m { [33mDownload[39m[33m,[39m [33mSearch[39m[33m,[39m [33mLayout[39m[33m,[39m [33mType[39m[33m,[39m [33mPalette[39m[33m,[39m [33mImage[39m [36mas[39m [33mImageIcon[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m [33m*[39m [36mas[39m htmlToImage [36mfrom[39m [32m'html-to-image'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 5 |[39m [36mimport[39m { searchProducts } [36mfrom[39m [32m'../../actions/posActions'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 6 |[39m
+ [90m 7 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mOfferPosterPage[39m() {
+ [90m 8 |[39m   [36mconst[39m [selectedProduct[33m,[39m setSelectedProduct] [33m=[39m useState([36mnull[39m)[33m;[39m[0m
+
+
+
+Import traces:
+  Client Component Browser:
+    ./src/app/dashboard/apps/offer-poster/page.js [Client Component Browser]
+    ./src/app/dashboard/apps/offer-poster/page.js [Server Component]
+
+  Client Component SSR:
+    ./src/app/dashboard/apps/offer-poster/page.js [Client Component SSR]
+    ./src/app/dashboard/apps/offer-poster/page.js [Server Component]
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /dashboard/apps/offer-poster 500 in 912ms (compile: 892ms, render: 20ms)
+ ✓ Compiled in 915ms
+ ✓ Compiled in 333ms
+ GET /login 404 in 68ms (compile: 7ms, render: 62ms)
+ GET /dashboard/apps 200 in 94ms (compile: 5ms, render: 88ms)
+ GET /dashboard/apps/quick-invoice 200 in 862ms (compile: 510ms, render: 352ms)
+ ⨯ Error: supabaseUrl is required.
+    at module evaluation (src/app/actions/posActions.js:7:35)
+    at module evaluation (.next-internal/server/app/dashboard/apps/quick-invoice/page/actions.js (server actions loader):1:1)
+    at module evaluation (.next/dev/server/chunks/ssr/_73f9344a._.js:226:407)
+   5 | import { cookies } from 'next/headers';
+   6 |
+>  7 | const supabaseAdmin = createClient(
+     |                                   ^
+   8 |   process.env.NEXT_PUBLIC_SUPABASE_URL,
+   9 |   process.env.SUPABASE_SERVICE_ROLE_KEY
+  10 | ); {
+  digest: '2815065135'
+}
+ POST /dashboard/apps/quick-invoice 500 in 938ms (compile: 5ms, render: 933ms)
+ GET /dashboard/apps/offer-poster 200 in 587ms (compile: 432ms, render: 155ms)
+[?25h

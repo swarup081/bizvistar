@@ -11,11 +11,85 @@ import {
   XCircle, 
   FileText, 
   Package,
-  Eye
+  Eye,
+  Printer,
+  Store // Added icon for POS
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import * as Dialog from '@radix-ui/react-dialog';
-// removed insecure imports
+import jsPDF from 'jspdf';
+
+// --- Helper: Generate Shipping Label PDF ---
+const generateShippingLabel = (order) => {
+    if (!order) return;
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'in',
+        format: [4, 6] // 4x6 inch standard label
+    });
+
+    // Sender Info (Mock or from Website Settings)
+    // In a real app, we fetch this from the website config.
+    const senderName = "BizVistar Shop";
+    const senderAddr = "123 Commerce St, City, Country";
+
+    doc.setFontSize(8);
+    doc.text(`FROM:`, 0.2, 0.3);
+    doc.setFont(undefined, 'bold');
+    doc.text(senderName, 0.2, 0.45);
+    doc.setFont(undefined, 'normal');
+    doc.text(senderAddr, 0.2, 0.6);
+
+    doc.line(0.2, 0.8, 3.8, 0.8);
+
+    // Recipient Info
+    const custName = order.customers?.name || "Customer";
+    const custAddr = order.shipping_address || order.customers?.shipping_address;
+
+    let addrStr = "Address not provided";
+    let cityStr = "";
+    if (custAddr && typeof custAddr === 'object') {
+        addrStr = custAddr.address || "";
+        cityStr = `${custAddr.city || ''}, ${custAddr.state || ''} ${custAddr.zipCode || ''}`;
+    } else if (typeof custAddr === 'string') {
+        addrStr = custAddr;
+    }
+
+    doc.setFontSize(10);
+    doc.text(`TO:`, 0.2, 1.2);
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text(custName.toUpperCase(), 0.5, 1.5);
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text(addrStr, 0.5, 1.8);
+    doc.text(cityStr, 0.5, 2.0);
+    if (custAddr?.phone) doc.text(`Tel: ${custAddr.phone}`, 0.5, 2.2);
+
+    doc.setLineWidth(0.05);
+    doc.line(0.2, 2.5, 3.8, 2.5);
+
+    // Contents (Optional)
+    doc.setFontSize(8);
+    doc.text("CONTENTS:", 0.2, 2.8);
+    let y = 3.0;
+    order.order_items.forEach(item => {
+        const line = `${item.quantity} x ${item.products?.name?.substring(0, 30) || 'Item'}`;
+        doc.text(line, 0.2, y);
+        y += 0.2;
+    });
+
+    // Tracking Placeholder
+    doc.rect(0.5, 4.0, 3.0, 1.0);
+    doc.setFontSize(10);
+    doc.text("TRACKING # PLACEHOLDER", 2.0, 4.5, { align: 'center' });
+
+    // Branding
+    doc.setFontSize(6);
+    doc.text("Powered by BizVistar", 2.0, 5.8, { align: 'center' });
+
+    doc.save(`Label_${order.id}.pdf`);
+};
 
 // --- Order Details Modal Component ---
 function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
@@ -25,7 +99,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
 
   if (!order) return null;
 
-  // Updated to use Client-Side Supabase (respects RLS)
   const handleStatusUpdate = async (newStatus) => {
     if(!confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
     setIsUpdating(true);
@@ -46,12 +119,10 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
     }
   };
 
-  // Updated to use Client-Side Supabase (respects RLS)
   const handleAddLogistics = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-        // 1. Add delivery record
         const { error: deliveryError } = await supabase
             .from('deliveries')
             .insert({
@@ -63,7 +134,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
 
         if (deliveryError) throw deliveryError;
 
-        // 2. Update order status
         const { error: orderError } = await supabase
             .from('orders')
             .update({ status: 'shipped' })
@@ -80,7 +150,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
     }
   };
 
-  const logistics = order.logistics; // We need to ensure we pass this
+  const logistics = order.logistics;
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -91,7 +161,15 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
             {/* Header */}
             <div className="flex justify-between items-start mb-6 border-b pb-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Order #{order.id}</h2>
+                    <div className="flex items-center gap-2">
+                         <h2 className="text-2xl font-bold text-gray-900">Order #{order.id}</h2>
+                         {/* Show Source Badge if POS */}
+                         {order.source === 'pos' && (
+                             <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
+                                 <Store size={12} /> POS
+                             </span>
+                         )}
+                    </div>
                     <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div className="flex gap-2">
@@ -112,7 +190,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                         <div className="space-y-3">
                             {order.order_items.map((item, idx) => (
                                 <div key={idx} className="flex gap-3 items-center bg-gray-50 p-2 rounded-lg">
-                                    <div className="h-12 w-12 bg-gray-200 rounded overflow-hidden">
+                                    <div className="h-12 w-12 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                                          {item.products?.image_url && <img src={item.products.image_url} alt="" className="h-full w-full object-cover"/>}
                                     </div>
                                     <div>
@@ -171,11 +249,10 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                     <div>
                         <h3 className="text-sm font-bold text-gray-500 uppercase mb-3">Customer</h3>
                         <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-2">
-                            <p className="font-bold text-gray-900">{order.customers?.name}</p>
+                            <p className="font-bold text-gray-900">{order.customers?.name || 'Walk-in Customer'}</p>
                             <p className="text-gray-600">{order.customers?.email}</p>
                             <div className="border-t border-gray-200 my-2 pt-2 text-gray-500">
                                 <p className="font-medium text-xs text-gray-400 uppercase mb-1">Shipping Address</p>
-                                {/* Handle JSONB address safely - Prefer order snapshot, fallback to customer profile */}
                                 {(order.shipping_address || order.customers?.shipping_address) ? (
                                     (() => {
                                         const addr = order.shipping_address || order.customers.shipping_address;
@@ -196,6 +273,14 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                     <div>
                         <h3 className="text-sm font-bold text-gray-500 uppercase mb-3">Actions</h3>
                         <div className="space-y-2">
+                             {/* Print Label Button */}
+                             <button
+                                onClick={() => generateShippingLabel(order)}
+                                className="w-full flex items-center justify-center gap-2 bg-gray-800 text-white py-2 rounded-lg font-bold text-sm hover:bg-gray-900 mb-2"
+                            >
+                                <Printer size={16} /> Print Shipping Label
+                            </button>
+
                             {order.status === 'pending' && (
                                 <button 
                                     onClick={() => handleStatusUpdate('paid')}
@@ -215,7 +300,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                                 </button>
                             )}
                              <button 
-                                onClick={() => alert("Billing App coming soon!")}
+                                onClick={() => alert("Standard Bill Generation coming soon!")}
                                 className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 rounded-lg font-bold text-sm hover:bg-gray-200"
                             >
                                 <FileText size={16} /> Generate Bill
@@ -408,7 +493,14 @@ export default function OrdersPage() {
                     ) : (
                         orders.map((order) => (
                             <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="py-4 px-6 font-bold text-gray-900 text-sm">#{order.id}</td>
+                                <td className="py-4 px-6 font-bold text-gray-900 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        #{order.id}
+                                        {order.source === 'pos' && (
+                                            <span className="bg-purple-100 text-purple-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">POS</span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="py-4 px-6 text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                                 <td className="py-4 px-6 text-sm font-medium text-gray-900">
                                     {order.customers?.name || 'Guest'}
