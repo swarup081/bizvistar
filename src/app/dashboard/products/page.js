@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Search,
   Plus,
   Filter,
   Check,
-  Eye
+  Eye,
+  MoreVertical,
+  Edit,
+  Trash
 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient'; // Client Client
+import { supabase } from '@/lib/supabaseClient';
+import { syncWebsiteDataClient } from '@/lib/websiteSync';
 import Sparkline from '@/components/dashboard/products/Sparkline';
 import AddProductDialog from '@/components/dashboard/products/AddProductDialog';
 import ProductDrawer from '@/components/dashboard/products/ProductDrawer';
@@ -33,7 +37,22 @@ export default function ProductsPage() {
 
   // Modals
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null); // For Drawer
+  const [productToEdit, setProductToEdit] = useState(null); // For Dialog
+
+  // Dropdown State (Simple implementation)
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // 1. Fetch Website ID once
   useEffect(() => {
@@ -57,7 +76,7 @@ export default function ProductsPage() {
 
   // 2. Fetch Data when websiteId is ready
   const fetchData = useCallback(async () => {
-    if (!websiteId) return; // Guard clause
+    if (!websiteId) return;
     setLoading(true);
     try {
         // Fetch Categories
@@ -68,7 +87,7 @@ export default function ProductsPage() {
             .order('name');
         setCategories(cats || []);
 
-        // Fetch Products (Fetch raw, map category manually to avoid Join errors)
+        // Fetch Products
         let query = supabase
             .from('products')
             .select('*')
@@ -96,7 +115,6 @@ export default function ProductsPage() {
 
         // Process Client-Side
         const processed = productsData.map(p => {
-            // Stock Logic
             const stockCount = p.stock !== undefined ? p.stock : 0;
             let status = 'Active';
             if (stockCount === -1) {
@@ -107,19 +125,13 @@ export default function ProductsPage() {
                 else if (stockCount > 100) status = 'Overflow Stock';
             }
 
-            // Mock Analytics (since we removed the heavy join for stability)
+            // Analytics (7 Days) - Initialized to 0 (No Noise)
             const analyticsData = [];
             for(let i=6; i>=0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
                 analyticsData.push({ date: d.toISOString().split('T')[0], value: 0 });
             }
-
-            // Add noise based on ID
-            const hash = String(p.id).split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
-            analyticsData.forEach((d, i) => {
-                d.value = Math.floor(Math.abs(Math.sin(hash + i) * 5));
-            });
 
             return {
                 ...p,
@@ -154,6 +166,31 @@ export default function ProductsPage() {
     setCurrentPage(newPage);
   }
 
+  const handleDeleteProduct = async (product) => {
+      if(!confirm("Are you sure you want to delete this product?")) return;
+      try {
+        const { error } = await supabase.from('products').delete().eq('id', product.id);
+        if(error) throw error;
+
+        await syncWebsiteDataClient(websiteId);
+        fetchData();
+        setOpenDropdownId(null);
+      } catch (err) {
+        alert("Failed to delete: " + err.message);
+      }
+  };
+
+  const handleEditProduct = (product) => {
+      setProductToEdit(product);
+      setIsAddOpen(true);
+      setOpenDropdownId(null);
+  };
+
+  const handleViewProduct = (product) => {
+      setSelectedProduct(product);
+      setOpenDropdownId(null);
+  }
+
   // Client-Side Pagination
   const totalCount = products.length;
   const paginatedProducts = products.slice((currentPage - 1) * limit, currentPage * limit);
@@ -174,7 +211,7 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -184,8 +221,7 @@ export default function ProductsPage() {
         <div className="flex items-center gap-3">
           {activeTab === 'products' && (
             <button
-               onClick={() => setIsAddOpen(true)}
-               // Wait for websiteId before enabling
+               onClick={() => { setProductToEdit(null); setIsAddOpen(true); }}
                disabled={!websiteId}
                className="flex items-center gap-2 px-4 py-2 bg-[#8A63D2] text-white rounded-full font-medium text-sm hover:bg-[#7854bc] transition-colors shadow-sm hover:shadow-md disabled:opacity-50"
             >
@@ -270,6 +306,7 @@ export default function ProductsPage() {
                     </div>
 
                     <div className="space-y-4">
+                        {/* Filters ... */}
                         <div>
                         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Stock</h4>
                         <div className="space-y-2">
@@ -321,8 +358,8 @@ export default function ProductsPage() {
             </div>
 
             {/* Product Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden" ref={dropdownRef}>
+                <div className="overflow-x-auto min-h-[400px]">
                 <table className="w-full text-left border-collapse">
                     <thead>
                     <tr className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
@@ -357,7 +394,7 @@ export default function ProductsPage() {
                         <tr
                             key={product.id}
                             className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
-                            onClick={() => setSelectedProduct(product)}
+                            onClick={() => handleViewProduct(product)}
                         >
                             <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -392,13 +429,39 @@ export default function ProductsPage() {
                             <td className="px-6 py-4">
                             <Sparkline data={product.analytics} />
                             </td>
-                            <td className="px-6 py-4 text-right">
-                            <button className="p-2 text-gray-400 hover:text-[#8A63D2] transition-colors" onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedProduct(product);
-                            }}>
-                                <Eye size={18} />
-                            </button>
+                            <td className="px-6 py-4 text-right relative">
+                                <button
+                                    className="p-2 text-gray-400 hover:text-[#8A63D2] transition-colors rounded-full hover:bg-gray-100"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenDropdownId(openDropdownId === product.id ? null : product.id);
+                                    }}
+                                >
+                                    <MoreVertical size={18} />
+                                </button>
+
+                                {openDropdownId === product.id && (
+                                    <div className="absolute right-8 top-8 w-32 bg-white rounded-lg shadow-lg border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleViewProduct(product); }}
+                                            className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                                        >
+                                            <Eye size={14} /> View
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleEditProduct(product); }}
+                                            className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                                        >
+                                            <Edit size={14} /> Edit
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product); }}
+                                            className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50"
+                                        >
+                                            <Trash size={14} /> Delete
+                                        </button>
+                                    </div>
+                                )}
                             </td>
                         </tr>
                         ))
@@ -435,10 +498,11 @@ export default function ProductsPage() {
 
       <AddProductDialog
         isOpen={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
+        onClose={() => { setIsAddOpen(false); setProductToEdit(null); }}
         onProductAdded={fetchData}
         categories={categories}
-        websiteId={websiteId} // Pass ID
+        websiteId={websiteId}
+        productToEdit={productToEdit}
       />
 
       <ProductDrawer

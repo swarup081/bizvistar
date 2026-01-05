@@ -401,6 +401,20 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
     }
 
     try {
+      // Check if user already has a site (Enforce 1 site per user)
+      const { data: existingSite } = await supabase
+        .from('websites')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingSite) {
+          alert("You already have a live project. You can only have one shop.");
+          router.push('/dashboard/website'); // Redirect to existing dashboard
+          return;
+      }
+
       const { data: template, error: templateError } = await supabase
         .from('templates')
         .select('id')

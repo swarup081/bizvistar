@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
 
-export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId }) {
+export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId, productToEdit }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -20,17 +20,29 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        name: '',
-        price: '',
-        stock: '0',
-        isUnlimited: false,
-        categoryId: categories?.[0]?.id || '',
-        description: '',
-        imageUrl: '',
-      });
+      if (productToEdit) {
+         setFormData({
+            name: productToEdit.name || '',
+            price: productToEdit.price || '',
+            stock: productToEdit.stock === -1 || productToEdit.stock === 'Unlimited' ? '0' : productToEdit.stock,
+            isUnlimited: productToEdit.stock === -1 || productToEdit.stock === 'Unlimited',
+            categoryId: productToEdit.category_id || (categories?.[0]?.id || ''),
+            description: productToEdit.description || '',
+            imageUrl: productToEdit.image_url || '',
+         });
+      } else {
+         setFormData({
+            name: '',
+            price: '',
+            stock: '0',
+            isUnlimited: false,
+            categoryId: categories?.[0]?.id || '',
+            description: '',
+            imageUrl: '',
+         });
+      }
     }
-  }, [isOpen, categories]);
+  }, [isOpen, categories, productToEdit]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -81,15 +93,21 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         website_id: websiteId
       };
 
-      // 2. Insert Client Side
-      const { data, error } = await supabase
-        .from('products')
-        .insert(payload)
-        .select()
-        .single();
+      // 2. Insert or Update Client Side
+      if (productToEdit) {
+          const { error } = await supabase
+            .from('products')
+            .update(payload)
+            .eq('id', productToEdit.id);
 
-      if (error) {
-          throw new Error(error.message);
+          if (error) throw new Error(error.message);
+
+      } else {
+          const { error } = await supabase
+            .from('products')
+            .insert(payload);
+
+          if (error) throw new Error(error.message);
       }
 
       // 3. Sync JSON
@@ -100,7 +118,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
     } catch (err) {
       console.error(err);
-      alert('Failed to add product: ' + err.message);
+      alert('Failed to save product: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -114,7 +132,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-xl font-bold text-gray-900">
-              Add New Product
+              {productToEdit ? 'Edit Product' : 'Add New Product'}
             </Dialog.Title>
             <Dialog.Close asChild>
               <button className="text-gray-400 hover:text-gray-600 rounded-full p-1 hover:bg-gray-100 transition-colors">
@@ -244,7 +262,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                 className="px-6 py-2 rounded-lg bg-[#8A63D2] text-white text-sm font-medium hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
-                Add Product
+                {productToEdit ? 'Save Changes' : 'Add Product'}
               </button>
             </div>
 
