@@ -262,10 +262,9 @@ export default function OrdersPage() {
     
     // 1. Get User
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return; // Handle auth redirect if needed
+    if (!user) return;
 
     // 2. Get Website ID
-    // Use maybeSingle to avoid 406 if multiple sites exist (though unlikely in this context, robustness is key)
     const { data: website } = await supabase
         .from('websites')
         .select('id')
@@ -278,39 +277,85 @@ export default function OrdersPage() {
         return;
     }
 
-    // 3. Get Orders and Deliveries
-    const { data: ordersData, error } = await supabase
-        .from('orders')
-        .select(`
-            *,
-            customers ( name, email, shipping_address ),
-            order_items ( quantity, price, products ( name, image_url ) ),
-            deliveries ( provider, tracking_number, status, created_at )
-        `)
-        .eq('website_id', website.id)
-        .order('created_at', { ascending: false });
+    // 3. Get Orders and Deliveries (Separate fetches to avoid Join errors)
+    try {
+        // Fetch Orders (Base)
+        const { data: orders, error: ordersError } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('website_id', website.id)
+            .order('created_at', { ascending: false });
 
-    if (ordersData) {
-        // Map deliveries to the 'logistics' format expected by the UI
-        const merged = ordersData.map(o => ({
+        if (ordersError) throw ordersError;
+
+        if (!orders || orders.length === 0) {
+            setOrders([]);
+            setLoading(false);
+            return;
+        }
+
+        // Collect IDs
+        const orderIds = orders.map(o => o.id);
+        const customerIds = [...new Set(orders.map(o => o.customer_id).filter(Boolean))];
+
+        // Fetch Related Data in Parallel
+        const [
+            { data: customers },
+            { data: deliveries },
+            { data: items }
+        ] = await Promise.all([
+             customerIds.length > 0 ? supabase.from('customers').select('*').in('id', customerIds) : Promise.resolve({ data: [] }),
+             supabase.from('deliveries').select('*').in('order_id', orderIds),
+             supabase.from('order_items').select('*').in('order_id', orderIds)
+        ]);
+
+        // Fetch Products for Items
+        const productIds = [...new Set((items || []).map(i => i.product_id))];
+        const { data: products } = productIds.length > 0
+            ? await supabase.from('products').select('id, name, image_url').in('id', productIds)
+            : { data: [] };
+
+        // Create Maps
+        const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+        const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+
+        const deliveriesMap = (deliveries || []).reduce((acc, d) => {
+            if (!acc[d.order_id]) acc[d.order_id] = [];
+            acc[d.order_id].push(d);
+            return acc;
+        }, {});
+
+        const itemsMap = (items || []).reduce((acc, i) => {
+            if (!acc[i.order_id]) acc[i.order_id] = [];
+            acc[i.order_id].push({ ...i, products: productsMap[i.product_id] });
+            return acc;
+        }, {});
+
+        // Merge
+        const merged = orders.map(o => ({
             ...o,
-            logistics: o.deliveries && o.deliveries[0] ? {
-                provider: o.deliveries[0].provider,
-                trackingNumber: o.deliveries[0].tracking_number,
-                date: o.deliveries[0].created_at
+            customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' },
+            order_items: itemsMap[o.id] || [],
+            deliveries: deliveriesMap[o.id] || [],
+            logistics: deliveriesMap[o.id]?.[0] ? {
+                provider: deliveriesMap[o.id][0].provider,
+                trackingNumber: deliveriesMap[o.id][0].tracking_number,
+                date: deliveriesMap[o.id][0].created_at
             } : null
         }));
+
         setOrders(merged);
 
-        // Update selectedOrder if it's currently open
         if (selectedOrder) {
             const updatedSelected = merged.find(o => o.id === selectedOrder.id);
-            if (updatedSelected) {
-                setSelectedOrder(updatedSelected);
-            }
+            if (updatedSelected) setSelectedOrder(updatedSelected);
         }
+
+    } catch (e) {
+        console.error("Orders Fetch Error:", JSON.stringify(e));
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {

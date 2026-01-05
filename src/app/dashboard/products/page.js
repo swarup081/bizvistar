@@ -68,13 +68,10 @@ export default function ProductsPage() {
             .order('name');
         setCategories(cats || []);
 
-        // Fetch Products (Simplified Query to avoid join errors first)
+        // Fetch Products (Fetch raw, map category manually to avoid Join errors)
         let query = supabase
             .from('products')
-            .select(`
-                *,
-                categories ( name )
-            `)
+            .select('*')
             .eq('website_id', websiteId)
             .order('created_at', { ascending: false });
 
@@ -86,7 +83,16 @@ export default function ProductsPage() {
         }
 
         const { data: productsData, error } = await query;
-        if (error) throw error;
+        if (error) {
+             console.error("Products Fetch Error:", JSON.stringify(error));
+             throw error;
+        }
+
+        // Create Map for categories
+        const catMap = (cats || []).reduce((acc, c) => {
+            acc[c.id] = c.name;
+            return acc;
+        }, {});
 
         // Process Client-Side
         const processed = productsData.map(p => {
@@ -119,7 +125,7 @@ export default function ProductsPage() {
                 ...p,
                 stock: stockCount === -1 ? 'Unlimited' : stockCount,
                 stockStatus: status,
-                categoryName: p.categories?.name || 'Uncategorized',
+                categoryName: (p.category_id && catMap[p.category_id]) || 'Uncategorized',
                 analytics: analyticsData
             };
         });
