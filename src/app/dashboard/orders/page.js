@@ -79,10 +79,11 @@ const generateShippingLabel = (order) => {
         y += 0.2;
     });
 
-    // Tracking Placeholder
+    // Tracking Code
+    const trackingNum = (order.logistics && order.logistics.trackingNumber) ? order.logistics.trackingNumber : 'NO TRACKING INFO';
     doc.rect(0.5, 4.0, 3.0, 1.0);
     doc.setFontSize(10);
-    doc.text("TRACKING # PLACEHOLDER", 2.0, 4.5, { align: 'center' });
+    doc.text(trackingNum, 2.0, 4.5, { align: 'center' });
 
     // Branding
     doc.setFontSize(6);

@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Receipt, FileImage } from 'lucide-react';
+import { Receipt, FileImage, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AppsPage() {
@@ -21,13 +21,21 @@ export default function AppsPage() {
       href: '/dashboard/apps/offer-poster',
       color: 'bg-purple-100 text-purple-600',
     },
+    {
+        id: 'shipping-labels',
+        name: 'Shipping Labels',
+        description: 'Generate and print shipping labels for your orders directly from the Orders page.',
+        icon: Truck,
+        href: '/dashboard/orders', // Links to Orders page as requested
+        color: 'bg-orange-100 text-orange-600',
+    },
   ];
 
   return (
-    <div className="flex flex-col gap-8 font-sans">
+    <div className="flex flex-col gap-8 font-sans p-2">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-gray-900">Apps & Tools</h1>
-        <p className="text-gray-500">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Apps & Tools</h1>
+        <p className="text-gray-500 text-lg">
           Boost your productivity with these built-in tools for your business.
         </p>
       </div>
@@ -37,18 +45,18 @@ export default function AppsPage() {
           <Link
             key={app.id}
             href={app.href}
-            className="flex flex-col gap-4 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            className="group flex flex-col gap-4 p-6 rounded-3xl bg-white/80 backdrop-blur-md border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${app.color}`}>
-              <app.icon size={24} />
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${app.color} shadow-sm group-hover:scale-110 transition-transform`}>
+              <app.icon size={28} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{app.name}</h3>
-              <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+              <h3 className="text-xl font-bold text-gray-900">{app.name}</h3>
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
                 {app.description}
               </p>
             </div>
-            <div className="mt-auto pt-4 flex items-center text-sm font-medium text-gray-900">
+            <div className="mt-auto pt-4 flex items-center text-sm font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
               Open Tool →
             </div>
           </Link>

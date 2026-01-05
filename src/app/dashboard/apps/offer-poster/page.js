@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, Search, Layout, Type, Palette, Image as ImageIcon } from 'lucide-react';
+import { Download, Search, Layout, Type, Palette, Image as ImageIcon, Package } from 'lucide-react';
 import * as htmlToImage from 'html-to-image';
 import { searchProducts } from '../../../actions/posActions';
 
 export default function OfferPosterPage() {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+
   const [badgeText, setBadgeText] = useState('50% OFF');
   const [customBadge, setCustomBadge] = useState('');
   const [layout, setLayout] = useState('modern'); // modern, minimal, bold
@@ -15,18 +17,26 @@ export default function OfferPosterPage() {
 
   const posterRef = useRef(null);
 
-  // Search Logic
+  // Load products on mount
   useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-      if (searchTerm.length > 1) {
-        const results = await searchProducts(searchTerm);
-        setSearchResults(results);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
+    async function loadData() {
+        const products = await searchProducts('');
+        setAvailableProducts(products);
+        setFilteredProducts(products);
+    }
+    loadData();
+  }, []);
+
+  // Filter Logic
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+        setFilteredProducts(availableProducts);
+    } else {
+        setFilteredProducts(availableProducts.filter(p =>
+            p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ));
+    }
+  }, [searchTerm, availableProducts]);
 
   const handleDownload = async () => {
     if (!posterRef.current) return;
@@ -47,131 +57,143 @@ export default function OfferPosterPage() {
   const badges = ["50% OFF", "SALE", "NEW ARRIVAL", "BEST SELLER", "RESTOCKED", "LIMITED"];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
-      {/* Left: Controls */}
-      <div className="lg:col-span-1 flex flex-col gap-6">
-         {/* 1. Select Product */}
-         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <h2 className="text-sm font-bold uppercase text-gray-400 mb-3 flex items-center gap-2">
-                 <ImageIcon size={16} /> 1. Select Product
-             </h2>
-             <div className="relative">
-                <input
-                    className="w-full p-3 border rounded-xl bg-gray-50 focus:bg-white transition-colors outline-none focus:ring-2 focus:ring-purple-100"
-                    placeholder="Search your inventory..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                />
-                {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-lg mt-1 border border-gray-100 z-10 max-h-60 overflow-y-auto">
-                        {searchResults.map(p => (
-                            <div
-                                key={p.id}
-                                onClick={() => {
-                                    setSelectedProduct(p);
-                                    setSearchTerm('');
-                                    setSearchResults([]);
-                                }}
-                                className="p-3 hover:bg-purple-50 cursor-pointer flex items-center gap-3 border-b border-gray-50 last:border-0"
-                            >
-                                <div className="w-10 h-10 bg-gray-100 rounded-md bg-cover bg-center" style={{ backgroundImage: `url(${p.image_url})` }}></div>
-                                <div className="text-sm font-medium">{p.name}</div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-             </div>
-             {selectedProduct && (
-                 <div className="mt-4 p-3 bg-purple-50 rounded-lg flex items-center gap-3 border border-purple-100">
-                      <div className="w-12 h-12 bg-white rounded-md bg-cover bg-center shadow-sm" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}></div>
-                      <div>
-                          <div className="font-bold text-gray-800 text-sm">{selectedProduct.name}</div>
-                          <div className="text-xs text-purple-600 font-medium">Selected</div>
-                      </div>
-                 </div>
-             )}
+    <div className="flex h-full gap-8 overflow-hidden">
+
+      {/* Left Sidebar: Product Selection */}
+      <div className="w-[320px] flex flex-col gap-4 bg-white/80 backdrop-blur-md border border-white/20 p-4 rounded-3xl shadow-xl h-full overflow-hidden">
+         <div className="flex items-center justify-between">
+            <h2 className="font-bold text-gray-800 text-lg">1. Select Product</h2>
+            <div className="text-xs text-gray-400">{filteredProducts.length} items</div>
          </div>
 
-         {/* 2. Choose Badge */}
-         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <h2 className="text-sm font-bold uppercase text-gray-400 mb-3 flex items-center gap-2">
-                 <Type size={16} /> 2. Choose Badge
+         <div className="relative">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+             <input
+                 className="w-full pl-9 p-2 border border-gray-200 rounded-xl bg-gray-50/50 focus:bg-white text-sm outline-none focus:ring-2 focus:ring-purple-100"
+                 placeholder="Search products..."
+                 value={searchTerm}
+                 onChange={e => setSearchTerm(e.target.value)}
+             />
+         </div>
+
+         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+             {filteredProducts.map(p => (
+                 <div
+                    key={p.id}
+                    onClick={() => setSelectedProduct(p)}
+                    className={`flex items-center gap-3 p-2 rounded-xl border cursor-pointer transition-all ${
+                        selectedProduct?.id === p.id
+                        ? 'bg-purple-50 border-purple-200 shadow-sm'
+                        : 'bg-white border-transparent hover:bg-gray-50'
+                    }`}
+                 >
+                     <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden relative flex-shrink-0">
+                         {p.image_url ? (
+                             <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${p.image_url})` }}></div>
+                         ) : (
+                             <div className="flex items-center justify-center w-full h-full text-gray-300"><Package size={16}/></div>
+                         )}
+                     </div>
+                     <div className="min-w-0">
+                         <div className="text-sm font-bold text-gray-800 truncate">{p.name}</div>
+                         <div className="text-xs text-gray-500">${p.price}</div>
+                     </div>
+                     {selectedProduct?.id === p.id && <div className="ml-auto w-2 h-2 rounded-full bg-purple-500"></div>}
+                 </div>
+             ))}
+         </div>
+      </div>
+
+      {/* Middle: Controls */}
+      <div className="w-[280px] flex flex-col gap-6 py-4">
+         {/* Badge Selection */}
+         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+             <h2 className="text-xs font-bold uppercase text-gray-400 mb-3 flex items-center gap-2">
+                 <Type size={14} /> 2. Choose Badge
              </h2>
-             <div className="flex flex-wrap gap-2 mb-4">
+             <div className="flex flex-wrap gap-2 mb-3">
                  {badges.map(b => (
                      <button
                         key={b}
                         onClick={() => { setBadgeText(b); setCustomBadge(''); }}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${badgeText === b ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                        className={`px-2 py-1 rounded-md text-[10px] font-bold border transition-all ${badgeText === b ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-600 border-transparent hover:border-gray-200'}`}
                      >
                          {b}
                      </button>
                  ))}
              </div>
              <input
-                className="w-full p-2 border rounded-lg text-sm"
-                placeholder="Or type custom text..."
+                className="w-full p-2 border rounded-lg text-xs bg-gray-50 focus:bg-white transition-colors"
+                placeholder="Custom text..."
                 value={customBadge}
                 onChange={e => { setCustomBadge(e.target.value); setBadgeText(e.target.value); }}
              />
          </div>
 
-          {/* 3. Style */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-             <h2 className="text-sm font-bold uppercase text-gray-400 mb-3 flex items-center gap-2">
-                 <Layout size={16} /> 3. Layout Style
+          {/* Style Selection */}
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+             <h2 className="text-xs font-bold uppercase text-gray-400 mb-3 flex items-center gap-2">
+                 <Layout size={14} /> 3. Layout Style
              </h2>
-             <div className="grid grid-cols-3 gap-2">
+             <div className="grid grid-cols-1 gap-2">
                  {['modern', 'minimal', 'bold'].map(l => (
                      <button
                         key={l}
                         onClick={() => setLayout(l)}
-                        className={`p-2 rounded-lg text-xs capitalize border ${layout === l ? 'bg-purple-100 border-purple-400 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}
+                        className={`flex items-center justify-between p-3 rounded-xl text-xs font-bold capitalize border transition-all ${
+                            layout === l
+                            ? 'bg-purple-50 border-purple-200 text-purple-700'
+                            : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'
+                        }`}
                      >
                          {l}
+                         {layout === l && <div className="w-2 h-2 bg-purple-500 rounded-full"></div>}
                      </button>
                  ))}
              </div>
          </div>
 
-         <button
-            onClick={handleDownload}
-            disabled={!selectedProduct || isGenerating}
-            className="w-full py-4 bg-[#8A63D2] hover:bg-[#7750bf] text-white rounded-xl font-bold text-lg shadow-lg shadow-purple-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-         >
-             {isGenerating ? 'Generating...' : <> <Download size={20} /> Download Image </>}
-         </button>
+         <div className="mt-auto">
+            <button
+                onClick={handleDownload}
+                disabled={!selectedProduct || isGenerating}
+                className="w-full py-3 bg-[#8A63D2] hover:bg-[#7750bf] text-white rounded-xl font-bold shadow-lg shadow-purple-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
+            >
+                {isGenerating ? 'Generating...' : <> <Download size={18} /> Download Poster </>}
+            </button>
+         </div>
       </div>
 
-      {/* Right: Preview Canvas */}
-      <div className="lg:col-span-2 flex items-center justify-center bg-gray-100 rounded-3xl p-8 border border-gray-200 overflow-hidden relative">
+      {/* Right: Preview Canvas (Centered) */}
+      <div className="flex-1 bg-gray-100/50 rounded-3xl p-8 border border-gray-200 overflow-hidden flex items-center justify-center relative">
+          <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50"></div>
+
           {!selectedProduct ? (
-              <div className="text-center text-gray-400">
-                  <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <div className="text-center text-gray-400 relative z-10">
+                  <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm animate-pulse">
                       <ImageIcon size={30} />
                   </div>
-                  <p>Select a product to start designing</p>
+                  <p className="font-medium">Select a product to preview</p>
               </div>
           ) : (
              <div
                ref={posterRef}
-               className="w-[380px] h-[675px] bg-white shadow-2xl relative overflow-hidden flex flex-col"
-               // Aspect Ratio 9:16 for Stories (approx 1080x1920 scaled down)
+               className="h-[90%] aspect-[9/16] bg-white shadow-2xl relative overflow-hidden flex flex-col transform transition-all duration-500"
              >
                  {/* Modern Layout */}
                  {layout === 'modern' && (
                      <>
-                        <div className="h-[60%] w-full bg-cover bg-center relative" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}>
+                        <div className="h-[65%] w-full bg-cover bg-center relative" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}>
                             <div className="absolute top-6 left-6 bg-white px-4 py-2 rounded-full font-bold text-sm tracking-wide shadow-md uppercase">
                                 {badgeText}
                             </div>
                         </div>
                         <div className="flex-1 bg-white p-8 flex flex-col justify-center relative">
                             <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-2">{selectedProduct.name}</h2>
-                            <p className="text-gray-500 text-sm mb-6 line-clamp-3">{selectedProduct.description || 'Special offer limited time only.'}</p>
+                            <p className="text-gray-500 text-sm mb-6 line-clamp-3">{selectedProduct.description || 'Special offer available for a limited time.'}</p>
                             <div className="flex items-center gap-4">
-                                <span className="text-2xl font-bold text-[#8A63D2]">${selectedProduct.price}</span>
-                                <span className="text-sm text-gray-400 line-through">${(selectedProduct.price * 1.2).toFixed(2)}</span>
+                                <span className="text-3xl font-bold text-[#8A63D2]">${selectedProduct.price}</span>
+                                <span className="text-lg text-gray-400 line-through">${(selectedProduct.price * 1.2).toFixed(2)}</span>
                             </div>
 
                             <div className="absolute bottom-6 left-0 right-0 text-center">
@@ -185,40 +207,40 @@ export default function OfferPosterPage() {
                  {layout === 'minimal' && (
                      <>
                         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}></div>
-                        <div className="absolute inset-0 bg-black/30"></div>
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
                         <div className="relative z-10 h-full flex flex-col items-center justify-center p-8 text-center text-white">
-                            <div className="border border-white/50 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-6 backdrop-blur-md">
+                            <div className="border border-white/60 px-6 py-2 rounded-full text-xs font-bold uppercase tracking-[0.2em] mb-8 backdrop-blur-md">
                                 {badgeText}
                             </div>
-                            <h2 className="text-4xl font-serif mb-4">{selectedProduct.name}</h2>
-                            <div className="text-3xl font-light mb-8">${selectedProduct.price}</div>
+                            <h2 className="text-5xl font-serif mb-6 leading-tight">{selectedProduct.name}</h2>
+                            <div className="text-4xl font-light mb-12">${selectedProduct.price}</div>
 
-                            <div className="absolute bottom-10 left-0 right-0 text-center">
-                                <div className="w-12 h-0.5 bg-white/50 mx-auto mb-4"></div>
-                                <span className="text-[8px] font-medium text-white/60 uppercase tracking-widest">Link in Bio</span>
+                            <div className="absolute bottom-12 left-0 right-0 text-center">
+                                <div className="w-16 h-px bg-white/60 mx-auto mb-4"></div>
+                                <span className="text-[10px] font-medium text-white/70 uppercase tracking-widest">Link in Bio</span>
                             </div>
                         </div>
-                        <div className="absolute bottom-2 right-4 z-20">
-                             <span className="text-[8px] font-bold text-white/40 uppercase">BizVistar</span>
+                        <div className="absolute bottom-4 right-6 z-20">
+                             <span className="text-[10px] font-bold text-white/30 uppercase">BizVistar</span>
                         </div>
                      </>
                  )}
 
                  {/* Bold Layout */}
                  {layout === 'bold' && (
-                     <div className="h-full bg-[#FFD700] p-6 flex flex-col relative">
+                     <div className="h-full bg-[#FFD700] p-4 flex flex-col relative">
                         <div className="bg-white rounded-[2rem] h-full flex flex-col overflow-hidden shadow-inner border-4 border-black">
-                            <div className="h-[55%] bg-cover bg-center border-b-4 border-black" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}></div>
-                            <div className="flex-1 p-6 flex flex-col items-start justify-center">
-                                <div className="bg-black text-[#FFD700] px-3 py-1 text-sm font-black uppercase transform -rotate-2 mb-4">
+                            <div className="h-[60%] bg-cover bg-center border-b-4 border-black grayscale contrast-125" style={{ backgroundImage: `url(${selectedProduct.image_url})` }}></div>
+                            <div className="flex-1 p-6 flex flex-col items-start justify-center bg-white relative">
+                                <div className="absolute -top-5 right-6 bg-black text-[#FFD700] px-4 py-2 text-lg font-black uppercase transform rotate-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
                                     {badgeText}
                                 </div>
-                                <h2 className="text-4xl font-black text-black leading-[0.9] mb-2 uppercase italic">{selectedProduct.name}</h2>
-                                <p className="text-xl font-bold text-gray-800">Only ${selectedProduct.price}</p>
+                                <h2 className="text-4xl font-black text-black leading-[0.9] mb-3 uppercase italic">{selectedProduct.name}</h2>
+                                <p className="text-3xl font-bold text-gray-800 tracking-tighter">${selectedProduct.price}</p>
                             </div>
                         </div>
-                        <div className="absolute bottom-2 left-0 right-0 text-center">
-                            <span className="text-[10px] font-black text-black/20 uppercase tracking-widest">Powered by BizVistar</span>
+                        <div className="absolute bottom-1.5 left-0 right-0 text-center">
+                            <span className="text-[9px] font-black text-black/20 uppercase tracking-widest">Powered by BizVistar</span>
                         </div>
                      </div>
                  )}
