@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { DollarSign, ShoppingBag, Users, TrendingUp } from 'lucide-react';
 
