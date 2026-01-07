@@ -2,13 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { supabase } from '@/lib/supabaseClient';
 
 export default function AnalyticsTracker({ websiteId }) {
   const pathname = usePathname();
@@ -60,16 +54,7 @@ export default function AnalyticsTracker({ websiteId }) {
         event_type: 'page_view',
         path: pathname,
         user_agent: navigator.userAgent,
-        location: locationData,
-        // We can store visitor_id in the 'user_agent' field temporarily if we don't have a dedicated column,
-        // or better, put it in the 'location' jsonb to avoid schema changes for now?
-        // Actually, the schema allows 'location' as jsonb. I'll put visitor_id there for now to track uniques safely.
-        // Wait, 'user_agent' is text. 'location' is jsonb.
-        // I will add visitor_id to location json.
-        location: {
-            ...locationData,
-            visitor_id: visitorId
-        }
+        location: locationData ? { ...locationData, visitor_id: visitorId } : { visitor_id: visitorId },
       });
 
       if (error) {

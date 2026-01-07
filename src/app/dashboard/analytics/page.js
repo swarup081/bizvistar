@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 import {
   BarChart3,
   TrendingUp,
@@ -18,14 +18,6 @@ import RevenueChart from "@/components/dashboard/analytics/RevenueChart";
 import VisitorsChart from "@/components/dashboard/analytics/VisitorsChart";
 import TopProducts from "@/components/dashboard/analytics/TopProducts";
 import TopPages from "@/components/dashboard/analytics/TopPages";
-
-// Safe initialization
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -59,8 +51,8 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     if (!supabase) {
-      console.error("Supabase client not initialized. Missing env vars.");
-      setError("Configuration Error: Missing Supabase credentials.");
+      console.error("Supabase client not initialized.");
+      setError("Configuration Error: Missing Supabase client.");
       setLoading(false);
       return;
     }
@@ -91,7 +83,7 @@ export default function AnalyticsPage() {
         .maybeSingle();
 
       if (siteError) {
-        console.error("Error fetching website:", siteError);
+        console.error("Error fetching website:", JSON.stringify(siteError));
         setError("Failed to load website data.");
         setLoading(false);
         return;
