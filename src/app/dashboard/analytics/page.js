@@ -80,6 +80,7 @@ export default function AnalyticsPage() {
         .from("websites")
         .select("id")
         .eq("user_id", user.id)
+        .limit(1)
         .maybeSingle();
 
       if (siteError) {
