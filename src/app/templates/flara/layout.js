@@ -6,8 +6,9 @@ import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
+import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 
-function FlaraContent({ children, serverData }) { // Renamed from CartLayout to avoid confusion
+function FlaraContent({ children, serverData, websiteId }) { // Renamed from CartLayout to avoid confusion
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
     const router = useRouter(); 
     const pathname = usePathname();
@@ -108,6 +109,7 @@ function FlaraContent({ children, serverData }) { // Renamed from CartLayout to 
             className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
             style={fontVariables}
         >
+            <AnalyticsTracker websiteId={websiteId} />
             <Editable focusId="global">
                 {businessData.announcementBar && (
                     <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">
@@ -252,14 +254,14 @@ function TemplateStateProvider({ children, serverData }) {
     );
 }
 
-export default function FlaraLayout({ children, serverData }) {
+export default function FlaraLayout({ children, serverData, websiteId }) {
     return (
         // 1. First provide Template Context (State)
         <TemplateStateProvider serverData={serverData}>
             {/* 2. Then provide Cart Context (depends on Template Context) */}
             <CartProvider>
                 {/* 3. Then render the actual layout content */}
-                <FlaraContent serverData={serverData}>
+                <FlaraContent serverData={serverData} websiteId={websiteId}>
                     {children}
                 </FlaraContent>
             </CartProvider>

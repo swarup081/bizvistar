@@ -91,7 +91,7 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
             <div>
                 <a href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] h-80 ">
                     <img 
-                        src={item.image} 
+                        src={item.image || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
                         alt={item.name} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}

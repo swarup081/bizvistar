@@ -263,31 +263,31 @@ export default function ProductsPage() {
 
       {activeTab === 'products' && (
         <>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-                <div className="relative w-full md:w-96">
+            <div className="flex flex-wrap  md:flex-row items-center  justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm">
+                <div className="relative w-full md:w-96 ">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                     type="text" 
                     placeholder="Search products..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border-none rounded-lg focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none"
+                    className="w-full  pl-10 pr-4 py-2 text-sm bg-purple-50 border-none rounded-full focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none"
                 />
                 </div>
 
-                <div className="relative">
+                <div className="relative ">
                 <button 
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                    className={`flex items-center bg-purple-50 gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
                     isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all'
-                        ? 'bg-blue-50 text-blue-600 border-blue-100' 
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                        ? 'bg-purple-50 text-purple-600 border-purple-100' 
+                        : 'bg-purple text-gray-600 border-purple-200 hover:bg-purple-50'
                     }`}
                 >
-                    <Filter size={16} />
-                    Filters
+                    <Filter size={16} /> Filter
+                    
                     {(stockFilters.length > 0 || selectedCategory !== 'all') && (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-[10px] text-white">
                         {stockFilters.length + (selectedCategory !== 'all' ? 1 : 0)}
                     </span>
                     )}
@@ -296,10 +296,10 @@ export default function ProductsPage() {
                 {isFilterOpen && (
                     <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 p-4 animate-in fade-in zoom-in-95 duration-200">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold text-gray-900 text-sm">Filters</h3>
+                        <h3 className="font-semibold text-gray-900 text-sm not-italic">Filters</h3>
                         <button 
                         onClick={() => { setStockFilters([]); setSelectedCategory('all'); setCurrentPage(1); setIsFilterOpen(false); }}
-                        className="text-xs text-gray-400 hover:text-gray-600"
+                        className="text-xs not-italic text-gray-400 hover:text-gray-600"
                         >
                         Reset
                         </button>
@@ -308,7 +308,7 @@ export default function ProductsPage() {
                     <div className="space-y-4">
                         {/* Filters ... */}
                         <div>
-                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Stock</h4>
+                        <h4 className="text-xs not-italic font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Stock</h4>
                         <div className="space-y-2">
                             {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
                             <label key={status} className="flex items-center gap-2 cursor-pointer group">
@@ -411,9 +411,9 @@ export default function ProductsPage() {
                             <span className="text-sm text-gray-600">{product.categoryName}</span>
                             </td>
                             <td className="px-6 py-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium text-gray-900">{product.stock === -1 ? 'Unlimited' : product.stock}</span>
-                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit ${
+                            <div className="flex  flex-col gap-1">
+                                <span className="text-sm pl-3 font-medium text-gray-900">{product.stock === -1 ? 'Unlimited' : product.stock}</span>
+                                <span className={`text-[10px] -pl-3 font-semibold px-2 py-0.5 rounded-full w-fit ${
                                     product.stockStatus === 'Out Of Stock' ? 'bg-red-50 text-red-600' :
                                     product.stockStatus === 'Low Stock' ? 'bg-orange-50 text-orange-600' :
                                     product.stockStatus === 'Unlimited' ? 'bg-purple-50 text-purple-600' :
@@ -478,14 +478,14 @@ export default function ProductsPage() {
                         <button 
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 border rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                         Previous
                         </button>
                         <button 
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 border rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                         Next
                         </button>

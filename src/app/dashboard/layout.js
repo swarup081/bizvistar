@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }) {
     { name: 'Website', icon: Globe, href: '/dashboard/website' },
     { name: 'Orders', icon: Package, href: '/dashboard/orders' },
     { name: 'Products', icon: Tag, href: '/dashboard/products' },
-    { name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
+  //{ name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
     { name: 'Analytics', icon: PieChart, href: '/dashboard/analytics' },
   ];
 

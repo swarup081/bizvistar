@@ -37,6 +37,7 @@ export default async function LiveSitePage(props) {
     .from("websites")
     .select(
       `
+      id,
       is_published,
       website_data,
       template:templates ( name )
@@ -80,28 +81,28 @@ export default async function LiveSitePage(props) {
   switch (templateName) {
     case "flara":
       return (
-        <FlaraLayout serverData={websiteData}>
+        <FlaraLayout serverData={websiteData} websiteId={site.id}>
           <FlaraPage />
         </FlaraLayout>
       );
 
     case "avenix":
       return (
-        <AvenixLayout serverData={websiteData}>
+        <AvenixLayout serverData={websiteData} websiteId={site.id}>
           <AvenixPage />
         </AvenixLayout>
       );
 
     case "blissly":
       return (
-        <BlisslyLayout serverData={websiteData}>
+        <BlisslyLayout serverData={websiteData} websiteId={site.id}>
           <BlisslyPage />
         </BlisslyLayout>
       );
 
     case "flavornest":
       return (
-        <FlavornestLayout serverData={websiteData}>
+        <FlavornestLayout serverData={websiteData} websiteId={site.id}>
           <FlavornestPage />
         </FlavornestLayout>
       );

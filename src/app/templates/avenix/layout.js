@@ -6,8 +6,9 @@ import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
+import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 
-function AvenixContent({ children, serverData }) { 
+function AvenixContent({ children, serverData, websiteId }) { 
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
     const router = useRouter();
     
@@ -110,6 +111,7 @@ function AvenixContent({ children, serverData }) {
             className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
             style={fontVariables}
         >
+            <AnalyticsTracker websiteId={websiteId} />
             <Header 
                 business={{ logoText: businessData.logoText, navigation: businessData.navigation }} 
                 cartCount={cartCount}
@@ -240,11 +242,11 @@ function AvenixStateProvider({ children, serverData }) {
     );
 }
 
-export default function AvenixLayout({ children, serverData }) {
+export default function AvenixLayout({ children, serverData, websiteId }) {
     return (
         <AvenixStateProvider serverData={serverData}>
             <CartProvider>
-                <AvenixContent serverData={serverData}>
+                <AvenixContent serverData={serverData} websiteId={websiteId}>
                     {children}
                 </AvenixContent>
             </CartProvider>

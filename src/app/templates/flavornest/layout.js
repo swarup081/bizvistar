@@ -6,8 +6,9 @@ import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
+import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 
-function FlavorNestLayout({ children, serverData }) { // 1. Accept serverData
+function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
     const router = useRouter();
     
@@ -126,6 +127,7 @@ function FlavorNestLayout({ children, serverData }) { // 1. Accept serverData
               className={`antialiased font-sans bg-brand-bg text-brand-text ${themeClassName}`}
               style={fontVariables}
             >
+                <AnalyticsTracker websiteId={websiteId} />
                 <Header 
                     business={{ 
                         logoText: businessData.logoText, 
@@ -223,11 +225,11 @@ function FlavorNestLayout({ children, serverData }) { // 1. Accept serverData
 }
 
 // 5. Accept serverData
-export default function RootLayout({ children, serverData }) {
+export default function RootLayout({ children, serverData, websiteId }) {
     return (
         <CartProvider>
             {/* 6. Pass serverData down */}
-            <FlavorNestLayout serverData={serverData}>{children}</FlavorNestLayout>
+            <FlavorNestLayout serverData={serverData} websiteId={websiteId}>{children}</FlavorNestLayout>
         </CartProvider>
     );
 }
