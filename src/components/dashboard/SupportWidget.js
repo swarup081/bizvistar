@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, User, Bot, AlertTriangle, ExternalLink } from 'lucide-react';
+import { MessageCircle, X, Send, User, Bot, AlertTriangle, ExternalLink, GripHorizontal } from 'lucide-react';
 import { findLayer1Match } from '@/lib/support-bot/intents';
 import { useRouter } from 'next/navigation';
 import { getSupportConfig } from '@/app/actions/supportActions';
@@ -129,11 +129,16 @@ export default function SupportWidget() {
 
     return (
         <div className="space-y-2">
-            <p>{msg.content}</p>
+            {/* Render simple markdown-like bold text */}
+            <p className="whitespace-pre-wrap leading-relaxed">
+                {msg.content.split('**').map((part, i) =>
+                    i % 2 === 1 ? <span key={i} className="font-bold text-[#8A63D2]">{part}</span> : part
+                )}
+            </p>
             {msg.action && (
                 <button
                     onClick={() => handleActionClick(msg.action)}
-                    className="flex items-center gap-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-md transition-colors w-fit border border-purple-100"
+                    className="flex items-center gap-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-md transition-colors w-fit border border-purple-100 mt-2"
                 >
                     <ExternalLink size={14} />
                     {msg.action.label}
@@ -145,30 +150,35 @@ export default function SupportWidget() {
 
   return (
     <>
-      {/* Floating Button */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[9999] p-4 bg-gradient-to-r from-[#8A63D2] to-[#6C4AB6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
+      {/* Floating Button (Draggable) */}
+      <motion.div
+        drag
+        dragMomentum={false}
+        whileDrag={{ scale: 1.1 }}
+        className="fixed bottom-6 right-6 z-[9999] cursor-move touch-none"
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </motion.button>
+        <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-4 bg-gradient-to-r from-[#8A63D2] to-[#6C4AB6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow outline-none"
+        >
+            {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        </button>
+      </motion.div>
 
-      {/* Chat Window */}
+      {/* Chat Window (Draggable) */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            drag
+            dragMomentum={false}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-4 md:right-6 z-[9999] w-[calc(100vw-2rem)] md:w-[380px] h-[500px] max-h-[80vh] bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-4 md:right-6 z-[9999] w-[calc(100vw-2rem)] md:w-[380px] h-[500px] max-h-[80vh] bg-white/95 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl flex flex-col overflow-hidden touch-none"
           >
-            {/* Header */}
-            <div className="p-4 bg-gradient-to-r from-[#8A63D2] to-[#6C4AB6] text-white flex items-center justify-between">
+            {/* Header (Drag Handle) */}
+            <div className="p-4 bg-gradient-to-r from-[#8A63D2] to-[#6C4AB6] text-white flex items-center justify-between cursor-move">
               <div className="flex items-center gap-3">
                 <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
                     <Bot size={20} />

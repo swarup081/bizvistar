@@ -1,65 +1,14 @@
 import Fuse from 'fuse.js';
 
 // Layer 1: The Silent Guard - Configuration
+// Detailed "Maps" for the user to navigate the app without API calls.
 const intents = [
-  // --- Pricing & Cost ---
+  // --- Products: Edit ---
   {
-    id: 'pricing',
-    keywords: ['price', 'cost', 'subscription', 'plan', 'money', 'fee', 'charge', 'expensive', 'discount', 'offer'],
+    id: 'edit_product',
+    keywords: ['edit product', 'change product', 'update product', 'modify item', 'how to edit', 'edit price', 'edit stock', 'edit image'],
     response: {
-      text: "Our standard plan is ₹799/mo. However, as a Founding Member, you can get it for just ₹399/mo (50% OFF). This includes unlimited products and zero commission fees.",
-      action: null
-    }
-  },
-
-  // --- Account & Settings ---
-  {
-    id: 'password_reset',
-    keywords: ['reset password', 'forgot password', 'change password', 'login issue', 'cant login', 'magic link'],
-    response: {
-      text: "If you're having trouble logging in, please check your email for the 'Magic Link' or use the reset password option.",
-      action: {
-        type: 'link',
-        label: 'Reset Password',
-        url: '/forgot-password' // Assuming this route exists or is standard
-      }
-    }
-  },
-
-  // --- Navigation: Dashboard ---
-  {
-    id: 'nav_dashboard',
-    keywords: ['dashboard', 'home', 'main menu', 'overview', 'start'],
-    response: {
-      text: "You can find your main Dashboard here.",
-      action: {
-        type: 'navigate',
-        label: 'Go to Dashboard',
-        url: '/dashboard'
-      }
-    }
-  },
-
-  // --- Navigation: Orders ---
-  {
-    id: 'nav_orders',
-    keywords: ['order', 'orders', 'sales', 'shipping', 'track order', 'new order'],
-    response: {
-      text: "Manage your orders and track shipments in the Orders section.",
-      action: {
-        type: 'navigate',
-        label: 'Go to Orders',
-        url: '/dashboard/orders'
-      }
-    }
-  },
-
-  // --- Navigation: Products ---
-  {
-    id: 'nav_products',
-    keywords: ['product', 'products', 'item', 'items', 'inventory', 'stock', 'catalog', 'add product'],
-    response: {
-      text: "You can add, edit, and manage your inventory in the Products section.",
+      text: "To edit a product: \n1. Go to **Products**.\n2. Find the product you want to change.\n3. Click the **3 dots** (More Options) button next to it.\n4. Select **Edit** from the dropdown menu.",
       action: {
         type: 'navigate',
         label: 'Go to Products',
@@ -68,30 +17,110 @@ const intents = [
     }
   },
 
-   // --- Navigation: Website/Editor ---
-   {
-    id: 'nav_website',
-    keywords: ['website', 'editor', 'design', 'template', 'change theme', 'edit site', 'preview'],
+  // --- Products: Add ---
+  {
+    id: 'add_product',
+    keywords: ['add product', 'create product', 'new product', 'upload item', 'sell new item', 'how to add', 'add inventory'],
     response: {
-      text: "Customize your website design and layout in the Website Editor.",
+      text: "To add a new product: \n1. Go to **Products**.\n2. Click the **Add Product** button in the top right corner.\n3. Fill in the details and save.",
       action: {
         type: 'navigate',
-        label: 'Go to Editor',
+        label: 'Go to Products',
+        url: '/dashboard/products'
+      }
+    }
+  },
+
+  // --- Products: Delete ---
+  {
+    id: 'delete_product',
+    keywords: ['delete product', 'remove product', 'trash item', 'remove item', 'how to delete'],
+    response: {
+      text: "To delete a product: \n1. Go to **Products**.\n2. Click the **3 dots** next to the product.\n3. Select **Delete**. \n*Note: This cannot be undone.*",
+      action: {
+        type: 'navigate',
+        label: 'Go to Products',
+        url: '/dashboard/products'
+      }
+    }
+  },
+
+  // --- Orders: Manage / Status ---
+  {
+    id: 'manage_order',
+    keywords: ['manage order', 'ship order', 'track order', 'change status', 'mark delivered', 'mark paid', 'order details', 'view order'],
+    response: {
+      text: "To manage an order (ship, track, or update status): \n1. Go to **Orders**.\n2. Find the order you want to update.\n3. Click the **Manage** button on the right side of the row.\n4. A popup will appear where you can update status or add logistics.",
+      action: {
+        type: 'navigate',
+        label: 'Go to Orders',
+        url: '/dashboard/orders'
+      }
+    }
+  },
+
+  // --- FAQ: Custom Colors ---
+  {
+    id: 'custom_colors',
+    keywords: ['custom color', 'change theme color', 'hex code', 'own color', 'brand color', 'more colors', 'color palette'],
+    response: {
+      text: "Currently, you can only choose from the **8 preset colors** available in the theme settings. Custom color options (hex codes) are not supported yet.",
+      action: {
+        type: 'navigate',
+        label: 'Open Editor',
         url: '/dashboard/website'
       }
     }
   },
 
-  // --- Navigation: Apps ---
+  // --- Pricing & Cost (General) ---
   {
-    id: 'nav_apps',
-    keywords: ['apps', 'plugins', 'features', 'invoice', 'poster', 'shipping label'],
+    id: 'pricing',
+    keywords: ['price', 'cost', 'subscription', 'plan', 'money', 'fee', 'charge', 'expensive', 'discount', 'offer'],
     response: {
-      text: "Access extra tools like Quick Invoice and Offer Posters in the Apps section.",
+      text: "Our standard plan is **₹799/mo**. However, as a Founding Member, you can get it for just **₹399/mo** (50% OFF). This includes unlimited products and zero commission fees.",
+      action: null // No nav needed, pure info
+    }
+  },
+
+  // --- Account: Password ---
+  {
+    id: 'password_reset',
+    keywords: ['reset password', 'forgot password', 'change password', 'login issue', 'cant login', 'magic link'],
+    response: {
+      text: "If you're having trouble logging in, please check your email for the **'Magic Link'** or use the reset password option on the login page.",
+      action: {
+        type: 'link',
+        label: 'Reset Password',
+        url: '/forgot-password'
+      }
+    }
+  },
+
+  // --- Navigation: Dashboard ---
+  {
+    id: 'nav_dashboard',
+    keywords: ['dashboard', 'home', 'main menu', 'overview', 'start', 'where is dashboard'],
+    response: {
+      text: "You are currently in the Dashboard area. Click the link below to return to the main overview.",
       action: {
         type: 'navigate',
-        label: 'Go to Apps',
-        url: '/dashboard/apps'
+        label: 'Go to Dashboard',
+        url: '/dashboard'
+      }
+    }
+  },
+
+   // --- Navigation: Website/Editor ---
+   {
+    id: 'nav_website',
+    keywords: ['website', 'editor', 'design', 'template', 'change theme', 'edit site', 'preview', 'how to edit site'],
+    response: {
+      text: "To customize your website: \n1. Go to **Website**.\n2. Use the editor to change themes, colors, and content.",
+      action: {
+        type: 'navigate',
+        label: 'Go to Editor',
+        url: '/dashboard/website'
       }
     }
   },
@@ -101,7 +130,7 @@ const intents = [
     id: 'nav_analytics',
     keywords: ['analytics', 'stats', 'traffic', 'views', 'visitors', 'performance', 'charts', 'data'],
     response: {
-      text: "Check your store's performance and visitor stats in Analytics.",
+      text: "To view your store's performance: \n1. Go to **Analytics**.\n2. View your traffic, sales, and top products.",
       action: {
         type: 'navigate',
         label: 'Go to Analytics',
@@ -114,7 +143,9 @@ const intents = [
 // Fuse.js Options
 const options = {
   includeScore: true,
-  threshold: 0.5, // Increased slightly to be more forgiving for partial matches
+  // Threshold 0.4 is strict, 0.6 is loose.
+  // We want to be reasonably strict to avoid bad advice, but forgiving enough for "how to..."
+  threshold: 0.5,
   keys: ['keywords']
 };
 
