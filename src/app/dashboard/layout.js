@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
@@ -25,7 +24,7 @@ export default function DashboardLayout({ children }) {
     { name: 'Website', icon: Globe, href: '/dashboard/website' },
     { name: 'Orders', icon: Package, href: '/dashboard/orders' },
     { name: 'Products', icon: Tag, href: '/dashboard/products' },
-  //{ name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
+    { name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
     { name: 'Analytics', icon: PieChart, href: '/dashboard/analytics' },
   ];
 
@@ -101,6 +100,7 @@ export default function DashboardLayout({ children }) {
       }`}>
         {children}
       </main>
+
     </div>
   );
 }

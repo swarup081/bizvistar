@@ -45,6 +45,8 @@ const dmSans = DM_Sans({
 });
 // --- END FONT DEFINITIONS ---
 
+import SupportWidget from '@/components/dashboard/SupportWidget';
+
 export const metadata = {
   title: "BizVistaar",
   description: "Empowering Local Businesses",
@@ -59,6 +61,7 @@ export default function RootLayout({ children }) {
         className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
       >
         {children}
+        <SupportWidget />
       </body>
     </html>
   );
