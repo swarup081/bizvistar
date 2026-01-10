@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Logo from '@/components/ui/Logo';
 
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,9 +56,7 @@ export default function DashboardLayout({ children }) {
           }`}
       >
         {/* Left: Logo */}
-        <span className="text-3xl font-bold text-gray-900 not-italic tracking-tight">
-          BizVistaar
-        </span>
+        <Logo />
 
         {/* Center: Navigation */}
         <nav className="hidden md:flex items-center gap-6">
@@ -101,6 +100,7 @@ export default function DashboardLayout({ children }) {
       }`}>
         {children}
       </main>
+
     </div>
   );
 }

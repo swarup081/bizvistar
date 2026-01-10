@@ -1,0 +1,87 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.2:3000
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Ready in 2.4s
+ ○ Compiling /dashboard ...
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '1507022258'
+}
+ GET /dashboard 500 in 15.6s (compile: 14.5s, render: 1068ms)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '1507022258'
+}
+ GET /dashboard 500 in 99ms (compile: 6ms, render: 93ms)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '1507022258'
+}
+ HEAD /dashboard 500 in 81ms (compile: 5ms, render: 76ms)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET /dashboard 200 in 296ms (compile: 85ms, render: 211ms)
+ POST /dashboard 200 in 24ms (compile: 5ms, render: 19ms)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET /dashboard 200 in 81ms (compile: 4ms, render: 77ms)
+ POST /dashboard 200 in 13ms (compile: 4ms, render: 8ms)

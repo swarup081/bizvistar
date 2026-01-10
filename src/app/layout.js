@@ -8,7 +8,8 @@ import {
   Lora,
   Cormorant_Garamond, // Added new font
   DM_Sans,             // Added new font
-  Kalam
+  Kalam,
+  Abril_Fatface // Fallback for Boiling
 } from "next/font/google";
 import "./globals.css";
 
@@ -43,7 +44,25 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: "400"
 });
+
+// Fallback Brand Font (Abril Fatface looks similar to Boiling display style)
+const abrilFatface = Abril_Fatface({
+  variable: "--font-boiling", // We map it to the same variable name
+  subsets: ["latin"],
+  weight: "400"
+});
+
+// NOTE: When 'boiling.ttf' is available in 'public/fonts/', uncomment below and remove Abril Fatface above.
+// import localFont from 'next/font/local';
+// const boiling = localFont({
+//   src: '../../public/fonts/boiling.ttf',
+//   variable: '--font-boiling',
+//   display: 'swap',
+// });
+
 // --- END FONT DEFINITIONS ---
+
+import SupportWidget from '@/components/dashboard/SupportWidget';
 
 export const metadata = {
   title: "BizVistaar",
@@ -56,9 +75,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
+        className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${abrilFatface.variable} antialiased`}
       >
         {children}
+        <SupportWidget />
       </body>
     </html>
   );

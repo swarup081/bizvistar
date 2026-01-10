@@ -5,6 +5,7 @@
   --font-heading: var(--font-playfair-display);
   --font-body: var(--font-inter);
   --font-handwriting: var(--font-kalam); /* <-- 1. ADD THIS LINE */
+  --font-brand: var(--font-boiling); /* <-- Fallback or Real Brand Font */
 }
 
 /* --- 6 NEW, CURATED COLOR PALETTES --- */
@@ -225,6 +226,7 @@
   --color-brand-accent: var(--color-brand-accent); /* <-- ADD THIS LINE */
   --font-sans: var(--font-body), sans-serif;
   --font-serif: var(--font-heading), serif;
+  --font-brand: var(--font-brand), serif; /* <-- Add Custom Brand Font to Theme */
 }
 
 @layer base {
