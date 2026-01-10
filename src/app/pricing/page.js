@@ -88,7 +88,7 @@ const featureTooltips = {
   'AI-Powered Website Builder': 'Our AI instantly generates a professional website with text and images based on your business type, so you don\'t have to start from scratch.',
   'Easy-to-Use Editor': 'Our simple editor allows you to click on any text or image on your site and change it instantly, no code required.',
   'Secure Web Hosting': 'We handle all the technical details, providing fast and secure hosting for your website, included in your plan.',
-  'Professional Subdomain': 'Get a website address like "yourname.bizvistaar.com" to share with your customers instantly.',
+  'Professional Subdomain': 'Get a website address like "yourname.bizvistar.in" to share with your customers instantly.',
   'Free Custom Domain (1st Year)': 'Get a professional domain like "yourname.com" for free for the first year (with annual Growth plan).',
   'Products': 'The number of products (like t-shirts, cakes, or services) you can list on your e-commerce store.',
   'Business Tools': 'Tools to help you run your business, such as an Appointment Booker, Order Manager, or Contact Form.',
@@ -375,10 +375,10 @@ export default function PricingPage() {
           <AllFeaturesTable InfoTooltip={InfoTooltip} featureTooltips={featureTooltips} featureList={featureList} />
         </div>
 
-        {/* --- "Why Choose BizVistaar?" Section --- */}
+        {/* --- "Why Choose BizVistar?" Section --- */}
         <div className="mt-32">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
-            Why Choose BizVistaar?
+            Why Choose BizVistar?
           </h2>
           <ComparisonTable />
         </div>
@@ -633,7 +633,7 @@ const ComparisonTable = () => (
                   <span className="text-sm font-normal text-gray-500">(Freelancers)</span>
                   </th>
                   <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">
-                    BizVistaar<br />
+                    BizVistar<br />
                     <span className="text-sm font-normal text-purple-600">(Your Partner)</span>
                   </th>
                 </tr>
@@ -726,7 +726,7 @@ const FaqSection = () => {
   const faqs = [
     {
       q: 'What is a Premium plan?',
-      a: 'A Premium plan is a subscription that gives you access to all of BizVistaar\'s advanced features, including custom domain connection, removal of BizVistaar branding, increased storage, and access to our "Done-for-You" services.'
+      a: 'A Premium plan is a subscription that gives you access to all of BizVistar\'s advanced features, including custom domain connection, removal of BizVistar branding, increased storage, and access to our "Done-for-You" services.'
     },
     {
       q: 'Can I get a refund for a Premium plan?',
@@ -734,11 +734,11 @@ const FaqSection = () => {
     },
     {
       q: 'How do I get my free domain?',
-      a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistaar dashboard.'
+      a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistar dashboard.'
     },
     {
       q: 'Why do I need a custom domain?',
-      a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistaar.com).'
+      a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistar.in).'
     },
     {
       q: 'How can I get my own personalized email address?',

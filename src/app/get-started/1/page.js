@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion } from 'framer-motion';
 import { Globe, Sparkles, Palette } from 'lucide-react';
+import Logo from '@/lib/logo/Logo';
 
 const PencilIcon = ({ className }) => (
     <svg
@@ -237,7 +238,7 @@ const MockBrowser = ({ storeName, className }) => {
                 <div className="flex-grow h-10 bg-slate-50 border border-slate-200/60 rounded-3xl flex items-center px-4 justify-start gap-3 relative transition-colors duration-300 group">
                      <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                      <span className="text-sm text-slate-500 font-medium truncate font-sans tracking-wide group-hover:text-slate-900 transition-colors">
-                        <span className="text-slate-600 font-bold">{siteSlug}</span>.bizvistaar.com
+                        <span className="text-slate-600 font-bold">{siteSlug}</span>.bizvistar.in
                      </span>
                 </div>
             </div>
@@ -274,8 +275,8 @@ export default function StepTwo() {
          <div className="w-full lg:w-[45%] flex flex-col justify-between p-16 xl:p-20 bg-white z-30 relative shadow-[20px_0_40px_-10px_rgba(0,0,0,0.03)]">
         
         {/* Logo - Matched to Get Started Page */}
-        <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
-            BizVistaar
+        <div className="absolute top-4 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
+        <Logo className="text-3xl cursor-pointer" />
         </div>
 
         {/* Main Content */}

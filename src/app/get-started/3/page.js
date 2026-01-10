@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MapPin, Calendar, ShoppingBag, Tags, Menu } from 'lucide-react'; // Menu added for versatility
+import Logo from '@/lib/logo/Logo';
 
 // --- Shared Styles & Logic (Consistent with Step 2) ---
 const stylesMap = {
@@ -463,7 +464,7 @@ const MockBrowser = ({ storeName, selectedVibes, activeVibe, hoveredFeature, cla
                 <div className="flex-grow h-10 bg-slate-50 border border-slate-200/60 rounded-3xl flex items-center px-4 justify-start gap-3 relative transition-colors duration-300">
                      <div className="w-4 h-4 rounded-full bg-gray-300"></div>
                      <span className="text-sm text-slate-500 font-medium truncate font-sans tracking-wide transition-colors">
-                        <span className="text-slate-600 font-bold">{siteSlug}</span>.bizvistaar.com
+                        <span className="text-slate-600 font-bold">{siteSlug}</span>.bizvistar.in
                      </span>
                 </div>
             </div>
@@ -588,8 +589,8 @@ export default function StepThree() {
       
       {/* --- LEFT SIDE (Form) --- */}
       <div className="w-full lg:w-[45%] flex flex-col justify-between p-16 xl:p-20 bg-white z-30 relative shadow-[20px_0_40px_-10px_rgba(0,0,0,0.03)]">
-        <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
-            BizVistaar
+        <div className="absolute top-4 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
+            <Logo/>
         </div>
 
         <div className="flex flex-col justify-center h-full max-w-md ml-2">

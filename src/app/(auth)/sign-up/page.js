@@ -90,7 +90,7 @@ export default function SignUpPage() {
         Create an Account
       </h2>
       <p className="text-lg text-gray-600 mb-8">
-        Start your journey with BizVistaar today.
+        Start your journey with BizVistar today.
       </p>
 
       <button

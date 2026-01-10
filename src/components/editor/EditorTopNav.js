@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
 } from 'lucide-react';
+import Logo from '@/lib/logo/Logo';
 
 // A simple reusable button component for the nav
 const NavButton = ({ children, className = '', ...props }) => (
@@ -219,9 +220,7 @@ export default function EditorTopNav({
           {mode !== 'dashboard' ? (
             <>
               <Link href="/">
-                <span className="text-xl font-bold text-gray-900 cursor-pointer">
-                  BizVistaar
-                </span>
+                <Logo className="text-3xl cursor-pointer" />
               </Link>
               <div className="flex items-center gap-2">
                 <Tooltip

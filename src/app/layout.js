@@ -10,6 +10,7 @@ import {
   DM_Sans,             // Added new font
   Kalam
 } from "next/font/google";
+import localFont from 'next/font/local';
 import "./globals.css";
 
 // --- FONT DEFINITIONS ---
@@ -43,6 +44,11 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: "400"
 });
+
+const boiling = localFont({
+  src: '../../public/font/boiling/Boiling-BlackDemo.ttf',
+  variable: '--font-boiling'
+});
 // --- END FONT DEFINITIONS ---
 
 import SupportWidget from '@/components/dashboard/SupportWidget';
@@ -58,7 +64,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} antialiased`}
+        className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${boiling.variable} antialiased`}
       >
         {children}
         <SupportWidget />

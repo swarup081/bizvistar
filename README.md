@@ -92,7 +92,7 @@ We manage and optimize clients’ Google Maps profiles to improve local search v
 
 ### ☁️ Hosting & Support
 
-- **Hosting:** Fast, secure hosting with a subdomain (`clientname.bizvistar.com`) or custom domain.  
+- **Hosting:** Fast, secure hosting with a subdomain (`clientname.bizvistar.in`) or custom domain.  
 - **Support:** Hybrid support via AI chatbot + WhatsApp/call access for direct help.
 
 ---

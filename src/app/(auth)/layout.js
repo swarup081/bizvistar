@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo"; // Reusing the grid background
+import Logo from '@/lib/logo/Logo';
 
 export default function AuthLayout({ children }) {
   return (
@@ -14,9 +15,7 @@ export default function AuthLayout({ children }) {
         {/* Content Overlay */}
         <div className="relative z-10 flex flex-col items-center text-center">
             <Link href="/">
-                <span className="text-3xl font-bold text-gray-900 cursor-pointer">
-                    BizVistaar
-                </span>
+                <Logo className="text-3xl cursor-pointer" />
             </Link>
             <p className="text-xl text-gray-600 mt-4 max-w-sm">
                 Empowering local businesses with a professional digital presence.

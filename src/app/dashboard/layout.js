@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Logo from '@/lib/logo/Logo';
+
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
@@ -54,9 +56,9 @@ export default function DashboardLayout({ children }) {
           }`}
       >
         {/* Left: Logo */}
-        <span className="text-3xl font-bold text-gray-900 not-italic tracking-tight">
-          BizVistaar
-        </span>
+        <Link href="/dashboard">
+          <Logo className="text-3xl" />
+        </Link>
 
         {/* Center: Navigation */}
         <nav className="hidden md:flex items-center gap-6">

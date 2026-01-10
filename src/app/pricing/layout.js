@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Check } from 'lucide-react';
+import Logo from '@/lib/logo/Logo';
 
 // Reusable Checkmark Icon
 const CheckIcon = () => (
@@ -11,10 +12,10 @@ export default function PricingLayout({ children }) {
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <nav className="container mx-5 px-6 py-4 flex justify-between items-center">
           <Link href="/">
-            <span className="text-2xl font-bold text-gray-900 cursor-pointer">
-              BizVistar
+            <span className="text-3xl  font-bold text-gray-900 cursor-pointer">
+              <Logo/>
             </span>
           </Link>
           <div className="flex items-center gap-6">
@@ -22,7 +23,7 @@ export default function PricingLayout({ children }) {
               <CheckIcon /> Custom domain
             </span>
             <span className="hidden md:flex items-center gap-2 text-sm text-gray-700">
-              <CheckIcon /> No BizVistaar branding
+              <CheckIcon /> No BizVistar branding
             </span>
             <span className="hidden lg:flex items-center gap-2 text-sm text-gray-700">
               <CheckIcon /> 24/7 customer care

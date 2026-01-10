@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '@/lib/logo/Logo';
 
 // --- 1. Smart Skeleton Component (Subtle but Distinct Colors) ---
 const TemplateSkeleton = ({ variant }) => {
@@ -321,8 +322,8 @@ export default function StepOne() {
             {/* --- LEFT SIDE --- */}
             <div className="w-1/2 flex flex-col justify-between p-16 bg-white z-20 shadow-[10px_0_30px_rgba(0,0,0,0.02)] relative">
                 
-                <div className="absolute top-10 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
-                    BizVistaar
+                <div className="absolute top-4 left-10 text-3xl font-bold text-gray-900 not-italic tracking-tight">
+                    <Logo/>
                 </div>
 
                 <div className="flex flex-col justify-center h-full">
