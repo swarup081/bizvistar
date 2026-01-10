@@ -15,8 +15,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import SupportWidget from '@/components/dashboard/SupportWidget';
-
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
@@ -103,8 +101,6 @@ export default function DashboardLayout({ children }) {
         {children}
       </main>
 
-      {/* Support Widget */}
-      <SupportWidget />
     </div>
   );
 }
