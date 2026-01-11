@@ -44,3 +44,5 @@ The width(-1) and height(-1) of chart should be greater than 0,
        height and width.
  GET /dashboard 200 in 105ms (compile: 10ms, render: 95ms)
  POST /dashboard 200 in 17ms (compile: 7ms, render: 10ms)
+ GET /dashboard 200 in 4.0s (compile: 2.6s, render: 1419ms)
+ POST /dashboard 200 in 21ms (compile: 8ms, render: 13ms)

@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter, FileText } from "lucide-react";
+import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { subDays, isAfter, isBefore, startOfMonth, subMonths, endOfMonth } from "date-fns";
+import { subDays, isAfter, isBefore, startOfMonth, subMonths, endOfMonth, startOfYear, startOfWeek } from "date-fns";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import Link from "next/link";
 
 import StatCard from "../../components/dashboard/StatCard";
@@ -12,13 +12,57 @@ import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
 import UserGrowthChart from "../../components/dashboard/UserGrowthChart";
 import BestSellers from "../../components/dashboard/BestSellers";
 
+// --- Skeleton Components ---
+const StatCardSkeleton = () => (
+    <div className="rounded-2xl bg-white p-6 shadow-sm h-[180px] animate-pulse flex flex-col justify-between">
+        <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-gray-200"></div>
+            <div className="h-4 w-24 bg-gray-200 rounded"></div>
+        </div>
+        <div>
+            <div className="h-8 w-32 bg-gray-200 rounded mb-3"></div>
+            <div className="h-4 w-20 bg-gray-200 rounded"></div>
+        </div>
+    </div>
+);
+
+const ChartSkeleton = () => (
+    <div className="rounded-2xl bg-white p-6 shadow-sm h-[400px] animate-pulse">
+        <div className="flex justify-between mb-6">
+            <div className="h-6 w-32 bg-gray-200 rounded"></div>
+            <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="h-[300px] w-full bg-gray-100 rounded-full"></div>
+    </div>
+);
+
+const TableSkeleton = () => (
+    <div className="rounded-2xl bg-white p-6 shadow-sm h-full animate-pulse">
+        <div className="flex justify-between mb-6">
+            <div className="h-6 w-32 bg-gray-200 rounded"></div>
+            <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-12 w-full bg-gray-100 rounded"></div>
+            ))}
+        </div>
+    </div>
+);
+
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
+    const [userName, setUserName] = useState('Owner');
     const [loading, setLoading] = useState(true);
+
+    // Global Filter State (for Top Metrics)
+    const [globalFilter, setGlobalFilter] = useState('month'); // week, month, year
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
     const [metrics, setMetrics] = useState({
-        sales: { value: 0, change: 0, trend: 'neutral' },
-        units: { value: 0, change: 0, trend: 'neutral' },
-        aov: { value: 0, change: 0, trend: 'neutral' }
+        sales: { value: 0, change: 0 },
+        units: { value: 0, change: 0 },
+        aov: { value: 0, change: 0 }
     });
     const [data, setData] = useState({
         orders: [],
@@ -41,6 +85,13 @@ export default function DashboardPage() {
 
         fetchDashboardData();
     }, []);
+
+    // Effect to recalculate metrics when Global Filter changes
+    useEffect(() => {
+        if (data.orders.length > 0) {
+            calculateMetrics(data.orders, data.orderItems, globalFilter);
+        }
+    }, [globalFilter, data.orders]);
 
     // Debounced Search Effect
     useEffect(() => {
@@ -65,7 +116,6 @@ export default function DashboardPage() {
         ).slice(0, 5);
 
         // Search Products (Name in Order Items -> Product Name)
-        // We need distinct products from orderItems that match
         const uniqueProducts = new Map();
         data.orderItems.forEach(item => {
             if (item.products?.name?.toLowerCase().includes(lowerQuery)) {
@@ -79,8 +129,6 @@ export default function DashboardPage() {
     };
 
     const handleExport = () => {
-        // Last Month Logic: "Last Month" usually means previous calendar month.
-        // E.g., if today is Oct 10, Last Month is Sept 1 - Sept 30.
         const now = new Date();
         const startOfLastMonth = startOfMonth(subMonths(now, 1));
         const endOfLastMonth = endOfMonth(subMonths(now, 1));
@@ -91,14 +139,12 @@ export default function DashboardPage() {
             return isAfter(d, startOfLastMonth) && isBefore(d, endOfLastMonth);
         });
 
-        // Get Items for these orders
         const exportOrderIds = new Set(exportOrders.map(o => o.id));
         const exportItems = data.orderItems.filter(i => exportOrderIds.has(i.order_id));
 
         // PDF Generation
         const doc = new jsPDF();
 
-        // Page 1: Orders
         doc.setFontSize(18);
         doc.text(`Orders Report`, 14, 22);
         doc.setFontSize(11);
@@ -108,26 +154,12 @@ export default function DashboardPage() {
         const tableRows = [];
 
         exportOrders.forEach(order => {
-            // Get product names string
             const orderProducts = exportItems
                 .filter(i => i.order_id === order.id)
                 .map(i => i.products?.name || "Unknown")
                 .join(", ");
 
-            // Logistics
-            // We didn't join logistics/deliveries in Dashboard fetch (DashboardPage limit).
-            // In DashboardPage fetch strategy, we didn't fetch deliveries.
-            // We fetch orders, items, customers.
-            // But User wants "Courier Service".
-            // Since we don't have it in `data.orders`, we might leave it blank or fetch it?
-            // "There all product ( name dic price etc ) analatics present in the dashbaord"
-            // The dashboard fetch logic does NOT imply we have deliveries.
-            // However, `RecentSalesTable` doesn't show courier. `OrdersPage` does.
-            // I will put "N/A" or "Standard" if missing, to avoid breaking the export.
-            // Or I can do a quick fetch for export? No, sync export is better UX.
-            // I will indicate "Not Available" if data missing.
-
-            const courier = "Standard"; // Placeholder as data not in dashboard state
+            const courier = "Standard";
 
             const orderData = [
                 order.id,
@@ -139,20 +171,19 @@ export default function DashboardPage() {
             tableRows.push(orderData);
         });
 
-        doc.autoTable({
+        // Use autoTable correctly
+        autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
             startY: 40,
         });
 
-        // Page 2: Product Analytics
         doc.addPage();
         doc.setFontSize(18);
         doc.text(`Product Analytics`, 14, 22);
         doc.setFontSize(11);
         doc.text(`(Based on Last Month's Sales)`, 14, 30);
 
-        // Aggregate Product Sales in Last Month
         const productStats = {};
         exportItems.forEach(item => {
             const pid = item.product_id;
@@ -163,7 +194,7 @@ export default function DashboardPage() {
                 productStats[pid] = { name: pName, price: price, quantity: 0, revenue: 0 };
             }
             productStats[pid].quantity += item.quantity;
-            productStats[pid].revenue += (item.quantity * item.price); // Using order item price
+            productStats[pid].revenue += (item.quantity * item.price);
         });
 
         const productColumns = ["Product Name", "Unit Price", "Quantity Sold", "Revenue"];
@@ -174,7 +205,7 @@ export default function DashboardPage() {
             formatCurrency(p.revenue)
         ]);
 
-        doc.autoTable({
+        autoTable(doc, {
             head: [productColumns],
             body: productRows,
             startY: 40,
@@ -189,6 +220,10 @@ export default function DashboardPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
+            // Set User Name
+            const name = user.user_metadata?.full_name || user.user_metadata?.name || 'Owner';
+            setUserName(name);
+
             const { data: website } = await supabase
                 .from("websites")
                 .select("id")
@@ -201,7 +236,7 @@ export default function DashboardPage() {
                 return;
             }
 
-            // --- 1. Fetch Orders (Limit 1000 to improve Export coverage) ---
+            // 1. Fetch Orders
             const { data: orders, error: ordersError } = await supabase
                 .from("orders")
                 .select("*")
@@ -212,7 +247,7 @@ export default function DashboardPage() {
 
             if (ordersError) throw ordersError;
 
-            // --- 2. Fetch Related Order Data ---
+            // 2. Fetch Related Order Data
             const orderIds = (orders || []).map(o => o.id);
             const customerIds = [...new Set((orders || []).map(o => o.customer_id).filter(Boolean))];
 
@@ -227,7 +262,7 @@ export default function DashboardPage() {
             const customers = customersRes || [];
             let items = itemsRes || [];
 
-            // --- 3. Fetch Products ---
+            // 3. Fetch Products
             const productIds = [...new Set(items.map(i => i.product_id))];
             const { data: products } = productIds.length > 0
                 ? await supabase.from('products').select('id, name, image_url, price').in('id', productIds)
@@ -236,7 +271,7 @@ export default function DashboardPage() {
             const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
             const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
 
-            // Join Data in Memory
+            // Join Data
             const enrichedOrders = (orders || []).map(o => ({
                 ...o,
                 customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' }
@@ -250,8 +285,7 @@ export default function DashboardPage() {
                 orders: { created_at: ordersDateMap[i.order_id] }
             }));
 
-            // --- 4. Fetch Traffic (Visitors) ---
-            // Increased limit to 10k to improve accuracy of "Total" if possible, within reason.
+            // 4. Fetch Traffic (Visitors)
             const { data: analyticsEvents } = await supabase
                 .from("client_analytics")
                 .select("timestamp, location")
@@ -264,46 +298,10 @@ export default function DashboardPage() {
                 visitorId: e.location?.visitor_id || e.location?.ip || 'anon'
             }));
 
-            // Use Set to count unique visitors from the fetched history
             const uniqueVisitorsAllTime = new Set(visitors.map(v => v.visitorId)).size;
 
-            // --- 5. Calculate Metrics ---
-            const now = new Date();
-            const thirtyDaysAgo = subDays(now, 30);
-            const sixtyDaysAgo = subDays(now, 60);
-
-            const currentPeriodOrders = enrichedOrders.filter(o => {
-                const d = new Date(o.created_at);
-                return isAfter(d, thirtyDaysAgo) && isBefore(d, now);
-            });
-            const priorPeriodOrders = enrichedOrders.filter(o => {
-                const d = new Date(o.created_at);
-                return isAfter(d, sixtyDaysAgo) && isBefore(d, thirtyDaysAgo);
-            });
-
-            const currentSales = currentPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-            const priorSales = priorPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-            const salesChange = calculateChange(currentSales, priorSales);
-
-            const getUnits = (periodOrders) => {
-                const periodOrderIds = new Set(periodOrders.map(o => o.id));
-                return enrichedItems
-                    .filter(item => periodOrderIds.has(item.order_id))
-                    .reduce((sum, item) => sum + item.quantity, 0);
-            };
-            const currentUnits = getUnits(currentPeriodOrders);
-            const priorUnits = getUnits(priorPeriodOrders);
-            const unitsChange = calculateChange(currentUnits, priorUnits);
-
-            const currentAOV = currentPeriodOrders.length ? (currentSales / currentPeriodOrders.length) : 0;
-            const priorAOV = priorPeriodOrders.length ? (priorSales / priorPeriodOrders.length) : 0;
-            const aovChange = calculateChange(currentAOV, priorAOV);
-
-            setMetrics({
-                sales: { value: currentSales, change: salesChange },
-                units: { value: currentUnits, change: unitsChange },
-                aov: { value: currentAOV, change: aovChange }
-            });
+            // 5. Initial Metrics Calculation (Default: month)
+            calculateMetrics(enrichedOrders, enrichedItems, 'month');
 
             setData({
                 orders: enrichedOrders,
@@ -320,6 +318,59 @@ export default function DashboardPage() {
         }
     };
 
+    const calculateMetrics = (orders, items, period) => {
+        const now = new Date();
+        let currentStart, priorStart, priorEnd;
+
+        // Define periods based on filter
+        if (period === 'week') {
+            currentStart = subDays(now, 7);
+            priorEnd = subDays(now, 7);
+            priorStart = subDays(now, 14);
+        } else if (period === 'month') {
+            currentStart = subDays(now, 30);
+            priorEnd = subDays(now, 30);
+            priorStart = subDays(now, 60);
+        } else { // year
+            currentStart = startOfYear(now);
+            priorEnd = startOfYear(now);
+            priorStart = startOfYear(subDays(startOfYear(now), 1)); // Roughly prev year
+        }
+
+        const currentPeriodOrders = orders.filter(o => {
+            const d = new Date(o.created_at);
+            return isAfter(d, currentStart) && isBefore(d, now);
+        });
+        const priorPeriodOrders = orders.filter(o => {
+            const d = new Date(o.created_at);
+            return isAfter(d, priorStart) && isBefore(d, priorEnd);
+        });
+
+        const currentSales = currentPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+        const priorSales = priorPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+        const salesChange = calculateChange(currentSales, priorSales);
+
+        const getUnits = (periodOrders) => {
+            const periodOrderIds = new Set(periodOrders.map(o => o.id));
+            return items
+                .filter(item => periodOrderIds.has(item.order_id))
+                .reduce((sum, item) => sum + item.quantity, 0);
+        };
+        const currentUnits = getUnits(currentPeriodOrders);
+        const priorUnits = getUnits(priorPeriodOrders);
+        const unitsChange = calculateChange(currentUnits, priorUnits);
+
+        const currentAOV = currentPeriodOrders.length ? (currentSales / currentPeriodOrders.length) : 0;
+        const priorAOV = priorPeriodOrders.length ? (priorSales / priorPeriodOrders.length) : 0;
+        const aovChange = calculateChange(currentAOV, priorAOV);
+
+        setMetrics({
+            sales: { value: currentSales, change: salesChange },
+            units: { value: currentUnits, change: unitsChange },
+            aov: { value: currentAOV, change: aovChange }
+        });
+    };
+
     const calculateChange = (current, prior) => {
         if (prior === 0) return current > 0 ? 100 : 0;
         return ((current - prior) / prior) * 100;
@@ -334,14 +385,20 @@ export default function DashboardPage() {
 
     const formatNumber = (num) => new Intl.NumberFormat('en-IN').format(num);
 
+    const filterLabels = {
+        week: "This Week",
+        month: "This Month",
+        year: "This Year"
+    };
+
   return (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-4 font-sans not-italic" onClick={() => setIsSearchOpen(false)}>
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-4 font-sans not-italic" onClick={() => { setIsSearchOpen(false); setIsFilterOpen(false); }}>
       {/* Left Column (Main Content) */}
       <div className="xl:col-span-3 flex flex-col gap-8">
         {/* Greeting & Controls */}
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-          <h1 className="text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
+          <h1 className="text-2xl font-bold text-[#111] not-italic">{greeting}, {loading ? '...' : userName}!</h1>
           <p className="mt-1 text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -387,62 +444,93 @@ export default function DashboardPage() {
                 )}
              </div>
 
+             {/* Export Button - Reverted UI */}
              <button
                 onClick={handleExport}
                 className="flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 font-sans not-italic"
              >
-                <FileText className="h-4 w-4" /> {/* Changed icon to FileText for PDF */}
+                <Upload className="h-4 w-4" />
                 Export PDF
              </button>
-             <button className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all">
-                <Filter size={18} />
-              </button>
+
+             {/* Global Filter Button */}
+             <div className="relative" onClick={e => e.stopPropagation()}>
+                <button
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all"
+                >
+                    <Filter size={18} />
+                </button>
+                {isFilterOpen && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-gray-100 z-10 overflow-hidden">
+                        {Object.keys(filterLabels).map((key) => (
+                            <button
+                                key={key}
+                                onClick={() => { setGlobalFilter(key); setIsFilterOpen(false); }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                                    globalFilter === key ? 'text-[#8A63D2] font-medium bg-purple-50' : 'text-gray-700'
+                                }`}
+                            >
+                                {filterLabels[key]}
+                            </button>
+                        ))}
+                    </div>
+                )}
+             </div>
           </div>
         </div>
 
         {/* Top Metrics Cards */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <StatCard 
-               title="Sales" 
-               value={formatCurrency(metrics.sales.value)}
-               change={`${metrics.sales.change.toFixed(1)}%`}
-               period="vs. prior 30 days" 
-               icon={Coins} 
-            />
-            <StatCard 
-               title="Units" 
-               value={formatNumber(metrics.units.value)}
-               change={`${metrics.units.change.toFixed(1)}%`}
-               period="vs. prior 30 days" 
-               icon={ShoppingBag} 
-            />
-            <StatCard 
-               title="Average Order Value" 
-               value={formatCurrency(metrics.aov.value)}
-               change={`${metrics.aov.change.toFixed(1)}%`}
-               period="vs. prior 30 days" 
-               icon={DollarSign} 
-            />
-        </div>
+        {loading ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+                <StatCardSkeleton />
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <StatCard
+                title="Sales"
+                value={formatCurrency(metrics.sales.value)}
+                change={`${metrics.sales.change.toFixed(1)}%`}
+                period={`vs. prior ${globalFilter}`}
+                icon={Coins}
+                />
+                <StatCard
+                title="Units"
+                value={formatNumber(metrics.units.value)}
+                change={`${metrics.units.change.toFixed(1)}%`}
+                period={`vs. prior ${globalFilter}`}
+                icon={ShoppingBag}
+                />
+                <StatCard
+                title="Average Order Value"
+                value={formatCurrency(metrics.aov.value)}
+                change={`${metrics.aov.change.toFixed(1)}%`}
+                period={`vs. prior ${globalFilter}`}
+                icon={DollarSign}
+                />
+            </div>
+        )}
 
         {/* Recent Sales Table */}
-        <RecentSalesTable orders={data.orders} />
+        {loading ? <TableSkeleton /> : <RecentSalesTable orders={data.orders} />}
       </div>
 
       {/* Right Column (Sidebar) */}
       <div className="xl:col-span-1 flex flex-col gap-8">
-         {/* Traffic Growth (Renamed from User Growth) */}
+         {/* Traffic Growth */}
          <div className="h-[400px]">
-             <UserGrowthChart
-                 visitors={data.visitors}
-                 totalVisitorsCount={data.totalVisitorsCount}
-             />
+             {loading ? <ChartSkeleton /> : (
+                 <UserGrowthChart
+                    visitors={data.visitors}
+                    totalVisitorsCount={data.totalVisitorsCount}
+                 />
+             )}
          </div>
 
          {/* Top 3 Best Sellers */}
-         <BestSellers orderItems={data.orderItems} />
-
-      
+         {loading ? <TableSkeleton /> : <BestSellers orderItems={data.orderItems} />}
       </div>
     </div>
   );
