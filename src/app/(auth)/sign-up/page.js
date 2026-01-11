@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Lock } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient'; // Import your new client
-
-// ... (GoogleIcon, AuthInput, AuthDivider components remain the same) ...
+import { supabase } from '@/lib/supabaseClient';
 
 // Reusable Google Icon
 const GoogleIcon = () => (
@@ -17,6 +15,7 @@ const GoogleIcon = () => (
     <path d="M43.6111 20.0833H42V20H24V28H35.303C34.535 30.1322 33.2843 32.0079 31.6766 33.466L37.1498 37.8358C41.0913 34.137 43.5 29.3235 43.5 24C43.5 22.6104 43.4072 21.34 43.2332 20.0833H43.6111V20.0833Z" fill="#1976D2"/>
   </svg>
 );
+
 const AuthInput = ({ id, label, type, placeholder, value, onChange, icon: Icon }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-800 mb-2">
@@ -38,6 +37,7 @@ const AuthInput = ({ id, label, type, placeholder, value, onChange, icon: Icon }
     </div>
   </div>
 );
+
 const AuthDivider = () => (
     <div className="flex items-center my-8">
         <div className="flex-grow border-t border-gray-200"></div>
@@ -48,13 +48,13 @@ const AuthDivider = () => (
     </div>
 );
 
-
-export default function SignUpPage() {
+function SignUpForm() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,8 +78,14 @@ export default function SignUpPage() {
         id: data.user.id,
         full_name: fullName,
       });
-      // Redirect to the "get-started" flow
-      router.push('/get-started');
+
+      // Check for redirect URL
+      const redirectUrl = searchParams.get('redirect');
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      } else {
+        router.push('/get-started');
+      }
     }
     setLoading(false);
   };
@@ -162,5 +168,13 @@ export default function SignUpPage() {
         </Link>
       </p>
     </>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="text-center p-10">Loading...</div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
