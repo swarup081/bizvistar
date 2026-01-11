@@ -1,13 +1,15 @@
 "use client";
 import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowRight } from "lucide-react";
 import { isAfter, subDays, startOfWeek, startOfMonth, startOfYear } from "date-fns";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const StatusBadge = ({ status }) => {
   const styles = {
     delivered: "bg-green-50 text-green-600 border border-green-100",
     shipped: "bg-blue-50 text-blue-600 border border-blue-100",
-    paid: "bg-blue-50 text-blue-600 border border-blue-100", // Paid is effectively progress/done
+    paid: "bg-blue-50 text-blue-600 border border-blue-100",
     pending: "bg-yellow-50 text-yellow-600 border border-yellow-100",
     canceled: "bg-red-50 text-red-600 border border-red-100",
   };
@@ -25,6 +27,7 @@ const StatusBadge = ({ status }) => {
 export default function RecentSalesTable({ orders = [] }) {
   const [timeFilter, setTimeFilter] = useState("week"); // week, month, year
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const router = useRouter();
 
   // Filter Logic
   const filteredOrders = orders.filter(order => {
@@ -41,7 +44,7 @@ export default function RecentSalesTable({ orders = [] }) {
     return true;
   });
 
-  const displayOrders = filteredOrders.slice(0, 10); // Limit to top 10
+  const displayOrders = filteredOrders.slice(0, 5); // Limit to top 5
 
   const labels = {
       week: "This Week",
@@ -61,6 +64,14 @@ export default function RecentSalesTable({ orders = [] }) {
       return new Date(dateString).toLocaleDateString('en-US', {
           day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
       });
+  };
+
+  const handleManage = (orderId) => {
+      // Redirect to orders page with query param to open modal?
+      // Or just orders page. User asked: "redirect it to order section".
+      // "if user click manage redirect to order to that perticular order manage"
+      // I'll add a query param ?id=orderId to /dashboard/orders
+      router.push(`/dashboard/orders?id=${orderId}`);
   };
 
   return (
@@ -93,9 +104,9 @@ export default function RecentSalesTable({ orders = [] }) {
       </div>
 
       {/* Internal Scrolling Wrapper */}
-      <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[500px] pr-2 custom-scrollbar">
-        <table className="w-full border-collapse text-left font-sans">
-          <thead className="sticky top-0 bg-white z-10">
+      <div className="flex-1 overflow-x-auto custom-scrollbar">
+        <table className="w-full border-collapse text-left font-sans min-w-[600px]">
+          <thead className="bg-white">
             <tr className="border-b border-gray-100 text-xs font-bold uppercase text-gray-400 tracking-wider">
               <th className="py-4 pl-2">Order ID</th>
               <th className="py-4">Date</th>
@@ -118,7 +129,10 @@ export default function RecentSalesTable({ orders = [] }) {
                 </td>
                 <td className="py-5 text-sm font-bold text-gray-900">{formatCurrency(row.total_amount)}</td>
                 <td className="py-5  text-right">
-                   <button className="rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors">
+                   <button
+                     onClick={() => handleManage(row.id)}
+                     className="rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
+                   >
                      Manage
                    </button>
                 </td>
@@ -132,6 +146,14 @@ export default function RecentSalesTable({ orders = [] }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* View All Button */}
+      <div className="mt-4 pt-2 border-t border-gray-50 text-center">
+          <Link href="/dashboard/orders" className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-700 hover:underline">
+              View All Orders
+              <ArrowRight className="h-4 w-4" />
+          </Link>
       </div>
     </div>
   );

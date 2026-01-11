@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, Upload, SlidersHorizontal, Coins, ShoppingBag, DollarSign, Mail, Filter } from "lucide-react";
-import * as motion from "motion/react-client";
+import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import { subDays, isAfter, isBefore, startOfYear, startOfWeek, startOfMonth } from "date-fns";
+import { subDays, isAfter, isBefore } from "date-fns";
 
 import StatCard from "../../components/dashboard/StatCard";
 import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
@@ -36,10 +35,11 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
+            // 1. Get User
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // Get Website ID
+            // 2. Get Website ID
             const { data: website } = await supabase
                 .from("websites")
                 .select("id")
@@ -52,61 +52,66 @@ export default function DashboardPage() {
                 return;
             }
 
-            const oneYearAgo = subDays(new Date(), 365).toISOString();
-
-            // Fetch Orders (Last 365 days)
+            // 3. Fetch Data in Parallel (Mirroring OrdersPage strategy for reliability)
+            // Fetch ALL orders (or limit to a reasonable high number like 1000 for dashboard analytics)
+            // We removed the 365 days filter to ensure we get data if it's older (like test data).
+            // But we will limit to 500 latest orders to keep it performant.
             const { data: orders, error: ordersError } = await supabase
                 .from("orders")
-                .select(`
-                    id,
-                    created_at,
-                    total_amount,
-                    status,
-                    customer_id,
-                    source,
-                    customers (id, name, email)
-                `)
+                .select("*")
                 .eq("website_id", website.id)
-                .neq("status", "canceled")
-                .gte("created_at", oneYearAgo)
-                .order("created_at", { ascending: false });
+                .neq("status", "canceled") // Metric requirement: exclude canceled
+                .order("created_at", { ascending: false })
+                .limit(500);
 
             if (ordersError) throw ordersError;
 
-            // Fetch Order Items (for Units and Best Sellers)
-            // We need to filter these by the fetched orders to ensure consistency (and website_id via orders)
-            // But Supabase doesn't support "whereIn" with large arrays easily in client.
-            // However, we can filter by website_id if we join or just fetch all for website.
-            // Let's fetch order_items linked to the website's products.
-            // Actually, `order_items` -> `products` -> `website_id`.
-            // Easier: Fetch order_items where order_id in [orders].
-
-            const orderIds = orders.map(o => o.id);
-            let orderItems = [];
-            if (orderIds.length > 0) {
-                 const { data: items, error: itemsError } = await supabase
-                    .from("order_items")
-                    .select(`
-                        id,
-                        quantity,
-                        price,
-                        order_id,
-                        product_id,
-                        products (name, image_url, price),
-                        orders (created_at)
-                    `)
-                    .in("order_id", orderIds);
-                 if (itemsError) throw itemsError;
-                 orderItems = items;
+            if (!orders || orders.length === 0) {
+                 setData({ orders: [], orderItems: [], customers: [] });
+                 setLoading(false);
+                 return;
             }
 
-            // Fetch Customers (for Growth) - All time to calculate total vs new
-            const { data: customers, error: customersError } = await supabase
-                .from("customers")
-                .select("id, created_at")
-                .eq("website_id", website.id);
+            // Collect IDs
+            const orderIds = orders.map(o => o.id);
+            const customerIds = [...new Set(orders.map(o => o.customer_id).filter(Boolean))];
 
-            if (customersError) throw customersError;
+            // Fetch Related Data
+            const [
+                { data: customersRes },
+                { data: itemsRes }
+            ] = await Promise.all([
+                 customerIds.length > 0 ? supabase.from('customers').select('*').in('id', customerIds) : Promise.resolve({ data: [] }),
+                 supabase.from('order_items').select('*').in('order_id', orderIds)
+            ]);
+
+            const customers = customersRes || [];
+            let items = itemsRes || [];
+
+            // Fetch Products for Items
+            const productIds = [...new Set(items.map(i => i.product_id))];
+            const { data: products } = productIds.length > 0
+                ? await supabase.from('products').select('id, name, image_url, price').in('id', productIds)
+                : { data: [] };
+
+            const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
+            const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
+
+            // Join Data in Memory
+            const enrichedOrders = orders.map(o => ({
+                ...o,
+                customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' }
+            }));
+
+            // Enrich items with products and order date (for BestSellers logic)
+            // We map order date to items
+            const ordersDateMap = orders.reduce((acc, o) => ({...acc, [o.id]: o.created_at}), {});
+
+            const enrichedItems = items.map(i => ({
+                ...i,
+                products: productsMap[i.product_id],
+                orders: { created_at: ordersDateMap[i.order_id] } // Mocking structure expected by BestSellers
+            }));
 
             // --- Calculate Top Metrics (Last 30 Days vs Prior 30 Days) ---
             const now = new Date();
@@ -114,11 +119,11 @@ export default function DashboardPage() {
             const sixtyDaysAgo = subDays(now, 60);
 
             // Filter for periods
-            const currentPeriodOrders = orders.filter(o => {
+            const currentPeriodOrders = enrichedOrders.filter(o => {
                 const d = new Date(o.created_at);
                 return isAfter(d, thirtyDaysAgo) && isBefore(d, now);
             });
-            const priorPeriodOrders = orders.filter(o => {
+            const priorPeriodOrders = enrichedOrders.filter(o => {
                 const d = new Date(o.created_at);
                 return isAfter(d, sixtyDaysAgo) && isBefore(d, thirtyDaysAgo);
             });
@@ -128,10 +133,10 @@ export default function DashboardPage() {
             const priorSales = priorPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
             const salesChange = calculateChange(currentSales, priorSales);
 
-            // Units (Need to map order items to periods)
+            // Units
             const getUnits = (periodOrders) => {
                 const periodOrderIds = new Set(periodOrders.map(o => o.id));
-                return orderItems
+                return enrichedItems
                     .filter(item => periodOrderIds.has(item.order_id))
                     .reduce((sum, item) => sum + item.quantity, 0);
             };
@@ -147,22 +152,30 @@ export default function DashboardPage() {
             setMetrics({
                 sales: {
                     value: currentSales,
-                    change: salesChange,
-                    trend: salesChange >= 0 ? 'up' : 'down'
+                    change: salesChange
                 },
                 units: {
                     value: currentUnits,
-                    change: unitsChange,
-                    trend: unitsChange >= 0 ? 'up' : 'down'
+                    change: unitsChange
                 },
                 aov: {
                     value: currentAOV,
-                    change: aovChange,
-                    trend: aovChange >= 0 ? 'up' : 'down'
+                    change: aovChange
                 }
             });
 
-            setData({ orders, orderItems, customers });
+            // For User Growth: We need ALL customers, not just those in recent orders.
+            // Fetch all customers for website (separate fetch)
+            const { data: allCustomers } = await supabase
+                .from("customers")
+                .select("id, created_at")
+                .eq("website_id", website.id);
+
+            setData({
+                orders: enrichedOrders,
+                orderItems: enrichedItems,
+                customers: allCustomers || []
+            });
 
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
@@ -177,20 +190,13 @@ export default function DashboardPage() {
     };
 
     const formatCurrency = (val) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-IN', {
             style: 'currency',
-            currency: 'USD', // Or INR based on preference? User mock had both. RecentSales used ₹. StatCard $.
-                             // I'll stick to $ for StatCards as per mock, or make it dynamic later.
-                             // Let's check StatCard mock: "$10,845,329.00". RecentSales: "₹1,250".
-                             // I will use ₹ (INR) since RecentSales uses it and name implies Indian context (BizVistaar).
-                             // User mock StatCard used $. I will switch to ₹ to be consistent with RecentSales or ask?
-                             // The code shows RecentSales used ₹. I will use ₹.
             currency: 'INR'
         }).format(val);
     };
 
-    // Helper to format number
-    const formatNumber = (num) => new Intl.NumberFormat('en-US').format(num);
+    const formatNumber = (num) => new Intl.NumberFormat('en-IN').format(num);
 
   return (
     <div className="grid grid-cols-1 gap-8 xl:grid-cols-4 font-sans not-italic">
@@ -215,7 +221,6 @@ export default function DashboardPage() {
                 <Upload className="h-4 w-4" />
                 Export CSV
              </button>
-             {/* Filter Button (Image shows icon) */}
              <button className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all">
                 <Filter size={18} />
               </button>

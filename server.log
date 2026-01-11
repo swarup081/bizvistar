@@ -20,3 +20,9 @@ The width(-1) and height(-1) of chart should be greater than 0,
        height and width.
  GET /dashboard 200 in 140ms (compile: 9ms, render: 131ms)
  POST /dashboard 200 in 30ms (compile: 7ms, render: 23ms)
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+ GET /dashboard 200 in 3.0s (compile: 1987ms, render: 1060ms)
+ POST /dashboard 200 in 29ms (compile: 14ms, render: 15ms)
