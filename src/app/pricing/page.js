@@ -441,7 +441,14 @@ const PlanCard = ({ plan, isYearly, className }) => (
       </div>
       {/* --- END OF UPDATED PRICE SECTION --- */}
 
-      <Link href="/sign-up" className="w-full">
+      <Link href={{
+            pathname: '/checkout',
+            query: {
+                plan: plan.name,
+                billing: isYearly ? 'yearly' : 'monthly',
+                price: plan.price
+            }
+        }} className="w-full">
         <button 
           className={cn(
             'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
@@ -512,7 +519,14 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                 <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
               </div>
             </div>
-            <Link href="/sign-up">
+            <Link href={{
+                pathname: '/checkout',
+                query: {
+                    plan: 'Starter',
+                    billing: 'monthly',
+                    price: '299'
+                }
+            }}>
               <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
                 Select
               </button>
@@ -534,7 +548,14 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                 <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
               </div>
             </div>
-            <Link href="/sign-up">
+            <Link href={{
+                pathname: '/checkout',
+                query: {
+                    plan: 'Pro',
+                    billing: 'monthly',
+                    price: '799'
+                }
+            }}>
               <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-purple-600 hover:bg-purple-700 transition-colors mt-4">
                 Select
               </button>
@@ -551,7 +572,14 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                 <span className="text-xl font-semibold text-gray-600 self-end mb-1">/mo</span>
               </div>
             </div>
-            <Link href="/sign-up">
+            <Link href={{
+                pathname: '/checkout',
+                query: {
+                    plan: 'Growth',
+                    billing: 'monthly',
+                    price: '1499'
+                }
+            }}>
               <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
                 Select
               </button>
