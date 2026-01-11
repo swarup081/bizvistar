@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   ChevronDown, 
   Search, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import * as Dialog from '@radix-ui/react-dialog';
-// removed insecure imports
+import { useSearchParams } from 'next/navigation';
 
 // --- Order Details Modal Component ---
 function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
@@ -25,7 +25,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
 
   if (!order) return null;
 
-  // Updated to use Client-Side Supabase (respects RLS)
   const handleStatusUpdate = async (newStatus) => {
     if(!confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
     setIsUpdating(true);
@@ -37,7 +36,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
             
         if (error) throw error;
         
-        onUpdate(); // Refresh parent
+        onUpdate(); 
         onClose();
     } catch (e) {
         alert('Failed to update: ' + e.message);
@@ -46,12 +45,10 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
     }
   };
 
-  // Updated to use Client-Side Supabase (respects RLS)
   const handleAddLogistics = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-        // 1. Add delivery record
         const { error: deliveryError } = await supabase
             .from('deliveries')
             .insert({
@@ -63,7 +60,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
 
         if (deliveryError) throw deliveryError;
 
-        // 2. Update order status
         const { error: orderError } = await supabase
             .from('orders')
             .update({ status: 'shipped' })
@@ -80,7 +76,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
     }
   };
 
-  const logistics = order.logistics; // We need to ensure we pass this
+  const logistics = order.logistics; 
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -91,7 +87,7 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
             {/* Header */}
             <div className="flex justify-between items-start mb-6 border-b pb-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Order #{order.id}</h2>
+                    <Dialog.Title className="text-2xl font-bold text-gray-900">Order #{order.id}</Dialog.Title>
                     <p className="text-sm text-gray-500">{new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div className="flex gap-2">
@@ -175,7 +171,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
                             <p className="text-gray-600">{order.customers?.email}</p>
                             <div className="border-t border-gray-200 my-2 pt-2 text-gray-500">
                                 <p className="font-medium text-xs text-gray-400 uppercase mb-1">Shipping Address</p>
-                                {/* Handle JSONB address safely - Prefer order snapshot, fallback to customer profile */}
                                 {(order.shipping_address || order.customers?.shipping_address) ? (
                                     (() => {
                                         const addr = order.shipping_address || order.customers.shipping_address;
@@ -240,7 +235,6 @@ function OrderDetailsModal({ order, isOpen, onClose, onUpdate }) {
   );
 }
 
-// --- Main Page Component ---
 const getStatusStyle = (status) => {
     const styles = {
         delivered: "bg-green-50 text-green-600 border border-green-100",
@@ -252,19 +246,20 @@ const getStatusStyle = (status) => {
     return styles[status.toLowerCase()] || "bg-gray-50 text-gray-600";
 };
 
-export default function OrdersPage() {
+// --- Main Content Component (with Suspense logic) ---
+function OrdersContent() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  
+  const searchParams = useSearchParams();
+  const initialOrderId = searchParams.get('id');
+
   const fetchOrders = async () => {
     setLoading(true);
     
-    // 1. Get User
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return; 
 
-    // 2. Get Website ID
     const { data: website } = await supabase
         .from('websites')
         .select('id')
@@ -277,9 +272,7 @@ export default function OrdersPage() {
         return;
     }
 
-    // 3. Get Orders and Deliveries (Separate fetches to avoid Join errors)
     try {
-        // Fetch Orders (Base)
         const { data: orders, error: ordersError } = await supabase
             .from('orders')
             .select('*')
@@ -294,11 +287,9 @@ export default function OrdersPage() {
             return;
         }
 
-        // Collect IDs
         const orderIds = orders.map(o => o.id);
         const customerIds = [...new Set(orders.map(o => o.customer_id).filter(Boolean))];
 
-        // Fetch Related Data in Parallel
         const [
             { data: customers },
             { data: deliveries },
@@ -309,13 +300,11 @@ export default function OrdersPage() {
              supabase.from('order_items').select('*').in('order_id', orderIds)
         ]);
 
-        // Fetch Products for Items
         const productIds = [...new Set((items || []).map(i => i.product_id))];
         const { data: products } = productIds.length > 0 
             ? await supabase.from('products').select('id, name, image_url').in('id', productIds)
             : { data: [] };
 
-        // Create Maps
         const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
         const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
         
@@ -331,7 +320,6 @@ export default function OrdersPage() {
             return acc;
         }, {});
 
-        // Merge
         const merged = orders.map(o => ({
             ...o,
             customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' },
@@ -346,7 +334,11 @@ export default function OrdersPage() {
 
         setOrders(merged);
 
-        if (selectedOrder) {
+        // Handle URL param or re-selection
+        if (initialOrderId) {
+            const preSelected = merged.find(o => o.id.toString() === initialOrderId);
+            if (preSelected) setSelectedOrder(preSelected);
+        } else if (selectedOrder) {
             const updatedSelected = merged.find(o => o.id === selectedOrder.id);
             if (updatedSelected) setSelectedOrder(updatedSelected);
         }
@@ -360,11 +352,10 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, []); // Run on mount
 
   return (
     <div className="h-full flex flex-col font-sans">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
             <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
@@ -386,7 +377,6 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -436,13 +426,24 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Modal */}
       <OrderDetailsModal 
         isOpen={!!selectedOrder} 
         order={selectedOrder} 
-        onClose={() => setSelectedOrder(null)} 
+        onClose={() => {
+            setSelectedOrder(null);
+            // Optionally remove query param on close to clean URL
+            // router.replace('/dashboard/orders'); 
+        }} 
         onUpdate={fetchOrders}
       />
     </div>
   );
+}
+
+export default function OrdersPage() {
+    return (
+        <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading orders module...</div>}>
+            <OrdersContent />
+        </Suspense>
+    );
 }

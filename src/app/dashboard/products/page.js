@@ -375,11 +375,11 @@ export default function ProductsPage() {
                     {loading ? (
                         [...Array(5)].map((_, i) => (
                         <tr key={i} className="animate-pulse">
-                            <td className="px-6 py-4"><div className="h-10 w-40 bg-gray-100 rounded-lg"></div></td>
-                            <td className="px-6 py-4"><div className="h-6 w-24 bg-gray-100 rounded"></div></td>
-                            <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-100 rounded"></div></td>
-                            <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-100 rounded"></div></td>
-                            <td className="px-6 py-4"><div className="h-8 w-24 bg-gray-100 rounded"></div></td>
+                            <td className="px-6 py-4"><div className="h-10 w-40 bg-gray-100 rounded-full"></div></td>
+                            <td className="px-6 py-4"><div className="h-6 w-24 bg-gray-100 rounded-full"></div></td>
+                            <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-100 rounded-full"></div></td>
+                            <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-100 rounded-full"></div></td>
+                            <td className="px-6 py-4"><div className="h-8 w-24 bg-gray-100 rounded-full"></div></td>
                             <td className="px-6 py-4"></td>
                         </tr>
                         ))

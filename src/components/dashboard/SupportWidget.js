@@ -229,7 +229,7 @@ export default function SupportWidget() {
                                 <Bot size={20} />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-sm">BizVistar Assistant</h3>
+                                <h3 className="font-semibold not-italic text-sm">Zoya</h3>
                                 <div className="flex items-center gap-1.5 opacity-80">
                                     <span className={`w-1.5 h-1.5 rounded-full ${user ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`} />
                                     <span className="text-xs">{user ? 'Online' : 'Guest Mode'}</span>

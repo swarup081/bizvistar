@@ -1,25 +1,96 @@
 "use client";
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { ChevronDown, DollarSign } from "lucide-react";
-
-// Data for the donut chart
-const data = [
-  { name: "Growth", value: 10 },
-  { name: "Remaining", value: 90 },
-];
+import { ChevronDown, Users, Globe } from "lucide-react";
+import { isAfter, subDays, startOfYear } from "date-fns";
 
 const COLORS = ["#8A63D2", "#F3F4F6"]; // Purple and Light Gray
 
-export default function UserGrowthChart() {
+export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 }) {
+  const [timeFilter, setTimeFilter] = useState("week"); // week, month, year
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const labels = {
+      week: "This Week",
+      month: "This Month",
+      year: "This Year"
+  };
+
+  const metrics = useMemo(() => {
+     const now = new Date();
+     let startDate;
+
+     if (timeFilter === "week") startDate = subDays(now, 7);
+     else if (timeFilter === "month") startDate = subDays(now, 30);
+     else startDate = startOfYear(now);
+
+     // Visitors in period (Unique count from the passed visitors array)
+     // The passed `visitors` array already contains objects { timestamp, visitorId }.
+     // We need to count unique visitorIds within the period.
+     const periodVisitorIds = new Set();
+     
+     visitors.forEach(v => {
+         const d = new Date(v.timestamp);
+         if (isAfter(d, startDate)) {
+             periodVisitorIds.add(v.visitorId);
+         }
+     });
+
+     const periodCount = periodVisitorIds.size;
+     
+     // Total is totalVisitorsCount (All time)
+     // Chart: Period vs (Total - Period). 
+     // Note: If totalVisitorsCount < periodCount (due to fetch limitations or estimation), clamp it.
+     const safeTotal = Math.max(totalVisitorsCount, periodCount);
+     const remainingCount = safeTotal - periodCount;
+
+     // Calculate percentage of total traffic that was active in this period
+     const percentageOfTotal = safeTotal > 0 ? ((periodCount / safeTotal) * 100).toFixed(1) : 0;
+
+     return {
+         periodCount,
+         totalCount: safeTotal,
+         remainingCount,
+         percentageOfTotal
+     };
+  }, [visitors, totalVisitorsCount, timeFilter]);
+
+  const chartData = [
+      { name: "Period", value: metrics.periodCount || 0 }, 
+      { name: "Total", value: metrics.remainingCount || 1 } // prevent 0/0
+  ];
+  
+  if (metrics.totalCount === 0) {
+      chartData[0].value = 0;
+      chartData[1].value = 1; 
+  }
+
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm h-full flex flex-col relative">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">User Growth</h3>
-        <button className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-           This Year
-           <ChevronDown className="h-3 w-3 text-gray-500" />
-        </button>
+        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
+        <div className="relative">
+            <button 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+            {labels[timeFilter]}
+            <ChevronDown className="h-3 w-3 text-gray-500" />
+            </button>
+            {isDropdownOpen && (
+                 <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
+                     {Object.keys(labels).map(key => (
+                         <button
+                            key={key}
+                            onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                         >
+                             {labels[key]}
+                         </button>
+                     ))}
+                 </div>
+             )}
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center relative">
@@ -27,9 +98,9 @@ export default function UserGrowthChart() {
             <ResponsiveContainer width="100%" height="100%">
             <PieChart>
                 <Pie
-                data={data}
+                data={chartData}
                 cx="50%"
-                cy="70%" // Moved center down slightly to maximize space
+                cy="70%" 
                 innerRadius={80}
                 outerRadius={100}
                 startAngle={180}
@@ -39,7 +110,7 @@ export default function UserGrowthChart() {
                 stroke="none"
                 cornerRadius={10} 
                 >
-                {data.map((entry, index) => (
+                {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
                 </Pie>
@@ -48,19 +119,19 @@ export default function UserGrowthChart() {
             
             {/* Center Text */}
             <div className="absolute inset-0 top-8 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-extrabold text-gray-900 tracking-tight">3,740</span>
-                <span className="text-sm font-bold text-[#4CAF50] mt-1  px-2 py-0.5 rounded-full">↑ 10%</span>
+                <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-1">Visitors</span>
             </div>
         </div>
 
-         {/* Total Customers Section - Better visual hierarchy */}
+         {/* Total Visitors Section */}
          <div className="flex items-center gap-4 mt-2 p-3 pr-7 rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
-                <DollarSign className="h-5 w-5" />
+                <Globe className="h-5 w-5" />
             </div>
-            <div className="flex"> 
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Customers</p>
-                <p className="text-lg pl-5 font-bold text-gray-900">7,429</p>
+            <div className="flex flex-row"> 
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total<br/> Visitors</p>
+                <p className="text-lg font-bold pt-1 pl-5 text-gray-900 leading-none">{metrics.totalCount}</p>
             </div>
          </div>
       </div>
