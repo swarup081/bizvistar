@@ -173,9 +173,7 @@ function CheckoutContent() {
             {/* Step 1: Billing Address (Boxed) */}
             <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full border border-purple-500  text-purple-600 font-bold text-sm">
-                        1
-                    </div>
+                   
                     <h2 className="text-2xl not-italic font-bold text-gray-900">Billing address</h2>
                 </div>
 
@@ -224,7 +222,7 @@ function CheckoutContent() {
                         <div className="flex">
                             <div className="relative w-1/3 sm:w-1/4">
                                 <select 
-                                    className="w-full p-3 border border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full p-3 border  border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
                                     value={formData.phoneCode}
                                     onChange={handleChange}
                                     name="phoneCode"
@@ -362,7 +360,7 @@ function CheckoutContent() {
                                         name="companyName"
                                         value={formData.companyName}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
+                                        className="w-full p-3  border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
                                     />
                                 </div>
                                 <div className="space-y-2 py-2">
@@ -372,7 +370,7 @@ function CheckoutContent() {
                                         name="gstNumber"
                                         value={formData.gstNumber}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
                                     />
                                 </div>
                              </motion.div>
@@ -389,15 +387,7 @@ function CheckoutContent() {
                 </form>
             </div>
             
-            {/* "Payment" Section Visual Placeholder (Inactive/Next Step) */}
-            <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 opacity-60">
-                <div className="flex items-center gap-4">
-                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-400 font-bold text-sm">
-                        2
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-400">Payment</h2>
-                </div>
-            </div>
+         
 
         </div>
 

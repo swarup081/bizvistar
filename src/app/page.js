@@ -896,13 +896,9 @@ const TermsModal = () => (
             <p>We reserve the right to modify these terms at any time. Your continued use of the service following any changes indicates your acceptance of the new terms.</p>
             
             <p className="font-medium text-gray-900">6. Contact Us</p>
-            <p>If you have any questions about these Terms, please contact us at support@bizvistar.com.</p>
+            <p>If you have any questions about these Terms, please contact us at bizvistar@gmail.com.</p>
             
-             <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 mt-6">
-                <p className="text-xs text-gray-500">
-                    Disclaimer: These are dummy terms and conditions for demonstration purposes only and do not constitute actual legal advice or a binding agreement.
-                </p>
-            </div>
+             
         </div>
 
         <div className="mt-8 flex justify-end">
