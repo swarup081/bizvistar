@@ -3,10 +3,14 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import { HelpCircle, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import FaqSection from '@/components/checkout/FaqSection';
+import CustomStateSelect from '@/components/checkout/CustomStateSelect';
 import { AnimatePresence, motion } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
+import { useEffect } from 'react';
+import { createSubscriptionAction, saveBillingDetailsAction, validateCouponAction } from '@/app/actions/paymentActions';
 
 // --- CONFIGURATION ---
 
@@ -113,15 +117,129 @@ function CheckoutContent() {
   const [addCompanyDetails, setAddCompanyDetails] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Redirect to login with return URL
+        const returnUrl = encodeURIComponent(window.location.href);
+        router.push(`/sign-in?redirect=${returnUrl}`);
+      } else {
+        setUser(user);
+        // Pre-fill email if not already there, or fetch profile
+        fetchProfile(user.id);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const fetchProfile = async (userId) => {
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+    if (profile && profile.billing_address) {
+        // Merge saved billing address
+        setFormData(prev => ({ ...prev, ...profile.billing_address }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleStateChange = (value) => {
+    setFormData(prev => ({ ...prev, state: value }));
+  };
+
+  const handleApplyCoupon = async () => {
+    setCouponError(null);
+    setAppliedCoupon(null);
+    if (!promoCode.trim()) return;
+
+    try {
+        const result = await validateCouponAction(promoCode);
+        if (result.valid) {
+            setAppliedCoupon(result);
+            // Optionally auto-close the input or show success
+        } else {
+            setCouponError(result.message || 'Invalid Coupon Code');
+        }
+    } catch (err) {
+        setCouponError('Error validating coupon');
+    }
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    if (!user) return;
+    setLoading(true);
+
+    try {
+        // 1. Save Billing Details
+        await saveBillingDetailsAction(formData);
+
+        // 2. Create Subscription (with coupon if applied)
+        const { subscriptionId, keyId, planId } = await createSubscriptionAction(planName, billingCycle, appliedCoupon ? promoCode : null);
+
+        // 3. Load Razorpay
+        const res = await loadRazorpayScript();
+        if (!res) {
+            alert('Razorpay SDK failed to load. Are you online?');
+            setLoading(false);
+            return;
+        }
+
+        const options = {
+            key: keyId,
+            subscription_id: subscriptionId,
+            name: "BizVistar",
+            description: `${planName} Plan (${billingCycle})`,
+            handler: function (response) {
+                // Success callback
+                console.log("Payment Success:", response);
+                // Optionally verify signature on backend here or trust webhook
+                // For now, redirect to dashboard or success page
+                router.push('/dashboard?payment=success');
+            },
+            prefill: {
+                name: `${formData.firstName} ${formData.lastName}`,
+                email: user.email, // Use authenticated email
+                contact: `${formData.phoneCode}${formData.phoneNumber}`
+            },
+            theme: {
+                color: "#9333ea" // Purple-600
+            }
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+
+    } catch (err) {
+        console.error("Checkout Error:", err);
+        alert("Something went wrong during checkout. Please try again.");
+    } finally {
+        setLoading(false);
+    }
   };
 
   // --- Dates for Legal Text ---
@@ -219,23 +337,16 @@ function CheckoutContent() {
 
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">Phone number</label>
-                        <div className="flex">
-                            <div className="relative w-1/3 sm:w-1/4">
-                                <select 
-                                    className="w-full p-3 border  border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
-                                    value={formData.phoneCode}
-                                    onChange={handleChange}
-                                    name="phoneCode"
-                                >
-                                    <option value="+91">+91 (India)</option>
-                                </select>
+                        <div className="flex relative">
+                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span className="text-gray-500 font-medium">+91</span>
                             </div>
                             <input 
                                 type="tel" 
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 border-l-0 rounded-r-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                className="w-full p-3 pl-12 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
                                 placeholder="00000000"
                             />
                         </div>
@@ -269,55 +380,11 @@ function CheckoutContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">State *</label>
-                            <div className="relative">
-                                <select 
-                                    name="state"
-                                    value={formData.state}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
-                                    required
-                                >
-                                    <option value="" disabled>Select State</option>
-<option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-<option value="Andhra Pradesh">Andhra Pradesh</option>
-<option value="Arunachal Pradesh">Arunachal Pradesh</option>
-<option value="Assam">Assam</option>
-<option value="Bihar">Bihar</option>
-<option value="Chandigarh">Chandigarh</option>
-<option value="Chhattisgarh">Chhattisgarh</option>
-<option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-<option value="Delhi">Delhi</option>
-<option value="Goa">Goa</option>
-<option value="Gujarat">Gujarat</option>
-<option value="Haryana">Haryana</option>
-<option value="Himachal Pradesh">Himachal Pradesh</option>
-<option value="Jammu and Kashmir">Jammu and Kashmir</option>
-<option value="Jharkhand">Jharkhand</option>
-<option value="Karnataka">Karnataka</option>
-<option value="Kerala">Kerala</option>
-<option value="Ladakh">Ladakh</option>
-<option value="Lakshadweep">Lakshadweep</option>
-<option value="Madhya Pradesh">Madhya Pradesh</option>
-<option value="Maharashtra">Maharashtra</option>
-<option value="Manipur">Manipur</option>
-<option value="Meghalaya">Meghalaya</option>
-<option value="Mizoram">Mizoram</option>
-<option value="Nagaland">Nagaland</option>
-<option value="Odisha">Odisha</option>
-<option value="Puducherry">Puducherry</option>
-<option value="Punjab">Punjab</option>
-<option value="Rajasthan">Rajasthan</option>
-<option value="Sikkim">Sikkim</option>
-<option value="Tamil Nadu">Tamil Nadu</option>
-<option value="Telangana">Telangana</option>
-<option value="Tripura">Tripura</option>
-<option value="Uttar Pradesh">Uttar Pradesh</option>
-<option value="Uttarakhand">Uttarakhand</option>
-<option value="West Bengal">West Bengal</option>
-                                    {/* Add more states as needed */}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                            </div>
+                            <CustomStateSelect
+                                value={formData.state}
+                                onChange={handleStateChange}
+                                error={false} // pass validation error if needed
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">ZIP code *</label>
@@ -379,9 +446,10 @@ function CheckoutContent() {
                     
                     <button 
                         type="submit"
-                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-lg shadow-md transition-colors"
+                        disabled={loading}
+                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Continue 
+                        {loading ? 'Processing...' : 'Continue'}
                     </button>
 
                 </form>
@@ -437,46 +505,79 @@ function CheckoutContent() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4 mb-6">
+                     {appliedCoupon && (
+                        <div className="flex justify-between items-baseline mb-2 text-green-600">
+                             <span>Coupon ({promoCode})</span>
+                             <span>
+                                 -{appliedCoupon.discount_type === 'percent' ? `${appliedCoupon.discount_value}%` : `₹${appliedCoupon.discount_value}`}
+                             </span>
+                        </div>
+                     )}
                      <div className="flex justify-between items-center mb-2">
                         <span className="text-xl font-bold text-gray-900">Total</span>
                         <div className="text-right">
                             <span className="block text-sm text-gray-400 line-through">{formattedTotalStruck}</span>
-                            <span className="text-3xl font-bold text-gray-900">{formattedPrice}</span>
+                            <span className="text-3xl font-bold text-gray-900">
+                                {appliedCoupon ?
+                                    (appliedCoupon.discount_type === 'percent'
+                                        ? formatCurrency(finalPrice * (1 - appliedCoupon.discount_value/100))
+                                        : formatCurrency(Math.max(0, finalPrice - appliedCoupon.discount_value))
+                                    )
+                                : formattedPrice}
+                            </span>
                          </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    <button 
-                        onClick={() => setShowPromo(!showPromo)}
-                        className="text-purple-600 font-semibold hover:text-purple-700  focus:outline-none"
-                    >
-                        Have a coupon code?
-                    </button>
-                    
-                    <AnimatePresence>
-                        {showPromo && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
+                    {!appliedCoupon ? (
+                        <>
+                            <button
+                                onClick={() => setShowPromo(!showPromo)}
+                                className="text-purple-600 font-semibold hover:text-purple-700  focus:outline-none"
                             >
-                                <div className="flex gap-2 pt-2">
-                                    <input 
-                                        type="text" 
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-purple-500"
-                                        placeholder="Code"
-                                        value={promoCode}
-                                        onChange={(e) => setPromoCode(e.target.value)}
-                                    />
-                                    <button className="px-4 py-2 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50">
-                                        Apply
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                Have a coupon code?
+                            </button>
+
+                            <AnimatePresence>
+                                {showPromo && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="flex gap-2 pt-2">
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-purple-500"
+                                                placeholder="Code"
+                                                value={promoCode}
+                                                onChange={(e) => setPromoCode(e.target.value)}
+                                            />
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                className="px-4 py-2 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50"
+                                            >
+                                                Apply
+                                            </button>
+                                        </div>
+                                        {couponError && <p className="text-red-500 text-sm mt-1">{couponError}</p>}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </>
+                    ) : (
+                        <div className="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200">
+                            <span className="text-green-700 font-medium">Code <b>{promoCode}</b> applied</span>
+                            <button
+                                onClick={() => { setAppliedCoupon(null); setPromoCode(''); }}
+                                className="text-sm text-red-500 hover:text-red-700"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    )}
                 </div>
 
              </div>
