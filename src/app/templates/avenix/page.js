@@ -22,7 +22,7 @@ const HeelsHero = ({ heroData }) => {
         // --- WRAPPED WITH EDITABLE ---
         <Editable focusId="hero">
             <section id="home" className="py-24 bg-brand-primary overflow-hidden">
-                <div className="container mx-auto px-6">
+                <div className="container mx-auto px-6 max-w-screen-2xl">
                     {/* --- CHANGED: Swapped grid columns order: TEXT left, IMAGE right --- */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                         {/* 1. Text Content (NOW ON LEFT) */}
@@ -71,7 +71,7 @@ const HeelsHero = ({ heroData }) => {
                             </a>
                         </div>
                         {/* 2. Image: Split rounded placeholder (NOW ON RIGHT) */}
-                        <div className="relative w-full max-w-lg h-96 mx-auto">
+                        <div className="relative w-full max-w-lg h-64 md:h-96 mx-auto">
                             {/* Left half */}
                             <div className="absolute left-0 top-0 w-[100%] h-full rounded-bl-[120px] rounded-t-[120px] overflow-hidden">
                                 <img 
@@ -115,7 +115,7 @@ export default function AvenixPage() {
                {/* --- 2. About Section --- */}
                <Editable focusId="about">
                 <section id="story" className="py-24 overflow-hidden bg-brand-primary"> 
-                        <div className="container mx-auto px-6">
+                        <div className="container mx-auto px-6 max-w-screen-2xl">
                             
                             <div className="mb-24">
                                 <h3 className="text-sm uppercase tracking-widest font-sans font-medium opacity-70">
@@ -174,7 +174,7 @@ export default function AvenixPage() {
                 {/* --- 3. Featured Products (NOW DYNAMIC) --- */}
                 <Editable focusId="collection">
                     <section id="collection" className="py-24"> 
-                        <div className="container mx-auto px-6 text-center">
+                        <div className="container mx-auto px-6 text-center max-w-screen-2xl">
                             <p className="text-sm uppercase tracking-widest font-sans font-medium text-brand-text/70">
                                 {businessData.featured.sectionHeading}
                             </p>
@@ -183,7 +183,7 @@ export default function AvenixPage() {
                             </h2>
                         </div>
                         
-                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 items-start">
+                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 items-start max-w-screen-2xl">
                             
                             <div className="md:col-span-1 h-full">
                                 <img 
@@ -229,7 +229,7 @@ export default function AvenixPage() {
                 {/* --- 4. CTA Section (ID ADDED) --- */}
                 <Editable focusId="cta">
                     <section id="cta" className="py-24 overflow-hidden">
-                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center max-w-screen-2xl">
                             <div className="text-left">
                                 <h2 className="text-6xl font-serif font-medium text-brand-text max-w-lg leading-tight">
                                     {businessData.ctaSection.title}
@@ -270,7 +270,7 @@ export default function AvenixPage() {
                 {/* --- 6. Brands Section --- */}
                 {businessData.brands.logos.length > 0 && (
                     <section className="py-16">
-                        <div className="container mx-auto px-6 text-center">
+                        <div className="container mx-auto px-6 text-center max-w-screen-2xl">
                             <h2 className="text-4xl font-serif font-medium text-brand-text max-w-2xl mx-auto">{businessData.brands.heading}</h2>
                             <p className="text-lg font-sans text-brand-text/80 mt-6 max-w-xl mx-auto">{businessData.brands.text}</p>
                             <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 mt-16 opacity-70">
@@ -285,7 +285,7 @@ export default function AvenixPage() {
                 {/* --- Other Sections --- */}
 
                 <section className="py-24">
-                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16">
+                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 max-w-screen-2xl">
                         {businessData.features.map(feature => (
                             <div key={feature.title} className="p-10 bg-brand-primary rounded-2xl">
                                 <h3 className="text-4xl font-serif font-medium">{feature.title}</h3>
@@ -303,10 +303,10 @@ export default function AvenixPage() {
                 {/* --- New Arrivals (NOW DYNAMIC) --- */}
                 <Editable focusId="products">
                     <section id="shop" className="py-24">
-                        <div className="container mx-auto px-6 text-center">
+                        <div className="container mx-auto px-6 text-center max-w-screen-2xl">
                             <p className="text-sm uppercase tracking-widest font-sans opacity-70">{businessData.newArrivals.heading}</p>
                             <h2 className="text-5xl font-serif font-medium text-brand-text mt-4">{businessData.newArrivals.title}</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 mt-16 items-start">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 gap-y-16 mt-16 items-start">
                                 {newArrivalsProducts.map(item => (
                                     <ProductCard 
                                         key={item.id} 
@@ -322,7 +322,7 @@ export default function AvenixPage() {
                 {/* --- Stats Section (ID ADDED) --- */}
                 <Editable focusId="stats">
                     <section id="stats" className="py-24">
-                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center max-w-screen-2xl">
                             <div className="text-left">
                                 <h2 className="text-5xl font-serif font-medium text-brand-text">{businessData.stats.title}</h2>
                                 <p className="text-xl font-sans text-brand-text/80 mt-6 max-w-lg">{businessData.stats.text}</p>
@@ -344,7 +344,7 @@ export default function AvenixPage() {
 
                 <Editable focusId="blog">
                     <section id="blogs" className="py-24 bg-brand-primary">
-                        <div className="container mx-auto px-6">
+                        <div className="container mx-auto px-6 max-w-screen-2xl">
                             <div className="text-center mb-16">
                                 <p className="text-sm uppercase tracking-widest font-sans opacity-70">{businessData.blog.heading}</p>
                                 <h2 className="text-5xl font-serif font-medium text-brand-text mt-4">{businessData.blog.title}</h2>

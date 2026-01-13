@@ -46,9 +46,9 @@ export default function AuroraPage() {
                 <section className="relative w-full pt-12 pb-0 lg:pt-20">
                     
                     {/* Background Split: The right beige block */}
-                    <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[#F3EBE6] -z-10 rounded-bl-[100px] hidden lg:block"></div>
+                    <div className="absolute top-0 right-0 w-full lg:w-[40%] h-[90%] bg-[#F3EBE6] -z-10 rounded-bl-[100px] opacity-30 lg:opacity-100"></div>
 
-                    <div className="container mx-auto px-6 lg:px-16 relative">
+                    <div className="container mx-auto px-6 lg:px-16 relative max-w-screen-2xl">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                             
                             {/* LEFT COLUMN: Text (Span 6) */}
@@ -72,7 +72,7 @@ export default function AuroraPage() {
                             </div>
 
                             {/* RIGHT COLUMN: Images (Span 6) */}
-                            <div className="lg:col-span-6 relative h-[600px] lg:h-[750px]">
+                            <div className="lg:col-span-6 relative h-[600px] lg:h-[750px] overflow-hidden lg:overflow-visible">
                                 {/* Main Image (Hands) - Overlapping the beige bg */}
                                 <div className="absolute left-4 lg:left-0 top-0 w-[60%] h-[85%] z-20">
                                      {/* This image needs to be the one with hands/rings */}
@@ -153,11 +153,11 @@ export default function AuroraPage() {
 
                     {/* --- STATS BAR OVERLAY (Matches Screenshot Footer) --- */}
                     <div className="relative lg:absolute bottom-0 left-0 w-full z-30">
-                        <div className="container mx-auto px-0 lg:px-16">
+                        <div className="container mx-auto px-0 lg:px-16 max-w-screen-2xl">
                             <div className="flex flex-col lg:flex-row items-end">
                                 
                                 {/* 1. Dark Image Box (Left) */}
-                                <div className="w-full lg:w-[280px] h-[220px] bg-[#0A1F25] relative flex items-center justify-center overflow-hidden">
+                                <div className="hidden lg:flex w-[280px] h-[220px] bg-[#0A1F25] relative items-center justify-center overflow-hidden">
                                      <img 
                                         src={businessData.hero.imageArch1_b} // Use a necklace image here 
                                         alt="Necklace Feature" 
@@ -166,7 +166,7 @@ export default function AuroraPage() {
                                 </div>
 
                                 {/* 2. Beige Stats Box (Middle) */}
-                                <div className="bg-[#FAEFE5] flex-1 h-[160px] flex items-center justify-around px-8 lg:px-20">
+                                <div className="bg-[#FAEFE5] w-full lg:w-auto flex-1 h-[160px] flex items-center justify-around px-8 lg:px-20">
                                     <div className="text-center">
                                         <span className="block font-serif text-3xl lg:text-4xl text-[#0F1C23] mb-1">12</span>
                                         <span className="text-xs uppercase tracking-widest text-gray-500">All over World</span>
@@ -277,7 +277,7 @@ export default function AuroraPage() {
                              </Link>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-10">
                             {featuredProducts.map(product => (
                                 <ProductCard key={product.id} item={product} />
                             ))}

@@ -27,7 +27,7 @@ export default function CandleaPage() {
     return (
         <>
             {/* --- Hero Section --- */}
-            <section id="home" className="container mx-auto px-6 py-20 md:py-32">
+            <section id="home" className="container mx-auto px-6 py-20 md:py-32 max-w-screen-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                     <Editable focusId="hero">
                         <div className="flex flex-col gap-6 md:pr-10 text-center md:text-left items-center md:items-start">
@@ -81,7 +81,7 @@ export default function CandleaPage() {
             {/* --- Feature Section 1 --- */}
             <Editable focusId="about">
                 <section id="about" className="py-24 bg-brand-primary">
-                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-screen-2xl">
                         <div className="flex justify-center">
                             <img 
                                 src={businessData.feature1.image} 
@@ -108,7 +108,7 @@ export default function CandleaPage() {
             {/* --- Collection Section --- */}
             <section id="collection" className="py-24 bg-brand-bg">
                 <Editable focusId="collection">
-                    <div className="container mx-auto px-6">
+                    <div className="container mx-auto px-6 max-w-screen-2xl">
                         <div className="flex justify-between items-center mb-12">
                             <h2 className="text-4xl font-bold text-brand-text font-serif">{businessData.collection.title}</h2>
                             <Link href={`${basePath}/shop`} className="inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-4 py-2 ">
@@ -116,7 +116,7 @@ export default function CandleaPage() {
                                 <ArrowRightIcon />
                             </Link>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                             {collectionProducts.map(item => (
                                 <Link 
                                 href={`${basePath}/product/${item.id}`}
@@ -145,9 +145,9 @@ export default function CandleaPage() {
             {/* --- Best Sellers --- */}
             <section id="shop" className="py-24 bg-brand-bg">
                 <Editable focusId="collection">
-                    <div className="container mx-auto px-6 text-center">
+                    <div className="container mx-auto px-6 text-center max-w-screen-2xl">
                         <h2 className="text-4xl font-bold text-brand-text mb-16 font-serif">{businessData.bestSellers.title}</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 items-stretch">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 gap-y-16 items-stretch">
                             {bestSellerProducts.map(item => (
                                 <ProductCard 
                                     key={item.id} 
@@ -170,7 +170,7 @@ export default function CandleaPage() {
             {/* --- Feature Section 2 --- */}
             <Editable focusId="feature2">
                 <section id="feature2" className="py-24 overflow-hidden bg-brand-bg">
-                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:items-end">
+                    <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 md:items-end max-w-screen-2xl">
                         <div className="relative">
                             <div className="w-full aspect-[4/5] rounded-t-full overflow-hidden">
                                 <img 
@@ -200,7 +200,7 @@ export default function CandleaPage() {
             {/* --- Blog --- */}
             <Editable focusId="blog">
                 <section id="blog" className="py-24 bg-brand-primary">
-                    <div className="container mx-auto px-6">
+                    <div className="container mx-auto px-6 max-w-screen-2xl">
                         <div className="flex justify-between items-center mb-12">
                             <h2 className="text-4xl font-bold text-brand-text font-serif">{businessData.blog.title}</h2>
                             {/* "See All" Link Removed */}

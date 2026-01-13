@@ -256,20 +256,8 @@
 /* --- MARQUEE ANIMATION (FOR POINT 3) --- */
 @layer utilities {
   .marquee {
-    animation: marquee 10s linear infinite;
-  }
-  @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-100%); }
-  }
-}
-
-
-/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
-@layer utilities {
-  .marquee {
     /* --- THIS IS THE FIX --- */
-    animation: marquee 40s linear infinite; /* Changed 20s to 40s */
+    animation: marquee 20s linear infinite;
     /* --- END OF FIX --- */
     flex-shrink: 0; 
   }

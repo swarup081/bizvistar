@@ -128,10 +128,15 @@ export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart(); // Get the addItem function from context
     const { businessData } = useTemplateContext(); // Get businessData from context
 
+    const stock = item.stock !== undefined ? item.stock : 10;
+    const isOutOfStock = stock === 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault(); // Stop the link from navigating
         e.stopPropagation(); // Stop any parent link events
-        addItem(item); // Add this specific item
+        if (!isOutOfStock) {
+            addItem(item); // Add this specific item
+        }
     };
     
     // Find the category name from the master list
@@ -145,34 +150,44 @@ export const ProductCard = ({ item, templateName }) => {
                     <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                     />
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-black/70 text-white px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-md">Out of Stock</span>
+                        </div>
+                    )}
                 </a>
-                <div className="mt-6 text-center">
+                <div className="mt-3 md:mt-6 text-center">
                     <a href={`/templates/${templateName}/product/${item.id}`} className="hover:opacity-70">
-                        <h3 className="text-lg font-medium text-brand-text font-sans tracking-wider uppercase">{item.name}</h3>
+                        <h3 className="text-sm md:text-lg font-medium text-brand-text font-sans tracking-wider uppercase truncate">{item.name}</h3>
                     </a>
                     {category && (
-                        <p className="text-brand-text opacity-50 text-sm mt-1 font-sans">{category.name}</p>
+                        <p className="text-brand-text opacity-50 text-xs md:text-sm mt-1 font-sans">{category.name}</p>
                     )}
-                    <p className="text-brand-text text-base mt-2 font-sans">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-text text-sm md:text-base mt-2 font-sans">${item.price.toFixed(2)}</p>
                 </div>
             </div>
             
-            {/* --- FIX: Bottom section: Horizontal Buttons (Show on hover) --- */}
-            <div className="mt-4 px-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pb-2">
+            {/* --- FIX: Bottom section: Horizontal Buttons (Show on hover on desktop, always on mobile) --- */}
+            <div className="mt-4 px-1 flex flex-col md:flex-row gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pb-2">
                  <a 
                     href={`/templates/${templateName}/product/${item.id}`}
-                    className="flex-1 text-center block bg-brand-primary text-brand-text px-4 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-200"
+                    className="flex-1 text-center block bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-xs md:text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-200"
                 >
-                    View Details
+                    View
                 </a>
                 <button 
                     onClick={handleAddToCart}
-                    className="flex-1 text-center block bg-brand-secondary text-brand-bg px-4 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:opacity-80"
+                    disabled={isOutOfStock}
+                    className={`flex-1 text-center block px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-xs md:text-sm uppercase tracking-wider rounded-3xl text-center ${
+                        isOutOfStock
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-brand-secondary text-brand-bg hover:opacity-80'
+                    }`}
                 >
-                    Add to Cart
+                    {isOutOfStock ? 'No Stock' : 'Add'}
                 </button>
             </div>
         </div>

@@ -49,7 +49,7 @@ export default function BrewhavenPage() {
             {/* --- Hero Section --- */}
             <Editable focusId="hero">
                 <section id="home" className="relative overflow-hidden bg-brand-primary">
-                <div className="container mx-auto px-6 py-20 md:py-28 max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <div className="container mx-auto px-6 py-20 md:py-28 max-w-screen-2xl grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                     <div className="flex flex-col gap-6 text-center md:text-left items-center md:items-start">
                     <h1 className="text-4xl md:text-6xl font-bold text-brand-text leading-tight">{businessData.hero.title}</h1>
                     <p className="text-base md:text-lg text-brand-text opacity-70 max-w-md">{businessData.hero.subtitle}</p>
@@ -81,7 +81,7 @@ export default function BrewhavenPage() {
             {/* --- Events Section --- */}
             <Editable focusId="events">
                 <section id="events" className="py-24">
-                    <div className="container mx-auto px-6">
+                    <div className="container mx-auto px-6 max-w-screen-2xl">
                         <h2 className="text-4xl md:text-5xl font-bold text-brand-text text-center mb-16">{businessData.events.title}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {businessData.events.items.map((item, index) => (
@@ -109,7 +109,7 @@ export default function BrewhavenPage() {
                     <path d="M0,50 C100,90 200,10 300,50 C400,90 500,10 600,50 C700,90 800,10 900,50 C1000,90 1100,10 1200,50 L1200,0 L0,0 Z" fill="currentColor" className="text-brand-bg"/>
                     </svg>
                 </div>
-                <div className="container mx-auto py-14 max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div className="container mx-auto py-14 max-w-screen-2xl grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
                     <div className="flex justify-center">
                         <img 
                             src={businessData.about.image} 
@@ -141,7 +141,7 @@ export default function BrewhavenPage() {
             {/* --- Menu Section --- */}
             <Editable focusId="menu">
                 <section id="menu" className="py-24">
-                    <div className="container mx-auto px-6">
+                    <div className="container mx-auto px-6 max-w-screen-2xl">
                         <div className="text-center max-w-3xl mx-auto mb-16">
                             <span className="inline-block bg-brand-primary text-brand-secondary text-sm font-semibold px-4 py-1 rounded-full mb-4">
                                 {businessData.menu.badge}
@@ -172,8 +172,8 @@ export default function BrewhavenPage() {
             {/* --- Testimonials Section --- */}
             <Editable focusId="testimonials">
                 <section id="testimonials" className="py-24 bg-brand-bg">
-                    <div className="container mx-auto px-6 relative max-w-3xl">
-                        <div className="relative flex flex-col items-center">
+                    <div className="container mx-auto px-6 relative max-w-screen-2xl">
+                        <div className="relative flex flex-col items-center max-w-3xl mx-auto">
                             <span className="font-serif text-9xl text-brand-text/80 leading-none -mb-4">”</span>
                             <motion.p 
                                 key={currentTestimonial}
@@ -216,9 +216,9 @@ export default function BrewhavenPage() {
             {/* --- Specialty Section (NOW DYNAMIC) --- */}
             <Editable focusId="specialty">
                 <section id="specialty" className="py-24">
-                    <div className="container mx-auto px-6 text-center">
+                    <div className="container mx-auto px-6 text-center max-w-screen-2xl">
                         <h2 className="text-4xl md:text-5xl font-bold text-brand-text mb-16">{businessData.specialty.title}</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                             {specialtyProducts.map((item) => (
                                 <ProductCard 
                                     key={item.id} 
@@ -234,7 +234,7 @@ export default function BrewhavenPage() {
             {/* --- Final CTA --- */}
             <Editable focusId="cta">
                 <section id="cta-final" className="py-24 bg-brand-primary">
-                    <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+                    <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-center md:text-left max-w-screen-2xl">
                         <div>
                             <h2 className="text-4xl font-bold text-brand-text max-w-xl">{businessData.cta.title}</h2>
                             <p className="text-lg text-brand-text opacity-70 max-w-xl mt-4">{businessData.cta.text}</p>

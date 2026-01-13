@@ -32,37 +32,49 @@ export const ProductCard = ({ item }) => {
     const cartQuantity = cartItems.find(i => i.id === item.id)?.quantity || 0;
     // --- END OF FIX ---
 
+    const stock = item.stock !== undefined ? item.stock : 10;
+    const isOutOfStock = stock === 0;
+
     return (
         <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full border border-brand-primary/50">
             
             {/* Image (No longer a link) */}
-            <div className="block aspect-h-1 aspect-w-1 h-48">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+            <div className="block aspect-h-1 aspect-w-1 h-48 relative">
+                <img src={item.image} alt={item.name} className={`w-full h-full object-cover ${isOutOfStock ? 'opacity-50 grayscale' : ''}`} />
+                {isOutOfStock && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-gray-800/80 text-white px-3 py-1 text-xs font-bold uppercase rounded">Out of Stock</span>
+                    </div>
+                )}
             </div>
 
-            <div className="p-4 flex flex-col flex-grow">
+            <div className="p-3 md:p-4 flex flex-col flex-grow">
                 {/* Title (No longer a link) */}
-                <h3 className="text-xl font-bold text-brand-secondary font-serif">
+                <h3 className="text-base md:text-xl font-bold text-brand-secondary font-serif truncate">
                     {item.name}
                 </h3>
-                <p className="text-brand-text text-sm mt-2 flex-grow">
+                <p className="text-brand-text text-xs md:text-sm mt-2 flex-grow line-clamp-2">
                     {item.description.length > 100 ? item.description.substring(0, 100) + '...' : item.description}
                 </p>
                 <div className="mt-3 flex justify-between items-center">
-                    <p className="text-lg font-bold text-brand-secondary">₹{item.price}</p>
-                    <p className="text-sm text-gray-500">{item.unit}</p>
+                    <p className="text-base md:text-lg font-bold text-brand-secondary">₹{item.price}</p>
+                    <p className="text-xs md:text-sm text-gray-500">{item.unit}</p>
                 </div>
                 <div className="mt-4 w-full">
-                    {cartQuantity > 0 ? (
-                        <div className="flex items-center justify-center">
-                            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                                <button onClick={() => decreaseQuantity(item.id)} className="px-4 py-2 text-brand-secondary hover:bg-brand-primary transition-colors font-bold">-</button>
-                                <span className="px-4 py-2 border-x border-gray-300 font-bold text-base">{cartQuantity}</span>
-                                <button onClick={() => increaseQuantity(item.id)} className="px-4 py-2 text-brand-secondary hover:bg-brand-primary transition-colors font-bold">+</button>
-                            </div>
-                        </div>
+                    {isOutOfStock ? (
+                         <button disabled className="w-full bg-gray-200 text-gray-500 py-2 rounded-lg text-xs md:text-sm font-bold cursor-not-allowed">Out of Stock</button>
                     ) : (
-                        <button onClick={() => increaseQuantity(item.id)} className="w-full btn btn-primary py-2 rounded-lg text-sm">Add to Cart</button>
+                        cartQuantity > 0 ? (
+                            <div className="flex items-center justify-center">
+                                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                                    <button onClick={() => decreaseQuantity(item.id)} className="px-3 py-1 md:px-4 md:py-2 text-brand-secondary hover:bg-brand-primary transition-colors font-bold">-</button>
+                                    <span className="px-3 py-1 md:px-4 md:py-2 border-x border-gray-300 font-bold text-sm md:text-base">{cartQuantity}</span>
+                                    <button onClick={() => increaseQuantity(item.id)} className="px-3 py-1 md:px-4 md:py-2 text-brand-secondary hover:bg-brand-primary transition-colors font-bold">+</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <button onClick={() => increaseQuantity(item.id)} className="w-full btn btn-primary py-2 rounded-lg text-xs md:text-sm">Add to Cart</button>
+                        )
                     )}
                 </div>
             </div>

@@ -78,10 +78,16 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
     const { addItem } = useCart();
     const { businessData, basePath } = useTemplateContext(); 
     
+    // Default stock to 0 if undefined, assuming check is needed
+    const stock = item.stock !== undefined ? item.stock : 10; // Fallback to 10 if not specified to avoid breaking existing demos
+    const isOutOfStock = stock === 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault(); 
         e.stopPropagation();
-        addItem(item);
+        if (!isOutOfStock) {
+            addItem(item);
+        }
     };
     
     const category = businessData.categories.find(c => c.id === item.category);
@@ -89,39 +95,49 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
     return (
         <div className="group text-center h-full flex flex-col justify-between border border-transparent hover:border-brand-primary/50 transition-all p-2 ">
             <div>
-                <a href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] h-80 ">
+                <a href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] h-64 md:h-80 ">
                     <img 
                         src={item.image || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
                         alt={item.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                     />
+                     {isOutOfStock && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-black/70 text-white px-3 py-1 text-xs font-bold uppercase tracking-widest">Out of Stock</span>
+                        </div>
+                    )}
                 </a>
-                <div className="mt-5 px-1">
-                    <h3 className="text-xl font-serif font-medium text-brand-text">
+                <div className="mt-3 md:mt-5 px-1">
+                    <h3 className="text-sm md:text-xl font-serif font-medium text-brand-text truncate">
                         <a href={`${basePath}/product/${item.id}`} className="hover:text-brand-secondary">
                             {item.name}
                         </a>
                     </h3>
                     {category && (
-                        <p className="text-brand-text opacity-60 text-sm mt-1">{category.name}</p>
+                        <p className="text-brand-text opacity-60 text-xs md:text-sm mt-1">{category.name}</p>
                     )}
-                    <p className="text-brand-text font-medium text-base mt-1">₹{item.price.toFixed(2)}</p>
+                    <p className="text-brand-text font-medium text-sm md:text-base mt-1">₹{item.price.toFixed(2)}</p>
                 </div>
             </div>
 
-            <div className="mt-4 px-1 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pb-2">
+            <div className="mt-3 md:mt-4 px-1 space-y-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pb-2">
                  <a 
                     href={`${basePath}/product/${item.id}`}
-                    className="w-full text-center block bg-brand-primary text-brand-text px-4 py-2.5 font-semibold text-sm hover:bg-brand-primary/80 transition-colors "
+                    className="w-full text-center block bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-2.5 font-semibold text-xs md:text-sm hover:bg-brand-primary/80 transition-colors "
                 >
                     View Details
                 </a>
                 <button 
                     onClick={handleAddToCart}
-                    className="w-full text-center block bg-brand-secondary text-brand-bg px-4 py-2.5 font-semibold text-sm hover:opacity-80 transition-opacity "
+                    disabled={isOutOfStock}
+                    className={`w-full text-center block px-2 py-2 md:px-4 md:py-2.5 font-semibold text-xs md:text-sm transition-opacity ${
+                        isOutOfStock
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-brand-secondary text-brand-bg hover:opacity-80'
+                    }`}
                 >
-                    Add to Cart
+                    {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                 </button>
             </div>
         </div>

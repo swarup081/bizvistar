@@ -108,11 +108,15 @@ export const SpecialtyCard = ({ title, shapeClass = "rounded-t-[30px]" }) => {
 // --- PRODUCT CARD (Reusable) ---
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
-    
+    const stock = item.stock !== undefined ? item.stock : 10;
+    const isOutOfStock = stock === 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        addItem(item);
+        if(!isOutOfStock) {
+            addItem(item);
+        }
     };
 
     return (
@@ -122,20 +126,34 @@ export const ProductCard = ({ item }) => {
                     <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`}
                     />
+                     {isOutOfStock && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-[var(--color-primary)]/80 text-white px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full">Out of Stock</span>
+                        </div>
+                    )}
                 </div>
             </Link>
-            <div className="p-5 text-center flex flex-col items-center gap-2 flex-grow">
+            <div className="p-4 md:p-5 text-center flex flex-col items-center gap-2 flex-grow">
                 <Link href={`/templates/frostify/product/${item.id}`} className="flex-grow">
-                    <h3 className="font-serif text-lg text-[var(--color-primary)] hover:text-[var(--color-secondary)] tracking-wide">{item.name}</h3>
+                    <h3 className="font-serif text-sm md:text-lg text-[var(--color-primary)] hover:text-[var(--color-secondary)] tracking-wide">{item.name}</h3>
                 </Link>
-                <p className="text-[var(--color-secondary)] font-bold text-lg">${item.price.toFixed(2)}</p>
+                <p className="text-[var(--color-secondary)] font-bold text-sm md:text-lg">${item.price.toFixed(2)}</p>
                 <button
                     onClick={handleAddToCart}
-                    className="mt-auto w-full bg-[var(--color-primary)] text-white py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors flex items-center justify-center gap-2"
+                    disabled={isOutOfStock}
+                    className={`mt-auto w-full py-2 md:py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${
+                        isOutOfStock
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-secondary)]'
+                    }`}
                 >
-                    <ShoppingBag size={14} /> Add to Cart
+                    {isOutOfStock ? (
+                         'No Stock'
+                    ) : (
+                        <><ShoppingBag size={14} /> Add to Cart</>
+                    )}
                 </button>
             </div>
         </div>

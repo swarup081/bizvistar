@@ -84,26 +84,40 @@ export const Header = () => {
 // --- PRODUCT CARD ---
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
+    const stock = item.stock !== undefined ? item.stock : 10;
+    const isOutOfStock = stock === 0;
+
     return (
         <div className="group cursor-pointer flex flex-col gap-5">
             <div className="relative overflow-hidden aspect-[3/4] bg-[#F5F5F5]">
                 <img 
                     src={item.image} 
                     alt={item.name} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110" 
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                 />
-                <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+                 {isOutOfStock && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <span className="bg-[#0F1C23]/80 text-white px-4 py-2 text-xs font-bold uppercase tracking-[0.2em]">Out of Stock</span>
+                    </div>
+                )}
+                {/* Mobile: Static position below image or always visible?
+                    User requested "hover not possible". Making it visible on mobile via media query.
+                */}
+                <div className={`absolute inset-x-0 bottom-0 p-4 transition-all duration-500
+                    ${isOutOfStock ? 'hidden' : 'opacity-100 translate-y-0 md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0'}`}
+                >
                     <button 
-                        onClick={(e) => { e.preventDefault(); addItem(item); }}
-                        className="w-full bg-white/90 backdrop-blur-sm text-[#0F1C23] py-4 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#0F1C23] hover:text-white transition-colors"
+                        onClick={(e) => { e.preventDefault(); if(!isOutOfStock) addItem(item); }}
+                        disabled={isOutOfStock}
+                        className="w-full bg-white/90 backdrop-blur-sm text-[#0F1C23] py-3 md:py-4 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#0F1C23] hover:text-white transition-colors"
                     >
                         Add to Cart
                     </button>
                 </div>
             </div>
             <div className="text-center">
-                <h3 className="font-serif text-lg text-[#0F1C23] leading-tight mb-2 group-hover:text-[#D4A373] transition-colors">{item.name}</h3>
-                <span className="text-sm font-medium text-gray-500 tracking-wide">${item.price}</span>
+                <h3 className="font-serif text-sm md:text-lg text-[#0F1C23] leading-tight mb-2 group-hover:text-[#D4A373] transition-colors">{item.name}</h3>
+                <span className="text-xs md:text-sm font-medium text-gray-500 tracking-wide">${item.price}</span>
             </div>
         </div>
     );

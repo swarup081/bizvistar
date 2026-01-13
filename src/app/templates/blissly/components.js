@@ -96,11 +96,16 @@ export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart();
     // --- 2. GET DATA FROM CONTEXT ---
     const { businessData } = useTemplateContext();
+
+    const stock = item.stock !== undefined ? item.stock : 10;
+    const isOutOfStock = stock === 0;
     
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        addItem(item);
+        if(!isOutOfStock) {
+            addItem(item);
+        }
     };
     
     // --- 3. FIND CATEGORY FROM CONTEXT DATA ---
@@ -108,38 +113,48 @@ export const ProductCard = ({ item, templateName }) => {
 
     return (
         // Add border, rounded, overflow-hidden, and shadow for a cleaner "card" look
-        <div className="group h-full flex flex-col border border-brand-primary/50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md">
+        <div className="group h-full flex flex-col border border-brand-primary/50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md bg-white">
             
             {/* 1. Image */}
-            <a href={`/templates/${templateName}/product/${item.id}`} className="block aspect-[4/5] bg-brand-primary overflow-hidden">
+            <a href={`/templates/${templateName}/product/${item.id}`} className="block aspect-[4/5] bg-brand-primary overflow-hidden relative">
                 <img 
                     src={item.image} 
                     alt={item.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
                     onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                 />
+                 {isOutOfStock && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="bg-brand-text/80 text-brand-bg px-3 py-1 text-xs font-bold uppercase tracking-widest rounded">Out of Stock</span>
+                    </div>
+                )}
             </a>
             
             {/* 2. Content Area (flex-grow to push buttons to bottom) */}
-            <div className="p-4 flex flex-col flex-grow">
+            <div className="p-3 md:p-4 flex flex-col flex-grow">
                 <div className="flex-grow">
                     {/* 4. DISPLAY CATEGORY NAME */}
                     {category && (
-                        <p className="text-brand-text/60 text-sm">{category.name}</p>
+                        <p className="text-brand-text/60 text-xs md:text-sm">{category.name}</p>
                     )}
-                    <h4 className="text-xl font-bold text-brand-text font-serif mt-1">
+                    <h4 className="text-sm md:text-xl font-bold text-brand-text font-serif mt-1 truncate">
                         <a href={`/templates/${templateName}/product/${item.id}`} className="hover:text-brand-secondary">{item.name}</a>
                     </h4>
-                    <p className="text-brand-secondary text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-secondary text-sm md:text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
                 </div>
 
                 {/* 3. Actions (Always visible) */}
-                <div className="mt-4 space-y-2">
+                <div className="mt-3 md:mt-4 space-y-2">
                     <button 
                         onClick={handleAddToCart}
-                        className="w-full bg-brand-secondary text-brand-bg px-4 py-2.5 font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
+                        disabled={isOutOfStock}
+                        className={`w-full px-4 py-2 md:py-2.5 font-semibold text-xs md:text-sm rounded-md transition-opacity ${
+                            isOutOfStock
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-brand-secondary text-brand-bg hover:opacity-90'
+                        }`}
                     >
-                        Add to Cart
+                        {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                     </button>
                 </div>
             </div>
