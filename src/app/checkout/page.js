@@ -1,28 +1,28 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import { HelpCircle, ChevronDown, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import FaqSection from '@/components/checkout/FaqSection';
+import StateSelector from '@/components/checkout/StateSelector';
 import { AnimatePresence, motion } from 'framer-motion';
+import { saveBillingDetailsAction, createSubscriptionAction } from '@/app/actions/razorpayActions';
+import { getStandardPlanId } from '@/app/config/razorpay-config';
 
 // --- CONFIGURATION ---
 
 const PLAN_DETAILS = {
   'Starter': { monthly: 299 },
   'Pro': { monthly: 799 },
-  'Growth': { monthly: 1499 }, // Sometimes called 'Business' in memory, but 'Growth' in page.
+  'Growth': { monthly: 1499 },
 };
 
-// Map items to their struck prices.
-// If isFixed is true, use same price for both.
-// Else, use yearly/monthly distinct values.
 const FREE_ITEMS_CONFIG = [
   { 
     id: 'hosting',
-    name: 'Hosting', // Will be prefixed dynamically
+    name: 'Hosting',
     yearlyStruck: 5988, 
     monthlyStruck: 499,
     dynamicLabel: true 
@@ -63,30 +63,30 @@ const FREE_ITEMS_CONFIG = [
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // URL Params
   const planName = searchParams.get('plan') || 'Pro';
-  const billingCycle = searchParams.get('billing') || 'monthly'; // 'monthly' | 'yearly'
-  const paramPrice = parseFloat(searchParams.get('price') || '0');
+  const billingCycle = searchParams.get('billing') || 'monthly';
 
+  // Ignore URL price, fetch from config
   const isYearly = billingCycle === 'yearly';
-
-  // --- Calculate Actual Price ---
-  // If yearly, paramPrice is monthly rate (e.g. 666). Total = 666 * 12.
-  // If monthly, paramPrice is total (e.g. 799).
-  const finalPrice = isYearly ? paramPrice * 12 : paramPrice;
-
-  // --- Calculate Plan Original Price (Struck) ---
   const planBase = PLAN_DETAILS[planName] || { monthly: 0 };
+
+  // Calculate price from trusted config
+  const monthlyRate = planBase.monthly;
+  const finalPrice = isYearly ? monthlyRate * 12 : monthlyRate;
+
+  // Resolve Standard Plan ID immediately
+  const standardPlanId = getStandardPlanId(planName, billingCycle);
+
+  // --- Styling Logic ---
   let planStruckPrice = null;
 
   if (isYearly) {
-    // Yearly Struck = Monthly Rate * 12
     planStruckPrice = planBase.monthly * 12;
-  } else {
-    // Monthly: User said "no cut anything other", so NO struck price for the plan itself.
-    planStruckPrice = null;
   }
 
-  // --- Format Currency Helper ---
   const formatCurrency = (amount) => {
     return amount.toLocaleString('en-IN', {
       style: 'currency',
@@ -113,54 +113,123 @@ function CheckoutContent() {
   const [addCompanyDetails, setAddCompanyDetails] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // --- Load Razorpay Script ---
+  useEffect(() => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+      return () => {
+          document.body.removeChild(script);
+      };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
+  const handleStateChange = (stateValue) => {
+      setFormData(prev => ({ ...prev, state: stateValue }));
   };
 
-  // --- Dates for Legal Text ---
-  const today = new Date();
-  const renewalDate = new Date(today);
-  if (isYearly) {
-    renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-  } else {
-    renewalDate.setMonth(renewalDate.getMonth() + 1);
-  }
-  const formattedRenewalDate = renewalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  
-  const formattedPrice = formatCurrency(finalPrice);
-  const formattedPlanStruck = planStruckPrice ? formatCurrency(planStruckPrice) : null;
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsProcessing(true);
 
-   // Upper limit for e-mandate
-   const eMandateLimit = 15000;
-   const formattedLimit = eMandateLimit.toLocaleString('en-IN', {
-       style: 'currency',
-       currency: 'INR',
-       minimumFractionDigits: 0
-   });
+    if (!standardPlanId) {
+        setErrorMessage("Invalid Plan Selected. Please go back and select a plan again.");
+        setIsProcessing(false);
+        return;
+    }
 
-   const planLabel = isYearly ? '12-month plan' : 'Monthly plan';
+    try {
+        // 1. Save Billing Details
+        const billingPayload = {
+            fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zip,
+            country: formData.country,
+            phoneNumber: formData.phoneNumber,
+            companyName: addCompanyDetails ? formData.companyName : null,
+            gstNumber: addCompanyDetails ? formData.gstNumber : null
+        };
 
-   // --- Calculate Total Struck Price for Summary ---
-   // Start with Plan Struck (if any, else Plan Actual)
-   let totalStruckVal = planStruckPrice || finalPrice;
+        const saveRes = await saveBillingDetailsAction(billingPayload);
+        if (!saveRes.success) {
+            throw new Error(saveRes.error || "Failed to save billing details.");
+        }
 
-   // Add up all free items
-   FREE_ITEMS_CONFIG.forEach(item => {
+        // 2. Create Subscription
+        // SECURITY: We pass planName and billingCycle, NOT the ID.
+        // The server resolves the ID internally to prevent manipulation.
+        const subRes = await createSubscriptionAction(planName, billingCycle, promoCode);
+        if (!subRes.success) {
+            throw new Error(subRes.error || "Failed to initiate subscription.");
+        }
+
+        // 3. Open Razorpay
+        const options = {
+            "key": subRes.keyId,
+            "subscription_id": subRes.subscriptionId,
+            "name": "BizVistar",
+            "description": `${planName} Plan - ${billingCycle}`,
+            "image": "https://bizvistar.com/logo.png", // Or local logo path if valid url
+            "handler": function (response) {
+                // Success Callback
+                // The webhook will handle the backend state.
+                // We can redirect the user to a success page or dashboard.
+                // We could explicitly call a verification action here if we wanted immediate UI feedback,
+                // but usually redirecting is enough.
+                router.push('/dashboard?payment_success=true');
+            },
+            "prefill": {
+                "name": billingPayload.fullName,
+                "email": "", // Ideally we should fetch user email from auth context or let Rzp handle it
+                "contact": formData.phoneNumber
+            },
+            "notes": {
+                "note_key": "BizVistar Subscription"
+            },
+            "theme": {
+                "color": "#8A63D2"
+            }
+        };
+
+        const rzp1 = new window.Razorpay(options);
+        rzp1.on('payment.failed', function (response){
+             setErrorMessage(`Payment Failed: ${response.error.description}`);
+             setIsProcessing(false);
+        });
+        rzp1.open();
+
+    } catch (err) {
+        console.error(err);
+        setErrorMessage(err.message);
+        setIsProcessing(false); // Stop loading if error occurred before modal open
+    }
+  };
+
+
+  // --- Summary Calculations ---
+  const planLabel = isYearly ? '12-month plan' : 'Monthly plan';
+  let totalStruckVal = planStruckPrice || finalPrice;
+  FREE_ITEMS_CONFIG.forEach(item => {
      if (item.isFixed) {
         totalStruckVal += item.yearlyStruck;
      } else {
         totalStruckVal += isYearly ? item.yearlyStruck : item.monthlyStruck;
      }
-   });
-
-   const formattedTotalStruck = formatCurrency(totalStruckVal);
+  });
+  const formattedTotalStruck = formatCurrency(totalStruckVal);
+  const formattedPrice = formatCurrency(finalPrice);
+  const formattedPlanStruck = planStruckPrice ? formatCurrency(planStruckPrice) : null;
 
 
   return (
@@ -169,15 +238,18 @@ function CheckoutContent() {
         
         {/* --- LEFT COLUMN: BILLING FORM --- */}
         <div className="lg:col-span-2 space-y-8">
-            
-            {/* Step 1: Billing Address (Boxed) */}
             <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
-                   
                     <h2 className="text-2xl not-italic font-bold text-gray-900">Billing address</h2>
                 </div>
 
-                <form id="billing-form" onSubmit={handleSubmit} className="space-y-6">
+                {errorMessage && (
+                    <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg border border-red-200">
+                        {errorMessage}
+                    </div>
+                )}
+
+                <form id="billing-form" onSubmit={handlePayment} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">First name *</label>
@@ -187,7 +259,6 @@ function CheckoutContent() {
                                 value={formData.firstName}
                                 onChange={handleChange}
                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                                placeholder=""
                                 required 
                             />
                         </div>
@@ -199,7 +270,6 @@ function CheckoutContent() {
                                 value={formData.lastName}
                                 onChange={handleChange}
                                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                                placeholder=""
                                 required 
                             />
                         </div>
@@ -222,7 +292,7 @@ function CheckoutContent() {
                         <div className="flex">
                             <div className="relative w-1/3 sm:w-1/4">
                                 <select 
-                                    className="w-full p-3 border  border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full p-3 border border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
                                     value={formData.phoneCode}
                                     onChange={handleChange}
                                     name="phoneCode"
@@ -269,55 +339,20 @@ function CheckoutContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">State *</label>
-                            <div className="relative">
-                                <select 
-                                    name="state"
-                                    value={formData.state}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
-                                    required
-                                >
-                                    <option value="" disabled>Select State</option>
-<option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-<option value="Andhra Pradesh">Andhra Pradesh</option>
-<option value="Arunachal Pradesh">Arunachal Pradesh</option>
-<option value="Assam">Assam</option>
-<option value="Bihar">Bihar</option>
-<option value="Chandigarh">Chandigarh</option>
-<option value="Chhattisgarh">Chhattisgarh</option>
-<option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-<option value="Delhi">Delhi</option>
-<option value="Goa">Goa</option>
-<option value="Gujarat">Gujarat</option>
-<option value="Haryana">Haryana</option>
-<option value="Himachal Pradesh">Himachal Pradesh</option>
-<option value="Jammu and Kashmir">Jammu and Kashmir</option>
-<option value="Jharkhand">Jharkhand</option>
-<option value="Karnataka">Karnataka</option>
-<option value="Kerala">Kerala</option>
-<option value="Ladakh">Ladakh</option>
-<option value="Lakshadweep">Lakshadweep</option>
-<option value="Madhya Pradesh">Madhya Pradesh</option>
-<option value="Maharashtra">Maharashtra</option>
-<option value="Manipur">Manipur</option>
-<option value="Meghalaya">Meghalaya</option>
-<option value="Mizoram">Mizoram</option>
-<option value="Nagaland">Nagaland</option>
-<option value="Odisha">Odisha</option>
-<option value="Puducherry">Puducherry</option>
-<option value="Punjab">Punjab</option>
-<option value="Rajasthan">Rajasthan</option>
-<option value="Sikkim">Sikkim</option>
-<option value="Tamil Nadu">Tamil Nadu</option>
-<option value="Telangana">Telangana</option>
-<option value="Tripura">Tripura</option>
-<option value="Uttar Pradesh">Uttar Pradesh</option>
-<option value="Uttarakhand">Uttarakhand</option>
-<option value="West Bengal">West Bengal</option>
-                                    {/* Add more states as needed */}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                            </div>
+                            <StateSelector
+                                value={formData.state}
+                                onChange={handleStateChange}
+                                error={false}
+                            />
+                             {/* Hidden input for HTML5 validation if needed, though we rely on state check */}
+                             <input
+                                type="text"
+                                value={formData.state}
+                                className="sr-only"
+                                required
+                                onChange={()=>{}}
+                                tabIndex={-1}
+                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">ZIP code *</label>
@@ -333,15 +368,17 @@ function CheckoutContent() {
                     </div>
 
                     <div className="pt-2">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                checked={addCompanyDetails}
-                                onChange={(e) => setAddCompanyDetails(e.target.checked)}
-                                className="w-5 h-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                            />
+                        <label className="flex items-center space-x-3 cursor-pointer group">
+                             <div className="relative flex items-center">
+                                <input
+                                    type="checkbox"
+                                    checked={addCompanyDetails}
+                                    onChange={(e) => setAddCompanyDetails(e.target.checked)}
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-purple-500 checked:bg-purple-600 checked:border-purple-600"
+                                />
+                                <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} />
+                             </div>
                             <span className="text-base font-medium text-gray-700">Add company details</span>
-                            <HelpCircle className="w-4 h-4 text-purple-600" />
                         </label>
                     </div>
 
@@ -379,16 +416,21 @@ function CheckoutContent() {
                     
                     <button 
                         type="submit"
-                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-lg shadow-md transition-colors"
+                        disabled={isProcessing}
+                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
                     >
-                        Continue 
+                        {isProcessing ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            'Continue to Payment'
+                        )}
                     </button>
 
                 </form>
             </div>
-            
-         
-
         </div>
 
         {/* --- RIGHT COLUMN: ORDER SUMMARY --- */}
@@ -470,9 +512,10 @@ function CheckoutContent() {
                                         value={promoCode}
                                         onChange={(e) => setPromoCode(e.target.value)}
                                     />
-                                    <button className="px-4 py-2 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50">
-                                        Apply
-                                    </button>
+                                    {/* For logic, the coupon is applied at payment time in the backend action.
+                                        We could add a 'Check' button that hits an API, but prompt didn't strictly ask for pre-check.
+                                        We will just let them enter it and it will apply on payment.
+                                    */}
                                 </div>
                             </motion.div>
                         )}
