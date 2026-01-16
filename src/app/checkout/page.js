@@ -3,7 +3,7 @@
 import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { HelpCircle, ChevronDown, Loader2, Check } from 'lucide-react';
+import { HelpCircle, ChevronDown, Loader2, Check, X, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import FaqSection from '@/components/checkout/FaqSection';
 import StateSelector from '@/components/checkout/StateSelector';
@@ -77,7 +77,7 @@ function CheckoutContent() {
 
   // Calculate price from trusted config
   const monthlyRate = planBase.monthly;
-  const finalPrice = isYearly ? monthlyRate * 12 : monthlyRate;
+  const basePrice = isYearly ? monthlyRate * 12 : monthlyRate;
 
   // Resolve Standard Plan ID immediately
   const standardPlanId = getStandardPlanId(planName, billingCycle);
@@ -114,10 +114,10 @@ function CheckoutContent() {
   });
 
   const [addCompanyDetails, setAddCompanyDetails] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
+  const [showPromo, setShowPromo] = useState(true); // Default open as per screenshot design
   const [promoCode, setPromoCode] = useState('');
   const [couponStatus, setCouponStatus] = useState(null); // 'valid', 'invalid', 'loading'
-  const [appliedCoupon, setAppliedCoupon] = useState(null); // stores { code, description, type }
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // stores { code, description, type, percentOff, maxDiscount }
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -125,7 +125,23 @@ function CheckoutContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // --- Summary Calculations ---
-  let totalStruckVal = planStruckPrice || finalPrice;
+
+  // Calculate Discount
+  let discountAmount = 0;
+  if (appliedCoupon && appliedCoupon.percentOff) {
+      const calculatedDiscount = (basePrice * appliedCoupon.percentOff) / 100;
+      discountAmount = calculatedDiscount;
+
+      // Apply Max Cap if exists
+      if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+          discountAmount = appliedCoupon.maxDiscount;
+      }
+  }
+
+  const finalPrice = Math.max(0, basePrice - discountAmount);
+
+  // Calculate Struck values for free items
+  let totalStruckVal = planStruckPrice || basePrice;
   FREE_ITEMS_CONFIG.forEach(item => {
      if (item.isFixed) {
         totalStruckVal += item.yearlyStruck;
@@ -133,9 +149,12 @@ function CheckoutContent() {
         totalStruckVal += isYearly ? item.yearlyStruck : item.monthlyStruck;
      }
   });
+
   const formattedTotalStruck = formatCurrency(totalStruckVal);
   const formattedPrice = formatCurrency(finalPrice);
   const formattedPlanStruck = planStruckPrice ? formatCurrency(planStruckPrice) : null;
+  const formattedBasePrice = formatCurrency(basePrice);
+  const formattedDiscount = formatCurrency(discountAmount);
 
   // --- Auth Check ---
   useEffect(() => {
@@ -260,16 +279,25 @@ function CheckoutContent() {
               setAppliedCoupon({
                   code: promoCode,
                   description: res.description,
-                  type: res.type
+                  type: res.type,
+                  percentOff: res.percentOff,
+                  maxDiscount: res.maxDiscount
               });
+              setPromoCode(''); // clear input on success
           } else {
               setCouponStatus('invalid');
-              setAppliedCoupon(null);
+              // setAppliedCoupon(null); // Don't clear existing if new one fails
           }
       } catch (err) {
           setCouponStatus('invalid');
-          setAppliedCoupon(null);
+          // setAppliedCoupon(null);
       }
+  };
+
+  const removeCoupon = () => {
+      setAppliedCoupon(null);
+      setCouponStatus(null);
+      setPromoCode('');
   };
 
 
@@ -327,7 +355,7 @@ function CheckoutContent() {
         }
 
         // 3. Create Subscription (Pass Token for Auth)
-        const codeToSend = appliedCoupon ? appliedCoupon.code : (couponStatus === 'valid' ? promoCode : '');
+        const codeToSend = appliedCoupon ? appliedCoupon.code : '';
 
         // Pass accessToken to Server Action to verify user
         const subRes = await createSubscriptionAction(planName, billingCycle, codeToSend, accessToken);
@@ -628,19 +656,9 @@ function CheckoutContent() {
                                     {formattedPlanStruck}
                                 </span>
                             )}
-                            <span className="text-base font-bold text-gray-900">{formattedPrice}</span>
+                            <span className="text-base font-bold text-gray-900">{formattedBasePrice}</span>
                          </div>
                     </div>
-
-                    {/* Discount Line Item */}
-                    {appliedCoupon && appliedCoupon.description && (
-                         <div className="flex justify-between items-baseline text-purple-700 font-medium">
-                            <span className="text-base">Coupon: {appliedCoupon.code}</span>
-                            <div className="text-right">
-                                <span className="text-sm">{appliedCoupon.description}</span>
-                            </div>
-                        </div>
-                    )}
 
                     {/* Free Items Loop */}
                     {FREE_ITEMS_CONFIG.map((item, i) => {
@@ -668,55 +686,63 @@ function CheckoutContent() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4 mb-6">
+                     {/* Discount Row (Green) */}
+                     {discountAmount > 0 && appliedCoupon && (
+                        <div className="flex justify-between items-center mb-4 text-emerald-600 font-medium">
+                            <div className="flex items-center gap-2">
+                                <Tag className="w-4 h-4" />
+                                <span>{appliedCoupon.code} -{appliedCoupon.percentOff}%</span>
+                            </div>
+                            <span>-{formattedDiscount}</span>
+                        </div>
+                     )}
+
                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xl font-bold text-gray-900">Total</span>
+                        <span className="text-xl font-bold text-gray-900">Subtotal</span>
                         <div className="text-right">
-                            <span className="block text-sm text-gray-400 line-through">{formattedTotalStruck}</span>
+                            {/* Struck through TOTAL if discount applied, otherwise existing struck total */}
+                            <span className="block text-sm text-gray-400 line-through">
+                                {discountAmount > 0 ? formattedBasePrice : formattedTotalStruck}
+                            </span>
                             <span className="text-3xl font-bold text-gray-900">{formattedPrice}</span>
                          </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    <button 
-                        onClick={() => setShowPromo(!showPromo)}
-                        className="text-purple-600 font-semibold hover:text-purple-700  focus:outline-none"
-                    >
-                        Have a coupon code?
-                    </button>
+                    <div className="flex justify-between items-center">
+                        <h4 className="text-purple-600 font-semibold">Have a coupon code?</h4>
+                    </div>
                     
-                    <AnimatePresence>
-                        {showPromo && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
+                    {appliedCoupon ? (
+                        <div className="bg-gray-100 rounded-md p-3 flex justify-between items-center">
+                            <div className="font-mono font-bold text-gray-700">{appliedCoupon.code}</div>
+                            <button onClick={removeCoupon} className="text-gray-500 hover:text-red-500">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2 pt-2 items-center">
+                            <input
+                                type="text"
+                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-purple-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
+                                placeholder="Code"
+                                value={promoCode}
+                                onChange={(e) => {
+                                    setPromoCode(e.target.value);
+                                    setCouponStatus(null);
+                                }}
+                            />
+                            <button
+                                onClick={handleApplyCoupon}
+                                disabled={couponStatus === 'loading' || !promoCode}
+                                className="px-6 py-3 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
                             >
-                                <div className="flex gap-2 pt-2 items-center">
-                                    <input 
-                                        type="text" 
-                                        className={cn("w-full p-2 border rounded-md focus:outline-none focus:border-purple-500", couponStatus === 'invalid' ? "border-red-500" : "border-gray-300")}
-                                        placeholder="Code"
-                                        value={promoCode}
-                                        onChange={(e) => {
-                                            setPromoCode(e.target.value);
-                                            setCouponStatus(null);
-                                        }}
-                                    />
-                                    <button
-                                        onClick={handleApplyCoupon}
-                                        disabled={couponStatus === 'loading' || !promoCode}
-                                        className="px-4 py-2 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
-                                    >
-                                        {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                                    </button>
-                                </div>
-                                {couponStatus === 'valid' && <p className="text-sm text-green-600 mt-1">Coupon Applied!</p>}
-                                {couponStatus === 'invalid' && <p className="text-sm text-red-600 mt-1">Invalid Coupon Code</p>}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                            </button>
+                        </div>
+                    )}
+                    {couponStatus === 'invalid' && <p className="text-sm text-red-600 mt-1">Invalid Coupon Code</p>}
                 </div>
 
              </div>

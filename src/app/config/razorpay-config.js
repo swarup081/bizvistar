@@ -18,6 +18,8 @@ export const COUPON_CONFIG = {
         active: true,
         description: '70% Off First Month',
         type: 'offer_apply',
+        percentOff: 70,
+        maxDiscount: 1300,
         // Offer IDs mapped by Mode
         offerIds: {
             test: 'offer_S4Bsf2tMH8hFsz',
@@ -46,7 +48,7 @@ const RAZORPAY_CONFIG = {
       'plan_S4BBdtWGIXxqLI': 'plan_S4BNHI0KqufC0j', // Growth Yearly
 
        // Additional mapping if the other starter yearly ID is used (from previous context)
-      'plan_S4BD17xQeMYcNn': 'plan_S4BLw6F1nsWNOZ'
+      // 'plan_S4BD17xQeMYcNn': 'plan_S4BLw6F1nsWNOZ' // Removed prohibited ID
     }
   },
   live: {
@@ -68,7 +70,7 @@ const RAZORPAY_CONFIG = {
       'plan_S2wxhv68uVGCPj': 'plan_S4ENY18sw6dq6U', // Growth Yearly
 
        // Duplicate starter yearly handling
-      'plan_S2wsIi1wd8y1zh': 'plan_S4E0T975OQgHl7'
+      // 'plan_S2wsIi1wd8y1zh': 'plan_S4E0T975OQgHl7' // Removed prohibited ID
     }
   }
 };
