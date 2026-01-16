@@ -146,8 +146,10 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
             key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
         });
     } else {
+        // Use getKeyId() from config to ensure consistency between backend creation and frontend popup
+        const configKeyId = getKeyId();
          razorpayInstance = new Razorpay({
-            key_id: process.env.RAZOPAY_Test_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID,
+            key_id: configKeyId,
             key_secret: process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET,
         });
     }

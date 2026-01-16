@@ -3,7 +3,7 @@
 export const COUPON_CONFIG = {
     'FOUNDER': {
         active: true, // Master switch to enable/disable
-        expiresAt: '2025-12-31T23:59:59Z', // Optional: Set expiry date
+        expiresAt: '2030-12-31T23:59:59Z', // Optional: Set expiry date
         limit: 1000 // Optional: Could implement DB check against this
     }
 };
