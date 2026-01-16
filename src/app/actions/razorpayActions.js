@@ -7,7 +7,7 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import RAZORPAY_CONFIG, { getPlanId, getKeyId, getRazorpayMode, getStandardPlanId, COUPON_CONFIG } from '../config/razorpay-config';
 
-// Lazy Initialize Supabase Admin inside functions or use placeholder for build
+// Lazy Initialize Supabase Admin
 const getSupabaseAdmin = () => {
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -15,7 +15,7 @@ const getSupabaseAdmin = () => {
     );
 };
 
-// Helper to get authenticated user - MODIFIED to accept optional token
+// Helper to get authenticated user
 async function getUser(accessToken = null) {
   // If token provided (from client-side session), use it
   if (accessToken) {
@@ -35,7 +35,7 @@ async function getUser(accessToken = null) {
       return user;
   }
 
-  // Fallback to cookies (if available)
+  // Fallback to cookies
   try {
       const cookieStore = await cookies();
       const supabase = createServerClient(
@@ -57,67 +57,62 @@ async function getUser(accessToken = null) {
       if (error || !user) return null;
       return user;
   } catch (e) {
-      // Cookies might fail if called outside of request context (rare in Actions)
       return null;
   }
 }
 
-// Counts how many times a coupon has been used in ACTIVE subscriptions
-async function getCouponUsageCount(couponCode) {
+// Check if user has already used a specific coupon
+async function hasUserUsedCoupon(userId, couponCode) {
     const supabaseAdmin = getSupabaseAdmin();
-    // We check the subscriptions table notes->>'coupon_used'
-    // This is not perfectly index-optimized but sufficient for 50 users.
-    // Assuming subscriptions table exists and tracks this.
-    // If not, we might need to count from 'orders' or rely on what we have.
-    // The previous webhook code saves 'notes' into subscription but schema doesn't have notes column,
-    // it likely saves it implicitly or we need to check how webhook saves it.
-    // Wait, the webhook code provided earlier saves `user_id` but not `notes` explicitly into a json column unless I add it.
-    // The current webhook impl:
-    // .upsert({ ... status, plan_id ... })
-    // It does NOT save notes.
-    // HOWEVER, the Limit requirement is "valid for live 50 user only".
-    // We can count rows in subscriptions table where we can infer it?
-    // Or we can query Razorpay API. querying API is safer but slower.
-    // Let's implement a count based on Supabase 'client_analytics' or just assume we add a 'coupon_code' column to subscriptions?
-    // For now, I will perform a count on `subscriptions` table assuming we can maybe infer plan ID?
-    // Actually, `FOUNDER` swaps the plan ID. So we can count subscriptions with `plan_id` matching Founder Plans.
+    // Check 'subscriptions' table metadata
+    // We look for any subscription where metadata->>'coupon_used' matches the code
+    const { data, error } = await supabaseAdmin
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('metadata->>coupon_used', couponCode)
+        .limit(1);
 
-    // Get all Founder Plan IDs from config
-    const mode = getRazorpayMode();
-    const config = RAZORPAY_CONFIG[mode];
-    const founderPlanIds = Object.values(config.founder_mapping);
-
-    // We need to resolve these RAZORPAY plan IDs to INTERNAL plan IDs to query the DB.
-    // Because `subscriptions` table stores `plan_id` (Internal PK).
-
-    // This is getting complex to reverse map.
-    // ALTERNATIVE: Just count active subscriptions for now as a rough proxy if we can't map perfectly,
-    // OR fetch 'plans' from DB where razorpay_plan_id IN (...)
-
-    if (couponCode === 'FOUNDER') {
-        const { data: plans } = await supabaseAdmin
-            .from('plans')
-            .select('id')
-            .in('razorpay_plan_id', founderPlanIds);
-
-        if (!plans || plans.length === 0) return 0;
-
-        const internalIds = plans.map(p => p.id);
-
-        const { count, error } = await supabaseAdmin
-            .from('subscriptions')
-            .select('*', { count: 'exact', head: true })
-            .in('plan_id', internalIds)
-            .in('status', ['active', 'past_due']); // count active users
-
-        if (error) {
-            console.error("Error counting founder usage", error);
-            return 0; // Fail open or closed? Fail open for now.
-        }
-        return count || 0;
+    if (error) {
+        console.error("Error checking coupon usage:", error);
+        return false; // Fail open (allow) or close? Safer to fail close if critical, but let's log.
     }
 
-    return 0;
+    return data && data.length > 0;
+}
+
+// Check if user has ANY prior subscriptions (for 'first_time_only' coupons)
+async function hasPriorSubscriptions(userId) {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { count, error } = await supabaseAdmin
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+    if (error) return false;
+    return count > 0;
+}
+
+
+// Counts how many times a coupon has been used in ACTIVE subscriptions (Global Limit)
+async function getCouponUsageCount(couponCode) {
+    const supabaseAdmin = getSupabaseAdmin();
+
+    // For global limits like FOUNDER (50 users)
+    // We can rely on the plan ID logic or metadata.
+    // Let's use metadata for consistency now.
+
+    const { count, error } = await supabaseAdmin
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('metadata->>coupon_used', couponCode)
+        .in('status', ['active', 'past_due']);
+
+    if (error) {
+        console.error("Error counting coupon usage", error);
+        return 0;
+    }
+    return count || 0;
 }
 
 export async function saveBillingDetailsAction(billingData, accessToken = null) {
@@ -132,10 +127,11 @@ export async function saveBillingDetailsAction(billingData, accessToken = null) 
     }
 
     // Save to profiles
+    // Ensure email is saved in billing_address JSONB
     const { error } = await supabaseAdmin
       .from('profiles')
       .update({
-        billing_address: billingData,
+        billing_address: billingData, // billingData now includes 'email'
         full_name: billingData.fullName
       })
       .eq('id', user.id);
@@ -154,28 +150,35 @@ export async function validateCouponAction(couponCode) {
     console.log(`Validating Coupon: '${couponCode}' -> '${normalized}'`);
     const config = COUPON_CONFIG[normalized];
 
+    // Auth context needed for usage checks
+    let user = null;
+    try {
+        user = await getUser(); // Try cookie auth
+    } catch(e) {}
+
     if (config && config.active) {
-        // Check Expiry
+        // 1. Check Expiry
         if (config.expiresAt) {
             const now = new Date();
             const expires = new Date(config.expiresAt);
             if (now > expires) {
-                console.log("Coupon Expired");
                 return { valid: false, message: "Coupon Expired" };
             }
         }
 
-        // Check Limit (FOUNDER)
+        // 2. Check Global Limit (FOUNDER)
         if (config.limit) {
             const currentUsage = await getCouponUsageCount(normalized);
-            console.log(`Coupon ${normalized} usage: ${currentUsage}/${config.limit}`);
             if (currentUsage >= config.limit) {
                  return { valid: false, message: "Coupon Usage Limit Reached" };
             }
         }
 
-        console.log("Coupon Valid");
-        // Return enriched info for UI
+        // 3. Check User-Specific Constraints (if user is logged in)
+        // If user not logged in, we might skip this or optimistically allow,
+        // enforcing it later at createSubscription.
+        // We will optimistically allow here but enforce strictly at createSubscriptionAction.
+
         return {
             valid: true,
             type: config.type,
@@ -186,7 +189,6 @@ export async function validateCouponAction(couponCode) {
         };
     }
 
-    console.log("Invalid Coupon Config or Inactive");
     return { valid: false, message: "Invalid Coupon" };
 }
 
@@ -197,23 +199,16 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
         }
 
         const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-        // Note: Razorpay Verification on Frontend usually uses Key Secret, not Webhook Secret.
-        // Wait, for subscription `razorpay_signature` is generated using KEY_SECRET?
-        // Let's check docs or config. usually standard checkout uses KEY_SECRET.
-
-        // We need the correct secret based on Mode.
         const mode = getRazorpayMode();
         let keySecret;
         if (mode === 'live') {
             keySecret = process.env.RAZORPAY_LIVE_KEY_SECRET;
         } else {
-             // Supports the typo version too
             keySecret = process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET;
         }
 
         if (!keySecret) throw new Error("Server Misconfiguration: Missing Key Secret");
 
-        // Verification Formula: hmac_sha256(payment_id + "|" + subscription_id, secret)
         const text = paymentId + '|' + subscriptionId;
         const generatedSignature = crypto.createHmac('sha256', keySecret).update(text).digest('hex');
 
@@ -231,35 +226,44 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
 
 /**
  * Creates a subscription safely.
- * @param {string} planName - "Starter", "Pro", "Growth"
- * @param {string} billingCycle - "monthly", "yearly"
- * @param {string} couponCode - optional
- * @param {string} accessToken - optional (for client-side auth bridging)
  */
 export async function createSubscriptionAction(planName, billingCycle, couponCode, accessToken = null) {
   try {
     const user = await getUser(accessToken);
     if (!user) throw new Error("Unauthorized");
 
-    // 1. Resolve Standard Plan ID from Name/Cycle
-    if (!planName || !billingCycle) {
-        throw new Error("Invalid Plan details.");
-    }
-
     const standardPlanId = getStandardPlanId(planName, billingCycle);
-    if (!standardPlanId) {
-        throw new Error("Plan not found in configuration.");
-    }
+    if (!standardPlanId) throw new Error("Plan not found in configuration.");
 
-    // 2. Validate & Configure Coupon Logic
     const normalizedCoupon = couponCode ? couponCode.trim().toUpperCase() : '';
-    const finalPlanId = getPlanId(standardPlanId, couponCode); // Handles PLAN_SWAP (Founder)
+    const finalPlanId = getPlanId(standardPlanId, couponCode);
 
     const couponConfig = COUPON_CONFIG[normalizedCoupon];
     const mode = getRazorpayMode();
     const keyId = getKeyId();
 
-    // 3. Initialize Razorpay
+    // --- ENFORCE SECURITY CONTROLS ---
+    if (couponConfig) {
+        // 1. Check Global Limit again
+        if (couponConfig.limit) {
+             const usage = await getCouponUsageCount(normalizedCoupon);
+             if (usage >= couponConfig.limit) throw new Error("Coupon limit reached.");
+        }
+
+        // 2. Check 'once_per_user'
+        if (couponConfig.usageType === 'once_per_user') {
+            const used = await hasUserUsedCoupon(user.id, normalizedCoupon);
+            if (used) throw new Error(`You have already used the coupon '${normalizedCoupon}'.`);
+        }
+
+        // 3. Check 'first_time_only'
+        if (couponConfig.usageType === 'first_time_only') {
+            const hasPrior = await hasPriorSubscriptions(user.id);
+            if (hasPrior) throw new Error(`The coupon '${normalizedCoupon}' is for new customers only.`);
+        }
+    }
+
+    // Initialize Razorpay
     let razorpayInstance;
     if (mode === 'live') {
          razorpayInstance = new Razorpay({
@@ -267,48 +271,31 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
             key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
         });
     } else {
-        const configKeyId = getKeyId();
+         const configKeyId = getKeyId();
          razorpayInstance = new Razorpay({
             key_id: configKeyId,
             key_secret: process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET,
         });
     }
 
-    // 4. Prepare Subscription Options
     let totalCount = 120; // Default 10 years
     let offerId = null;
     let startAt = null;
 
-    // A) Founder Logic (Plan Swap)
     if (normalizedCoupon === 'FOUNDER') {
-        // Double check limit before creating
-        const usage = await getCouponUsageCount('FOUNDER');
-        if (COUPON_CONFIG.FOUNDER.limit && usage >= COUPON_CONFIG.FOUNDER.limit) {
-            throw new Error("Coupon limit reached.");
-        }
-
         if (billingCycle === 'monthly') {
-            totalCount = 12; // 1 year of monthly
+            totalCount = 12;
         } else if (billingCycle === 'yearly') {
-            totalCount = 1; // 1 year payment
+            totalCount = 1;
         }
     }
 
-    // B) Offer Apply Logic (70% Off)
     if (couponConfig && couponConfig.type === 'offer_apply' && couponConfig.offerIds) {
         offerId = couponConfig.offerIds[mode];
         if (!offerId) throw new Error("Offer not available in this mode");
     }
 
-    // C) Trial Period Logic
     if (couponConfig && couponConfig.type === 'trial_period') {
-        // Add trial days to start time
-        // Razorpay expects start_at in unix timestamp (seconds)
-        // Note: For a card authorization to happen immediately, usually we create subscription without start_at
-        // but with an offer that gives 100% discount, OR with start_at.
-        // If start_at is used, the immediate payment is usually just auth?
-        // User said: "subscription should start immediately except the coupon code they have for free trial"
-        // So for trial, we delay start.
         if (couponConfig.trialDays) {
              const startDate = new Date();
              startDate.setDate(startDate.getDate() + couponConfig.trialDays);
@@ -324,7 +311,8 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
         user_id: user.id,
         coupon_used: normalizedCoupon || 'none',
         plan_name: planName,
-        billing_cycle: billingCycle
+        billing_cycle: billingCycle,
+        // We pass coupon_used here so webhook can pick it up
       }
     };
 
@@ -342,7 +330,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
       subscriptionId: subscription.id,
       keyId: keyId,
       planId: finalPlanId,
-      offerId: offerId // Return to frontend if needed
+      offerId: offerId
     };
 
   } catch (err) {

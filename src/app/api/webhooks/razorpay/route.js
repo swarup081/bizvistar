@@ -49,6 +49,7 @@ export async function POST(req) {
       const razorpayPlanId = subscription.plan_id;
       const notes = subscription.notes || {};
       const userId = notes.user_id;
+      const couponUsed = notes.coupon_used; // Extract coupon used
 
       if (!userId) {
         console.warn(`No user_id in subscription notes for event ${eventName}`);
@@ -82,17 +83,25 @@ export async function POST(req) {
 
       let internalPlanId = planData?.id;
 
-      // Upsert Subscription
-      const { error } = await supabaseAdmin
-        .from('subscriptions')
-        .upsert({
+      // Prepare upsert payload
+      const upsertPayload = {
             user_id: userId,
             razorpay_subscription_id: razorpaySubscriptionId,
             status: newStatus,
             plan_id: internalPlanId || null,
             current_period_start: currentPeriodStart.toISOString(),
             current_period_end: currentPeriodEnd.toISOString(),
-        }, { onConflict: 'razorpay_subscription_id' });
+            // Save metadata including coupon
+            metadata: {
+                coupon_used: couponUsed,
+                notes: notes // save all notes just in case
+            }
+      };
+
+      // Upsert Subscription
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
 
       if (error) {
         console.error('Error updating subscription in DB:', error);
@@ -102,7 +111,6 @@ export async function POST(req) {
 
     // --- Payment Failed (Log only) ---
     if (eventName === 'payment.failed') {
-        // We can log this or trigger an email alert system if one existed.
         const payment = payload.payment.entity;
         console.log(`Payment Failed: ${payment.id} for reason: ${payment.error_description}`);
     }
