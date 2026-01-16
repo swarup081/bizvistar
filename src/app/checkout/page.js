@@ -2,8 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { HelpCircle, ChevronDown, Loader2, Check, X, Tag } from 'lucide-react';
+import { Loader2, Check, X, Tag, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import FaqSection from '@/components/checkout/FaqSection';
 import StateSelector from '@/components/checkout/StateSelector';
@@ -114,7 +113,9 @@ function CheckoutContent() {
   });
 
   const [addCompanyDetails, setAddCompanyDetails] = useState(false);
-  const [showPromo, setShowPromo] = useState(true); // Default open as per screenshot design
+
+  // Coupon State
+  const [showPromo, setShowPromo] = useState(false); // Default closed (Accordion style)
   const [promoCode, setPromoCode] = useState('');
   const [couponStatus, setCouponStatus] = useState(null); // 'valid', 'invalid', 'loading'
   const [appliedCoupon, setAppliedCoupon] = useState(null); // stores { code, description, type, percentOff, maxDiscount }
@@ -152,9 +153,23 @@ function CheckoutContent() {
 
   const formattedTotalStruck = formatCurrency(totalStruckVal);
   const formattedPrice = formatCurrency(finalPrice);
-  const formattedPlanStruck = planStruckPrice ? formatCurrency(planStruckPrice) : null;
   const formattedBasePrice = formatCurrency(basePrice);
   const formattedDiscount = formatCurrency(discountAmount);
+
+  // Dynamic Plan Row Price Display
+  // If discount applied: Show <s>BasePrice</s> FinalPrice
+  // Else: Show <s>YearlyStruck</s> BasePrice (standard logic)
+  let planDisplayStruck = planStruckPrice;
+  let planDisplayMain = basePrice;
+
+  if (discountAmount > 0) {
+      planDisplayStruck = basePrice;
+      planDisplayMain = finalPrice;
+  }
+
+  const formattedPlanDisplayStruck = planDisplayStruck ? formatCurrency(planDisplayStruck) : null;
+  const formattedPlanDisplayMain = formatCurrency(planDisplayMain);
+
 
   // --- Auth Check ---
   useEffect(() => {
@@ -651,12 +666,12 @@ function CheckoutContent() {
                     <div className="flex justify-between items-baseline">
                          <span className="text-base text-gray-700">{planLabel}</span>
                          <div className="text-right">
-                            {planStruckPrice && (
+                            {formattedPlanDisplayStruck && (
                                 <span className="text-sm text-gray-400 line-through mr-2">
-                                    {formattedPlanStruck}
+                                    {formattedPlanDisplayStruck}
                                 </span>
                             )}
-                            <span className="text-base font-bold text-gray-900">{formattedBasePrice}</span>
+                            <span className="text-base font-bold text-gray-900">{formattedPlanDisplayMain}</span>
                          </div>
                     </div>
 
@@ -710,39 +725,59 @@ function CheckoutContent() {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <h4 className="text-purple-600 font-semibold">Have a coupon code?</h4>
-                    </div>
+                     {/* Coupon Toggle Header */}
+                    <button
+                        type="button"
+                        onClick={() => setShowPromo(!showPromo)}
+                        className="flex items-center gap-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors w-full"
+                    >
+                        <Tag className="w-4 h-4" />
+                        <span>Have a coupon code?</span>
+                        <ChevronDown className={cn("w-4 h-4 transition-transform ml-auto", showPromo ? "rotate-180" : "")} />
+                    </button>
                     
-                    {appliedCoupon ? (
-                        <div className="bg-gray-100 rounded-md p-3 flex justify-between items-center">
-                            <div className="font-mono font-bold text-gray-700">{appliedCoupon.code}</div>
-                            <button onClick={removeCoupon} className="text-gray-500 hover:text-red-500">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex gap-2 pt-2 items-center">
-                            <input
-                                type="text"
-                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-purple-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
-                                placeholder="Code"
-                                value={promoCode}
-                                onChange={(e) => {
-                                    setPromoCode(e.target.value);
-                                    setCouponStatus(null);
-                                }}
-                            />
-                            <button
-                                onClick={handleApplyCoupon}
-                                disabled={couponStatus === 'loading' || !promoCode}
-                                className="px-6 py-3 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
+                    <AnimatePresence>
+                        {(showPromo || appliedCoupon) && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
                             >
-                                {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                            </button>
-                        </div>
-                    )}
-                    {couponStatus === 'invalid' && <p className="text-sm text-red-600 mt-1">Invalid Coupon Code</p>}
+                                <div className="pt-2">
+                                    {appliedCoupon ? (
+                                        <div className="bg-gray-100 rounded-md p-3 flex justify-between items-center">
+                                            <div className="font-mono font-bold text-gray-700">{appliedCoupon.code}</div>
+                                            <button onClick={removeCoupon} className="text-gray-500 hover:text-red-500">
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="text"
+                                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-purple-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
+                                                placeholder="Code"
+                                                value={promoCode}
+                                                onChange={(e) => {
+                                                    setPromoCode(e.target.value);
+                                                    setCouponStatus(null);
+                                                }}
+                                            />
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                disabled={couponStatus === 'loading' || !promoCode}
+                                                className="px-6 py-3 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
+                                            >
+                                                {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                            </button>
+                                        </div>
+                                    )}
+                                    {couponStatus === 'invalid' && <p className="text-sm text-red-600 mt-1">Invalid Coupon Code</p>}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
              </div>

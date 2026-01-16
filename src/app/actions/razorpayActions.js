@@ -7,19 +7,21 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import RAZORPAY_CONFIG, { getPlanId, getKeyId, getRazorpayMode, getStandardPlanId, COUPON_CONFIG } from '../config/razorpay-config';
 
-// Initialize Supabase Admin (Service Role)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Lazy Initialize Supabase Admin inside functions or use placeholder for build
+const getSupabaseAdmin = () => {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+      process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+    );
+};
 
 // Helper to get authenticated user - MODIFIED to accept optional token
 async function getUser(accessToken = null) {
   // If token provided (from client-side session), use it
   if (accessToken) {
       const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
         {
             global: {
                 headers: {
@@ -37,8 +39,8 @@ async function getUser(accessToken = null) {
   try {
       const cookieStore = await cookies();
       const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
         {
           cookies: {
             getAll() { return cookieStore.getAll() },
@@ -62,6 +64,7 @@ async function getUser(accessToken = null) {
 
 // Counts how many times a coupon has been used in ACTIVE subscriptions
 async function getCouponUsageCount(couponCode) {
+    const supabaseAdmin = getSupabaseAdmin();
     // We check the subscriptions table notes->>'coupon_used'
     // This is not perfectly index-optimized but sufficient for 50 users.
     // Assuming subscriptions table exists and tracks this.
@@ -119,6 +122,7 @@ async function getCouponUsageCount(couponCode) {
 
 export async function saveBillingDetailsAction(billingData, accessToken = null) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const user = await getUser(accessToken);
     if (!user) throw new Error("Unauthorized");
 
@@ -176,7 +180,9 @@ export async function validateCouponAction(couponCode) {
             valid: true,
             type: config.type,
             description: config.description,
-            code: normalized
+            code: normalized,
+            percentOff: config.percentOff,
+            maxDiscount: config.maxDiscount
         };
     }
 

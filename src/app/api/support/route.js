@@ -1,10 +1,6 @@
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const SYSTEM_PROMPT = `
 ROLE & IDENTITY
 You are the "BizVistar Assistant," a support bot for a SaaS platform that helps Indian shop owners create online stores. You are helpful, polite, and extremely concise. You are talking to small business owners (non-technical users).
@@ -44,6 +40,15 @@ You: "We are currently offering a 50% discount (₹399/mo) for early members. Th
 export async function POST(req) {
   try {
     const { messages } = await req.json();
+
+    // Lazy Initialization inside handler
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+         console.error("OpenAI API Key missing");
+         return NextResponse.json({ reply: "I am currently offline for maintenance. Please contact support via WhatsApp." });
+    }
+
+    const openai = new OpenAI({ apiKey });
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
