@@ -1,28 +1,29 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { HelpCircle, ChevronDown } from 'lucide-react';
+import { Loader2, Check, X, Tag, ChevronDown, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import FaqSection from '@/components/checkout/FaqSection';
+import StateSelector from '@/components/checkout/StateSelector';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createSubscriptionAction, verifyPaymentAction } from '@/app/actions/razorpayActions';
+import { getStandardPlanId } from '@/app/config/razorpay-config';
+import { validateCouponAction } from '@/app/actions/razorpayActions';
+import { supabase } from '@/lib/supabaseClient';
 
 // --- CONFIGURATION ---
 
 const PLAN_DETAILS = {
   'Starter': { monthly: 299 },
   'Pro': { monthly: 799 },
-  'Growth': { monthly: 1499 }, // Sometimes called 'Business' in memory, but 'Growth' in page.
+  'Growth': { monthly: 1499 },
 };
 
-// Map items to their struck prices.
-// If isFixed is true, use same price for both.
-// Else, use yearly/monthly distinct values.
 const FREE_ITEMS_CONFIG = [
   { 
     id: 'hosting',
-    name: 'Hosting', // Will be prefixed dynamically
+    name: 'Hosting', 
     yearlyStruck: 5988, 
     monthlyStruck: 499,
     dynamicLabel: true 
@@ -63,30 +64,31 @@ const FREE_ITEMS_CONFIG = [
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  // URL Params
   const planName = searchParams.get('plan') || 'Pro';
-  const billingCycle = searchParams.get('billing') || 'monthly'; // 'monthly' | 'yearly'
-  const paramPrice = parseFloat(searchParams.get('price') || '0');
-
+  const billingCycle = searchParams.get('billing') || 'monthly';
+  
+  // Ignore URL price, fetch from config
   const isYearly = billingCycle === 'yearly';
-
-  // --- Calculate Actual Price ---
-  // If yearly, paramPrice is monthly rate (e.g. 666). Total = 666 * 12.
-  // If monthly, paramPrice is total (e.g. 799).
-  const finalPrice = isYearly ? paramPrice * 12 : paramPrice;
-
-  // --- Calculate Plan Original Price (Struck) ---
   const planBase = PLAN_DETAILS[planName] || { monthly: 0 };
+  
+  // Calculate price from trusted config
+  const monthlyRate = planBase.monthly;
+  const basePrice = isYearly ? monthlyRate * 12 : monthlyRate;
+
+  // Resolve Standard Plan ID immediately
+  const standardPlanId = getStandardPlanId(planName, billingCycle);
+
+  // --- Styling Logic & Calculations ---
+  const planLabel = isYearly ? '12-month plan' : 'Monthly plan';
   let planStruckPrice = null;
 
   if (isYearly) {
-    // Yearly Struck = Monthly Rate * 12
     planStruckPrice = planBase.monthly * 12;
-  } else {
-    // Monthly: User said "no cut anything other", so NO struck price for the plan itself.
-    planStruckPrice = null;
   }
 
-  // --- Format Currency Helper ---
   const formatCurrency = (amount) => {
     return amount.toLocaleString('en-IN', {
       style: 'currency',
@@ -99,6 +101,7 @@ function CheckoutContent() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    email: '', 
     country: 'India',
     phoneCode: '+91',
     phoneNumber: '',
@@ -111,56 +114,382 @@ function CheckoutContent() {
   });
 
   const [addCompanyDetails, setAddCompanyDetails] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
+  
+  // Coupon State
+  const [showPromo, setShowPromo] = useState(false); 
   const [promoCode, setPromoCode] = useState('');
+  const [couponStatus, setCouponStatus] = useState(null); 
+  const [appliedCoupon, setAppliedCoupon] = useState(null); 
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // --- Summary Calculations ---
+  
+  // Calculate Discount
+  let discountAmount = 0;
+  if (appliedCoupon && appliedCoupon.percentOff) {
+      const calculatedDiscount = (basePrice * appliedCoupon.percentOff) / 100;
+      discountAmount = calculatedDiscount;
+      
+      // Apply Max Cap if exists
+      if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+          discountAmount = appliedCoupon.maxDiscount;
+      }
+  }
+
+  // Calculate Struck values for free items
+  let totalFreeItemsVal = 0;
+  FREE_ITEMS_CONFIG.forEach(item => {
+     if (item.isFixed) {
+        totalFreeItemsVal += item.yearlyStruck;
+     } else {
+        totalFreeItemsVal += isYearly ? item.yearlyStruck : item.monthlyStruck;
+     }
+  });
+
+  // FIX: Use 'basePrice' (Number) instead of 'planBase' (Object) for total calculation
+  const totalStruckVal = basePrice + totalFreeItemsVal;
+  
+  const formattedTotalStruck = formatCurrency(totalStruckVal);
+  
+  let finalPrice = Math.max(0, basePrice - discountAmount);
+  const formattedBasePrice = formatCurrency(basePrice);
+
+  // Dynamic Plan Row Price Display
+  let planDisplayStruck = isYearly ? (planBase.monthly * 12) : null;
+  let planDisplayMain = basePrice;
+  let isFounder = appliedCoupon?.code === 'FOUNDER';
+  let isFreeTrial = appliedCoupon?.code === 'FREETRIAL';
+
+  if (discountAmount > 0) {
+      planDisplayStruck = basePrice;
+      planDisplayMain = finalPrice;
+  }
+  
+  // FIX: Explicitly handle Free Trial -> 0
+  if (isFreeTrial) {
+      planDisplayStruck = basePrice;
+      planDisplayMain = 0;
+      finalPrice = 0;
+  }
+
+  // FIX: Explicitly handle Founder Prices
+  if (isFounder) {
+      let founderPriceVal = basePrice;
+      // Map Plans: Starter(299)->149, Pro(799)->399, Growth(1499)->749
+      if (planName === 'Starter') founderPriceVal = 149;
+      else if (planName === 'Pro') founderPriceVal = 399;
+      else if (planName === 'Growth') founderPriceVal = 749;
+      
+      // If Yearly, just multiply by 12? Or assume fixed?
+      // "Founder plan is 1 year access".
+      // Usually Founder price given (399) is per month equivalent billing or lump sum?
+      // The prompt said "399 instead of 799" which are monthly rates.
+      // If billing is yearly, base is 799*12=9588. Founder would be 399*12=4788.
+      if (isYearly) {
+          founderPriceVal = founderPriceVal * 12;
+      }
+
+      planDisplayStruck = basePrice;
+      planDisplayMain = founderPriceVal;
+      // Note: finalPrice for subtotal row should also reflect this logic if we want consistency,
+      // but 'finalPrice' is calculated from discount. 
+      // Founder is a Plan Swap, not a % discount in the standard flow, 
+      // so we override finalPrice for display.
+      finalPrice = founderPriceVal;
+  }
+
+  const formattedPlanDisplayStruck = planDisplayStruck ? formatCurrency(planDisplayStruck) : null;
+  const formattedPlanDisplayMain = formatCurrency(planDisplayMain);
+  const formattedPrice = formatCurrency(finalPrice);
+  const formattedDiscount = formatCurrency(discountAmount);
+
+
+  // --- Auth Check ---
+  useEffect(() => {
+    const checkUser = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                // Redirect to sign in, preserving current checkout state via redirect param
+                const currentPath = window.location.pathname + window.location.search;
+                router.push(`/sign-in?redirect=${encodeURIComponent(currentPath)}`);
+            } else {
+                // User is authenticated, fetch pre-fill data
+                setIsCheckingAuth(false);
+                fetchProfileData(user.id, user.email);
+            }
+        } catch (error) {
+            console.error("Auth check failed", error);
+             // Safe fallback: redirect
+            const currentPath = window.location.pathname + window.location.search;
+            router.push(`/sign-in?redirect=${encodeURIComponent(currentPath)}`);
+        }
+    };
+
+    const fetchProfileData = async (userId, authEmail) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('full_name, billing_address')
+                .eq('id', userId)
+                .single();
+
+            if (data && data.billing_address) {
+                const billing = data.billing_address;
+                const [firstName, ...lastNameParts] = (data.full_name || billing.fullName || '').split(' ');
+                
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: firstName || prev.firstName,
+                    lastName: lastNameParts.join(' ') || prev.lastName,
+                    email: billing.email || authEmail || prev.email, // Prefer billing email, fallback to auth
+                    address: billing.address || prev.address,
+                    city: billing.city || prev.city,
+                    state: billing.state || prev.state,
+                    zip: billing.zipCode || prev.zip,
+                    phoneNumber: billing.phoneNumber || prev.phoneNumber,
+                    companyName: billing.companyName || prev.companyName,
+                    gstNumber: billing.gstNumber || prev.gstNumber
+                }));
+                if (billing.companyName) setAddCompanyDetails(true);
+            } else {
+                // Pre-fill email from auth if no profile data
+                setFormData(prev => ({ ...prev, email: authEmail }));
+            }
+        } catch (err) {
+            console.error("Failed to fetch profile data", err);
+             if (authEmail) setFormData(prev => ({ ...prev, email: authEmail }));
+        }
+    };
+
+    checkUser();
+  }, [router]);
+
+
+  // --- Load Razorpay Script ---
+  useEffect(() => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+      return () => {
+          document.body.removeChild(script);
+      };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear field error on change
+    if (fieldErrors[name]) {
+        setFieldErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
-  const handleSubmit = async (e) => {
+  const handleStateChange = (stateValue) => {
+      setFormData(prev => ({ ...prev, state: stateValue }));
+      if (fieldErrors.state) setFieldErrors(prev => ({ ...prev, state: null }));
+  };
+
+  const validateForm = () => {
+      const errors = {};
+      
+      // Required Fields
+      if (!formData.firstName.trim()) errors.firstName = "First name is required";
+      if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+      if (!formData.email.trim()) errors.email = "Email is required";
+      if (!formData.address.trim()) errors.address = "Address is required";
+      if (!formData.city.trim()) errors.city = "City is required";
+      if (!formData.state) errors.state = "State is required";
+      
+      // Strict Validations
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(formData.phoneNumber)) {
+          errors.phoneNumber = "Phone number must be exactly 10 digits";
+      }
+
+      const zipRegex = /^\d{6}$/;
+      if (!zipRegex.test(formData.zip)) {
+          errors.zip = "ZIP code must be exactly 6 digits";
+      }
+
+      setFieldErrors(errors);
+      return Object.keys(errors).length === 0;
+  };
+
+  const handleApplyCoupon = async (e) => {
+      e.preventDefault();
+      if (!promoCode.trim()) return;
+
+      setCouponStatus('loading');
+      setErrorMessage('');
+
+      try {
+          const res = await validateCouponAction(promoCode);
+          if (res.valid) {
+              setCouponStatus('valid');
+              setAppliedCoupon({
+                  code: promoCode,
+                  description: res.description,
+                  type: res.type,
+                  percentOff: res.percentOff,
+                  maxDiscount: res.maxDiscount
+              });
+              setPromoCode(''); // clear input on success
+          } else {
+              setCouponStatus('invalid');
+              // Optionally show error message from backend
+              if (res.message) setErrorMessage(res.message);
+          }
+      } catch (err) {
+          setCouponStatus('invalid');
+          // setAppliedCoupon(null);
+      }
+  };
+
+  const removeCoupon = () => {
+      setAppliedCoupon(null);
+      setCouponStatus(null);
+      setPromoCode('');
+      setErrorMessage('');
+  };
+
+
+  const handlePayment = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setErrorMessage('');
+    
+    // 1. Validate Form Client-side
+    if (!validateForm()) {
+        setErrorMessage("Please fix the highlighted errors before continuing.");
+        return;
+    }
+
+    setIsProcessing(true);
+
+    if (!standardPlanId) {
+        setErrorMessage("Invalid Plan Selected. Please go back and select a plan again.");
+        setIsProcessing(false);
+        return;
+    }
+
+    try {
+        // --- AUTH: Get Access Token ---
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || !session.user) {
+             router.push('/sign-in');
+             throw new Error("Session expired. Please sign in again.");
+        }
+        const accessToken = session.access_token;
+
+        // 2. Save Billing Details (DIRECTLY via Client Supabase for RLS)
+        const billingPayload = {
+            fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+            email: formData.email, // Added Email
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zip,
+            country: formData.country,
+            phoneNumber: formData.phoneNumber,
+            companyName: addCompanyDetails ? formData.companyName : null,
+            gstNumber: addCompanyDetails ? formData.gstNumber : null
+        };
+        
+        // Use server action to ensure email saves to profile if RLS allows or via admin
+        // We use saveBillingDetailsAction which uses admin client now or checks auth
+        const saveRes = await supabase
+            .from('profiles')
+            .update({
+                billing_address: billingPayload,
+                full_name: billingPayload.fullName
+            })
+            .eq('id', session.user.id);
+
+        if (saveRes.error) {
+             throw new Error("Failed to save billing details. Please try again.");
+        }
+
+        // 3. Create Subscription (Pass Token for Auth)
+        const codeToSend = appliedCoupon ? appliedCoupon.code : '';
+        
+        // Pass accessToken to Server Action to verify user
+        const subRes = await createSubscriptionAction(planName, billingCycle, codeToSend, accessToken);
+        
+        if (!subRes.success) {
+            if (subRes.error && subRes.error.includes("Unauthorized")) {
+                 router.push('/sign-in');
+                 throw new Error("Session expired. Please sign in again.");
+             }
+            throw new Error(subRes.error || "Failed to initiate subscription.");
+        }
+
+        // 4. Open Razorpay
+        const options = {
+            "key": subRes.keyId, 
+            "subscription_id": subRes.subscriptionId,
+            "name": "BizVistar",
+            "description": `${planName} Plan - ${billingCycle}`,
+            "image": "https://bizvistar.com/logo.png", 
+            "handler": async function (response) {
+                // Verify payment server-side before redirecting
+                try {
+                     const verification = await verifyPaymentAction(
+                         response.razorpay_payment_id,
+                         response.razorpay_subscription_id,
+                         response.razorpay_signature
+                     );
+                     
+                     if (verification.success) {
+                        router.push('/dashboard'); 
+                     } else {
+                        setErrorMessage("Payment verification failed. Please contact support.");
+                        setIsProcessing(false);
+                     }
+                } catch (verifyErr) {
+                    setErrorMessage("Payment verification failed. Please contact support.");
+                    setIsProcessing(false);
+                }
+            },
+            "prefill": {
+                "name": billingPayload.fullName,
+                "email": formData.email, 
+                "contact": formData.phoneNumber
+            },
+            "notes": {
+                "note_key": "BizVistar Subscription"
+            },
+            "theme": {
+                "color": "#8A63D2"
+            }
+        };
+
+        const rzp1 = new window.Razorpay(options);
+        rzp1.on('payment.failed', function (response){
+             console.error("Razorpay Payment Failed:", response.error);
+             setErrorMessage(`Payment Failed: ${response.error.description}`);
+             setIsProcessing(false);
+        });
+        rzp1.open();
+
+    } catch (err) {
+        console.error("Payment Initiation Error:", err);
+        setErrorMessage(err.message || "An unexpected error occurred during checkout.");
+        setIsProcessing(false); 
+    }
   };
-
-  // --- Dates for Legal Text ---
-  const today = new Date();
-  const renewalDate = new Date(today);
-  if (isYearly) {
-    renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-  } else {
-    renewalDate.setMonth(renewalDate.getMonth() + 1);
-  }
-  const formattedRenewalDate = renewalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   
-  const formattedPrice = formatCurrency(finalPrice);
-  const formattedPlanStruck = planStruckPrice ? formatCurrency(planStruckPrice) : null;
-
-   // Upper limit for e-mandate
-   const eMandateLimit = 15000;
-   const formattedLimit = eMandateLimit.toLocaleString('en-IN', {
-       style: 'currency',
-       currency: 'INR',
-       minimumFractionDigits: 0
-   });
-
-   const planLabel = isYearly ? '12-month plan' : 'Monthly plan';
-
-   // --- Calculate Total Struck Price for Summary ---
-   // Start with Plan Struck (if any, else Plan Actual)
-   let totalStruckVal = planStruckPrice || finalPrice;
-
-   // Add up all free items
-   FREE_ITEMS_CONFIG.forEach(item => {
-     if (item.isFixed) {
-        totalStruckVal += item.yearlyStruck;
-     } else {
-        totalStruckVal += isYearly ? item.yearlyStruck : item.monthlyStruck;
-     }
-   });
-
-   const formattedTotalStruck = formatCurrency(totalStruckVal);
+  if (isCheckingAuth) {
+      return (
+          <div className="min-h-screen flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          </div>
+      );
+  }
 
 
   return (
@@ -169,15 +498,19 @@ function CheckoutContent() {
         
         {/* --- LEFT COLUMN: BILLING FORM --- */}
         <div className="lg:col-span-2 space-y-8">
-            
-            {/* Step 1: Billing Address (Boxed) */}
             <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
-                   
                     <h2 className="text-2xl not-italic font-bold text-gray-900">Billing address</h2>
                 </div>
 
-                <form id="billing-form" onSubmit={handleSubmit} className="space-y-6">
+                {errorMessage && (
+                    <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg border border-red-200 flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <span>{errorMessage}</span>
+                    </div>
+                )}
+
+                <form id="billing-form" onSubmit={handlePayment} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">First name *</label>
@@ -186,10 +519,10 @@ function CheckoutContent() {
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                                placeholder=""
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.firstName ? "border-red-500" : "border-gray-300")}
                                 required 
                             />
+                            {fieldErrors.firstName && <p className="text-xs text-red-500">{fieldErrors.firstName}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">Last name *</label>
@@ -198,11 +531,25 @@ function CheckoutContent() {
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                                placeholder=""
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.lastName ? "border-red-500" : "border-gray-300")}
                                 required 
                             />
+                            {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
                         </div>
+                    </div>
+                    
+                    {/* Email Field */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">Email address *</label>
+                        <input 
+                            type="email" 
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.email ? "border-red-500" : "border-gray-300")}
+                            required 
+                        />
+                        {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -222,7 +569,7 @@ function CheckoutContent() {
                         <div className="flex">
                             <div className="relative w-1/3 sm:w-1/4">
                                 <select 
-                                    className="w-full p-3 border  border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full p-3 border border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
                                     value={formData.phoneCode}
                                     onChange={handleChange}
                                     name="phoneCode"
@@ -235,10 +582,11 @@ function CheckoutContent() {
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 border-l-0 rounded-r-md focus:ring-1 focus:ring-purple-500 outline-none"
-                                placeholder="00000000"
+                                className={cn("w-full p-3 border border-l-0 rounded-r-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.phoneNumber ? "border-red-500" : "border-gray-300")}
+                                placeholder="0000000000"
                             />
                         </div>
+                        {fieldErrors.phoneNumber && <p className="text-xs text-red-500">{fieldErrors.phoneNumber}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -249,9 +597,10 @@ function CheckoutContent() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.address ? "border-red-500" : "border-gray-300")}
                                 required
                             />
+                             {fieldErrors.address && <p className="text-xs text-red-500">{fieldErrors.address}</p>}
                         </div>
                          <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">City *</label>
@@ -260,64 +609,31 @@ function CheckoutContent() {
                                 name="city"
                                 value={formData.city}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.city ? "border-red-500" : "border-gray-300")}
                                 required
                             />
+                             {fieldErrors.city && <p className="text-xs text-red-500">{fieldErrors.city}</p>}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">State *</label>
-                            <div className="relative">
-                                <select 
-                                    name="state"
-                                    value={formData.state}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
-                                    required
-                                >
-                                    <option value="" disabled>Select State</option>
-<option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-<option value="Andhra Pradesh">Andhra Pradesh</option>
-<option value="Arunachal Pradesh">Arunachal Pradesh</option>
-<option value="Assam">Assam</option>
-<option value="Bihar">Bihar</option>
-<option value="Chandigarh">Chandigarh</option>
-<option value="Chhattisgarh">Chhattisgarh</option>
-<option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-<option value="Delhi">Delhi</option>
-<option value="Goa">Goa</option>
-<option value="Gujarat">Gujarat</option>
-<option value="Haryana">Haryana</option>
-<option value="Himachal Pradesh">Himachal Pradesh</option>
-<option value="Jammu and Kashmir">Jammu and Kashmir</option>
-<option value="Jharkhand">Jharkhand</option>
-<option value="Karnataka">Karnataka</option>
-<option value="Kerala">Kerala</option>
-<option value="Ladakh">Ladakh</option>
-<option value="Lakshadweep">Lakshadweep</option>
-<option value="Madhya Pradesh">Madhya Pradesh</option>
-<option value="Maharashtra">Maharashtra</option>
-<option value="Manipur">Manipur</option>
-<option value="Meghalaya">Meghalaya</option>
-<option value="Mizoram">Mizoram</option>
-<option value="Nagaland">Nagaland</option>
-<option value="Odisha">Odisha</option>
-<option value="Puducherry">Puducherry</option>
-<option value="Punjab">Punjab</option>
-<option value="Rajasthan">Rajasthan</option>
-<option value="Sikkim">Sikkim</option>
-<option value="Tamil Nadu">Tamil Nadu</option>
-<option value="Telangana">Telangana</option>
-<option value="Tripura">Tripura</option>
-<option value="Uttar Pradesh">Uttar Pradesh</option>
-<option value="Uttarakhand">Uttarakhand</option>
-<option value="West Bengal">West Bengal</option>
-                                    {/* Add more states as needed */}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                            </div>
+                            <StateSelector 
+                                value={formData.state} 
+                                onChange={handleStateChange}
+                                error={!!fieldErrors.state}
+                            />
+                             {/* Hidden input for HTML5 validation if needed, though we rely on state check */}
+                             <input 
+                                type="text" 
+                                value={formData.state} 
+                                className="sr-only" 
+                                required 
+                                onChange={()=>{}}
+                                tabIndex={-1}
+                             />
+                             {fieldErrors.state && <p className="text-xs text-red-500">{fieldErrors.state}</p>}
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-700">ZIP code *</label>
@@ -326,22 +642,25 @@ function CheckoutContent() {
                                 name="zip"
                                 value={formData.zip}
                                 onChange={handleChange}
-                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.zip ? "border-red-500" : "border-gray-300")}
                                 required
                             />
+                             {fieldErrors.zip && <p className="text-xs text-red-500">{fieldErrors.zip}</p>}
                         </div>
                     </div>
 
                     <div className="pt-2">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                checked={addCompanyDetails}
-                                onChange={(e) => setAddCompanyDetails(e.target.checked)}
-                                className="w-5 h-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
-                            />
+                        <label className="flex items-center space-x-3 cursor-pointer group">
+                             <div className="relative flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    checked={addCompanyDetails}
+                                    onChange={(e) => setAddCompanyDetails(e.target.checked)}
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-purple-500 checked:bg-purple-600 checked:border-purple-600"
+                                />
+                                <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} />
+                             </div>
                             <span className="text-base font-medium text-gray-700">Add company details</span>
-                            <HelpCircle className="w-4 h-4 text-purple-600" />
                         </label>
                     </div>
 
@@ -379,16 +698,21 @@ function CheckoutContent() {
                     
                     <button 
                         type="submit"
-                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-lg shadow-md transition-colors"
+                        disabled={isProcessing}
+                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
                     >
-                        Continue 
+                        {isProcessing ? (
+                            <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            'Continue to Payment'
+                        )}
                     </button>
 
                 </form>
             </div>
-            
-         
-
         </div>
 
         {/* --- RIGHT COLUMN: ORDER SUMMARY --- */}
@@ -402,12 +726,12 @@ function CheckoutContent() {
                     <div className="flex justify-between items-baseline">
                          <span className="text-base text-gray-700">{planLabel}</span>
                          <div className="text-right">
-                            {planStruckPrice && (
+                            {formattedPlanDisplayStruck && (
                                 <span className="text-sm text-gray-400 line-through mr-2">
-                                    {formattedPlanStruck}
+                                    {formattedPlanDisplayStruck}
                                 </span>
                             )}
-                            <span className="text-base font-bold text-gray-900">{formattedPrice}</span>
+                            <span className="text-base font-bold text-gray-900">{formattedPlanDisplayMain}</span>
                          </div>
                     </div>
 
@@ -437,42 +761,95 @@ function CheckoutContent() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4 mb-6">
+                     {/* Discount Row (Green) */}
+                     {discountAmount > 0 && appliedCoupon && (
+                        <div className="flex justify-between items-center mb-4 text-emerald-600 font-medium">
+                            <div className="flex items-center gap-2">
+                                <Tag className="w-4 h-4" />
+                                <span>{appliedCoupon.code} -{appliedCoupon.percentOff}%</span>
+                            </div>
+                            <span>-{formattedDiscount}</span>
+                        </div>
+                     )}
+
                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xl font-bold text-gray-900">Total</span>
+                        <span className="text-xl font-bold text-gray-900">Subtotal</span>
                         <div className="text-right">
-                            <span className="block text-sm text-gray-400 line-through">{formattedTotalStruck}</span>
+                            {/* Struck through TOTAL if discount applied, otherwise existing struck total */}
+                            <span className="block text-sm text-gray-400 line-through">
+                                {/* Requirement: "Total cutoff should be the total of all base" => (Plan Base Struck + All Free Items) */}
+                                {formattedTotalStruck} 
+                            </span>
                             <span className="text-3xl font-bold text-gray-900">{formattedPrice}</span>
                          </div>
                     </div>
+                    
+                    {/* Free Trial Note */}
+                    {appliedCoupon?.code === 'FREETRIAL' && (
+                         <div className="mt-2 text-sm text-emerald-600 font-medium flex items-center gap-1">
+                             <Check className="w-4 h-4" />
+                             Free for the first month
+                         </div>
+                    )}
+
+                    {/* Founder Plan Note */}
+                    {isFounder && (
+                        <div className="mt-2 p-3 bg-purple-50 border border-purple-100 rounded-md text-sm text-purple-700">
+                             <strong>Founder Access:</strong> Valid for 1 year. Subscription ends after 1 year and requires re-registration.
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">
-                    <button 
+                     {/* Coupon Toggle Header */}
+                    <button
+                        type="button"
                         onClick={() => setShowPromo(!showPromo)}
-                        className="text-purple-600 font-semibold hover:text-purple-700  focus:outline-none"
+                        className="flex items-center gap-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors w-full"
                     >
-                        Have a coupon code?
+                        <Tag className="w-4 h-4" />
+                        <span>Have a coupon code?</span>
+                        <ChevronDown className={cn("w-4 h-4 transition-transform ml-auto", showPromo ? "rotate-180" : "")} />
                     </button>
                     
                     <AnimatePresence>
-                        {showPromo && (
-                            <motion.div
+                        {(showPromo || appliedCoupon) && (
+                            <motion.div 
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
                                 className="overflow-hidden"
                             >
-                                <div className="flex gap-2 pt-2">
-                                    <input 
-                                        type="text" 
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-purple-500"
-                                        placeholder="Code"
-                                        value={promoCode}
-                                        onChange={(e) => setPromoCode(e.target.value)}
-                                    />
-                                    <button className="px-4 py-2 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50">
-                                        Apply
-                                    </button>
+                                <div className="pt-2">
+                                    {appliedCoupon ? (
+                                        <div className="bg-gray-100 rounded-md p-3 flex justify-between items-center">
+                                            <div className="font-mono font-bold text-gray-700">{appliedCoupon.code}</div>
+                                            <button onClick={removeCoupon} className="text-gray-500 hover:text-red-500">
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2 items-center">
+                                            <input 
+                                                type="text" 
+                                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-purple-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
+                                                placeholder="Code"
+                                                value={promoCode}
+                                                onChange={(e) => {
+                                                    setPromoCode(e.target.value);
+                                                    setCouponStatus(null);
+                                                }}
+                                            />
+                                            <button 
+                                                onClick={handleApplyCoupon}
+                                                disabled={couponStatus === 'loading' || !promoCode}
+                                                className="px-6 py-3 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
+                                            >
+                                                {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                            </button>
+                                        </div>
+                                    )}
+                                    {couponStatus === 'invalid' && <p className="text-sm text-red-600 mt-1">{errorMessage || "Invalid Coupon Code"}</p>}
                                 </div>
                             </motion.div>
                         )}
