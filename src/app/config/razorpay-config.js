@@ -109,7 +109,8 @@ export const getKeyId = () => {
     if (mode === 'live') {
         return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
     }
-    return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || 'rzp_test_invalid';
+    // Fallback to user provided typo variable if standard is missing
+    return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZOPAY_Test_Key_ID || 'rzp_test_invalid';
 };
 
 export default RAZORPAY_CONFIG;

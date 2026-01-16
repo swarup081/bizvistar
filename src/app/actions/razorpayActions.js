@@ -89,6 +89,7 @@ export async function saveBillingDetailsAction(billingData, accessToken = null) 
 
 export async function validateCouponAction(couponCode) {
     const normalized = couponCode ? couponCode.trim().toUpperCase() : '';
+    console.log(`Validating Coupon: '${couponCode}' -> '${normalized}'`);
     const config = COUPON_CONFIG[normalized];
 
     if (config && config.active) {
@@ -97,12 +98,15 @@ export async function validateCouponAction(couponCode) {
             const now = new Date();
             const expires = new Date(config.expiresAt);
             if (now > expires) {
+                console.log("Coupon Expired");
                 return { valid: false, message: "Coupon Expired" };
             }
         }
+        console.log("Coupon Valid");
         return { valid: true };
     }
 
+    console.log("Invalid Coupon Config or Inactive");
     return { valid: false, message: "Invalid Coupon" };
 }
 

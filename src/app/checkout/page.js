@@ -361,14 +361,15 @@ function CheckoutContent() {
 
         const rzp1 = new window.Razorpay(options);
         rzp1.on('payment.failed', function (response){
+             console.error("Razorpay Payment Failed:", response.error);
              setErrorMessage(`Payment Failed: ${response.error.description}`);
              setIsProcessing(false);
         });
         rzp1.open();
 
     } catch (err) {
-        console.error(err);
-        setErrorMessage(err.message);
+        console.error("Payment Initiation Error:", err);
+        setErrorMessage(err.message || "An unexpected error occurred during checkout.");
         setIsProcessing(false);
     }
   };
