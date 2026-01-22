@@ -60,13 +60,25 @@ export async function POST(req) {
       // Determine Status
       let newStatus = 'active';
       if (eventName === 'subscription.cancelled') newStatus = 'canceled';
-      if (eventName === 'subscription.halted') newStatus = 'past_due'; // or halted
-      if (eventName === 'subscription.completed') newStatus = 'canceled'; // or completed
-      // 'charged' and 'activated' imply active.
+      if (eventName === 'subscription.halted') newStatus = 'past_due';
+      if (eventName === 'subscription.completed') newStatus = 'completed'; // FIX: Keep as 'completed' to allow grace period check
 
-      // Map Status text to DB constraints: 'active', 'canceled', 'past_due'
-      // If completed/halted, map to canceled/past_due appropriately.
-      if (newStatus === 'completed') newStatus = 'canceled';
+      // 'charged' and 'activated' imply active.
+      // Map Status text to DB constraints: 'active', 'canceled', 'past_due', 'completed'
+      // Note: 'completed' status must be allowed in DB check constraint if strict, otherwise use 'active'.
+      // Assuming DB check constraint allows text, or we mapped it.
+      // The schema says: CHECK (status = ANY (ARRAY['active'::text, 'canceled'::text, 'past_due'::text]))
+      // The Schema DOES NOT include 'completed'. We must handle this.
+      // If DB constraint is strict, we might need to use 'active' or 'canceled'.
+      // But we need to distinguish for the Founder Fix.
+      // Option: Update DB constraint (SQL needed) OR map 'completed' -> 'active' but rely on date?
+      // "exactly after user pay last cycle sucess and it terminate even after the payment they cant use the last cycle"
+      // If we map to 'active', and current_period_end is correct, it works.
+      // If we map to 'canceled', access is blocked.
+      // SO: Map 'completed' -> 'active'.
+      // AND ensuring current_period_end is updated is key.
+
+      if (newStatus === 'completed') newStatus = 'active'; // Map to active so DB accepts it, logic checks date.
       if (newStatus === 'halted') newStatus = 'past_due';
 
       // Timestamps
@@ -106,6 +118,26 @@ export async function POST(req) {
       if (error) {
         console.error('Error updating subscription in DB:', error);
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
+      }
+
+      // --- BACKUP: Update Profile from Notes if missing ---
+      if (userId && notes) {
+          try {
+               const { data: profile } = await supabaseAdmin.from('profiles').select('billing_address').eq('id', userId).single();
+               if (profile && !profile.billing_address) {
+                   const newBilling = {
+                       fullName: notes.customer_name || '',
+                       email: notes.customer_email || '',
+                       phoneNumber: notes.customer_phone || '',
+                       address: notes.customer_address || '',
+                       gstNumber: notes.customer_gst || ''
+                   };
+                   await supabaseAdmin.from('profiles').update({
+                       billing_address: newBilling,
+                       full_name: newBilling.fullName || undefined
+                   }).eq('id', userId);
+               }
+          } catch(e) { console.error("Profile sync error", e); }
       }
     }
     

@@ -241,6 +241,26 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     const couponConfig = COUPON_CONFIG[normalizedCoupon];
     const mode = getRazorpayMode();
     const keyId = getKeyId();
+
+    // Fetch Billing Details for Notes
+    let billingNotes = {};
+    const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('billing_address')
+        .eq('id', user.id)
+        .single();
+
+    if (profile && profile.billing_address) {
+        const b = profile.billing_address;
+        // Razorpay Notes: keys/values must be strings
+        billingNotes = {
+            customer_name: b.fullName || '',
+            customer_email: b.email || '',
+            customer_phone: b.phoneNumber || '',
+            customer_gst: b.gstNumber || '',
+            customer_address: `${b.address || ''}, ${b.city || ''}, ${b.state || ''}, ${b.zipCode || ''}`.substring(0, 250) // Truncate to fit
+        };
+    }
     
     // --- ENFORCE SECURITY CONTROLS ---
     if (couponConfig) {
@@ -312,6 +332,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
         coupon_used: normalizedCoupon || 'none',
         plan_name: planName,
         billing_cycle: billingCycle,
+        ...billingNotes
         // We pass coupon_used here so webhook can pick it up
       }
     };

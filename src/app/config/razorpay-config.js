@@ -72,6 +72,14 @@ const RAZORPAY_CONFIG = {
   }
 };
 
+export const PLAN_LIMITS = {
+    // Starter Plans (Limit 25)
+    'starter': 25,
+    // Others (Unlimited = -1)
+    'pro': -1,
+    'growth': -1
+};
+
 /**
  * Retrieves the current Razorpay configuration mode ('test' or 'live').
  */
@@ -129,5 +137,52 @@ export const getKeyId = () => {
     // Fallback to user provided typo variable if standard is missing
     return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZOPAY_Test_Key_ID || 'rzp_test_invalid';
 };
+
+/**
+ * Helper to get limits for a given Plan ID (Standard or Founder)
+ */
+export const getPlanLimits = (planId) => {
+    if (!planId) return { maxProducts: 0 }; // No plan = no products
+
+    const mode = getRazorpayMode();
+    const config = RAZORPAY_CONFIG[mode];
+
+    // Reverse lookup to find the key (e.g., 'starter_monthly')
+    let foundKey = null;
+
+    // 1. Check Standard Plans
+    for (const [key, id] of Object.entries(config)) {
+        if (typeof id === 'string' && id === planId) {
+            foundKey = key;
+            break;
+        }
+    }
+
+    // 2. Check Founder Plans (if not found)
+    if (!foundKey && config.founder_mapping) {
+         for (const [stdId, founderId] of Object.entries(config.founder_mapping)) {
+             if (founderId === planId) {
+                 // Found the Founder ID, now find the key for the Standard ID
+                 for (const [key, id] of Object.entries(config)) {
+                    if (id === stdId) {
+                        foundKey = key;
+                        break;
+                    }
+                 }
+                 break;
+             }
+         }
+    }
+
+    if (foundKey) {
+        if (foundKey.includes('starter')) return { maxProducts: PLAN_LIMITS['starter'] };
+        if (foundKey.includes('pro')) return { maxProducts: PLAN_LIMITS['pro'] };
+        if (foundKey.includes('growth')) return { maxProducts: PLAN_LIMITS['growth'] };
+    }
+
+    // Fallback/Default
+    return { maxProducts: 25 };
+};
+
 
 export default RAZORPAY_CONFIG;

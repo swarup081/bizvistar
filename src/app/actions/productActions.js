@@ -3,6 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { validateUserSubscription } from './subscriptionUtils';
+import { getPlanLimits } from '../config/razorpay-config';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -157,8 +159,43 @@ export async function addCategory(name) {
 
 export async function addProduct(productData) {
   try {
-    const websiteId = await getWebsiteId();
+    // 1. Get User & Website
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() { return cookieStore.getAll() },
+          setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {} },
+        },
+      }
+    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const websiteId = await getWebsiteId(); // Note: getWebsiteId also fetches user internally, but we need user.id here.
     if (!websiteId) throw new Error("No website ID found to associate product with. Please ensure you are logged in.");
+
+    // 2. Validate Subscription & Check Limits
+    const subValidation = await validateUserSubscription(user.id);
+    const limits = getPlanLimits(subValidation.razorpayPlanId);
+
+    if (limits.maxProducts !== -1) {
+        // Count existing products
+        const { count, error: countError } = await supabaseAdmin
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('website_id', websiteId);
+
+        if (countError) throw countError;
+
+        // Check if adding 1 more would exceed limit
+        // (count is current total. if count == 25, you cannot add 26th)
+        if (count >= limits.maxProducts) {
+             throw new Error(`Plan limit reached (${limits.maxProducts} products). Please upgrade your plan to add more products.`);
+        }
+    }
     
     // Check if unlimited was requested (-1 flag from UI or blank stock logic handled in UI)
     // The UI should send 'isUnlimited' flag or stock -1.
