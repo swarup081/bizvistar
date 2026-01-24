@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import {
   LayoutDashboard,
   Settings,
@@ -240,12 +241,14 @@ const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
         {label}
       </label>
       <div className="flex items-center gap-2">
-        <div className="w-12 h-12 rounded border border-gray-300 bg-gray-100 flex-shrink-0 flex items-center justify-center">
+        <div className="w-12 h-12 rounded border border-gray-300 bg-gray-100 flex-shrink-0 flex items-center justify-center relative overflow-hidden">
           {value ? (
-            <img
+            <Image
               src={value}
               alt="Preview"
-              className="w-full h-full object-cover rounded"
+              className="object-cover rounded"
+              fill
+              sizes="48px"
             />
           ) : (
             <ImageIcon size={24} className="text-gray-400" />

@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 // Initialize Supabase Admin Client
 const supabaseAdmin = createClient(
@@ -47,7 +49,23 @@ async function syncStockToJSON(websiteId, productMap) {
     }
 }
 
-export async function submitOrder({ siteSlug, cartDetails, customerDetails, totalAmount }) {
+async function getUser() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {} },
+      },
+    }
+  );
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
   try {
     // 1. Resolve Website ID
     const { data: website, error: websiteError } = await supabaseAdmin
@@ -97,9 +115,10 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       customerId = newCustomer.id;
     }
 
-    // 3. Process Products & Update Stock
-    const dbProductMap = new Map(); // cartItemId -> dbProductId
+    // 3. Process Products & Update Stock & Calculate Total
+    const dbProductMap = new Map(); // cartItemId -> { id, price }
     const stockUpdateMap = new Map(); // dbProductId -> newStockValue
+    let calculatedTotal = 0;
 
     for (const item of cartDetails) {
       // Find product
@@ -107,7 +126,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       
       const { data: byId } = await supabaseAdmin
          .from('products')
-         .select('id, stock')
+         .select('id, stock, price')
          .eq('website_id', websiteId)
          .eq('id', item.id)
          .maybeSingle();
@@ -118,7 +137,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
           // Fallback to name
           const { data: byName } = await supabaseAdmin
              .from('products')
-             .select('id, stock')
+             .select('id, stock, price')
              .eq('website_id', websiteId)
              .eq('name', item.name)
              .limit(1)
@@ -127,8 +146,11 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       }
 
       if (productData) {
-        dbProductMap.set(item.id, productData.id);
+        dbProductMap.set(item.id, { id: productData.id, price: productData.price });
         
+        // Calculate Total
+        calculatedTotal += Number(productData.price) * item.quantity;
+
         // DECREMENT STOCK IF NOT UNLIMITED (Stock = -1)
         if (productData.stock !== -1) {
             const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
@@ -140,23 +162,8 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
         }
 
       } else {
-        // Create product (legacy support)
-        const { data: newProduct, error: productError } = await supabaseAdmin
-          .from('products')
-          .insert({
-            website_id: websiteId,
-            name: item.name,
-            price: item.price,
-            description: item.description || 'Imported from order',
-            image_url: item.image,
-            category_id: null,
-            stock: 0 
-          })
-          .select('id')
-          .single();
-
-        if (productError) throw new Error('Failed to create product: ' + productError.message);
-        dbProductMap.set(item.id, newProduct.id);
+        // Product MUST exist
+        throw new Error(`Product not found: ${item.name}. Cannot complete order.`);
       }
     }
 
@@ -166,7 +173,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
       .insert({
         website_id: websiteId,
         customer_id: customerId,
-        total_amount: totalAmount,
+        total_amount: calculatedTotal,
         status: 'pending'
       })
       .select('id')
@@ -175,12 +182,15 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
     if (orderError) throw new Error('Failed to create order: ' + orderError.message);
 
     // 5. Create Order Items
-    const orderItemsData = cartDetails.map(item => ({
-      order_id: order.id,
-      product_id: dbProductMap.get(item.id),
-      quantity: item.quantity,
-      price: item.price
-    }));
+    const orderItemsData = cartDetails.map(item => {
+        const productInfo = dbProductMap.get(item.id);
+        return {
+          order_id: order.id,
+          product_id: productInfo.id,
+          quantity: item.quantity,
+          price: productInfo.price
+        };
+    });
 
     const { error: itemsError } = await supabaseAdmin
       .from('order_items')
@@ -202,6 +212,20 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails, tota
 }
 
 export async function updateOrderStatus(orderId, newStatus) {
+    const user = await getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Verify ownership
+    const { data: order } = await supabaseAdmin
+        .from('orders')
+        .select('website_id, websites(user_id)')
+        .eq('id', orderId)
+        .single();
+
+    if (!order || !order.websites || order.websites.user_id !== user.id) {
+         throw new Error("Unauthorized: You do not own this order.");
+    }
+
     const { error } = await supabaseAdmin
         .from('orders')
         .update({ status: newStatus })
@@ -212,6 +236,31 @@ export async function updateOrderStatus(orderId, newStatus) {
 }
 
 export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
+    const user = await getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Verify ownership
+    const { data: website } = await supabaseAdmin
+        .from('websites')
+        .select('user_id')
+        .eq('id', websiteId)
+        .single();
+
+    if (!website || website.user_id !== user.id) {
+         throw new Error("Unauthorized: You do not own this website.");
+    }
+
+    // Also verify order belongs to website
+    const { data: order } = await supabaseAdmin
+        .from('orders')
+        .select('website_id')
+        .eq('id', orderId)
+        .single();
+
+    if (!order || order.website_id !== websiteId) {
+         throw new Error("Mismatch between order and website.");
+    }
+
     const { error } = await supabaseAdmin
         .from('deliveries')
         .insert({

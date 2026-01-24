@@ -35,7 +35,7 @@ async function getWebsiteId() {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return null;
+    throw new Error('Unauthorized: Please sign in.');
   }
 
   // Fetch website ID for this user
@@ -54,7 +54,7 @@ async function getWebsiteId() {
         .maybeSingle();
         
      if (firstWebsite) return firstWebsite.id;
-     return null;
+     throw new Error('No website found for this user.');
   }
 
   return website?.id;

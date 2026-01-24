@@ -69,7 +69,8 @@ function SignInForm() {
     } else {
       // Check for redirect URL
       const redirectUrl = searchParams.get('redirect');
-      if (redirectUrl) {
+      // Validate redirect URL to prevent open redirect vulnerabilities
+      if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')) {
         router.push(redirectUrl);
       } else {
         router.push('/templates');
