@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { cn } from '@/lib/utils';
 
 function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Default hidden (mask on)
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
@@ -33,28 +32,20 @@ function SignInForm() {
       setErrorMessage(error.message);
       setLoading(false);
     } else {
-      // Check for redirect URL
-      const redirectUrl = searchParams.get('redirect');
-
-      // Validate redirect URL to prevent open redirect vulnerabilities
-      if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')) {
-        router.push(redirectUrl);
+      if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
+        router.push(redirect);
       } else {
         router.push('/templates');
       }
-      // Keep loading state true while redirecting
     }
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome Back!
+    <div className="w-full max-w-[480px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-12 border border-gray-100">
+      <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-[#2E1065] tracking-tight">
+            Log in
           </h2>
-          <p className="text-gray-500">
-             Already have an account? <Link href={signUpUrl} className="text-purple-600 font-semibold hover:text-purple-500 underline decoration-purple-600/30 underline-offset-4">Sign up</Link>
-          </p>
       </div>
 
       {errorMessage && (
@@ -64,9 +55,9 @@ function SignInForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-                Email
+        <div className="space-y-1.5">
+            <label htmlFor="email" className="block text-sm text-gray-600 font-medium">
+                Email address
             </label>
             <div className="relative">
                 <input
@@ -74,23 +65,17 @@ function SignInForm() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="mail@example.com"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all placeholder:text-gray-400"
+                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all"
                     required
                 />
             </div>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                 <label htmlFor="password" className="block text-sm text-gray-600 font-medium">
                     Password
                 </label>
-                <Link href="/forgot-password">
-                    <span className="text-sm font-medium text-gray-500 hover:text-gray-700 cursor-pointer">
-                        Forgot Password?
-                    </span>
-                </Link>
             </div>
             <div className="relative">
                 <input
@@ -98,8 +83,7 @@ function SignInForm() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all placeholder:text-gray-400 pr-10"
+                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all pr-10"
                     required
                 />
                 <button
@@ -114,20 +98,33 @@ function SignInForm() {
                     )}
                 </button>
             </div>
+            <div className="flex justify-end pt-1">
+                 <Link href="/forgot-password">
+                    <span className="text-sm font-medium text-[#6366F1] hover:text-[#4F46E5] cursor-pointer">
+                        Forgot password?
+                    </span>
+                </Link>
+            </div>
         </div>
 
         <button
           type="submit"
-          className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+          className="w-full py-3.5 px-4 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (
              <>
                <Loader2 className="w-5 h-5 animate-spin" />
-               Signing In...
+               Logging In...
              </>
-          ) : 'Sign In'}
+          ) : 'Log in'}
         </button>
+
+        <div className="text-center pt-2">
+            <p className="text-[15px] text-[#2E1065] font-medium">
+                Don't have an account? <Link href={signUpUrl} className="text-[#6366F1] hover:text-[#4F46E5] font-bold ml-1">Register</Link>
+            </p>
+        </div>
       </form>
     </div>
   );
@@ -135,7 +132,7 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
+    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-[#6366F1] animate-spin" /></div>}>
       <SignInForm />
     </Suspense>
   );
