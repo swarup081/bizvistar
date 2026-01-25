@@ -34,7 +34,7 @@ serve(async (req) => {
 
   const { data, error } = await supabase
     .from('websites')
-    .update({ website_data: websiteData, updated_at: new Date() })
+    .update({ draft_data: websiteData, updated_at: new Date() })
     .eq('id', websiteId)
     .eq('user_id', user.id)
 

@@ -186,6 +186,8 @@ export default function EditorTopNav({
             .select('status')
             .eq('user_id', user.id)
             .in('status', ['active', 'trialing'])
+            .order('current_period_end', { ascending: false })
+            .limit(1)
             .maybeSingle();
         
         if (sub) {
@@ -201,7 +203,7 @@ export default function EditorTopNav({
             }
         } else {
             // Not subscribed, go to pricing
-            router.push(`/get-started/pricing?site_id=${websiteId}`);
+            router.push(`/pricing?site_id=${websiteId}`);
         }
     } catch (error) {
         console.error('Publish error:', error);
@@ -277,7 +279,7 @@ export default function EditorTopNav({
             description="See what your live site will look like to visitors."
           >
             <Link 
-              href={`/preview/${templateName}`}
+              href={`/preview/site/${siteSlug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
@@ -297,7 +299,7 @@ export default function EditorTopNav({
               </button>
           ) : (
               <Link
-                href={`/get-started/pricing?site_id=${websiteId}`} // Pass site_id
+                href={`/pricing?site_id=${websiteId}`} // Pass site_id
                 className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors"
               >
                 Publish

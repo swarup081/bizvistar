@@ -21,6 +21,8 @@ const supabaseAdmin = createClient(
 export default async function LiveSitePage(props) {
   // --- FIX FOR NEXT.JS 15+ ---
   const { slug } = await props.params;
+  const searchParams = await props.searchParams;
+  const isPreview = searchParams.preview === 'true';
   // ---------------------------
 
   if (!slug || slug === "undefined") {
@@ -40,6 +42,7 @@ export default async function LiveSitePage(props) {
       id,
       is_published,
       website_data,
+      draft_data,
       template:templates ( name )
       `
     )
@@ -65,7 +68,7 @@ export default async function LiveSitePage(props) {
     );
   }
 
-  if (!site.is_published) {
+  if (!site.is_published && !isPreview) {
     return (
       <div style={{ padding: "40px", textAlign: "center" }}>
         <h1>Site Not Published</h1>
@@ -75,7 +78,7 @@ export default async function LiveSitePage(props) {
   }
 
   const templateName = site.template?.name;
-  const websiteData = site.website_data;
+  const websiteData = (isPreview && site.draft_data) ? site.draft_data : site.website_data;
 
   // Render selected template
   switch (templateName) {

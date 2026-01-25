@@ -30,7 +30,7 @@ function WebsiteDashboardContent() {
         // 2. Fetch website for this user
         let query = supabase
           .from('websites')
-          .select('id, site_slug, template_id, website_data')
+          .select('id, site_slug, template_id, website_data, draft_data')
           .eq('user_id', user.id);
 
         if (slugParam) {
@@ -65,7 +65,7 @@ function WebsiteDashboardContent() {
                  id: site.id,
                  slug: site.site_slug,
                  templateName: templateName,
-                 data: site.website_data
+                 data: site.draft_data || site.website_data
              });
         } else {
             setError("You haven't created a website yet.");
