@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
 
 function SignUpForm() {
   const [fullName, setFullName] = useState('');
@@ -13,6 +14,7 @@ function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,9 +22,31 @@ function SignUpForm() {
   const redirect = searchParams.get('redirect');
   const signInUrl = redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : '/sign-in';
 
+  const validateForm = () => {
+    const errors = {};
+    if (!fullName.trim()) {
+        errors.fullName = "Full Name is required";
+    }
+    if (!email.trim()) {
+        errors.email = "Email address is required";
+    }
+    if (!password) {
+        errors.password = "Password is required";
+    } else if (password.length < 6) {
+        errors.password = "Password must be at least 6 characters";
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+
+    if (!validateForm()) {
+        return;
+    }
+
     setLoading(true);
     
     const { data, error } = await supabase.auth.signUp({
@@ -49,7 +73,6 @@ function SignUpForm() {
           console.error("Profile creation failed:", profileError);
       }
 
-      // Check for redirect URL
       if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
         router.push(redirect);
       } else {
@@ -63,7 +86,7 @@ function SignUpForm() {
   return (
     <div className="w-full max-w-[480px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-12 border border-gray-100">
       <div className="mb-8 text-center">
-          <h2 className="text-3xl not-italic font-bold text-[#2E1065] tracking-tight">
+          <h2 className="text-3xl not-italic font-bold text-gray-900 tracking-tight">
             Register
           </h2>
       </div>
@@ -85,10 +108,17 @@ function SignUpForm() {
                 id="fullName"
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all"
-                required
+                onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (fieldErrors.fullName) setFieldErrors({...fieldErrors, fullName: null});
+                }}
+                className={cn(
+                    "w-full p-3 bg-white border rounded-lg outline-none transition-all",
+                    "focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500",
+                    fieldErrors.fullName ? "border-red-500" : "border-gray-200"
+                )}
             />
+            {fieldErrors.fullName && <p className="text-xs text-red-500 mt-1">{fieldErrors.fullName}</p>}
         </div>
 
         {/* Email */}
@@ -100,10 +130,17 @@ function SignUpForm() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all"
-                required
+                onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors({...fieldErrors, email: null});
+                }}
+                className={cn(
+                    "w-full p-3 bg-white border rounded-lg outline-none transition-all",
+                    "focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500",
+                    fieldErrors.email ? "border-red-500" : "border-gray-200"
+                )}
             />
+            {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
         </div>
         
         {/* Password */}
@@ -116,10 +153,15 @@ function SignUpForm() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={8}
-                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all pr-10"
-                    required
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (fieldErrors.password) setFieldErrors({...fieldErrors, password: null});
+                    }}
+                    className={cn(
+                        "w-full p-3 bg-white border rounded-lg outline-none transition-all pr-10",
+                        "focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500",
+                        fieldErrors.password ? "border-red-500" : "border-gray-200"
+                    )}
                 />
                 <button
                     type="button"
@@ -133,11 +175,12 @@ function SignUpForm() {
                     )}
                 </button>
             </div>
+            {fieldErrors.password && <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>}
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 px-4 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (
@@ -149,8 +192,8 @@ function SignUpForm() {
         </button>
 
         <div className="text-center pt-2">
-            <p className="text-[15px] text-[#2E1065] font-medium">
-                Already have an account? <Link href={signInUrl} className="text-[#6366F1] hover:text-[#4F46E5] font-bold ml-1">Log in</Link>
+            <p className="text-[15px] text-gray-900 font-medium">
+                Already have an account? <Link href={signInUrl} className="text-purple-600 hover:text-purple-700 font-bold ml-1">Log in</Link>
             </p>
         </div>
 
@@ -165,7 +208,7 @@ function SignUpForm() {
 
 export default function SignUpPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-[#6366F1] animate-spin" /></div>}>
+    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
       <SignUpForm />
     </Suspense>
   );

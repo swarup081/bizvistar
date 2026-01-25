@@ -51,6 +51,21 @@ export async function middleware(request) {
     return NextResponse.redirect(signInUrl)
   }
 
+  // Security Check: Restrict /dashboard to users with a published website
+  if (user && path.startsWith('/dashboard')) {
+    const { data: website } = await supabase
+      .from('websites')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('is_published', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (!website) {
+      return NextResponse.redirect(new URL('/templates', request.url));
+    }
+  }
+
   return response
 }
 
