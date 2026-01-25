@@ -91,7 +91,7 @@ export default function UpdatePasswordPage() {
                     }}
                     className={cn(
                         "w-full p-3 bg-white border rounded-lg outline-none transition-all pr-10",
-                        "focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500",
+                        "focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2]",
                         fieldErrors.password ? "border-red-500" : "border-gray-200"
                     )}
                     placeholder="Min. 6 characters"
@@ -113,7 +113,7 @@ export default function UpdatePasswordPage() {
 
         <button
           type="submit"
-          className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 bg-[#8A63D2] hover:bg-[#7c59bd] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#8A63D2] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (

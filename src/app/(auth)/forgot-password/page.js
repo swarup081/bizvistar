@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
                     }}
                     className={cn(
                         "w-full p-3 bg-white border rounded-lg outline-none transition-all",
-                        "focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500",
+                        "focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2]",
                         fieldErrors.email ? "border-red-500" : "border-gray-200"
                     )}
                 />
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
 
         <button
           type="submit"
-          className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 bg-[#8A63D2] hover:bg-[#7c59bd] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#8A63D2] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (
@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
         </button>
 
         <div className="text-center pt-4">
-            <Link href="/sign-in" className="inline-flex items-center text-[15px] font-medium text-gray-600 hover:text-purple-600 transition-colors">
+            <Link href="/sign-in" className="inline-flex items-center text-[15px] font-medium text-gray-600 hover:text-[#8A63D2] transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Log in
             </Link>
