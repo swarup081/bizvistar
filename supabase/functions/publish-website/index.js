@@ -84,10 +84,32 @@ serve(async (req) => {
       });
   }
 
-  // First, update the website to be published
+  // 1. Fetch current draft data
+  const { data: siteData, error: fetchError } = await supabase
+      .from('websites')
+      .select('draft_data')
+      .eq('id', websiteId)
+      .eq('user_id', user.id)
+      .single();
+
+  if (fetchError) {
+      return new Response(JSON.stringify({ error: fetchError.message || 'Website not found' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404,
+      });
+  }
+
+  // 2. Publish (copy draft -> live)
+  const dataToPublish = siteData.draft_data;
+  let updatePayload = { is_published: true, updated_at: new Date() };
+
+  if (dataToPublish) {
+      updatePayload.website_data = dataToPublish;
+  }
+
   const { error: updateError } = await supabase
     .from('websites')
-    .update({ is_published: true, updated_at: new Date() })
+    .update(updatePayload)
     .eq('id', websiteId)
     .eq('user_id', user.id)
 

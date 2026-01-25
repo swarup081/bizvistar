@@ -19,7 +19,7 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
     { label: 'Product', href: '#product', hasDropdown: true },
     { label: 'Solutions', href: '#solutions', hasDropdown: true },
     { label: 'Resources', href: '#resources', hasDropdown: true },
-    { label: 'Pricing', href: '/get-started/pricing', hasDropdown: false },
+    { label: 'Pricing', href: '/pricing', hasDropdown: false },
   ];
 
   const handleLogOut = async () => {

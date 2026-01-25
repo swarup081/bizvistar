@@ -229,6 +229,7 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
  */
 export async function createSubscriptionAction(planName, billingCycle, couponCode, accessToken = null) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const user = await getUser(accessToken);
     if (!user) throw new Error("Unauthorized");
     
@@ -239,7 +240,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     const finalPlanId = getPlanId(standardPlanId, couponCode); 
     
     // 1. Check for Existing Active Subscription
-    const { data: existingSub } = await getSupabaseAdmin()
+    const { data: existingSub } = await supabaseAdmin
         .from('subscriptions')
         .select('status, current_period_end')
         .eq('user_id', user.id)
