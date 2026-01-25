@@ -1,23 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); // { type: 'success' | 'error', text: string }
+  const [fieldErrors, setFieldErrors] = useState({});
   const router = useRouter();
 
-  // Optionally check if session exists, but updateUser will fail if not.
+  const validateForm = () => {
+    const errors = {};
+    if (!password) {
+        errors.password = "Password is required";
+    } else if (password.length < 6) {
+        errors.password = "Password must be at least 6 characters";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setMessage(null);
+
+    if (!validateForm()) return;
+
+    setLoading(true);
 
     try {
       const { error } = await supabase.auth.updateUser({ password });
@@ -58,7 +73,7 @@ export default function UpdatePasswordPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div className="space-y-1.5">
             <label htmlFor="password" className="block text-sm text-gray-600 font-medium">
                 New Password
@@ -68,9 +83,16 @@ export default function UpdatePasswordPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all pr-10"
-                    required
+                    onChange={(e) => {
+                        setPassword(e.target.value);
+                        if(fieldErrors.password) setFieldErrors(prev => ({...prev, password: null}));
+                    }}
+                    className={cn(
+                        "w-full p-3 bg-white border rounded-lg outline-none transition-all pr-10 focus:ring-2",
+                        fieldErrors.password
+                            ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                            : "border-gray-200 focus:ring-purple-500/20 focus:border-purple-500"
+                    )}
                     placeholder="Min. 6 characters"
                 />
                 <button
@@ -85,11 +107,12 @@ export default function UpdatePasswordPage() {
                     )}
                 </button>
             </div>
+            {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 px-4 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (

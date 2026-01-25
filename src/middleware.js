@@ -51,6 +51,21 @@ export async function middleware(request) {
     return NextResponse.redirect(signInUrl)
   }
 
+  // Security Fix: Restrict /dashboard access to users with a live shop
+  if (path.startsWith('/dashboard') && user) {
+    const { data: website } = await supabase
+      .from('websites')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!website) {
+      // Redirect to templates page to create a shop
+      return NextResponse.redirect(new URL('/templates', request.url));
+    }
+  }
+
   return response
 }
 

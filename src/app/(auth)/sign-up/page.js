@@ -3,16 +3,20 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
 
 function SignUpForm() {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: ''
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [globalError, setGlobalError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,29 +24,62 @@ function SignUpForm() {
   const redirect = searchParams.get('redirect');
   const signInUrl = redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : '/sign-in';
 
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.fullName.trim()) errors.fullName = "Full Name is required";
+
+    if (!formData.email.trim()) {
+        errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        errors.email = "Invalid email format";
+    }
+
+    if (!formData.password) {
+        errors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+        errors.password = "Password must be at least 6 characters";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+    if (fieldErrors[id]) {
+        setFieldErrors(prev => ({ ...prev, [id]: null }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
+    setGlobalError('');
+
+    if (!validateForm()) {
+        return;
+    }
+
     setLoading(true);
     
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: formData.email,
+      password: formData.password,
       options: {
         data: {
-          full_name: fullName,
+          full_name: formData.fullName,
         },
       },
     });
 
     if (error) {
-      setErrorMessage(error.message);
+      setGlobalError(error.message);
       setLoading(false);
     } else if (data.user) {
       // Create profile record
       const { error: profileError } = await supabase.from('profiles').insert({
         id: data.user.id,
-        full_name: fullName,
+        full_name: formData.fullName,
       });
 
       if (profileError) {
@@ -68,13 +105,14 @@ function SignUpForm() {
           </h2>
       </div>
 
-      {errorMessage && (
-        <div className="mb-6 p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
-          {errorMessage}
+      {globalError && (
+        <div className="mb-6 p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+           <span>{globalError}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         
         {/* Full Name */}
         <div className="space-y-1.5">
@@ -84,11 +122,16 @@ function SignUpForm() {
             <input
                 id="fullName"
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all"
-                required
+                value={formData.fullName}
+                onChange={handleChange}
+                className={cn(
+                    "w-full p-3 bg-white border rounded-lg outline-none transition-all focus:ring-2",
+                    fieldErrors.fullName
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-gray-200 focus:ring-purple-500/20 focus:border-purple-500"
+                )}
             />
+            {fieldErrors.fullName && <p className="text-xs text-red-500">{fieldErrors.fullName}</p>}
         </div>
 
         {/* Email */}
@@ -99,11 +142,16 @@ function SignUpForm() {
             <input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all"
-                required
+                value={formData.email}
+                onChange={handleChange}
+                className={cn(
+                    "w-full p-3 bg-white border rounded-lg outline-none transition-all focus:ring-2",
+                    fieldErrors.email
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-gray-200 focus:ring-purple-500/20 focus:border-purple-500"
+                )}
             />
+            {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
         </div>
         
         {/* Password */}
@@ -115,11 +163,14 @@ function SignUpForm() {
                 <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={8}
-                    className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] outline-none transition-all pr-10"
-                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={cn(
+                        "w-full p-3 bg-white border rounded-lg outline-none transition-all pr-10 focus:ring-2",
+                        fieldErrors.password
+                            ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                            : "border-gray-200 focus:ring-purple-500/20 focus:border-purple-500"
+                    )}
                 />
                 <button
                     type="button"
@@ -133,11 +184,12 @@ function SignUpForm() {
                     )}
                 </button>
             </div>
+            {fieldErrors.password && <p className="text-xs text-red-500">{fieldErrors.password}</p>}
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 px-4 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white text-[17px] font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-2"
           disabled={loading}
         >
           {loading ? (
@@ -150,7 +202,7 @@ function SignUpForm() {
 
         <div className="text-center pt-2">
             <p className="text-[15px] text-[#2E1065] font-medium">
-                Already have an account? <Link href={signInUrl} className="text-[#6366F1] hover:text-[#4F46E5] font-bold ml-1">Log in</Link>
+                Already have an account? <Link href={signInUrl} className="text-purple-600 hover:text-purple-700 font-bold ml-1">Log in</Link>
             </p>
         </div>
 
@@ -165,7 +217,7 @@ function SignUpForm() {
 
 export default function SignUpPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-[#6366F1] animate-spin" /></div>}>
+    <Suspense fallback={<div className="flex justify-center p-10"><Loader2 className="w-8 h-8 text-purple-600 animate-spin" /></div>}>
       <SignUpForm />
     </Suspense>
   );
