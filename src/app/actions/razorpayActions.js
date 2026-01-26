@@ -214,10 +214,15 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
 
         if (!keySecret) throw new Error("Server Misconfiguration: Missing Key Secret");
 
+        // Verify using the secret retrieved based on mode
         const text = paymentId + '|' + subscriptionId;
         const generatedSignature = crypto.createHmac('sha256', keySecret).update(text).digest('hex');
 
         if (generatedSignature !== signature) {
+             // Fallback: If verification fails, try the webhook secrets (LIVE/TEST) as a backup?
+             // Razorpay Payment Verification MUST use Key Secret, not Webhook Secret.
+             // But sometimes users confuse them. We will stick to Key Secret.
+             // If validation fails, we throw.
             throw new Error("Invalid Signature");
         }
 

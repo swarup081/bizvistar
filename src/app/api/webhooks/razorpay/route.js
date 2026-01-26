@@ -12,20 +12,34 @@ export async function POST(req) {
 
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-    if (!secret) {
-      console.error('RAZORPAY_WEBHOOK_SECRET is not set');
+    // Support both Live and Test secrets provided by user
+    const secretLive = process.env.RAZORPAY_WEBHOOK_SECRET_LIVE;
+    const secretTest = process.env.RAZORPAY_WEBHOOK_SECRET_TEST;
+    // Fallback to generic if set
+    const secretGeneric = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    const secretsToTry = [secretLive, secretTest, secretGeneric].filter(Boolean);
+
+    if (secretsToTry.length === 0) {
+      console.error('No Razorpay Webhook Secret configured (RAZORPAY_WEBHOOK_SECRET_LIVE or _TEST)');
       return NextResponse.json({ error: 'Configuration Error' }, { status: 500 });
     }
 
-    // Verify Signature
-    const shasum = crypto.createHmac('sha256', secret);
-    shasum.update(rawBody);
-    const digest = shasum.digest('hex');
+    // Verify Signature against any available secret
+    let isValid = false;
+    for (const s of secretsToTry) {
+        const shasum = crypto.createHmac('sha256', s);
+        shasum.update(rawBody);
+        const digest = shasum.digest('hex');
+        if (digest === signature) {
+            isValid = true;
+            break;
+        }
+    }
 
-    if (digest !== signature) {
-      console.error('Invalid Razorpay Signature');
+    if (!isValid) {
+      console.error('Invalid Razorpay Signature (checked against available secrets)');
       return NextResponse.json({ error: 'Invalid Signature' }, { status: 400 });
     }
 
