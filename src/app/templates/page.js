@@ -428,22 +428,54 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       if (!template) throw new Error('Template not found in database.');
 
       const storeName = localStorage.getItem('storeName') || 'My New Site';
-      const site_slug = storeName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(); 
 
-      const { data: newSite, error: insertError } = await supabase
+      // Sanitize storeName to create a clean slug
+      const cleanSlug = storeName.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const timestampSlug = cleanSlug + '-' + Date.now();
+
+      let finalSlug = cleanSlug;
+      let usedFallback = false;
+
+      // 1. Try to insert with the clean slug first
+      let { data: newSite, error: insertError } = await supabase
         .from('websites')
         .insert({
           user_id: user.id,
           template_id: template.id,
-          site_slug: site_slug,
+          site_slug: cleanSlug,
           website_data: {} 
         })
         .select('id') 
         .single();
 
+      // 2. If that fails (likely unique constraint), fallback to timestamp slug
+      if (insertError) {
+          // console.log("Preferred slug taken, using fallback...");
+          finalSlug = timestampSlug;
+          usedFallback = true;
+
+          const retryResult = await supabase
+            .from('websites')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              site_slug: timestampSlug,
+              website_data: {}
+            })
+            .select('id')
+            .single();
+
+          newSite = retryResult.data;
+          insertError = retryResult.error;
+      }
+
       if (insertError) throw new Error(`Could not create site: ${insertError.message}`);
       if (!newSite) throw new Error('Failed to create site entry.');
       
+      // Save intended slug info for Dashboard Post-Payment Logic
+      localStorage.setItem('intendedSlug', cleanSlug);
+      localStorage.setItem('siteCreatedWithFallback', usedFallback ? 'true' : 'false');
+
       router.push(`/editor/${title}?site_id=${newSite.id}`);
 
     } catch (error) {

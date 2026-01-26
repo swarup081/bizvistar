@@ -467,11 +467,25 @@ function CheckoutContent() {
                      if (verification.success) {
                         router.push('/dashboard'); 
                      } else {
-                        setErrorMessage("Payment verification failed. Please contact support.");
+                        const contactNumber = process.env.NEXT_PUBLIC_CONTACT_FOUNDER || '919560411266';
+                        setDialogConfig({
+                            title: "Payment Verification Failed",
+                            message: "We received your payment but couldn't verify it instantly. If money was deducted, please contact the founder on WhatsApp immediately.",
+                            actionLabel: "Contact on WhatsApp",
+                            onAction: () => window.open(`https://wa.me/${contactNumber}?text=I paid for a subscription but verification failed.`, '_blank')
+                        });
+                        setShowErrorDialog(true);
                         setIsProcessing(false);
                      }
                 } catch (verifyErr) {
-                    setErrorMessage("Payment verification failed. Please contact support.");
+                    const contactNumber = process.env.NEXT_PUBLIC_CONTACT_FOUNDER || '919560411266';
+                    setDialogConfig({
+                            title: "Verification Error",
+                            message: "An error occurred while verifying your payment. If money was deducted, please contact us.",
+                            actionLabel: "Contact on WhatsApp",
+                            onAction: () => window.open(`https://wa.me/${contactNumber}?text=I paid for a subscription but verification error occurred.`, '_blank')
+                    });
+                    setShowErrorDialog(true);
                     setIsProcessing(false);
                 }
             },
