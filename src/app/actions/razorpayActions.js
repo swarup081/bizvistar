@@ -203,12 +203,13 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
         let keyId;
 
         if (mode === 'live') {
-            // Support user-provided typo variable (RAZOPAY...) and standard naming
-            keySecret = process.env.RAZOPAY_Live_Key_Secret || process.env.RAZORPAY_LIVE_KEY_SECRET;
-            // Use helper or direct env var
+            // User provided: RAZORPAY_LIVE_KEY_SECRET (Standardized)
+            keySecret = process.env.RAZORPAY_LIVE_KEY_SECRET;
+            // Use helper or direct env var (RAZOPAY_Live_Key_ID)
             keyId = process.env.RAZOPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
         } else {
-            keySecret = process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET;
+            // User provided: RAZORPAY_TEST_KEY_SECRET (Standardized)
+            keySecret = process.env.RAZORPAY_TEST_KEY_SECRET;
             keyId = getKeyId();
         }
 
@@ -398,13 +399,13 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     if (mode === 'live') {
          razorpayInstance = new Razorpay({
             key_id: process.env.RAZOPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID,
-            key_secret: process.env.RAZOPAY_Live_Key_Secret || process.env.RAZORPAY_LIVE_KEY_SECRET,
+            key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
         });
     } else {
          const configKeyId = getKeyId();
          razorpayInstance = new Razorpay({
             key_id: configKeyId,
-            key_secret: process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET,
+            key_secret: process.env.RAZORPAY_TEST_KEY_SECRET,
         });
     }
 
