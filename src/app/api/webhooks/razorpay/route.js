@@ -12,20 +12,34 @@ export async function POST(req) {
 
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    
+    // Support both Live and Test secrets provided by user
+    const secretLive = process.env.RAZORPAY_WEBHOOK_SECRET_LIVE;
+    const secretTest = process.env.RAZORPAY_WEBHOOK_SECRET_TEST;
+    // Fallback to generic if set
+    const secretGeneric = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-    if (!secret) {
-      console.error('RAZORPAY_WEBHOOK_SECRET is not set');
+    const secretsToTry = [secretLive, secretTest, secretGeneric].filter(Boolean);
+
+    if (secretsToTry.length === 0) {
+      console.error('No Razorpay Webhook Secret configured (RAZORPAY_WEBHOOK_SECRET_LIVE or _TEST)');
       return NextResponse.json({ error: 'Configuration Error' }, { status: 500 });
     }
 
-    // Verify Signature
-    const shasum = crypto.createHmac('sha256', secret);
-    shasum.update(rawBody);
-    const digest = shasum.digest('hex');
+    // Verify Signature against any available secret
+    let isValid = false;
+    for (const s of secretsToTry) {
+        const shasum = crypto.createHmac('sha256', s);
+        shasum.update(rawBody);
+        const digest = shasum.digest('hex');
+        if (digest === signature) {
+            isValid = true;
+            break;
+        }
+    }
 
-    if (digest !== signature) {
-      console.error('Invalid Razorpay Signature');
+    if (!isValid) {
+      console.error('Invalid Razorpay Signature (checked against available secrets)');
       return NextResponse.json({ error: 'Invalid Signature' }, { status: 400 });
     }
 
@@ -129,6 +143,45 @@ export async function POST(req) {
       if (error) {
         console.error('Error updating subscription in DB:', error);
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
+      }
+
+      // --- PUBLISH WEBSITE (Critical Fix) ---
+      // Ensure the user's website is published and accessible immediately
+      if (newStatus === 'active') {
+          try {
+             // Fetch website to check current state
+             const { data: website } = await supabaseAdmin
+                 .from('websites')
+                 .select('id, website_data, draft_data')
+                 .eq('user_id', userId)
+                 .limit(1)
+                 .maybeSingle();
+
+             if (website) {
+                 const updates = { is_published: true };
+                 
+                 // If published data is missing, copy from draft
+                 // This ensures the user sees their content immediately
+                 if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {
+                     updates.website_data = website.draft_data;
+                 }
+                 
+                 const { error: pubError } = await supabaseAdmin
+                     .from('websites')
+                     .update(updates)
+                     .eq('id', website.id);
+
+                 if (pubError) {
+                     console.error(`Failed to publish website for user ${userId}:`, pubError);
+                 } else {
+                     console.log(`Website published successfully for user ${userId}`);
+                 }
+             } else {
+                 console.warn(`No website found for user ${userId} to publish.`);
+             }
+          } catch (webErr) {
+              console.error("Unexpected error publishing website in webhook:", webErr);
+          }
       }
 
       // --- BACKUP: Update Profile from Notes if missing ---

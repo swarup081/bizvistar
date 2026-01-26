@@ -198,22 +198,114 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
              throw new Error("Missing verification parameters");
         }
         
-        const secret = process.env.RAZORPAY_WEBHOOK_SECRET; 
         const mode = getRazorpayMode();
         let keySecret;
+        let keyId;
+
         if (mode === 'live') {
+            // User provided: RAZORPAY_LIVE_KEY_SECRET (Standardized)
             keySecret = process.env.RAZORPAY_LIVE_KEY_SECRET;
+            // Use helper or direct env var (RAZOPAY_Live_Key_ID)
+            keyId = process.env.RAZOPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
         } else {
-            keySecret = process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET;
+            // User provided: RAZORPAY_TEST_KEY_SECRET (Standardized)
+            keySecret = process.env.RAZORPAY_TEST_KEY_SECRET;
+            keyId = getKeyId();
         }
 
         if (!keySecret) throw new Error("Server Misconfiguration: Missing Key Secret");
 
+        // Verify using the secret retrieved based on mode
         const text = paymentId + '|' + subscriptionId;
         const generatedSignature = crypto.createHmac('sha256', keySecret).update(text).digest('hex');
 
         if (generatedSignature !== signature) {
+             // Fallback: If verification fails, try the webhook secrets (LIVE/TEST) as a backup?
+             // Razorpay Payment Verification MUST use Key Secret, not Webhook Secret.
+             // But sometimes users confuse them. We will stick to Key Secret.
+             // If validation fails, we throw.
             throw new Error("Invalid Signature");
+        }
+
+        // --- REDUNDANT FALLBACK: Ensure DB is updated immediately ---
+        // Fetch subscription from Razorpay and update DB in case webhook is delayed/failed
+        try {
+            const razorpayInstance = new Razorpay({
+                key_id: keyId,
+                key_secret: keySecret,
+            });
+
+            const subData = await razorpayInstance.subscriptions.fetch(subscriptionId);
+            
+            if (subData) {
+                 const status = subData.status;
+                 let newStatus = 'active'; // Default to active for access
+                 
+                 // Map statuses
+                 if (status === 'cancelled') newStatus = 'canceled';
+                 if (status === 'halted' || status === 'paused') newStatus = 'past_due';
+                 if (status === 'completed') newStatus = 'active';
+                 if (status === 'authenticated') newStatus = 'active'; // Just paid
+
+                 // Only process positive states for redundancy
+                 if (['active', 'authenticated', 'completed', 'charged'].includes(status) || newStatus === 'active') {
+                      const supabaseAdmin = getSupabaseAdmin();
+                      
+                      // Resolve User ID (from notes or session)
+                      let userId = subData.notes?.user_id;
+                      if (!userId) {
+                          const user = await getUser();
+                          if (user) userId = user.id;
+                      }
+
+                      if (userId) {
+                           // Resolve Internal Plan ID
+                           const { data: planData } = await supabaseAdmin
+                            .from('plans')
+                            .select('id')
+                            .eq('razorpay_plan_id', subData.plan_id)
+                            .maybeSingle();
+
+                           const upsertPayload = {
+                                user_id: userId,
+                                razorpay_subscription_id: subscriptionId,
+                                status: newStatus, // Use mapped status
+                                plan_id: planData?.id || null,
+                                current_period_start: new Date(subData.current_start * 1000).toISOString(),
+                                current_period_end: new Date(subData.current_end * 1000).toISOString(),
+                                metadata: {
+                                    coupon_used: subData.notes?.coupon_used,
+                                    notes: subData.notes
+                                }
+                           };
+                           
+                           // Upsert Subscription
+                           await supabaseAdmin.from('subscriptions').upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
+
+                           // Publish Website
+                           const { data: website } = await supabaseAdmin
+                             .from('websites')
+                             .select('id, website_data, draft_data')
+                             .eq('user_id', userId)
+                             .limit(1)
+                             .maybeSingle();
+
+                           if (website) {
+                               const updates = { is_published: true };
+                               // Copy draft to published if empty
+                               if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {
+                                   updates.website_data = website.draft_data;
+                               }
+                               await supabaseAdmin.from('websites').update(updates).eq('id', website.id);
+                               console.log(`[Redundant Check] Website published for user ${userId}`);
+                           }
+                      }
+                 }
+            }
+
+        } catch (redundantErr) {
+            console.error("Redundant verification update failed:", redundantErr);
+            // Swallow error so we don't block the user if signature was valid
         }
 
         return { success: true };
@@ -306,14 +398,14 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     let razorpayInstance;
     if (mode === 'live') {
          razorpayInstance = new Razorpay({
-            key_id: process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID,
+            key_id: process.env.RAZOPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID,
             key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
         });
     } else {
          const configKeyId = getKeyId();
          razorpayInstance = new Razorpay({
             key_id: configKeyId,
-            key_secret: process.env.RAZOPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET,
+            key_secret: process.env.RAZORPAY_TEST_KEY_SECRET,
         });
     }
 

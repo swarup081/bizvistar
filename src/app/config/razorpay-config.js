@@ -132,10 +132,11 @@ return planId;
 export const getKeyId = () => {
   const mode = getRazorpayMode();
   if (mode === 'live') {
-      return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
+      // User provided: RAZOPAY_Live_Key_ID
+      return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID || process.env.RAZOPAY_Live_Key_ID;
   }
-  // Fallback to user provided typo variable if standard is missing
-  return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZOPAY_Test_Key_ID || 'rzp_test_invalid';
+  // User provided: RAZOPAY_TEST_KEY_ID (All caps now)
+  return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZOPAY_TEST_KEY_ID || 'rzp_test_invalid';
 };
 
 /**
