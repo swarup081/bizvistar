@@ -14,12 +14,35 @@ import {
   Tag
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import { verifyAndPublishUserSite } from '../actions/publishActions';
 
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // --- CHECK FOR PAYMENT SUCCESS & FORCE PUBLISH ---
+  useEffect(() => {
+    const checkPayment = async () => {
+        if (searchParams.get('payment_success') === 'true') {
+            try {
+                console.log("[Dashboard] Payment success detected. Verifying subscription...");
+                const result = await verifyAndPublishUserSite();
+                if (result.success) {
+                    console.log("[Dashboard] Site verified and published.");
+                    // Optionally remove the query param or show a toast
+                } else {
+                    console.error("[Dashboard] Verification failed:", result.error);
+                }
+            } catch (e) {
+                console.error("[Dashboard] Verification error:", e);
+            }
+        }
+    };
+    checkPayment();
+  }, [searchParams]);
 
   const navItems = [
     { name: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },

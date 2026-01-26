@@ -54,9 +54,23 @@ export async function POST(req) {
       const subscription = payload.subscription.entity;
       const razorpaySubscriptionId = subscription.id;
       const razorpayPlanId = subscription.plan_id;
-      const notes = subscription.notes || {};
-      const userId = notes.user_id;
-      const couponUsed = notes.coupon_used; // Extract coupon used
+      // FALLBACK: Check payment entity notes if subscription notes are empty/missing user_id
+      let notes = subscription.notes || {};
+      let userId = notes.user_id;
+      const couponUsed = notes.coupon_used;
+
+      if (!userId) {
+          // Check if payload has payment entity with notes (common in some Razorpay flows)
+          if (payload.payment && payload.payment.entity && payload.payment.entity.notes) {
+              const paymentNotes = payload.payment.entity.notes;
+              if (paymentNotes.user_id) {
+                  userId = paymentNotes.user_id;
+                  console.log(`[Webhook] Found user_id in payment notes: ${userId}`);
+                  // Merge notes for downstream logic
+                  notes = { ...notes, ...paymentNotes };
+              }
+          }
+      }
 
       if (!userId) {
         console.warn(`[Webhook] No user_id in subscription notes for event ${eventName}`);
