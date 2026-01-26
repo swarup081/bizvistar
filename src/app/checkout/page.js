@@ -465,7 +465,9 @@ function CheckoutContent() {
                      );
                      
                      if (verification.success) {
-                        router.push('/dashboard'); 
+                        // Pass payment_success=true AND the subscription ID/Payment ID for robust verification
+                        // This allows the dashboard to manually verify if the webhook is slow
+                        router.push(`/dashboard?payment_success=true&sub_id=${response.razorpay_subscription_id}&pay_id=${response.razorpay_payment_id}`);
                      } else {
                         setErrorMessage("Payment verification failed. Please contact support.");
                         setIsProcessing(false);

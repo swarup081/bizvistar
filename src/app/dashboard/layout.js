@@ -26,10 +26,15 @@ export default function DashboardLayout({ children }) {
   // --- CHECK FOR PAYMENT SUCCESS & FORCE PUBLISH ---
   useEffect(() => {
     const checkPayment = async () => {
-        if (searchParams.get('payment_success') === 'true') {
+        const isSuccess = searchParams.get('payment_success') === 'true';
+        const subId = searchParams.get('sub_id'); // passed from checkout
+
+        if (isSuccess) {
             try {
-                console.log("[Dashboard] Payment success detected. Verifying subscription...");
-                const result = await verifyAndPublishUserSite();
+                console.log("[Dashboard] Payment success detected. Verifying subscription...", subId ? `(ID: ${subId})` : "");
+                // Pass optional subscription ID for robust check
+                const result = await verifyAndPublishUserSite(subId);
+
                 if (result.success) {
                     console.log("[Dashboard] Site verified and published.");
                     // Optionally remove the query param or show a toast
