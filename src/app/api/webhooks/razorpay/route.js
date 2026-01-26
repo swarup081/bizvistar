@@ -54,43 +54,36 @@ export async function POST(req) {
       const couponUsed = notes.coupon_used; // Extract coupon used
 
       if (!userId) {
-        console.warn(`No user_id in subscription notes for event ${eventName}`);
+        console.warn(`[Webhook] No user_id in subscription notes for event ${eventName}`);
         // Can't link to a user, but we acknowledge receipt.
         return NextResponse.json({ received: true }); 
       }
 
-      // Determine Status
-      let newStatus = 'active';
-      if (eventName === 'subscription.cancelled') newStatus = 'canceled';
-      if (eventName === 'subscription.halted') newStatus = 'past_due';
-      
-      // FIX: DB Constraint only allows 'active', 'canceled', 'past_due'
-      // Map 'paused' -> 'past_due' (blocks access)
-      if (eventName === 'subscription.paused') newStatus = 'past_due'; 
-      
-      if (eventName === 'subscription.resumed') newStatus = 'active'; 
+      console.log(`[Webhook] Processing event ${eventName} for user ${userId}`);
 
-      // FIX: Map 'completed' -> 'active' so it saves to DB. 
-      // We rely on current_period_end date check in validation logic to handle actual expiry.
-      if (eventName === 'subscription.completed') newStatus = 'active'; 
-      
-      // 'charged' and 'activated' imply active.
-      // Map Status text to DB constraints: 'active', 'canceled', 'past_due', 'completed'
-      // Note: 'completed' status must be allowed in DB check constraint if strict, otherwise use 'active'.
-      // Assuming DB check constraint allows text, or we mapped it. 
-      // The schema says: CHECK (status = ANY (ARRAY['active'::text, 'canceled'::text, 'past_due'::text]))
-      // The Schema DOES NOT include 'completed'. We must handle this.
-      // If DB constraint is strict, we might need to use 'active' or 'canceled'.
-      // But we need to distinguish for the Founder Fix.
-      // Option: Update DB constraint (SQL needed) OR map 'completed' -> 'active' but rely on date?
-      // "exactly after user pay last cycle sucess and it terminate even after the payment they cant use the last cycle"
-      // If we map to 'active', and current_period_end is correct, it works.
-      // If we map to 'canceled', access is blocked.
-      // SO: Map 'completed' -> 'active'. 
-      // AND ensuring current_period_end is updated is key.
-      
-      if (newStatus === 'completed') newStatus = 'active'; // Map to active so DB accepts it, logic checks date.
-      if (newStatus === 'halted') newStatus = 'past_due';
+      // Determine Status
+      let newStatus = 'active'; // Default assumption
+
+      // Map event names to status
+      switch (eventName) {
+          case 'subscription.cancelled':
+              newStatus = 'canceled';
+              break;
+          case 'subscription.halted':
+          case 'subscription.paused':
+              newStatus = 'past_due'; // Block access
+              break;
+          case 'subscription.completed':
+              newStatus = 'active'; // Map to active, rely on dates
+              break;
+          case 'subscription.charged':
+          case 'subscription.activated':
+          case 'subscription.resumed':
+              newStatus = 'active';
+              break;
+          default:
+              newStatus = 'active'; // Default for others like 'charged'
+      }
 
       // Timestamps
       // Razorpay uses unix timestamp (seconds), JS uses ms.
@@ -133,16 +126,20 @@ export async function POST(req) {
 
       // --- PUBLISH WEBSITE LOGIC ---
       // If subscription is active, ensure website is published and data is synced
+      // We do this check regardless of whether the subscription upsert succeeded (idempotent)
       if (newStatus === 'active') {
+          console.log(`[Webhook] Attempting to publish website for user ${userId}`);
           try {
-              const { data: website } = await supabaseAdmin
+              const { data: website, error: findError } = await supabaseAdmin
                   .from('websites')
-                  .select('id, draft_data')
+                  .select('id, draft_data, is_published')
                   .eq('user_id', userId)
                   .limit(1)
                   .maybeSingle();
 
-              if (website) {
+              if (findError) {
+                  console.error(`[Webhook] Error finding website for user ${userId}:`, findError);
+              } else if (website) {
                   const updatePayload = { is_published: true };
 
                   // Promote draft_data if it exists and is not empty
@@ -150,15 +147,21 @@ export async function POST(req) {
                       updatePayload.website_data = website.draft_data;
                   }
 
-                  await supabaseAdmin
+                  const { error: updateError } = await supabaseAdmin
                       .from('websites')
                       .update(updatePayload)
                       .eq('id', website.id);
 
-                  console.log(`Website published for user ${userId}`);
+                  if (updateError) {
+                      console.error(`[Webhook] Error updating website for user ${userId}:`, updateError);
+                  } else {
+                      console.log(`[Webhook] Successfully published website for user ${userId}`);
+                  }
+              } else {
+                  console.warn(`[Webhook] No website found for user ${userId} to publish.`);
               }
           } catch (e) {
-              console.error("Error publishing website:", e);
+              console.error("[Webhook] Unexpected error publishing website:", e);
           }
       }
 

@@ -33,13 +33,26 @@ export async function checkSlugAvailability(slug) {
   // Normalize
   const normalizedSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
-  const { data } = await supabaseAdmin
-    .from('websites')
-    .select('id')
-    .eq('site_slug', normalizedSlug)
-    .maybeSingle();
+  try {
+      const { data, error } = await supabaseAdmin
+        .from('websites')
+        .select('id')
+        .eq('site_slug', normalizedSlug)
+        .maybeSingle();
 
-  return !data; // True if no data found (available)
+      if (error) {
+          console.error("Error checking slug availability:", error);
+          // If error (e.g. DB down), safer to assume taken to prevent issues,
+          // or allow and let insert fail?
+          // Assuming taken prevents user frustration if it spins.
+          return false;
+      }
+
+      return !data; // True if no data found (available)
+  } catch (e) {
+      console.error("Unexpected error checking slug:", e);
+      return false;
+  }
 }
 
 // --- GET SUGGESTIONS ---
