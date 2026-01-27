@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import {
-  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, AlertTriangle // Import icons
+  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, AlertTriangle, FileText, Globe
 } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
 
@@ -196,7 +196,7 @@ export default function EditorTopNav({
     siteSlug,
     templateName, 
     websiteId,
-    draftId, // <-- NEW
+    draftId,
     saveStatus,
     view, 
     onViewChange, 
@@ -210,11 +210,16 @@ export default function EditorTopNav({
     onRestart
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
+  const [isDraftDropdownOpen, setIsDraftDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
   const [alertState, setAlertState] = useState({ isOpen: false, title: '', message: '' });
+
+  // State for Draft Switcher
+  const [availableDrafts, setAvailableDrafts] = useState([]);
+  const [liveSiteInfo, setLiveSiteInfo] = useState(null);
 
   const router = useRouter();
   
@@ -223,9 +228,49 @@ export default function EditorTopNav({
   const displaySlug = siteSlug || 'your-site-slug';
   const siteUrl = `${displaySlug}.bizvistaar.com`;
 
+  // Fetch drafts for the switcher
+  useEffect(() => {
+    async function fetchDrafts() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch Live Site
+        const { data: live } = await supabase
+            .from('websites')
+            .select('id, business_name, updated_at')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle();
+        setLiveSiteInfo(live);
+
+        // Fetch Drafts
+        const { data: drafts } = await supabase
+            .from('website_drafts')
+            .select('id, name, updated_at')
+            .eq('user_id', user.id)
+            .order('updated_at', { ascending: false });
+        setAvailableDrafts(drafts || []);
+    }
+    fetchDrafts();
+  }, []);
+
   const handlePageSelect = (path) => {
     onPageChange(path);
     setIsPageDropdownOpen(false);
+  };
+
+  const handleDraftSelect = (type, id) => {
+      // Navigate to selected draft/live
+      const params = new URLSearchParams(window.location.search);
+      if (type === 'live') {
+          params.set('site_id', id);
+          params.delete('draft_id');
+      } else {
+          params.set('draft_id', id);
+          params.delete('site_id');
+      }
+      router.push(`?${params.toString()}`);
+      setIsDraftDropdownOpen(false);
   };
 
   const handleRestartConfirm = () => {
@@ -233,8 +278,45 @@ export default function EditorTopNav({
     setIsRestartModalOpen(false);
   };
 
-  const onPublishClick = () => {
-      setIsPublishModalOpen(true);
+  const onPublishClick = async () => {
+      // Check Subscription FIRST
+      try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+              router.push('/sign-in');
+              return;
+          }
+
+          // Fetch latest subscription status
+          const { data: sub } = await supabase
+              .from('subscriptions')
+              .select('status, current_period_end')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+          let isActive = false;
+          if (sub) {
+              const now = new Date();
+              const end = new Date(sub.current_period_end);
+              // Check status and expiry
+              if (['active', 'trialing'].includes(sub.status) && now <= end) {
+                  isActive = true;
+              }
+          }
+
+          if (isActive) {
+              setIsPublishModalOpen(true);
+          } else {
+              // Redirect to Pricing if not active
+              router.push(`/pricing?site_id=${websiteId || ''}&draft_id=${draftId || ''}`);
+          }
+
+      } catch (err) {
+          console.error("Subscription check failed", err);
+          setAlertState({ isOpen: true, title: 'Error', message: 'Could not verify subscription.' });
+      }
   };
 
   const handlePublishConfirm = async () => {
@@ -247,8 +329,6 @@ export default function EditorTopNav({
             return;
         }
 
-        // Call publish-website Edge Function
-        // We pass draftId if available, else websiteId
         const payload = {};
         if (draftId) payload.draftId = draftId;
         else if (websiteId) payload.websiteId = websiteId;
@@ -259,7 +339,7 @@ export default function EditorTopNav({
              return;
         }
 
-        const { data: resData, error } = await supabase.functions.invoke('publish-website', {
+        const { error } = await supabase.functions.invoke('publish-website', {
             headers: {
                 'Authorization': `Bearer ${session.access_token}`
             },
@@ -267,25 +347,9 @@ export default function EditorTopNav({
         });
 
         if (error) {
-            // Check for payment required
-             // We can parse error message
-             const msg = error.message || 'Failed to publish.';
-             // If function returned specific 403 JSON, supabase client might just give generic error object?
-             // Actually supabase.functions.invoke returns error object if non-2xx?
-             // Or data is null and error is set.
-
-             // If we returned 403 from function, it might be in error.context?
              console.error('Publish error:', error);
              setAlertState({ isOpen: true, title: 'Publish Failed', message: 'An error occurred while publishing. Please try again.' });
         } else {
-             // Success?
-             // Check if custom error returned in data (if status was 200 but logic failed?)
-             // No, my function returns 4xx/5xx for errors.
-
-             // Wait, Supabase invoke returns error if status is not 2xx.
-             // We need to parse error body if possible.
-             // Usually error is { message: ... }
-
              setIsPublishModalOpen(false);
              setAlertState({ isOpen: true, title: 'Success!', message: 'Your website has been published successfully.' });
         }
@@ -302,27 +366,78 @@ export default function EditorTopNav({
     <header className="w-full bg-white shadow-sm">
       {/* Top-most Bar */}
       <div className="w-full h-[65px] border-b border-gray-200 px-4 flex items-center justify-between">
-        {/* Left Side */}
+        {/* Left Side: Draft Switcher (Replacing Logo/Text) */}
         <div className="flex items-center gap-6">
-          {mode !== 'dashboard' ? (
+          {mode === 'dashboard' ? (
+             <div className="relative">
+                 <button
+                    onClick={() => setIsDraftDropdownOpen(!isDraftDropdownOpen)}
+                    className="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-gray-700 transition"
+                 >
+                    {websiteId ? 'Live Website' : 'Draft Editor'}
+                    <ChevronDown size={18} />
+                 </button>
+                 {isDraftDropdownOpen && (
+                     <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                        <div className="p-2 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Switch Project
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto">
+                            {/* Live Site Option */}
+                            {liveSiteInfo && (
+                                <button
+                                    onClick={() => handleDraftSelect('live', liveSiteInfo.id)}
+                                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-b border-gray-100 ${websiteId === liveSiteInfo.id ? 'bg-blue-50' : ''}`}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                                        <Globe size={16} />
+                                    </div>
+                                    <div className="truncate">
+                                        <div className="font-medium text-gray-900 truncate">{liveSiteInfo.business_name || 'Live Site'}</div>
+                                        <div className="text-xs text-green-600 font-medium">Published</div>
+                                    </div>
+                                    {websiteId === liveSiteInfo.id && <Check size={16} className="ml-auto text-blue-600" />}
+                                </button>
+                            )}
+
+                            {/* Drafts Options */}
+                            {availableDrafts.map(draft => (
+                                <button
+                                    key={draft.id}
+                                    onClick={() => handleDraftSelect('draft', draft.id)}
+                                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 ${draftId === draft.id ? 'bg-blue-50' : ''}`}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                                        <FileText size={16} />
+                                    </div>
+                                    <div className="truncate">
+                                        <div className="font-medium text-gray-900 truncate">{draft.name || 'Untitled Draft'}</div>
+                                        <div className="text-xs text-gray-500">Last edited: {new Date(draft.updated_at).toLocaleDateString()}</div>
+                                    </div>
+                                    {draftId === draft.id && <Check size={16} className="ml-auto text-blue-600" />}
+                                </button>
+                            ))}
+                            {availableDrafts.length === 0 && !liveSiteInfo && (
+                                <div className="p-4 text-center text-sm text-gray-500">No projects found.</div>
+                            )}
+                        </div>
+                        <div className="p-2 bg-gray-50 border-t border-gray-200">
+                            <Link href="/templates" className="flex items-center justify-center w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700">
+                                + Create New
+                            </Link>
+                        </div>
+                     </div>
+                 )}
+             </div>
+          ) : (
             <>
               <Link href="/">
                 <Logo className="text-3xl cursor-pointer" />
               </Link>
               <div className="flex items-center gap-2">
-                <Tooltip
-                  title="Hire a Professional"
-                  description="Need help with design or content? Our experts are here to assist."
-                >
-                  <NavButton>Hire a Professional</NavButton>
-                </Tooltip>
-                <NavButton>Help</NavButton>
+                 {/* Public mode (not dashboard editor) */}
               </div>
             </>
-          ) : (
-             <span className="text-xl font-bold text-gray-900">
-               Website Editor
-             </span>
           )}
         </div>
 
@@ -373,22 +488,14 @@ export default function EditorTopNav({
             </Link>
           </Tooltip>
           
-          {mode === 'dashboard' ? (
-              <button
-                onClick={onPublishClick}
-                disabled={isPublishing}
-                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50"
-              >
-                Publish
-              </button>
-          ) : (
-              <Link
-                href={`/pricing?site_id=${websiteId || ''}`} // Pass site_id if available
-                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors"
-              >
-                Publish
-              </Link>
-          )}
+          {/* Publish Button with Logic */}
+          <button
+            onClick={onPublishClick}
+            disabled={isPublishing}
+            className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50"
+          >
+            Publish
+          </button>
 
         </div>
       </div>
