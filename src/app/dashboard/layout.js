@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   LayoutGrid, 
   Globe, 
@@ -16,6 +16,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -47,6 +48,9 @@ export default function DashboardLayout({ children }) {
     // The outer container has p-7 (28px) padding.
     // To make the header full-width when scrolled, we use negative margins to counteract the padding.
     <div className="min-h-screen p-7 bg-[#F3F4F6] font-sans text-[#333333]">
+      <Suspense fallback={null}>
+        <PostPaymentManager />
+      </Suspense>
       {/* Header */}
       <header 
         className={`sticky top-0 z-50 bg-white flex items-center justify-between transition-all duration-300 ease-in-out
