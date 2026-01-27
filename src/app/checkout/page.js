@@ -70,6 +70,7 @@ function CheckoutContent() {
   // URL Params
   const planName = searchParams.get('plan') || 'Pro';
   const billingCycle = searchParams.get('billing') || 'monthly';
+  const draftId = searchParams.get('draft_id'); // <--- CAPTURE DRAFT ID
   
   // Ignore URL price, fetch from config
   const isYearly = billingCycle === 'yearly';
@@ -423,7 +424,8 @@ function CheckoutContent() {
         const codeToSend = appliedCoupon ? appliedCoupon.code : '';
         
         // Pass accessToken to Server Action to verify user
-        const subRes = await createSubscriptionAction(planName, billingCycle, codeToSend, accessToken);
+        // Pass draftId to action so it can be added to notes
+        const subRes = await createSubscriptionAction(planName, billingCycle, codeToSend, accessToken, draftId);
         
         if (!subRes.success) {
             const err = subRes.error || "Failed to initiate subscription.";

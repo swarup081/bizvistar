@@ -282,7 +282,11 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
                            // Upsert Subscription
                            await supabaseAdmin.from('subscriptions').upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
 
-                           // Publish Website & Update Names
+                           // Publish Website (Or Promote Draft) & Update Names
+                           // 1. Check for 'draft_id' in notes (set during checkout)
+                           const draftId = subData.notes?.draft_id;
+
+                           // 2. Check for existing LIVE site
                            const { data: website } = await supabaseAdmin
                              .from('websites')
                              .select('id, website_data, draft_data')
@@ -291,17 +295,49 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
                              .maybeSingle();
 
                            if (website) {
+                               // Scenario: User has a live site, just updating status/name
                                const updates = {
                                    is_published: true,
                                    user_name: subData.notes?.customer_name,
                                    business_name: subData.notes?.customer_company
                                };
-                               // Copy draft to published if empty
+
+                               // If user was paying for a specific draft to OVERWRITE live, handle logic?
+                               // For now, simpler: Live site exists, just ensure it's published.
+                               // If empty, sync from draft_data.
                                if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {
                                    updates.website_data = website.draft_data;
                                }
+
                                await supabaseAdmin.from('websites').update(updates).eq('id', website.id);
                                console.log(`[Redundant Check] Website published for user ${userId}`);
+
+                           } else if (draftId) {
+                               // Scenario: First time user (no live site), promoting Draft -> Live
+                               const { data: draft } = await supabaseAdmin
+                                   .from('website_drafts')
+                                   .select('*')
+                                   .eq('id', draftId)
+                                   .single();
+
+                               if (draft) {
+                                   // Create initial LIVE site from draft
+                                   // Generate a slug if needed
+                                   const cleanName = (draft.business_name || 'site').toLowerCase().replace(/[^a-z0-9]/g, '');
+                                   const slug = `${cleanName}-${Date.now().toString().slice(-6)}`;
+
+                                   await supabaseAdmin.from('websites').insert({
+                                       user_id: userId,
+                                       template_id: draft.template_id || 1,
+                                       site_slug: slug, // We might want to use 'intendedSlug' if stored? Hard to get from here.
+                                       is_published: true,
+                                       website_data: draft.draft_data, // BOTH live
+                                       draft_data: draft.draft_data,   // AND draft
+                                       business_name: subData.notes?.customer_company || draft.business_name,
+                                       user_name: subData.notes?.customer_name
+                                   });
+                                   console.log(`[Redundant Check] Created First Live Site from Draft ${draftId}`);
+                               }
                            }
                       }
                  }
@@ -323,7 +359,7 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
 /**
  * Creates a subscription safely.
  */
-export async function createSubscriptionAction(planName, billingCycle, couponCode, accessToken = null) {
+export async function createSubscriptionAction(planName, billingCycle, couponCode, accessToken = null, draftId = null) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const user = await getUser(accessToken);
@@ -448,6 +484,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
         coupon_used: normalizedCoupon || 'none',
         plan_name: planName,
         billing_cycle: billingCycle,
+        draft_id: draftId || '', // Pass draftId to notes
         ...billingNotes
         // We pass coupon_used here so webhook can pick it up
       }

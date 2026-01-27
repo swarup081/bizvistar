@@ -124,11 +124,12 @@ serve(async (req) => {
 
     if (existingSite) {
         // Update existing live site
+        // Scenario D & E: Whether self-publish or overwrite from draft, we update both columns
         const updates = {
             website_data: dataToPublish,
             is_published: true,
             updated_at: new Date(),
-            draft_data: dataToPublish // Keep legacy draft sync'd
+            draft_data: dataToPublish // Sync draft to match live
         };
         if (sourceBusinessName) updates.business_name = sourceBusinessName;
         if (sourceTemplateId) updates.template_id = sourceTemplateId;

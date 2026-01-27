@@ -279,7 +279,8 @@ export default function EditorTopNav({
   };
 
   const onPublishClick = async () => {
-      // Check Subscription FIRST
+      // Check 'is_published' status FIRST (as per new requirement)
+      // "check for ispublish if true directly or else redirect to the checkout page"
       try {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) {
@@ -287,35 +288,31 @@ export default function EditorTopNav({
               return;
           }
 
-          // Fetch latest subscription status
-          const { data: sub } = await supabase
-              .from('subscriptions')
-              .select('status, current_period_end')
+          // Check if user has a published site in 'websites' table
+          const { data: website } = await supabase
+              .from('websites')
+              .select('is_published')
               .eq('user_id', user.id)
-              .order('created_at', { ascending: false })
+              .eq('is_published', true)
               .limit(1)
               .maybeSingle();
 
-          let isActive = false;
-          if (sub) {
-              const now = new Date();
-              const end = new Date(sub.current_period_end);
-              // Check status and expiry
-              if (['active', 'trialing'].includes(sub.status) && now <= end) {
-                  isActive = true;
-              }
-          }
+          // Also check subscription as a secondary validation?
+          // The requirement specifically mentions "ispublish if true directly".
+          // But technically if subscription expired, we might want to block?
+          // However, assuming 'is_published' implies they paid and are active OR we rely on middleware/backend checks.
+          // Let's stick to the requirement: "if true directly or else redirect to checkout"
 
-          if (isActive) {
+          if (website && website.is_published) {
               setIsPublishModalOpen(true);
           } else {
-              // Redirect to Pricing if not active
+              // Redirect to Pricing/Checkout if not published
               router.push(`/pricing?site_id=${websiteId || ''}&draft_id=${draftId || ''}`);
           }
 
       } catch (err) {
-          console.error("Subscription check failed", err);
-          setAlertState({ isOpen: true, title: 'Error', message: 'Could not verify subscription.' });
+          console.error("Publish check failed", err);
+          setAlertState({ isOpen: true, title: 'Error', message: 'Could not verify status.' });
       }
   };
 
