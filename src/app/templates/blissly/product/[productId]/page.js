@@ -39,58 +39,61 @@ export default function ProductDetailPage() {
     };
 
     return (
-        <div className="container mx-auto px-6 py-20 font-sans">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-                
-                {/* Image */}
-                <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg">
-                    <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                
-                {/* Product Info */}
-                <div className="py-4">
-                    {category && (
-                        <span className="text-sm text-brand-text/70 uppercase tracking-widest">{category.name}</span>
-                    )}
-                    <h1 className="text-5xl font-serif font-medium text-brand-text mt-2">{product.name}</h1>
-                    <p className="text-3xl text-brand-secondary font-sans mt-4">${product.price.toFixed(2)}</p>
+        <div className="w-full max-w-full overflow-hidden overflow-x-hidden">
+            <div className="container mx-auto px-4 md:px-6 py-10 md:py-20 font-sans">
+                {/* Mobile: Grid Cols 2 (Shrink Layout) */}
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-12 items-start">
                     
-                    <p className="text-brand-text/80 text-lg mt-6">
-                        {product.description}
-                    </p>
+                    {/* Image */}
+                    <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg">
+                        <img 
+                            src={product.image} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
                     
-                    {/* Quantity & Add to Cart */}
-                    <div className="flex items-stretch gap-4 mt-8">
-                        <div className="flex items-center border border-brand-text/20 rounded-lg">
-                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-lg">-</button>
-                            <span className="w-12 h-12 flex items-center justify-center text-lg font-bold border-x border-brand-text/20">{quantity}</span>
-                            <button onClick={() => setQuantity(q => q + 1)} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary rounded-r-lg">+</button>
+                    {/* Product Info */}
+                    <div className="py-0 md:py-4 flex flex-col h-full">
+                        {category && (
+                            <span className="text-[2vw] md:text-sm text-brand-text/70 uppercase tracking-widest">{category.name}</span>
+                        )}
+                        <h1 className="text-[5vw] md:text-5xl font-serif font-medium text-brand-text mt-1 md:mt-2 leading-tight">{product.name}</h1>
+                        <p className="text-[4vw] md:text-3xl text-brand-secondary font-sans mt-2 md:mt-4 font-bold">${product.price.toFixed(2)}</p>
+                        
+                        <p className="text-brand-text/80 text-[2.5vw] md:text-lg mt-2 md:mt-6 leading-tight">
+                            {product.description}
+                        </p>
+                        
+                        {/* Quantity & Add to Cart */}
+                        <div className="flex flex-col md:flex-row items-stretch gap-2 md:gap-4 mt-4 md:mt-8">
+                            <div className="flex items-center border border-brand-text/20 rounded-lg h-[8vw] md:h-12 w-full md:w-auto">
+                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-[8vw] md:w-12 h-full text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-lg flex items-center justify-center">-</button>
+                                <span className="flex-grow md:w-12 h-full flex items-center justify-center text-[3vw] md:text-lg font-bold border-x border-brand-text/20">{quantity}</span>
+                                <button onClick={() => setQuantity(q => q + 1)} className="w-[8vw] md:w-12 h-full text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-r-lg flex items-center justify-center">+</button>
+                            </div>
+                            <button 
+                                onClick={handleAddToCart}
+                                className="h-[8vw] md:h-12 w-full bg-brand-secondary text-brand-bg font-medium tracking-wide transition-opacity rounded-lg hover:opacity-90 text-[3vw] md:text-base whitespace-nowrap px-4"
+                            >
+                                Add to Cart
+                            </button>
                         </div>
-                        <button 
-                            onClick={handleAddToCart}
-                            className="flex-grow h-12 bg-brand-secondary text-brand-bg font-medium tracking-wide transition-opacity rounded-lg hover:opacity-90"
-                        >
-                            Add to Cart
-                        </button>
                     </div>
                 </div>
-            </div>
-            
-            {/* Related Products */}
-            <div className="mt-24 pt-16 border-t border-brand-text/10">
-                <h2 className="text-4xl font-serif font-medium text-brand-text mb-12 text-center">You Might Also Like</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 items-stretch">
-                     {relatedProducts.map(item => (
-                        <ProductCard 
-                            key={item.id} 
-                            item={item}
-                            templateName="blissly"
-                        />
-                    ))}
+                
+                {/* Related Products */}
+                <div className="mt-12 md:mt-24 pt-8 md:pt-16 border-t border-brand-text/10">
+                    <h2 className="text-[6vw] md:text-4xl font-serif font-medium text-brand-text mb-6 md:mb-12 text-center">You Might Also Like</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 items-stretch">
+                         {relatedProducts.map(item => (
+                            <ProductCard 
+                                key={item.id} 
+                                item={item}
+                                templateName="blissly"
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

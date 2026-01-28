@@ -1,6 +1,6 @@
 'use client';
 import { useCart } from './cartContext.js';
-import { useTemplateContext } from './templateContext.js'; // <-- 1. IMPORT THE CONTEXT
+import { useTemplateContext } from './templateContext.js';
 
 // --- Reusable SVG Icons ---
 export const StarIcon = () => (
@@ -9,8 +9,8 @@ export const StarIcon = () => (
     </svg>
 );
 
-export const ArrowRightIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 ml-2">
+export const ArrowRightIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-5 h-5 ml-2 ${className || ''}`}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
     </svg>
 );
@@ -45,7 +45,6 @@ export const ChevronRightIcon = () => (
     </svg>
 );
 
-// Cart Icon
 export const CartIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
@@ -53,10 +52,10 @@ export const CartIcon = () => (
 );
 
 
-// --- Header Component (Adapted for Cart) ---
+// --- Header Component ---
 export const Header = ({ business, cartCount, onCartClick }) => (
     <header className="bg-brand-bg sticky top-0 z-40 w-full font-sans border-b border-brand-primary/50">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center relative">
             {/* Left Nav */}
             <nav className="hidden md:flex items-center gap-6">
                 {business.navigation.map(navItem => (
@@ -66,9 +65,9 @@ export const Header = ({ business, cartCount, onCartClick }) => (
                 ))}
             </nav>
             
-            {/* Center Logo */}
+            {/* Center Logo - Scaled Text on Mobile */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <a href="/templates/blissly" className="text-3xl font-bold text-brand-text tracking-wider font-serif">
+                <a href="/templates/blissly" className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif whitespace-nowrap">
                     {business.logoText}
                 </a>
             </div>
@@ -91,10 +90,9 @@ export const Header = ({ business, cartCount, onCartClick }) => (
     </header>
 );
 
-// --- Product Card Component (MODIFIED) ---
+// --- Product Card Component ---
 export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart();
-    // --- 2. GET DATA FROM CONTEXT ---
     const { businessData } = useTemplateContext();
     
     const handleAddToCart = (e) => {
@@ -103,14 +101,12 @@ export const ProductCard = ({ item, templateName }) => {
         addItem(item);
     };
     
-    // --- 3. FIND CATEGORY FROM CONTEXT DATA ---
     const category = businessData.categories.find(c => c.id === item.category);
 
     return (
-        // Add border, rounded, overflow-hidden, and shadow for a cleaner "card" look
         <div className="group h-full flex flex-col border border-brand-primary/50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md">
             
-            {/* 1. Image */}
+            {/* Image */}
             <a href={`/templates/${templateName}/product/${item.id}`} className="block aspect-[4/5] bg-brand-primary overflow-hidden">
                 <img 
                     src={item.image} 
@@ -120,26 +116,31 @@ export const ProductCard = ({ item, templateName }) => {
                 />
             </a>
             
-            {/* 2. Content Area (flex-grow to push buttons to bottom) */}
-            <div className="p-4 flex flex-col flex-grow">
+            {/* Content Area */}
+            <div className="p-3 md:p-4 flex flex-col flex-grow">
                 <div className="flex-grow">
-                    {/* 4. DISPLAY CATEGORY NAME */}
                     {category && (
-                        <p className="text-brand-text/60 text-sm">{category.name}</p>
+                        <p className="text-brand-text/60 text-[2vw] md:text-sm truncate">{category.name}</p>
                     )}
-                    <h4 className="text-xl font-bold text-brand-text font-serif mt-1">
-                        <a href={`/templates/${templateName}/product/${item.id}`} className="hover:text-brand-secondary">{item.name}</a>
+                    <h4 className="text-[3vw] md:text-xl font-bold text-brand-text font-serif mt-1">
+                        <a href={`/templates/${templateName}/product/${item.id}`} className="hover:text-brand-secondary line-clamp-1">{item.name}</a>
                     </h4>
-                    <p className="text-brand-secondary text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-secondary text-[2.5vw] md:text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
                 </div>
 
-                {/* 3. Actions (Always visible) */}
-                <div className="mt-4 space-y-2">
+                {/* Actions (Always visible) */}
+                <div className="mt-2 md:mt-4 flex gap-2">
+                     <a 
+                        href={`/templates/${templateName}/product/${item.id}`}
+                        className="flex-1 bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-2.5 font-semibold text-[2vw] md:text-sm rounded-md hover:bg-brand-secondary/20 transition-colors text-center flex items-center justify-center"
+                    >
+                        View
+                    </a>
                     <button 
                         onClick={handleAddToCart}
-                        className="w-full bg-brand-secondary text-brand-bg px-4 py-2.5 font-semibold text-sm rounded-md hover:opacity-90 transition-opacity"
+                        className="flex-1 bg-brand-secondary text-brand-bg px-2 py-2 md:px-4 md:py-2.5 font-semibold text-[2vw] md:text-sm rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
                     >
-                        Add to Cart
+                        Add
                     </button>
                 </div>
             </div>
@@ -148,40 +149,36 @@ export const ProductCard = ({ item, templateName }) => {
 };
 
 
-// --- Footer Component (Corrected) ---
+// --- Footer Component ---
 export const Footer = () => {
-    // --- 1. GET DATA FROM CONTEXT ---
     const { businessData } = useTemplateContext();
 
-    // --- 2. ADD A GUARD ---
-    // This prevents the "cannot read 'footer'" error during initial load or state mismatch
     if (!businessData?.footer) {
         return <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50"></footer>;
     }
 
-    // --- 3. USE GUARDED ACCESS (?. optional chaining) ---
     return (
-        <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50">
+        <footer id="contact" className="py-12 md:py-20 pb-8 md:pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50">
             <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
                     
                     {/* Column 1: Subscribe & Contact */}
-                    <div>
-                        <h4 className="text-lg font-bold font-serif mb-4">{businessData.footer.promoTitle}</h4>
+                    <div className="col-span-2 md:col-span-1">
+                        <h4 className="text-[4vw] md:text-lg font-bold font-serif mb-4">{businessData.footer.promoTitle}</h4>
                         <form className="flex mb-6">
                             <input 
                                 type="email" 
-                                placeholder="Enter your email" 
-                                className="w-full bg-brand-primary border border-brand-secondary/30 py-3 px-4 text-brand-text placeholder:text-brand-text/50 focus:ring-0 focus:border-brand-secondary outline-none rounded-l-md"
+                                placeholder="Email" 
+                                className="w-full bg-brand-primary border border-brand-secondary/30 py-2 md:py-3 px-3 md:px-4 text-[2.5vw] md:text-base text-brand-text placeholder:text-brand-text/50 focus:ring-0 focus:border-brand-secondary outline-none rounded-l-md"
                             />
                             <button 
                                 type="submit" 
-                                className="px-4 py-3 bg-brand-secondary text-brand-bg font-semibold text-sm rounded-r-md hover:opacity-90"
+                                className="px-3 md:px-4 py-2 md:py-3 bg-brand-secondary text-brand-bg font-semibold text-sm rounded-r-md hover:opacity-90"
                             >
-                                <ArrowRightIcon className="ml-0" />
+                                <ArrowRightIcon className="ml-0 w-4 h-4 md:w-5 md:h-5" />
                             </button>
                         </form>
-                        <ul className="space-y-2 text-brand-text/80 text-sm">
+                        <ul className="space-y-2 text-brand-text/80 text-[2.5vw] md:text-sm">
                             <li className="flex items-center"><PhoneIcon /> {businessData.footer.contact?.phone}</li>
                             <li className="flex items-center"><EmailIcon /> {businessData.footer.contact?.email}</li>
                         </ul>
@@ -189,8 +186,8 @@ export const Footer = () => {
 
                     {/* Column 2: Page Links */}
                     <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Page Links</h4>
-                        <ul className="space-y-3 text-sm">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-3 md:mb-5 uppercase tracking-wider">Page Links</h4>
+                        <ul className="space-y-2 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links?.pages?.map(link => (
                                 <li key={link.name}>
                                     <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
@@ -201,8 +198,8 @@ export const Footer = () => {
                     
                     {/* Column 3: Utility Links */}
                     <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">Utility Links</h4>
-                        <ul className="space-y-3 text-sm">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-3 md:mb-5 uppercase tracking-wider">Utility Links</h4>
+                        <ul className="space-y-2 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links?.utility?.map(link => (
                                 <li key={link.name}>
                                     <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
@@ -212,19 +209,19 @@ export const Footer = () => {
                     </div>
 
                     {/* Column 4: Location */}
-                    <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.location?.title}</h4>
-                        <p className="text-brand-text/70 text-sm mb-4 flex">
+                    <div className="col-span-2 md:col-span-1">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-3 md:mb-5 uppercase tracking-wider">{businessData.footer.location?.title}</h4>
+                        <p className="text-brand-text/70 text-[2.5vw] md:text-sm mb-4 flex">
                             <MapPinIcon className="flex-shrink-0 mt-1"/>
                             <span>{businessData.footer.location?.address}</span>
                         </p>
-                        <h5 className="text-sm font-semibold mt-6 mb-2 uppercase tracking-wider">Opening hours</h5>
-                        <p className="text-brand-text/70 text-sm whitespace-pre-line">{businessData.footer.location?.hours}</p>
+                        <h5 className="text-[2.5vw] md:text-sm font-semibold mt-4 md:mt-6 mb-2 uppercase tracking-wider">Opening hours</h5>
+                        <p className="text-brand-text/70 text-[2.5vw] md:text-sm whitespace-pre-line">{businessData.footer.location?.hours}</p>
                     </div>
                 </div>
 
                 {/* Bottom Footer Bar */}
-                <div className="text-center border-t border-brand-primary/50 mt-16 pt-8 text-sm">
+                <div className="text-center border-t border-brand-primary/50 mt-8 md:mt-16 pt-4 md:pt-8 text-[2vw] md:text-sm">
                     <p className="text-brand-text/70">{businessData.footer.copyright}</p>
                 </div>
             </div>
