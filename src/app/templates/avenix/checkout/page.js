@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { submitOrder } from '@/app/actions/orderActions';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import StateSelector from '@/components/checkout/StateSelector'; // Import the StateSelector component
 
 export default function CheckoutPage() {
     const { cartDetails, subtotal, shipping, total, openCart, clearCart } = useCart();
@@ -35,6 +36,14 @@ export default function CheckoutPage() {
              setFieldErrors(prev => ({ ...prev, [name]: null }));
         }
     };
+
+    // Separate handler for StateSelector as it might return value directly or event
+    const handleStateChange = (value) => {
+        setFormData({ ...formData, state: value });
+        if (fieldErrors.state) {
+             setFieldErrors(prev => ({ ...prev, state: null }));
+        }
+    }
 
     const validateForm = () => {
         const errors = {};
@@ -213,15 +222,11 @@ export default function CheckoutPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-[2.5vw] md:text-sm font-medium text-brand-text/80">State *</label>
-                                    <input
-                                        name="state"
+                                    <StateSelector
                                         value={formData.state}
-                                        onChange={handleChange}
-                                        type="text"
-                                        className={cn("w-full p-2 md:p-3 bg-brand-primary border rounded-lg focus:border-brand-text focus:ring-1 focus:ring-brand-text outline-none transition-all", fieldErrors.state ? "border-red-500" : "border-brand-text/10")}
-                                        required
+                                        onChange={handleStateChange}
+                                        error={fieldErrors.state}
                                     />
-                                    {fieldErrors.state && <p className="text-xs text-red-500">{fieldErrors.state}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[2.5vw] md:text-sm font-medium text-brand-text/80">ZIP Code *</label>

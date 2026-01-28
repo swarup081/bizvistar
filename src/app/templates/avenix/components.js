@@ -160,8 +160,8 @@ export const ProductCard = ({ item, templateName }) => {
                 </div>
             </div>
             
-            {/* --- FIX: Bottom section: Horizontal Buttons (Show on hover) --- */}
-            <div className="mt-2 md:mt-4 px-0 md:px-1 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pb-2">
+            {/* --- FIX: Bottom section: Horizontal Buttons (Always visible on mobile, Hover on desktop) --- */}
+            <div className="mt-2 md:mt-4 px-0 md:px-1 flex gap-1 md:gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pb-2">
                  <a 
                     href={`/templates/${templateName}/product/${item.id}`}
                     className="flex-1 text-center block bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:bg-gray-200"

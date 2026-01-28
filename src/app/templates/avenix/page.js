@@ -21,10 +21,10 @@ const HeelsHero = ({ heroData }) => {
     return (
         // --- WRAPPED WITH EDITABLE ---
         <Editable focusId="hero">
-            <section id="home" className="py-12 md:py-24 bg-brand-primary overflow-hidden">
-                <div className="container mx-auto px-4 md:px-6">
+            <section id="home" className="py-12 md:py-24 bg-brand-primary overflow-hidden w-full">
+                <div className="container mx-auto px-4 md:px-6 w-full max-w-full overflow-hidden">
                     {/* --- CHANGED: Grid cols 2 on ALL screens for shrink effect --- */}
-                    <div className="grid grid-cols-2 gap-4 md:gap-16 items-center">
+                    <div className="grid grid-cols-2 gap-4 md:gap-16 items-center w-full">
                         {/* 1. Text Content (Left) */}
                         <div className="text-left font-sans">
                             <h2 className="text-[7vw] md:text-6xl lg:text-7xl font-serif font-medium text-brand-text leading-tight">
@@ -108,14 +108,14 @@ export default function AvenixPage() {
     return (
         <> 
             {/* Header and Footer are gone */}
-            <main>
+            <main className="w-full overflow-x-hidden">
                 {/* --- 1. REPLACED Hero Section --- */}
                 <HeelsHero heroData={businessData.heelsHero} />
                 
                {/* --- 2. About Section --- */}
                <Editable focusId="about">
-                <section id="story" className="py-12 md:py-24 overflow-hidden bg-brand-primary">
-                        <div className="container mx-auto px-4 md:px-6">
+                <section id="story" className="py-12 md:py-24 overflow-hidden bg-brand-primary w-full">
+                        <div className="container mx-auto px-4 md:px-6 w-full max-w-full overflow-hidden">
                             
                             <div className="mb-12 md:mb-24">
                                 <h3 className="text-[2.5vw] md:text-sm uppercase tracking-widest font-sans font-medium opacity-70">
@@ -173,8 +173,8 @@ export default function AvenixPage() {
 
                 {/* --- 3. Featured Products (NOW DYNAMIC) --- */}
                 <Editable focusId="collection">
-                    <section id="collection" className="py-12 md:py-24">
-                        <div className="container mx-auto px-4 md:px-6 text-center">
+                    <section id="collection" className="py-12 md:py-24 w-full overflow-hidden">
+                        <div className="container mx-auto px-4 md:px-6 text-center w-full max-w-full overflow-hidden">
                             <p className="text-[2.5vw] md:text-sm uppercase tracking-widest font-sans font-medium text-brand-text/70">
                                 {businessData.featured.sectionHeading}
                             </p>
@@ -183,7 +183,7 @@ export default function AvenixPage() {
                             </h2>
                         </div>
                         
-                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mt-8 md:mt-16 items-start">
+                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mt-8 md:mt-16 items-start w-full max-w-full overflow-hidden">
                             
                             <div className="col-span-2 md:col-span-1 h-full">
                                 <img 
@@ -228,8 +228,8 @@ export default function AvenixPage() {
                 
                 {/* --- 4. CTA Section (ID ADDED) --- */}
                 <Editable focusId="cta">
-                    <section id="cta" className="py-12 md:py-24 overflow-hidden">
-                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16 items-center">
+                    <section id="cta" className="py-12 md:py-24 overflow-hidden w-full">
+                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16 items-center w-full max-w-full overflow-hidden">
                             <div className="text-left">
                                 <h2 className="text-[6vw] md:text-6xl font-serif font-medium text-brand-text max-w-lg leading-tight">
                                     {businessData.ctaSection.title}
@@ -269,8 +269,8 @@ export default function AvenixPage() {
 
                 {/* --- 6. Brands Section --- */}
                 {businessData.brands.logos.length > 0 && (
-                    <section className="py-8 md:py-16">
-                        <div className="container mx-auto px-4 md:px-6 text-center">
+                    <section className="py-8 md:py-16 w-full overflow-hidden">
+                        <div className="container mx-auto px-4 md:px-6 text-center w-full max-w-full overflow-hidden">
                             <h2 className="text-[5vw] md:text-4xl font-serif font-medium text-brand-text max-w-2xl mx-auto">{businessData.brands.heading}</h2>
                             <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-2 md:mt-6 max-w-xl mx-auto">{businessData.brands.text}</p>
                             <div className="flex flex-wrap justify-center items-center gap-x-4 md:gap-x-12 gap-y-2 md:gap-y-6 mt-8 md:mt-16 opacity-70">
@@ -284,8 +284,8 @@ export default function AvenixPage() {
 
                 {/* --- Other Sections --- */}
 
-                <section className="py-12 md:py-24">
-                    <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16">
+                <section className="py-12 md:py-24 w-full overflow-hidden">
+                    <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16 w-full max-w-full">
                         {businessData.features.map(feature => (
                             <div key={feature.title} className="p-4 md:p-10 bg-brand-primary rounded-xl md:rounded-2xl">
                                 <h3 className="text-[4vw] md:text-4xl font-serif font-medium">{feature.title}</h3>
@@ -302,8 +302,8 @@ export default function AvenixPage() {
                 
                 {/* --- New Arrivals (NOW DYNAMIC) --- */}
                 <Editable focusId="products">
-                    <section id="shop" className="py-12 md:py-24">
-                        <div className="container mx-auto px-4 md:px-6 text-center">
+                    <section id="shop" className="py-12 md:py-24 w-full overflow-hidden">
+                        <div className="container mx-auto px-4 md:px-6 text-center w-full max-w-full overflow-hidden">
                             <p className="text-[2.5vw] md:text-sm uppercase tracking-widest font-sans opacity-70">{businessData.newArrivals.heading}</p>
                             <h2 className="text-[6vw] md:text-5xl font-serif font-medium text-brand-text mt-2 md:mt-4">{businessData.newArrivals.title}</h2>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 mt-8 md:mt-16 items-start">
@@ -321,8 +321,8 @@ export default function AvenixPage() {
 
                 {/* --- Stats Section (ID ADDED) --- */}
                 <Editable focusId="stats">
-                    <section id="stats" className="py-12 md:py-24">
-                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16 items-center">
+                    <section id="stats" className="py-12 md:py-24 w-full overflow-hidden">
+                        <div className="container mx-auto px-4 md:px-6 grid grid-cols-2 gap-4 md:gap-16 items-center w-full max-w-full overflow-hidden">
                             <div className="text-left">
                                 <h2 className="text-[6vw] md:text-5xl font-serif font-medium text-brand-text">{businessData.stats.title}</h2>
                                 <p className="text-[2.5vw] md:text-xl font-sans text-brand-text/80 mt-2 md:mt-6 max-w-lg">{businessData.stats.text}</p>
@@ -343,8 +343,8 @@ export default function AvenixPage() {
                 </Editable>
 
                 <Editable focusId="blog">
-                    <section id="blogs" className="py-12 md:py-24 bg-brand-primary">
-                        <div className="container mx-auto px-4 md:px-6">
+                    <section id="blogs" className="py-12 md:py-24 bg-brand-primary w-full overflow-hidden">
+                        <div className="container mx-auto px-4 md:px-6 w-full max-w-full overflow-hidden">
                             <div className="text-center mb-8 md:mb-16">
                                 <p className="text-[2.5vw] md:text-sm uppercase tracking-widest font-sans opacity-70">{businessData.blog.heading}</p>
                                 <h2 className="text-[6vw] md:text-5xl font-serif font-medium text-brand-text mt-2 md:mt-4">{businessData.blog.title}</h2>
