@@ -17,11 +17,11 @@ export default function CheckoutPage() {
         city: '',
         state: '',
         zipCode: '',
-        phone: '', // Replaces email as primary contact or just phone
+        phone: '', // Replaces email as primary contact
         note: ''   // Replaces old 'phone' slot
     });
 
-    // Using explicit field error state like standard checkout
+    // Explicit field error state
     const [fieldErrors, setFieldErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState('');
@@ -41,10 +41,23 @@ export default function CheckoutPage() {
         if (!formData.firstName.trim()) errors.firstName = "First name is required";
         if (!formData.lastName.trim()) errors.lastName = "Last name is required";
         if (!formData.phone.trim()) errors.phone = "Phone number is required"; // New Required Field
+
+        // Strict phone validation (10 digits)
+        const phoneRegex = /^\d{10}$/;
+        if (formData.phone.trim() && !phoneRegex.test(formData.phone.trim())) {
+             errors.phone = "Phone number must be exactly 10 digits";
+        }
+
         if (!formData.address.trim()) errors.address = "Address is required";
         if (!formData.city.trim()) errors.city = "City is required";
         if (!formData.state.trim()) errors.state = "State is required";
         if (!formData.zipCode.trim()) errors.zipCode = "ZIP Code is required";
+
+        // ZIP validation
+        const zipRegex = /^\d{6}$/;
+        if (formData.zipCode.trim() && !zipRegex.test(formData.zipCode.trim())) {
+             errors.zipCode = "ZIP code must be exactly 6 digits";
+        }
 
         // Note is optional
 
@@ -57,7 +70,7 @@ export default function CheckoutPage() {
         setMessage('');
 
         if (!validateForm()) {
-            setMessage("Please fix the highlighted errors.");
+            setMessage("Please fix the highlighted errors before continuing.");
             return;
         }
 
@@ -126,6 +139,13 @@ export default function CheckoutPage() {
                              <h2 className="text-2xl font-serif font-semibold text-brand-text">Shipping Details</h2>
                         </div>
 
+                        {message && message.includes('fix') && (
+                            <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg border border-red-200 flex items-start gap-2">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                <span>{message}</span>
+                            </div>
+                        )}
+
                         <form className="space-y-6" onSubmit={handlePlaceOrder}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
@@ -136,6 +156,7 @@ export default function CheckoutPage() {
                                         onChange={handleChange}
                                         type="text"
                                         className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.firstName ? "border-red-500" : "border-brand-text/30")}
+                                        required
                                     />
                                     {fieldErrors.firstName && <p className="text-xs text-red-500">{fieldErrors.firstName}</p>}
                                 </div>
@@ -147,6 +168,7 @@ export default function CheckoutPage() {
                                         onChange={handleChange}
                                         type="text"
                                         className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.lastName ? "border-red-500" : "border-brand-text/30")}
+                                        required
                                     />
                                     {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
                                 </div>
@@ -162,6 +184,7 @@ export default function CheckoutPage() {
                                     type="tel"
                                     placeholder="0000000000"
                                     className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.phone ? "border-red-500" : "border-brand-text/30")}
+                                    required
                                 />
                                 {fieldErrors.phone && <p className="text-xs text-red-500">{fieldErrors.phone}</p>}
                             </div>
@@ -174,6 +197,7 @@ export default function CheckoutPage() {
                                     onChange={handleChange}
                                     type="text"
                                     className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.address ? "border-red-500" : "border-brand-text/30")}
+                                    required
                                 />
                                 {fieldErrors.address && <p className="text-xs text-red-500">{fieldErrors.address}</p>}
                             </div>
@@ -186,6 +210,7 @@ export default function CheckoutPage() {
                                     onChange={handleChange}
                                     type="text"
                                     className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.city ? "border-red-500" : "border-brand-text/30")}
+                                    required
                                 />
                                 {fieldErrors.city && <p className="text-xs text-red-500">{fieldErrors.city}</p>}
                             </div>
@@ -199,6 +224,7 @@ export default function CheckoutPage() {
                                         onChange={handleChange}
                                         type="text"
                                         className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.state ? "border-red-500" : "border-brand-text/30")}
+                                        required
                                     />
                                     {fieldErrors.state && <p className="text-xs text-red-500">{fieldErrors.state}</p>}
                                 </div>
@@ -210,6 +236,7 @@ export default function CheckoutPage() {
                                         onChange={handleChange}
                                         type="text"
                                         className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-secondary outline-none transition-all", fieldErrors.zipCode ? "border-red-500" : "border-brand-text/30")}
+                                        required
                                     />
                                     {fieldErrors.zipCode && <p className="text-xs text-red-500">{fieldErrors.zipCode}</p>}
                                 </div>
@@ -262,7 +289,7 @@ export default function CheckoutPage() {
                             <span>₹{total.toFixed(2)}</span>
                         </div>
                         
-                        {message && (
+                        {message && !message.includes('fix') && (
                             <div className={`p-4 rounded-lg mb-4 text-sm flex items-start gap-2 ${message.includes('success') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`}>
                                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                                 <span>{message}</span>

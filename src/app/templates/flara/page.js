@@ -91,8 +91,8 @@ export default function CandleaPage() {
                         </div>
                         <div className="md:pl-10 text-left items-start flex flex-col w-1/2 md:w-full">
                             <h2 className="text-xl md:text-5xl font-bold text-brand-text leading-tight font-serif">{businessData.feature1.title}</h2>
-                            <p className="text-xs md:text-lg text-brand-text opacity-70 mt-2 md:mt-6 max-w-lg line-clamp-3 md:line-clamp-none">{businessData.feature1.text}</p>
-                            <p className="text-[10px] md:text-base text-brand-text opacity-70 mt-2 md:mt-4 max-w-lg hidden md:block">{businessData.feature1.subtext}</p>
+                            <p className="text-xs md:text-lg text-brand-text opacity-70 mt-2 md:mt-6 max-w-lg">{businessData.feature1.text}</p>
+                            <p className="text-[10px] md:text-base text-brand-text opacity-70 mt-2 md:mt-4 max-w-lg">{businessData.feature1.subtext}</p>
                             <Link
                                 href="#about"
                                 className="mt-4 md:mt-8 inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-base"
@@ -106,7 +106,7 @@ export default function CandleaPage() {
             </Editable>
             
             {/* --- Collection Section --- */}
-            <section id="collection" className="py-24 bg-brand-bg">
+            <section id="collection" className="py-10 md:py-24 bg-brand-bg">
                 <Editable focusId="collection">
                     <div className="container mx-auto px-6">
                         <div className="flex justify-between items-center mb-12">
@@ -138,7 +138,6 @@ export default function CandleaPage() {
                                     </Link>
                                     <div className="block md:hidden text-center mt-3">
                                         <h3 className="text-sm font-bold text-brand-text font-serif">{item.name}</h3>
-                                        <Link href={`${basePath}/product/${item.id}`} className="text-xs text-brand-text underline mt-1 block">View Product</Link>
                                     </div>
                                 </div>
                             ))}
@@ -175,8 +174,8 @@ export default function CandleaPage() {
             {/* --- Feature Section 2 --- */}
             <Editable focusId="feature2">
                 <section id="feature2" className="py-10 md:py-24 overflow-hidden bg-brand-bg">
-                    <div className="container mx-auto px-6 flex flex-row md:grid md:grid-cols-2 gap-4 md:gap-16 items-end">
-                        <div className="relative w-1/2 md:w-full">
+                    <div className="container mx-auto px-6 grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-16 items-start">
+                        <div className="relative w-full">
                             <div className="w-full aspect-[4/5] rounded-t-full overflow-hidden">
                                 <img 
                                     src={businessData.feature2.image1} 
@@ -184,9 +183,9 @@ export default function CandleaPage() {
                                     className="w-full h-full object-cover"
                                 />
                             </div>
-                            <p className="text-[10px] md:text-base text-brand-text opacity-70 mt-4 md:mt-8 max-w-md hidden md:block">{businessData.feature2.subtext}</p>
+                            <p className="text-[10px] md:text-base text-brand-text opacity-70 mt-4 md:mt-8 max-w-md">{businessData.feature2.subtext}</p>
                         </div>
-                        <div className="flex flex-col gap-4 md:gap-8 w-1/2 md:w-full">
+                        <div className="flex flex-col gap-4 md:gap-8 w-full pt-[20%] md:pt-[30%]">
                             <div className="md:pl-10 text-left items-start flex flex-col w-full">
                                 <h2 className="text-xl md:text-5xl font-bold text-brand-text leading-tight font-serif">{businessData.feature2.title}</h2>
                                 <p className="text-xs md:text-lg text-brand-text opacity-70 mt-2 md:mt-6 w-full max-w-none md:max-w-lg">{businessData.feature2.text}</p>
