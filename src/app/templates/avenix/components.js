@@ -54,7 +54,7 @@ export const Header = ({ cartCount, onCartClick }) => {
 
     return (
         <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full font-sans">
-            <div className="container mx-auto px-6 py-6 flex justify-between items-center relative">
+            <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 flex justify-between items-center relative">
                 {/* Left Nav */}
                 <nav className="hidden md:flex items-center gap-8">
                     {businessData.navigation.main.map(navItem => (
@@ -66,13 +66,13 @@ export const Header = ({ cartCount, onCartClick }) => {
                 
                 {/* Center Logo */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <a href="/templates/avenix" className="text-3xl font-bold text-brand-text tracking-wider font-serif">
+                    <a href="/templates/avenix" className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif">
                         {businessData.logoText}
                     </a>
                 </div>
                 
                  {/* Right Nav & Icons */}
-                <div className="flex-1 flex justify-end items-center gap-8">
+                <div className="flex-1 flex justify-end items-center gap-4 md:gap-8">
                     <nav className="hidden md:flex items-center gap-8">
                         {businessData.navigation.secondary.map(navItem => (
                             <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
@@ -80,7 +80,7 @@ export const Header = ({ cartCount, onCartClick }) => {
                             </a>
                         ))}
                     </nav>
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 md:gap-6">
                         <button onClick={onCartClick} className="relative text-brand-text hover:opacity-70 transition-opacity">
                             <CartIcon />
                             {cartCount > 0 && (
@@ -100,7 +100,7 @@ export const BlogCard = ({ post, size = 'small' }) => (
     <div className="group text-left">
         <a 
             href="#" 
-            className={`block bg-white overflow-hidden relative rounded-2xl 
+            className={`block bg-white overflow-hidden relative rounded-xl md:rounded-2xl
             ${size === 'small' ? 'aspect-[4/3]' : 'aspect-video'}`} // Dynamic aspect ratio
         >
             <img 
@@ -109,15 +109,15 @@ export const BlogCard = ({ post, size = 'small' }) => (
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
         </a>
-        <div className="mt-6">
+        <div className="mt-2 md:mt-6">
             <h3 
-                className={`font-serif font-medium text-brand-text mt-2 
-                ${size === 'small' ? 'text-3xl' : 'text-4xl'}`} // Dynamic font size
+                className={`font-serif font-medium text-brand-text mt-1 md:mt-2
+                ${size === 'small' ? 'text-[3vw] md:text-3xl' : 'text-[4vw] md:text-4xl'}`} // Dynamic font size
             >
                 <a href="#" className="hover:opacity-70">{post.title}</a>
             </h3>
-            <p className="text-brand-text opacity-70 text-sm mt-3 uppercase font-sans tracking-widest">
-                {post.date} <span className="mx-2">•</span> {post.category}
+            <p className="text-brand-text opacity-70 text-[2vw] md:text-sm mt-1 md:mt-3 uppercase font-sans tracking-widest">
+                {post.date} <span className="mx-1 md:mx-2">•</span> {post.category}
             </p>
         </div>
     </div>
@@ -141,7 +141,7 @@ export const ProductCard = ({ item, templateName }) => {
         <div className="group text-center h-full flex flex-col justify-between">
             {/* Top section: Image, Title, Price */}
             <div>
-                <a href={`/templates/${templateName}/product/${item.id}`} className="block bg-white overflow-hidden relative aspect-[4/5] rounded-2xl">
+                <a href={`/templates/${templateName}/product/${item.id}`} className="block bg-white overflow-hidden relative aspect-[4/5] rounded-xl md:rounded-2xl">
                     <img 
                         src={item.image} 
                         alt={item.name} 
@@ -149,30 +149,30 @@ export const ProductCard = ({ item, templateName }) => {
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                     />
                 </a>
-                <div className="mt-6 text-center">
+                <div className="mt-2 md:mt-6 text-center">
                     <a href={`/templates/${templateName}/product/${item.id}`} className="hover:opacity-70">
-                        <h3 className="text-lg font-medium text-brand-text font-sans tracking-wider uppercase">{item.name}</h3>
+                        <h3 className="text-[3vw] md:text-lg font-medium text-brand-text font-sans tracking-wider uppercase">{item.name}</h3>
                     </a>
                     {category && (
-                        <p className="text-brand-text opacity-50 text-sm mt-1 font-sans">{category.name}</p>
+                        <p className="text-brand-text opacity-50 text-[2vw] md:text-sm mt-0.5 md:mt-1 font-sans">{category.name}</p>
                     )}
-                    <p className="text-brand-text text-base mt-2 font-sans">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-text text-[2.5vw] md:text-base mt-1 md:mt-2 font-sans">${item.price.toFixed(2)}</p>
                 </div>
             </div>
             
             {/* --- FIX: Bottom section: Horizontal Buttons (Show on hover) --- */}
-            <div className="mt-4 px-1 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pb-2">
+            <div className="mt-2 md:mt-4 px-0 md:px-1 flex gap-1 md:gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pb-2">
                  <a 
                     href={`/templates/${templateName}/product/${item.id}`}
-                    className="flex-1 text-center block bg-brand-primary text-brand-text px-4 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-200"
+                    className="flex-1 text-center block bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:bg-gray-200"
                 >
-                    View Details
+                    View
                 </a>
                 <button 
                     onClick={handleAddToCart}
-                    className="flex-1 text-center block bg-brand-secondary text-brand-bg px-4 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:opacity-80"
+                    className="flex-1 text-center block bg-brand-secondary text-brand-bg px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:opacity-80"
                 >
-                    Add to Cart
+                    Add
                 </button>
             </div>
         </div>
@@ -185,17 +185,17 @@ export const Footer = () => {
     const { businessData } = useTemplateContext();
 
     return (
-        <footer id="contact" className="py-20 pb-12 bg-brand-secondary text-brand-bg font-sans">
-            <div className="container mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <footer id="contact" className="py-12 md:py-20 pb-8 md:pb-12 bg-brand-secondary text-brand-bg font-sans">
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
                     
                     {/* Column 1: Brand & Socials */}
-                    <div>
-                        <h3 className="text-3xl font-bold tracking-wider mb-4 font-serif">{businessData.footer.logo}</h3>
-                        <p className="text-brand-bg/70 text-sm mb-6">{businessData.footer.description}</p>
+                    <div className="col-span-2 md:col-span-1">
+                        <h3 className="text-[6vw] md:text-3xl font-bold tracking-wider mb-2 md:mb-4 font-serif">{businessData.footer.logo}</h3>
+                        <p className="text-brand-bg/70 text-[2.5vw] md:text-sm mb-4 md:mb-6">{businessData.footer.description}</p>
                         
                         {/* NEW: Social Icons */}
-                        <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-4 md:gap-5">
                             {businessData.footer.socials.map((social) => (
                                 social.url && social.url !== "#" && (
                                     <a 
@@ -215,8 +215,8 @@ export const Footer = () => {
 
                     {/* Column 2: Main Links */}
                     <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">LINKS</h4>
-                        <ul className="space-y-3 text-sm">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">LINKS</h4>
+                        <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links.main.map(link => (
                                 <li key={link.name}>
                                     <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
@@ -227,8 +227,8 @@ export const Footer = () => {
                     
                     {/* Column 3: Utility Links */}
                     <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">UTILITY PAGES</h4>
-                        <ul className="space-y-3 text-sm">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">UTILITY PAGES</h4>
+                        <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links.utility.map(link => (
                                 <li key={link.name}>
                                     <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
@@ -238,24 +238,24 @@ export const Footer = () => {
                     </div>
 
                     {/* Column 4: Subscribe & Contact */}
-                    <div>
-                        <h4 className="text-sm font-semibold mb-5 uppercase tracking-wider">{businessData.footer.subscribe.title}</h4>
-                        <form className="flex mb-6">
+                    <div className="col-span-2 md:col-span-1">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">{businessData.footer.subscribe.title}</h4>
+                        <form className="flex mb-4 md:mb-6">
                             <input 
                                 type="email" 
                                 placeholder="Type your email" 
-                                className="w-full bg-brand-bg/10 border border-brand-bg/30 py-3 px-4 text-brand-bg placeholder:text-brand-bg/50 focus:ring-0 focus:border-brand-bg outline-none"
+                                className="w-full bg-brand-bg/10 border border-brand-bg/30 py-2 md:py-3 px-3 md:px-4 text-brand-bg placeholder:text-brand-bg/50 focus:ring-0 focus:border-brand-bg outline-none"
                             />
                             <button 
                                 type="submit" 
-                                className="px-6 py-3 bg-brand-bg text-brand-secondary font-semibold text-sm hover:opacity-80"
+                                className="px-4 md:px-6 py-2 md:py-3 bg-brand-bg text-brand-secondary font-semibold text-[2.5vw] md:text-sm hover:opacity-80"
                             >
                                 {businessData.footer.subscribe.cta}
                             </button>
                         </form>
                         
-                        <h4 className="text-sm font-semibold mt-8 mb-4 uppercase tracking-wider">CONTACT</h4>
-                        <ul className="space-y-2 text-brand-bg/70 text-sm">
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mt-4 md:mt-8 mb-2 md:mb-4 uppercase tracking-wider">CONTACT</h4>
+                        <ul className="space-y-1 md:space-y-2 text-brand-bg/70 text-[2.5vw] md:text-sm">
                             <li>{businessData.footer.contact.phone}</li>
                             <li>{businessData.footer.contact.email}</li>
                         </ul>
@@ -263,7 +263,7 @@ export const Footer = () => {
                 </div>
 
                 {/* Bottom Footer Bar */}
-                <div className="text-center border-t border-brand-bg/20 mt-16 pt-8 text-sm">
+                <div className="text-center border-t border-brand-bg/20 mt-8 md:mt-16 pt-4 md:pt-8 text-[2vw] md:text-sm">
                     <p className="text-brand-bg/70">{businessData.footer.copyright}</p>
                 </div>
             </div>
