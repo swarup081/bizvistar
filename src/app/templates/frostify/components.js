@@ -58,7 +58,7 @@ export const Header = () => {
     return (
         <header className="fixed top-0 w-full z-50 bg-white overflow-hidden shadow-sm">
             {/* Top Banner */}
-            <div className="bg-[var(--color-primary)] text-white text-[10px] font-bold uppercase tracking-[0.2em] text-center py-2">
+            <div className="bg-[var(--color-primary)] text-white text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.2em] text-center py-2">
                 • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} •
             </div>
             
@@ -67,22 +67,22 @@ export const Header = () => {
                 <div className="flex gap-2">
                     <Link 
                         href="/templates/frostify/shop" 
-                        className="flex items-center gap-2 bg-[var(--color-secondary)] text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-md transform hover:scale-105"
+                        className="flex items-center gap-2 bg-[var(--color-secondary)] text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-md transform hover:scale-105"
                     >
-                        <Store size={14} />
+                        <Store size={14} className="w-3 h-3 md:w-[14px] md:h-[14px]" />
                         Shop 
                     </Link>
                 </div>
 
                 {/* Center: Logo */}
-                <Link href="/templates/frostify" className="text-4xl font-serif text-[var(--color-primary)] absolute left-1/2 -translate-x-1/2">
+                <Link href="/templates/frostify" className="text-[6vw] md:text-4xl font-serif text-[var(--color-primary)] absolute left-1/2 -translate-x-1/2">
                     {businessData.name}
                 </Link>
 
                 {/* Right: Cart Button (Preserved Menu Style) */}
                 <button 
                     onClick={openCart} 
-                    className="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-[var(--color-secondary)] transition"
+                    className="bg-[var(--color-primary)] text-white px-3 py-1.5 md:px-6 md:py-2 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-[var(--color-secondary)] transition"
                 >
                     Cart
                     {cartCount > 0 && <span>({cartCount})</span>}
@@ -97,8 +97,8 @@ export const SpecialtyCard = ({ title, shapeClass = "rounded-t-[30px]" }) => {
     const parts = title.split(' '); 
     
     return (
-        <div className={`aspect-square bg-[#F9F4F6] ${shapeClass} flex flex-col items-center justify-center text-center p-6 hover:bg-[var(--color-accent)]/20 transition-colors cursor-pointer group shadow-sm overflow-hidden`}>
-            <h3 className="font-serif text-2xl text-[var(--color-primary)] leading-tight group-hover:scale-105 transition-transform">
+        <div className={`aspect-square bg-[#F9F4F6] ${shapeClass} flex flex-col items-center justify-center text-center p-3 md:p-6 hover:bg-[var(--color-accent)]/20 transition-colors cursor-pointer group shadow-sm overflow-hidden`}>
+            <h3 className="font-serif text-[3.5vw] md:text-2xl text-[var(--color-primary)] leading-tight group-hover:scale-105 transition-transform">
                 {parts[0]} <br/> {parts.slice(1).join(' ')}
             </h3>
         </div>
@@ -126,17 +126,27 @@ export const ProductCard = ({ item }) => {
                     />
                 </div>
             </Link>
-            <div className="p-5 text-center flex flex-col items-center gap-2 flex-grow">
+            <div className="p-3 md:p-5 text-center flex flex-col items-center gap-1 md:gap-2 flex-grow">
                 <Link href={`/templates/frostify/product/${item.id}`} className="flex-grow">
-                    <h3 className="font-serif text-lg text-[var(--color-primary)] hover:text-[var(--color-secondary)] tracking-wide">{item.name}</h3>
+                    <h3 className="font-serif text-[3vw] md:text-lg text-[var(--color-primary)] hover:text-[var(--color-secondary)] tracking-wide">{item.name}</h3>
                 </Link>
-                <p className="text-[var(--color-secondary)] font-bold text-lg">${item.price.toFixed(2)}</p>
-                <button
-                    onClick={handleAddToCart}
-                    className="mt-auto w-full bg-[var(--color-primary)] text-white py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors flex items-center justify-center gap-2"
-                >
-                    <ShoppingBag size={14} /> Add to Cart
-                </button>
+                <p className="text-[var(--color-secondary)] font-bold text-[3vw] md:text-lg">${item.price.toFixed(2)}</p>
+
+                {/* Updated Buttons: View + Add (Side-by-side or Stacked, always visible) */}
+                <div className="mt-auto w-full flex gap-2">
+                     <Link
+                        href={`/templates/frostify/product/${item.id}`}
+                        className="flex-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] py-2 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-white transition-colors flex items-center justify-center"
+                    >
+                        View
+                    </Link>
+                    <button
+                        onClick={handleAddToCart}
+                        className="flex-1 bg-[var(--color-primary)] text-white py-2 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors flex items-center justify-center gap-1 md:gap-2"
+                    >
+                         <ShoppingBag size={14} className="hidden md:inline" /> Add
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -149,13 +159,13 @@ export const FAQItem = ({ question, answer }) => {
         <div className="bg-[#Fdf4f8] rounded-full mb-3 overflow-hidden border border-transparent">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-8 py-4 flex justify-between items-center text-left bg-[#fceef5] hover:bg-[#fae1ed] transition-colors"
+                className="w-full px-4 md:px-8 py-3 md:py-4 flex justify-between items-center text-left bg-[#fceef5] hover:bg-[#fae1ed] transition-colors"
             >
-                <span className="text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest">{question}</span>
-                <ChevronDown className={`w-4 h-4 text-[var(--color-primary)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <span className="text-[2.5vw] md:text-xs font-bold text-[var(--color-primary)] uppercase tracking-widest">{question}</span>
+                <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 text-[var(--color-primary)] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
-            <div className={`transition-all duration-300 ${isOpen ? 'max-h-32 opacity-100 py-4' : 'max-h-0 opacity-0 py-0'}`}>
-                <p className="px-8 text-sm text-[var(--color-primary)]/80 font-medium">{answer}</p>
+            <div className={`transition-all duration-300 ${isOpen ? 'max-h-32 opacity-100 py-3 md:py-4' : 'max-h-0 opacity-0 py-0'}`}>
+                <p className="px-4 md:px-8 text-[2.5vw] md:text-sm text-[var(--color-primary)]/80 font-medium">{answer}</p>
             </div>
         </div>
     );
@@ -172,9 +182,9 @@ export const Footer = () => {
             </div>
 
             <div className="container mx-auto px-6 pt-10 pb-10 text-center relative z-10">
-                <h2 className="text-4xl font-serif mb-2">Contact us</h2>
+                <h2 className="text-[6vw] md:text-4xl font-serif mb-2">Contact us</h2>
                 
-                <div className="mt-16 text-left max-w-lg mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 text-sm font-medium opacity-80">
+                <div className="mt-16 text-left max-w-lg mx-auto grid grid-cols-2 md:grid-cols-2 gap-8 text-[2.5vw] md:text-sm font-medium opacity-80">
                     <div>
                         <p className="font-bold uppercase tracking-widest mb-2 opacity-100">Opening Hours:</p>
                         <p>Monday – Friday: 8:00 AM – 6:00 PM</p>
