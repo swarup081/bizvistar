@@ -86,7 +86,7 @@ export default function BrewhavenPage() {
                         <h2 className="text-[6vw] md:text-5xl font-bold text-brand-text text-center mb-8 md:mb-16">{businessData.events.title}</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                             {businessData.events.items.map((item, index) => (
-                                <div key={index} className="bg-brand-primary rounded-lg overflow-hidden shadow-sm flex flex-col">
+                                <div key={index} className={`bg-brand-primary rounded-lg overflow-hidden shadow-sm flex flex-col ${index >= 2 ? 'hidden md:flex' : ''}`}>
                                     <img src={item.image} alt={item.title} className="w-full h-[20vw] md:h-48 object-cover"/>
                                     <div className="p-3 md:p-8 flex flex-col flex-grow">
                                         <h3 className="text-[3vw] md:text-2xl font-bold text-brand-text mb-1 md:mb-3">{item.title}</h3>
@@ -181,7 +181,7 @@ export default function BrewhavenPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className="text-[4vw] md:text-4xl text-brand-text text-center mt-2 md:mt-6 min-h-[80px] md:min-h-[120px]"
+                                className="text-[3vw] md:text-4xl text-brand-text text-center mt-2 md:mt-6 min-h-[80px] md:min-h-[120px] px-2"
                                 style={{ fontFamily: 'var(--font-handwriting)' }}
                             >
                                 {testimonials[currentTestimonial].quote}
