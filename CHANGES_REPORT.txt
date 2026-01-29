@@ -1,0 +1,18 @@
+The following files and folders have been changed to address the requested fixes:
+
+**1. Aurora Template Fixes:**
+*   `src/app/templates/aurora/page.js`:
+    *   **Explore Button:** Removed `hidden lg:block` to make the `ExploreCircle` visible on mobile. Updated `href` to absolute path.
+    *   **Collections:** Added a "View Collection" button below the grid that is only visible on mobile (`block lg:hidden`), while hiding the header link on mobile.
+    *   **Routing:** Updated `href` links to be absolute (e.g., `/templates/aurora/shop`).
+*   `src/app/templates/aurora/components.js`:
+    *   **Header:** Fixed the Logo `Link` to use an absolute path (`/templates/aurora`) instead of relative (`./templates/aurora`).
+
+**2. Checkout Styling (State Selector):**
+*   `src/app/templates/avenix/checkout/page.js`: Added `className` to `StateSelector` to match the custom rounded/border styles of Avenix inputs.
+*   `src/app/templates/blissly/checkout/page.js`: Added `className` to `StateSelector` to match Blissly's specific input styling.
+*   `src/app/templates/frostify/checkout/page.js`: (Already matched, verified).
+*   `src/app/templates/aurora/checkout/page.js`: (Already matched, verified).
+
+**3. General Routing:**
+*   Audited all template headers and pages to ensure navigation links start with `/` to prevent relative path stacking issues (e.g., `/templates/aurora/templates/aurora`).

@@ -225,6 +225,7 @@ export default function CheckoutPage() {
                                             value={formData.state}
                                             onChange={handleStateChange}
                                             error={fieldErrors.state}
+                                            className="w-full p-2 md:p-3 bg-brand-primary border rounded-lg focus:border-brand-secondary focus:ring-1 focus:ring-brand-secondary outline-none transition-all border-brand-text/10"
                                         />
                                     </div>
                                     <div className="space-y-1">

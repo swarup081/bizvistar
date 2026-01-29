@@ -12,7 +12,7 @@ const getProductsByIds = (allProducts, ids) => {
 
 // "Explore All" Rotating Button
 const ExploreCircle = () => (
-   <Link href="./aurora/shop">
+   <Link href="/templates/aurora/shop">
       <div  className="relative w-[25vw] h-[25vw] md:w-32 md:h-32 flex items-center justify-center cursor-pointer group">
         <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
             <svg viewBox="0 0 100 100" width="100%" height="100%">
@@ -182,7 +182,7 @@ export default function AuroraPage() {
                                 </div>
 
                                 {/* 3. Circle Button (Right) - Overlapping */}
-                                <div className="hidden lg:block ml-10 mb-10">
+                                <div className="block ml-2 md:ml-10 mb-4 md:mb-10">
                                     <ExploreCircle />
                                 </div>
 
@@ -240,7 +240,7 @@ export default function AuroraPage() {
                             </p>
                             <div className="flex items-center gap-8">
                                     <Link 
-                                        href="./aurora/shop" 
+                                        href="/templates/aurora/shop"
                                         className="bg-[#0F1C23] text-white px-4 py-2 md:px-8 md:py-4 rounded-[4px] font-medium text-[2.5vw] md:text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
                                     >
                                        Shop Now <ArrowRight size={14} className="md:w-4 md:h-4" />
@@ -270,7 +270,7 @@ export default function AuroraPage() {
                                 <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.collections.title}</h2>
                                 <p className="text-gray-500 text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections.subtitle}</p>
                              </div>
-                             <Link href="/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[#0F1C23] hover:text-[#0F1C23] text-gray-500 transition-all">
+                             <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[#0F1C23] hover:text-[#0F1C23] text-gray-500 transition-all">
                                 View Collection
                              </Link>
                         </div>
@@ -279,6 +279,12 @@ export default function AuroraPage() {
                             {featuredProducts.map(product => (
                                 <ProductCard key={product.id} item={product} />
                             ))}
+                        </div>
+                        {/* Mobile Only View Collection Button */}
+                        <div className="mt-8 text-center block lg:hidden">
+                            <Link href="/templates/aurora/shop" className="inline-block bg-[#0F1C23] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[#D4A373] transition-colors">
+                                View Collection
+                            </Link>
                         </div>
                     </div>
                 </section>

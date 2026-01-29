@@ -57,7 +57,7 @@ export const Header = () => {
                 </nav>
 
                 {/* CENTER: Logo */}
-                <Link href="./templates/aurora" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
+                <Link href="/templates/aurora" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
                    
                     <span className="font-serif text-[6vw] md:text-3xl text-[#0F1C23] tracking-tight font-medium">
                         {businessData.name}

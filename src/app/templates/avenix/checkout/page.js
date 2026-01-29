@@ -226,6 +226,7 @@ export default function CheckoutPage() {
                                         value={formData.state}
                                         onChange={handleStateChange}
                                         error={fieldErrors.state}
+                                        className="bg-brand-primary border-brand-text/10 rounded-lg text-brand-text"
                                     />
                                 </div>
                                 <div className="space-y-1">
