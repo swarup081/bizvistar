@@ -54,7 +54,7 @@ const boiling = localFont({
 import SupportWidget from '@/components/dashboard/SupportWidget';
 
 export const metadata = {
-  title: "BizVistaar",
+  title: "BizVistar",
   description: "Empowering Local Businesses",
 };
 

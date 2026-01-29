@@ -237,10 +237,8 @@
     font-family: theme(fontFamily.sans);
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: theme(fontFamily.serif);
-    /* --- UPDATED HEADING STYLE --- */
-    font-style: italic;
-    /* --- END OF UPDATE --- */
+    font-family: theme(fontFamily.sans);
+    font-style: normal;
   }
 }
 

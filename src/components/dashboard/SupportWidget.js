@@ -138,9 +138,8 @@ export default function SupportWidget() {
       }
   };
 
-  // Hide widget on public sites or templates
-  // Assuming paths like /site/[slug] or /preview/[template] are public
-  if (pathname?.startsWith('/site/') || pathname?.startsWith('/preview/')) {
+  // Hide widget on public sites, templates, landing page, and get-started
+  if (pathname === '/' || pathname === '/get-started' || pathname?.startsWith('/site/') || pathname?.startsWith('/preview/')) {
     return null;
   }
 

@@ -1,0 +1,27 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1732ms
+ ○ Compiling / ...
+ GET / 200 in 6.9s (compile: 6.4s, render: 523ms)
+ POST / 200 in 33ms (compile: 8ms, render: 25ms)
+ ✓ Compiled in 118ms
+ GET / 200 in 260ms (compile: 84ms, render: 176ms)
+ POST / 200 in 17ms (compile: 6ms, render: 11ms)
+ GET / 200 in 1190ms (compile: 651ms, render: 539ms)
+ POST / 200 in 30ms (compile: 8ms, render: 23ms)
+ GET / 200 in 130ms (compile: 11ms, render: 119ms)
+ POST / 200 in 20ms (compile: 6ms, render: 13ms)
+ GET / 200 in 537ms (compile: 324ms, render: 213ms)
+ POST / 200 in 17ms (compile: 6ms, render: 11ms)
+ GET / 200 in 111ms (compile: 26ms, render: 85ms)
+ POST / 200 in 14ms (compile: 4ms, render: 10ms)
