@@ -15,17 +15,17 @@ export default function OnboardingWizard({ websiteId, onComplete, initialStatus 
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize with any existing data if available (e.g. from partial fill)
-  // For now, start fresh or from props.
-  const [data, setData] = useState({
-    name: '',
-    owner_name: '',
-    business_city: '',
-    whatsapp_number: '',
-    logo_url: null,
-    social_instagram: '',
-    social_facebook: '',
-    upi_id: '',
-  });
+  const [data, setData] = useState(() => ({
+    name: initialStatus?.name || '', // Assuming name is stored somewhere or inferred
+    owner_name: initialStatus?.owner_name || '',
+    business_city: initialStatus?.business_city || '',
+    whatsapp_number: initialStatus?.whatsapp_number || '',
+    logo_url: initialStatus?.logo_url || null,
+    social_instagram: initialStatus?.social_instagram || '',
+    social_facebook: initialStatus?.social_facebook || '',
+    upi_id: initialStatus?.upi_id || '',
+    confirm_upi_id: initialStatus?.upi_id || '', // Initialize with same if exists
+  }));
 
   const [products, setProducts] = useState([]);
   const [errors, setErrors] = useState({});
@@ -124,10 +124,17 @@ export default function OnboardingWizard({ websiteId, onComplete, initialStatus 
   const handleFinishAttempt = (isSkipping = false) => {
       // If Step 4 and UPI is empty/invalid AND not explicitly skipping/catalog mode
       const isValidUpi = data.upi_id && /.+@.+/.test(data.upi_id);
+      const isMatch = data.upi_id === data.confirm_upi_id;
 
-      if (!isSkipping && !isValidUpi) {
-          setShowExitDialog(true);
-          return;
+      if (!isSkipping) {
+          if (!isValidUpi) {
+              setShowExitDialog(true);
+              return;
+          }
+          if (!isMatch) {
+              alert("UPI IDs do not match.");
+              return;
+          }
       }
 
       finalizeOnboarding(isValidUpi ? data.upi_id : null);
@@ -232,25 +239,25 @@ export default function OnboardingWizard({ websiteId, onComplete, initialStatus 
 
         {/* No-UPI Warning Dialog */}
         {showExitDialog && (
-            <div className="absolute inset-0 z-50 flex items-center justify-center p-6 bg-white/90 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 w-full max-w-sm text-center">
-                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <AlertTriangle className="text-amber-600" size={24} />
+            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center transform scale-100 animate-in zoom-in-95 duration-200">
+                    <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-5 border border-amber-100">
+                        <AlertTriangle className="text-amber-600" size={28} />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Missing UPI ID</h3>
-                    <p className="text-sm text-gray-500 mb-6">
-                        Without a UPI ID, your store will be in <strong>'Catalog Mode'</strong> (View Only). Customers cannot buy online.
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Missing UPI ID</h3>
+                    <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                        Without a UPI ID, your store will be in <strong className="text-gray-800">'Catalog Mode'</strong> (View Only). Customers won't be able to buy online.
                     </p>
                     <div className="space-y-3">
                         <button
                             onClick={() => setShowExitDialog(false)}
-                            className="w-full py-2.5 bg-[#8A63D2] text-white rounded-xl font-medium"
+                            className="w-full py-3 bg-[#8A63D2] text-white rounded-xl font-semibold shadow-lg shadow-purple-100 hover:shadow-purple-200 transition-all active:scale-95"
                         >
                             Add UPI ID
                         </button>
                         <button
                             onClick={() => finalizeOnboarding(null)}
-                            className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+                            className="w-full py-3 bg-white text-gray-500 rounded-xl font-medium hover:bg-gray-50 hover:text-gray-700 transition-colors"
                         >
                             Continue as Catalog
                         </button>

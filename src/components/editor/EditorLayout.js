@@ -82,13 +82,18 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
     }
   }, [templateName, websiteId, defaultData, editorDataKey]); 
 
+  const [onboardingInitialData, setOnboardingInitialData] = useState(null);
+
   // Check Onboarding Status
   useEffect(() => {
     if (websiteId) {
         const checkStatus = async () => {
              try {
-                const { completed } = await getOnboardingStatus(websiteId);
-                if (!completed) setShowWizard(true);
+                const { completed, data } = await getOnboardingStatus(websiteId);
+                if (!completed) {
+                    setOnboardingInitialData(data);
+                    setShowWizard(true);
+                }
              } catch (err) {
                  console.warn("Onboarding check failed:", err);
              }
@@ -349,6 +354,7 @@ useEffect(() => {
           <OnboardingWizard
              websiteId={websiteId}
              onComplete={handleWizardComplete}
+             initialStatus={onboardingInitialData}
           />
       )}
 

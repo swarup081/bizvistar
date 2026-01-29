@@ -20,94 +20,104 @@ export default function StepIdentity({ data, onUpdate, errors = {} }) {
   };
 
   return (
-    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Let's get to know you</h2>
+    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Let's get to know you</h2>
         <p className="text-gray-500 text-sm mt-1">Tell us a bit about your business to get started.</p>
       </div>
 
-      {/* Business Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Business Name <span className="text-red-500">*</span>
-        </label>
-        <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            value={data.name || ''}
-            onChange={(e) => onUpdate('name', e.target.value)}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A63D2]/20 transition-all ${
-              errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-[#8A63D2]'
-            }`}
-            placeholder="e.g. Acme Corp"
-          />
+      <div className="space-y-5">
+        {/* Business Name */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+            Business Name <span className="text-red-500">*</span>
+          </label>
+          <div className="relative group">
+            <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#8A63D2] transition-colors" size={18} />
+            <input
+              type="text"
+              value={data.name || ''}
+              onChange={(e) => onUpdate('name', e.target.value)}
+              className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl shadow-sm outline-none transition-all duration-200 ${
+                errors.name
+                ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                : 'border-gray-200 hover:border-gray-300 focus:border-[#8A63D2] focus:ring-4 focus:ring-[#8A63D2]/10'
+              }`}
+              placeholder="e.g. Acme Corp"
+            />
+          </div>
+          {errors.name && <p className="text-xs font-medium text-red-500 mt-1.5 ml-1">{errors.name}</p>}
         </div>
-        {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-      </div>
 
-      {/* Owner Name */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Owner Name <span className="text-red-500">*</span>
-        </label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            value={data.owner_name || ''}
-            onChange={(e) => onUpdate('owner_name', e.target.value)}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A63D2]/20 transition-all ${
-              errors.owner_name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-[#8A63D2]'
-            }`}
-            placeholder="e.g. John Doe"
-          />
+        {/* Owner Name */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+            Owner Name <span className="text-red-500">*</span>
+          </label>
+          <div className="relative group">
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#8A63D2] transition-colors" size={18} />
+            <input
+              type="text"
+              value={data.owner_name || ''}
+              onChange={(e) => onUpdate('owner_name', e.target.value)}
+              className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl shadow-sm outline-none transition-all duration-200 ${
+                errors.owner_name
+                ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                : 'border-gray-200 hover:border-gray-300 focus:border-[#8A63D2] focus:ring-4 focus:ring-[#8A63D2]/10'
+              }`}
+              placeholder="e.g. John Doe"
+            />
+          </div>
+           {errors.owner_name && <p className="text-xs font-medium text-red-500 mt-1.5 ml-1">{errors.owner_name}</p>}
         </div>
-         {errors.owner_name && <p className="text-xs text-red-500 mt-1">{errors.owner_name}</p>}
-      </div>
 
-      {/* City */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          City / Location <span className="text-red-500">*</span>
-        </label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            value={data.business_city || ''}
-            onChange={(e) => onUpdate('business_city', e.target.value)}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A63D2]/20 transition-all ${
-              errors.business_city ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-[#8A63D2]'
-            }`}
-            placeholder="e.g. Silchar"
-          />
+        {/* City */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+            City / Location <span className="text-red-500">*</span>
+          </label>
+          <div className="relative group">
+            <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#8A63D2] transition-colors" size={18} />
+            <input
+              type="text"
+              value={data.business_city || ''}
+              onChange={(e) => onUpdate('business_city', e.target.value)}
+              className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl shadow-sm outline-none transition-all duration-200 ${
+                errors.business_city
+                ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                : 'border-gray-200 hover:border-gray-300 focus:border-[#8A63D2] focus:ring-4 focus:ring-[#8A63D2]/10'
+              }`}
+              placeholder="e.g. Silchar"
+            />
+          </div>
+           {errors.business_city && <p className="text-xs font-medium text-red-500 mt-1.5 ml-1">{errors.business_city}</p>}
         </div>
-         {errors.business_city && <p className="text-xs text-red-500 mt-1">{errors.business_city}</p>}
-      </div>
 
-      {/* WhatsApp */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          WhatsApp Number <span className="text-red-500">*</span>
-        </label>
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            value={data.whatsapp_number || ''}
-            onChange={(e) => {
-                 const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                 onUpdate('whatsapp_number', val);
-            }}
-            className={`w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8A63D2]/20 transition-all ${
-              errors.whatsapp_number ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-[#8A63D2]'
-            }`}
-            placeholder="10-digit number"
-            maxLength={10}
-          />
+        {/* WhatsApp */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+            WhatsApp Number <span className="text-red-500">*</span>
+          </label>
+          <div className="relative group">
+            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#8A63D2] transition-colors" size={18} />
+            <input
+              type="text"
+              value={data.whatsapp_number || ''}
+              onChange={(e) => {
+                   const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                   onUpdate('whatsapp_number', val);
+              }}
+              className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl shadow-sm outline-none transition-all duration-200 ${
+                errors.whatsapp_number
+                ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
+                : 'border-gray-200 hover:border-gray-300 focus:border-[#8A63D2] focus:ring-4 focus:ring-[#8A63D2]/10'
+              }`}
+              placeholder="10-digit number"
+              maxLength={10}
+            />
+          </div>
+           {errors.whatsapp_number && <p className="text-xs font-medium text-red-500 mt-1.5 ml-1">{errors.whatsapp_number}</p>}
         </div>
-         {errors.whatsapp_number && <p className="text-xs text-red-500 mt-1">{errors.whatsapp_number}</p>}
       </div>
 
       {/* Logo Upload */}
