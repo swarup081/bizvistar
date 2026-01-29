@@ -35,7 +35,7 @@ export const Header = () => {
     }
 
     return (
-        <header className={`${scrolled ? "fixed bg-white/70 backdrop-blur-md shadow-sm py-4" : "absolute py-8"} top-0 left-0 w-full z-50 px-6 lg:px-16 transition-all duration-300`}>
+        <header className={`${scrolled ? "fixed bg-white/70 backdrop-blur-md shadow-sm py-4" : "absolute py-4 md:py-8"} top-0 left-0 w-full z-50 px-6 lg:px-16 transition-all duration-300`}>
             <div className="max-w-[1920px] mx-auto flex justify-between items-center">
                 
                 {/* LEFT: Navigation Links */}
@@ -59,13 +59,13 @@ export const Header = () => {
                 {/* CENTER: Logo */}
                 <Link href="./templates/aurora" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
                    
-                    <span className="font-serif text-3xl text-[#0F1C23] tracking-tight font-medium">
+                    <span className="font-serif text-[6vw] md:text-3xl text-[#0F1C23] tracking-tight font-medium">
                         {businessData.name}
                     </span>
                 </Link>
 
                 {/* RIGHT: Icons */}
-                <div className="flex items-center gap-8 text-[#0F1C23]">
+                <div className="flex items-center gap-4 md:gap-8 text-[#0F1C23]">
        
                     <button onClick={openCart} className="hover:scale-110 transition-transform relative">
                         <ShoppingBag size={22} strokeWidth={1.5} />
@@ -85,25 +85,35 @@ export const Header = () => {
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
     return (
-        <div className="group cursor-pointer flex flex-col gap-5">
+        <div className="group cursor-pointer flex flex-col gap-3 md:gap-5 h-full">
             <div className="relative overflow-hidden aspect-[3/4] bg-[#F5F5F5]">
                 <img 
                     src={item.image} 
                     alt={item.name} 
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110" 
                 />
-                <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
+            </div>
+            <div className="text-center flex flex-col gap-1 md:gap-2 flex-grow">
+                <Link href={`/templates/aurora/product/${item.id}`} className="flex-grow">
+                    <h3 className="font-serif text-[3.5vw] md:text-lg text-[#0F1C23] leading-tight mb-1 md:mb-2 group-hover:text-[#D4A373] transition-colors">{item.name}</h3>
+                </Link>
+                <span className="text-[2.5vw] md:text-sm font-medium text-gray-500 tracking-wide">${item.price.toFixed(2)}</span>
+
+                {/* Always Visible Buttons */}
+                <div className="mt-auto flex gap-2">
+                     <Link
+                        href={`/templates/aurora/product/${item.id}`}
+                        className="flex-1 border border-[#0F1C23]/20 py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] text-[#0F1C23] hover:border-[#0F1C23] transition-colors flex items-center justify-center"
+                    >
+                        View
+                    </Link>
                     <button 
                         onClick={(e) => { e.preventDefault(); addItem(item); }}
-                        className="w-full bg-white/90 backdrop-blur-sm text-[#0F1C23] py-4 text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#0F1C23] hover:text-white transition-colors"
+                        className="flex-1 bg-[#0F1C23] text-white py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#D4A373] transition-colors"
                     >
-                        Add to Cart
+                        Add
                     </button>
                 </div>
-            </div>
-            <div className="text-center">
-                <h3 className="font-serif text-lg text-[#0F1C23] leading-tight mb-2 group-hover:text-[#D4A373] transition-colors">{item.name}</h3>
-                <span className="text-sm font-medium text-gray-500 tracking-wide">${item.price}</span>
             </div>
         </div>
     );
@@ -112,7 +122,7 @@ export const ProductCard = ({ item }) => {
 // --- NEWSLETTER CTA (Exact "An Invitation" Design) ---
 export const NewsletterCTA = ({ data }) => {
     return (
-        <section className="py-32 bg-[#0B1215] relative overflow-hidden text-white flex items-center justify-center">
+        <section className="py-20 md:py-32 bg-[#0B1215] relative overflow-hidden text-white flex items-center justify-center">
             
             {/* Double Border Frame for Luxury Feel */}
             <div className="absolute inset-6 border border-[#D4A373] opacity-20 pointer-events-none"></div>
@@ -121,29 +131,29 @@ export const NewsletterCTA = ({ data }) => {
             <div className="container mx-auto px-6 relative z-10 max-w-4xl text-center">
                 <div className="flex flex-col items-center">
                      {/* Top Tag */}
-                     <span className="text-[#D4A373] text-[10px] font-bold uppercase tracking-[0.4em] mb-8">
+                     <span className="text-[#D4A373] text-[2.5vw] md:text-[10px] font-bold uppercase tracking-[0.4em] mb-4 md:mb-8">
                         An Invitation
                      </span>
                      
                      {/* Main Heading */}
-                     <h2 className="text-5xl md:text-7xl font-serif text-white mb-8 tracking-tight">
+                     <h2 className="text-[8vw] md:text-7xl font-serif text-white mb-4 md:mb-8 tracking-tight">
                         {data.title || "Unlock Exclusive Access"}
                      </h2>
                      
                      {/* Description Text */}
-                     <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto mb-16">
+                     <p className="text-gray-400 text-[3vw] md:text-xl font-light leading-relaxed max-w-2xl mx-auto mb-8 md:mb-16">
                         {data.text || "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewelry heirloom."}
                      </p>
                 </div>
 
                 {/* Minimalist Input Form */}
-                <div className="max-w-md mx-auto relative flex flex-col items-center gap-8">
+                <div className="max-w-md mx-auto relative flex flex-col items-center gap-4 md:gap-8 w-full">
                     <input 
                         type="email" 
                         placeholder={data.placeholder || "Enter your email address"}
-                        className="w-full bg-transparent border-b border-[#D4A373]/30 py-4 px-2 text-center text-white placeholder-gray-600 focus:border-[#D4A373] focus:outline-none transition-colors text-sm font-light tracking-wide"
+                        className="w-full bg-transparent border-b border-[#D4A373]/30 py-3 md:py-4 px-2 text-center text-white placeholder-gray-600 focus:border-[#D4A373] focus:outline-none transition-colors text-[3vw] md:text-sm font-light tracking-wide"
                     />
-                    <button className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#D4A373] hover:text-white transition-colors border border-[#D4A373] px-12 py-4 hover:bg-[#D4A373]/10 mt-4">
+                    <button className="text-[2.5vw] md:text-[11px] font-bold uppercase tracking-[0.3em] text-[#D4A373] hover:text-white transition-colors border border-[#D4A373] px-8 md:px-12 py-3 md:py-4 hover:bg-[#D4A373]/10 mt-2 md:mt-4">
                         {data.buttonText || "Join the List"}
                     </button>
                 </div>
@@ -159,36 +169,36 @@ export const TestimonialSlider = ({ data }) => {
 
     return (
         <div className="max-w-5xl mx-auto px-6 text-center">
-            <h2 className="text-[11px] font-bold tracking-[0.3em] uppercase text-gray-400 mb-12">Client Reviews</h2>
+            <h2 className="text-[2.5vw] md:text-[11px] font-bold tracking-[0.3em] uppercase text-gray-400 mb-8 md:mb-12">Client Reviews</h2>
             
-            <div className="relative bg-white p-12 lg:p-20 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl">
-                <div className="absolute top-10 left-10 text-6xl font-serif text-[#D4A373] opacity-20">“</div>
+            <div className="relative bg-white p-8 md:p-20 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-2xl">
+                <div className="absolute top-4 md:top-10 left-4 md:left-10 text-[10vw] md:text-6xl font-serif text-[#D4A373] opacity-20">“</div>
                 
                 <div className="flex flex-col items-center animate-fade-in">
-                    <div className="flex gap-1 text-[#D4A373] mb-8">
+                    <div className="flex gap-1 text-[#D4A373] mb-4 md:mb-8">
                         {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="currentColor" strokeWidth={0} />)}
                     </div>
                     
-                    <blockquote className="text-2xl md:text-4xl font-serif text-[#0F1C23] leading-snug mb-10 max-w-3xl">
+                    <blockquote className="text-[4vw] md:text-4xl font-serif text-[#0F1C23] leading-snug mb-6 md:mb-10 max-w-3xl">
                         "{item.quote}"
                     </blockquote>
                     
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center font-serif text-xl italic text-[#D4A373]">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-100 flex items-center justify-center font-serif text-lg md:text-xl italic text-[#D4A373]">
                             {item.author.charAt(0)}
                         </div>
                         <div className="text-left">
-                            <cite className="not-italic block text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">
+                            <cite className="not-italic block text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">
                                 {item.author}
                             </cite>
-                            <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+                            <span className="text-[2vw] md:text-[10px] text-gray-400 uppercase tracking-wider">
                                 {item.location}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+                <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
                     {data.items.map((_, i) => (
                         <button 
                             key={i} 
@@ -206,12 +216,12 @@ export const TestimonialSlider = ({ data }) => {
 export const InstagramFeed = ({ data }) => {
     return (
         <div className="w-full">
-            <div className="flex justify-between items-end mb-12 px-4">
+            <div className="flex justify-between items-end mb-8 md:mb-12 px-4">
                 <div>
-                    <span className="text-[#D4A373] text-xs font-bold uppercase tracking-widest mb-2 block">Social Media</span>
-                    <h2 className="text-4xl font-serif text-[#0F1C23]">{data.title}</h2>
+                    <span className="text-[#D4A373] text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-2 block">Social Media</span>
+                    <h2 className="text-[6vw] md:text-4xl font-serif text-[#0F1C23]">{data.title}</h2>
                 </div>
-                <a href="#" className="text-xs font-bold uppercase tracking-widest border-b border-[#0F1C23] pb-1 hover:text-[#D4A373] hover:border-[#D4A373] transition-colors">
+                <a href="#" className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest border-b border-[#0F1C23] pb-1 hover:text-[#D4A373] hover:border-[#D4A373] transition-colors">
                     {data.handle}
                 </a>
             </div>
@@ -236,13 +246,13 @@ export const FAQAccordion = ({ question, answer }) => {
         <div className="border-b border-gray-100 last:border-0">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full py-8 flex justify-between items-center text-left hover:text-[#D4A373] transition-colors group"
+                className="w-full py-6 md:py-8 flex justify-between items-center text-left hover:text-[#D4A373] transition-colors group"
             >
-                <span className="text-xl font-serif text-[#0F1C23] pr-8 group-hover:text-[#D4A373] transition-colors">{question}</span>
+                <span className="text-[4vw] md:text-xl font-serif text-[#0F1C23] pr-4 md:pr-8 group-hover:text-[#D4A373] transition-colors">{question}</span>
                 <span className={`text-2xl font-light text-gray-300 transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`}>+</span>
             </button>
-            <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isOpen ? 'max-h-48 pb-8 opacity-100' : 'max-h-0 opacity-0'}`}>
-                <p className="text-gray-500 font-light leading-relaxed max-w-2xl text-lg">{answer}</p>
+            <div className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${isOpen ? 'max-h-48 pb-6 md:pb-8 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <p className="text-gray-500 font-light leading-relaxed max-w-2xl text-[3vw] md:text-lg">{answer}</p>
             </div>
         </div>
     );
@@ -252,17 +262,17 @@ export const FAQAccordion = ({ question, answer }) => {
 export const Footer = () => {
     const { businessData } = useTemplateContext();
     return (
-        <footer className="bg-[#EBE5DF] pt-24 pb-12">
+        <footer className="bg-[#EBE5DF] pt-12 md:pt-24 pb-6 md:pb-12">
             <div className="container mx-auto px-6 lg:px-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-                    <div className="col-span-1 md:col-span-1">
-                        <h3 className="text-2xl font-serif font-bold mb-6 text-[#0F1C23]">{businessData.name}</h3>
-                        <p className="text-sm text-gray-500 leading-relaxed mb-6 max-w-xs">{businessData.footer.description}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-20">
+                    <div className="col-span-2 md:col-span-1">
+                        <h3 className="text-2xl font-serif font-bold mb-4 md:mb-6 text-[#0F1C23]">{businessData.name}</h3>
+                        <p className="text-[3vw] md:text-sm text-gray-500 leading-relaxed mb-4 md:mb-6 max-w-xs">{businessData.footer.description}</p>
                     </div>
                     
                     <div className="col-span-1">
-                        <h4 className="text-xs font-bold uppercase tracking-widest mb-6 text-[#0F1C23]">Explore</h4>
-                        <ul className="space-y-4 text-xs font-medium tracking-wide text-gray-500 uppercase">
+                        <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[#0F1C23]">Explore</h4>
+                        <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-gray-500 uppercase">
                             {businessData.footer.links.main.map(link => (
                                 <li key={link.name}><a href={link.url} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
                             ))}
@@ -270,25 +280,25 @@ export const Footer = () => {
                     </div>
                     
                      <div className="col-span-1">
-                        <h4 className="text-xs font-bold uppercase tracking-widest mb-6 text-[#0F1C23]">Legal</h4>
-                        <ul className="space-y-4 text-xs font-medium tracking-wide text-gray-500 uppercase">
+                        <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[#0F1C23]">Legal</h4>
+                        <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-gray-500 uppercase">
                              {businessData.footer.links.utility.map(link => (
                                 <li key={link.name}><a href={link.url} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
                             ))}
                         </ul>
                     </div>
 
-                    <div className="col-span-1">
-                         <h4 className="text-xs font-bold uppercase tracking-widest mb-6 text-[#0F1C23]">Stay Updated</h4>
-                         <p className="text-xs text-gray-500 mb-4">{businessData.footer.subscribe.title}</p>
+                    <div className="col-span-2 md:col-span-1">
+                         <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[#0F1C23]">Stay Updated</h4>
+                         <p className="text-[3vw] md:text-xs text-gray-500 mb-4">{businessData.footer.subscribe.title}</p>
                          <div className="flex border-b border-gray-400 pb-2">
-                             <input type="email" placeholder="Email Address" className="bg-transparent flex-grow text-xs outline-none placeholder-gray-500 text-[#0F1C23]" />
-                             <button className="text-[10px] font-bold uppercase tracking-widest hover:text-[#D4A373] transition-colors">{businessData.footer.subscribe.cta}</button>
+                             <input type="email" placeholder="Email Address" className="bg-transparent flex-grow text-[3vw] md:text-xs outline-none placeholder-gray-500 text-[#0F1C23]" />
+                             <button className="text-[2.5vw] md:text-[10px] font-bold uppercase tracking-widest hover:text-[#D4A373] transition-colors">{businessData.footer.subscribe.cta}</button>
                          </div>
                     </div>
                 </div>
                 
-                <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-300 text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
+                <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-300 text-[2.5vw] md:text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold">
                     <p>{businessData.footer.copyright}</p>
                     <p>Designed by BizVistar</p>
                 </div>
