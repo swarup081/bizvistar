@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTemplateContext } from '../../templateContext.js';
 import { useCart } from '../../cartContext.js';
+import { ProductCard } from '../../components.js';
 
 export default function ProductPage() {
     const { productId } = useParams();
@@ -13,26 +14,55 @@ export default function ProductPage() {
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
     if (!product) return <div className="py-20 text-center">Product not found</div>;
 
+    // Related products logic
+    const relatedProducts = businessData.allProducts
+        .filter(p => p.category === product.category && p.id !== product.id)
+        .slice(0, 3); // Show 3 related items
+
     return (
-        <div className="container mx-auto px-6 py-24">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                <div className="bg-gray-50 aspect-square">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex flex-col justify-center">
-                    <h1 className="text-4xl font-serif mb-4">{product.name}</h1>
-                    <p className="text-2xl font-light mb-8">${product.price.toFixed(2)}</p>
-                    <p className="text-gray-600 mb-8 leading-relaxed">{product.description}</p>
+        <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden min-h-screen">
+            <div className="container mx-auto px-6 py-12 md:py-24">
+                {/* Mobile: Grid Cols 2 (Shrink) | Desktop: Grid Cols 2 */}
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-16 mt-8 md:mt-0">
                     
-                    <div className="flex gap-4 mb-8">
-                        <div className="flex border border-gray-300 w-32">
-                            <button onClick={() => setQty(Math.max(1, qty-1))} className="w-10 hover:bg-gray-100">-</button>
-                            <span className="flex-grow flex items-center justify-center font-bold">{qty}</span>
-                            <button onClick={() => setQty(qty+1)} className="w-10 hover:bg-gray-100">+</button>
+                    {/* Image */}
+                    <div className="bg-gray-50 aspect-[3/4] relative overflow-hidden">
+                        <img src={product.image} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex flex-col justify-center">
+                        <h1 className="text-[5vw] md:text-4xl font-serif mb-2 md:mb-4 leading-tight">{product.name}</h1>
+                        <p className="text-[4vw] md:text-2xl font-light mb-4 md:mb-8 text-[#D4A373]">${product.price.toFixed(2)}</p>
+                        <p className="text-gray-600 text-[2.5vw] md:text-base mb-4 md:mb-8 leading-tight md:leading-relaxed line-clamp-4 md:line-clamp-none">{product.description}</p>
+                        
+                        <div className="flex flex-col md:flex-row gap-2 md:gap-4 mb-4 md:mb-8">
+                            <div className="flex border border-gray-300 w-full md:w-32 h-[8vw] md:h-12 items-center">
+                                <button onClick={() => setQty(Math.max(1, qty-1))} className="w-[8vw] md:w-10 h-full hover:bg-gray-100 flex items-center justify-center text-[3vw] md:text-base">-</button>
+                                <span className="flex-grow flex items-center justify-center font-bold text-[3vw] md:text-base">{qty}</span>
+                                <button onClick={() => setQty(qty+1)} className="w-[8vw] md:w-10 h-full hover:bg-gray-100 flex items-center justify-center text-[3vw] md:text-base">+</button>
+                            </div>
+                            <button 
+                                onClick={() => addToCart(product, qty)} 
+                                className="flex-grow h-[8vw] md:h-12 bg-[#0F1C23] text-white text-[2.5vw] md:text-sm uppercase tracking-widest font-bold hover:bg-gray-800 transition-colors flex items-center justify-center"
+                            >
+                                Add to Cart
+                            </button>
                         </div>
-                        <button onClick={() => addToCart(product, qty)} className="flex-grow bg-black text-white uppercase tracking-widest font-bold hover:bg-gray-800">Add to Cart</button>
                     </div>
                 </div>
+
+                {/* Related Products */}
+                {relatedProducts.length > 0 && (
+                    <div className="mt-12 md:mt-24 pt-8 md:pt-16 border-t border-gray-200">
+                        <h2 className="text-[5vw] md:text-3xl font-serif text-center mb-8 md:mb-16">You May Also Like</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-10">
+                            {relatedProducts.map(p => (
+                                <ProductCard key={p.id} item={p} />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
