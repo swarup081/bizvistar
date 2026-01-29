@@ -41,7 +41,7 @@ export default function FrostifyPage() {
                             </div>
 
                             {/* Center Text Box - Scaled Down */}
-                            <div className="absolute top-[10%] md:top-[20%] left-1/2 -translate-x-1/2 z-20 bg-white p-3 md:p-12 text-center shadow-xl max-w-[80vw] md:max-w-md w-full">
+                            <div className="absolute top-[20%] md:top-[20%] left-1/2 -translate-x-1/2 z-20 bg-white p-3 md:p-12 text-center shadow-xl max-w-[80vw] md:max-w-md w-full">
                                 <h1 className="text-[4vw] md:text-5xl font-serif text-[var(--color-primary)] leading-tight mb-2 md:mb-6">
                                     {businessData.hero.title}
                                 </h1>

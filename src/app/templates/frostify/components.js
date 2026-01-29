@@ -156,7 +156,7 @@ export const ProductCard = ({ item }) => {
 export const FAQItem = ({ question, answer }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <div className="bg-[#Fdf4f8] rounded-full mb-3 overflow-hidden border border-transparent">
+        <div className="bg-[#Fdf4f8] rounded-[2rem] mb-3 overflow-hidden border border-transparent">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full px-4 md:px-8 py-3 md:py-4 flex justify-between items-center text-left bg-[#fceef5] hover:bg-[#fae1ed] transition-colors"
