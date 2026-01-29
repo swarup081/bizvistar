@@ -11,7 +11,6 @@ export async function middleware(request) {
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
      console.error('[Middleware] Missing Supabase Environment Variables');
-     // Allow request to proceed (or fail downstream) to avoid infinite redirects on misconfiguration
      return response;
   }
 
@@ -46,7 +45,6 @@ export async function middleware(request) {
 
   if ((path.startsWith('/dashboard') || path.startsWith('/editor')) && !user) {
     const signInUrl = new URL('/sign-in', request.url);
-    // Append the current path as a 'redirect' param so the user can return
     signInUrl.searchParams.set('redirect', path);
     return NextResponse.redirect(signInUrl)
   }

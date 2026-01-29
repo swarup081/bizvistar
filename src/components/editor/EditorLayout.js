@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
+import OnboardingWizard from './onboarding/OnboardingWizard';
+import { getOnboardingStatus } from '@/app/actions/onboardingActions';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 
 // Import all template data
@@ -26,6 +28,7 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
+  const [showWizard, setShowWizard] = useState(false);
   
   // Get websiteId from URL query or prop
   const searchParams = useSearchParams();
@@ -78,6 +81,66 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
       setHistoryIndex(0);
     }
   }, [templateName, websiteId, defaultData, editorDataKey]); 
+
+  // Check Onboarding Status
+  useEffect(() => {
+    if (websiteId) {
+        const checkStatus = async () => {
+             try {
+                const { completed } = await getOnboardingStatus(websiteId);
+                if (!completed) setShowWizard(true);
+             } catch (err) {
+                 console.warn("Onboarding check failed:", err);
+             }
+        };
+        checkStatus();
+    }
+  }, [websiteId]);
+
+  const handleWizardComplete = (wizardData) => {
+    setShowWizard(false);
+    // Update local state with wizard data
+    setBusinessData(prev => {
+        const newData = JSON.parse(JSON.stringify(prev));
+
+        if (wizardData.name) {
+            newData.name = wizardData.name;
+            newData.logoText = wizardData.name; // Sync logo text
+
+            // Update Copyright
+            if (newData.footer?.copyright) {
+                const year = new Date().getFullYear();
+                newData.footer.copyright = `© ${year} ${wizardData.name}. All Rights Reserved`;
+            }
+        }
+
+        if (wizardData.whatsapp_number) {
+            newData.whatsappNumber = wizardData.whatsapp_number;
+        }
+
+        // Add Quick Products to 'allProducts' so they appear in editor
+        if (wizardData.products && wizardData.products.length > 0) {
+             const newProducts = wizardData.products.map(p => ({
+                 id: p.id || Date.now() + Math.random(),
+                 name: p.name,
+                 price: Number(p.price),
+                 description: p.description,
+                 image: p.image,
+                 category: '',
+                 stock: -1 // Unlimited
+             }));
+
+             // Append to existing products
+             newData.allProducts = [...(newData.allProducts || []), ...newProducts];
+        }
+
+        // Update history
+        setHistory(prevHist => [...prevHist, newData]);
+        setHistoryIndex(prevIdx => prevIdx + 1);
+
+        return newData;
+    });
+  };
 
 // Auto-save logic
 useEffect(() => {
@@ -282,6 +345,13 @@ useEffect(() => {
   return (
     <div className={`grid grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
       
+      {showWizard && (
+          <OnboardingWizard
+             websiteId={websiteId}
+             onComplete={handleWizardComplete}
+          />
+      )}
+
       {/* Column 1: Main Content (Nav + Preview) */}
       <div className={`flex flex-col overflow-hidden ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
         
