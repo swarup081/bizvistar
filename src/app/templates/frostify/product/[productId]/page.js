@@ -28,7 +28,7 @@ export default function FrostifyProductPage() {
                 {/* Main Product Display: 2 Cols on mobile (Shrink) */}
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-16 items-center mb-12 md:mb-24">
                     {/* Image */}
-                    <div className="bg-[#F9F4F6] rounded-tl-[40px] rounded-br-[40px] md:rounded-tl-[100px] md:rounded-br-[100px] overflow-hidden shadow-lg aspect-square">
+                    <div className="bg-[#F9F4F6] rounded-2xl overflow-hidden shadow-lg aspect-square">
                         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     </div>
                     

@@ -4,9 +4,19 @@ import { SpecialtyCard, FAQItem, WavySeparatorBottom, ProductCard } from './comp
 import Link from 'next/link';
 import { Editable } from '@/components/editor/Editable';
 import { ArrowRight, Star } from 'lucide-react';
+import { useState, useEffect } from 'react'; // Added import for slider logic
 
 export default function FrostifyPage() {
     const { businessData } = useTemplateContext();
+    const [currentReview, setCurrentReview] = useState(0);
+
+    // --- Slider Logic ---
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentReview((prev) => (prev + 1) % businessData.testimonials.items.length);
+        }, 3000); // Change every 3 seconds
+        return () => clearInterval(interval);
+    }, [businessData.testimonials.items.length]);
 
     if (!businessData) return <div>Loading...</div>;
 
@@ -18,43 +28,34 @@ export default function FrostifyPage() {
                 <section className="relative w-full pb-8 md:pb-20">
                     <div className="h-2 md:h-4 bg-[var(--color-primary)] w-full opacity-10"></div>
                     <div className="container mx-auto px-6 pt-6 md:pt-12 relative">
-                        {/* Mobile Optimized Hero: Flex Row Side-by-Side (Shrink) */}
-                        <div className="grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-4 h-auto md:h-[600px] items-center">
+                        {/*
+                            Hero Layout: "Shrink" Strategy
+                            We keep the 12-column grid but use vw units for heights and spacing on mobile to fit it in one view.
+                            Grid structure: Image 1 (5 cols) | Text (Overlapping) | Image 2 (6 cols)
+                        */}
+                        <div className="grid grid-cols-12 gap-2 md:gap-4 h-[60vw] md:h-[600px] items-center md:items-start relative">
 
-                            {/* Image 1 */}
-                            <div className="col-span-1 md:col-span-5 h-[40vw] md:h-[80%] self-end relative z-0 order-1 md:order-1">
-                                <img src={businessData.hero.image1} className="w-full h-full object-cover rounded-lg md:rounded-none" alt="Macarons" />
+                            {/* Image 1: Left */}
+                            <div className="col-span-5 h-[80%] self-end relative z-0">
+                                <img src={businessData.hero.image1} className="w-full h-full object-cover" alt="Macarons" />
                             </div>
 
-                            {/* Center Text (Absolute on desktop, relative on mobile) */}
-                            <div className="absolute top-[20%] left-1/2 -translate-x-1/2 z-20 bg-white p-4 md:p-12 text-center shadow-xl max-w-md w-[90%] md:w-full hidden md:block">
-                                <h1 className="text-4xl md:text-5xl font-serif text-[var(--color-primary)] leading-tight mb-6">
+                            {/* Center Text Box - Scaled Down */}
+                            <div className="absolute top-[10%] md:top-[20%] left-1/2 -translate-x-1/2 z-20 bg-white p-3 md:p-12 text-center shadow-xl max-w-[80vw] md:max-w-md w-full">
+                                <h1 className="text-[4vw] md:text-5xl font-serif text-[var(--color-primary)] leading-tight mb-2 md:mb-6">
                                     {businessData.hero.title}
                                 </h1>
-                                <p className="text-sm font-medium text-gray-600 mb-8 leading-relaxed">
+                                <p className="text-[2vw] md:text-sm font-medium text-gray-600 mb-3 md:mb-8 leading-relaxed">
                                     {businessData.hero.subtitle}
                                 </p>
-                                <Link href="/templates/frostify/shop" className="inline-block bg-[var(--color-secondary)] text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors">
+                                <Link href="/templates/frostify/shop" className="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 md:px-8 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors whitespace-nowrap">
                                     {businessData.hero.cta}
                                 </Link>
                             </div>
 
-                             {/* Mobile Text Block (Simplified) */}
-                            <div className="col-span-2 md:hidden order-3 text-center py-4 bg-white/90 backdrop-blur-sm rounded-xl mt-4 border border-[var(--color-primary)]/10">
-                                <h1 className="text-[6vw] font-serif text-[var(--color-primary)] leading-tight mb-2">
-                                    {businessData.hero.title}
-                                </h1>
-                                <p className="text-[2.5vw] font-medium text-gray-600 mb-4 leading-relaxed px-4">
-                                    {businessData.hero.subtitle}
-                                </p>
-                                <Link href="/templates/frostify/shop" className="inline-block bg-[var(--color-secondary)] text-white px-6 py-2 rounded-full text-[2.5vw] font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors">
-                                    {businessData.hero.cta}
-                                </Link>
-                            </div>
-
-                            {/* Image 2 */}
-                            <div className="col-span-1 md:col-span-6 md:col-start-7 h-[40vw] md:h-[70%] relative z-0 order-2 md:order-3">
-                                <img src={businessData.hero.image2} className="w-full h-full object-cover rounded-lg md:rounded-none" alt="" />
+                            {/* Image 2: Right */}
+                            <div className="col-span-6 col-start-7 h-[70%] relative z-0">
+                                <img src={businessData.hero.image2} className="w-full h-full object-cover" alt="" />
                             </div>
                         </div>
                     </div>
@@ -123,7 +124,7 @@ export default function FrostifyPage() {
                 </section>
             </Editable>
 
-            {/* --- TESTIMONIALS (UPDATED UI) --- */}
+            {/* --- TESTIMONIALS (UPDATED UI with Mobile Slider) --- */}
             <Editable focusId="testimonials">
                 <section className="py-12 md:py-24 bg-[#F9F4F6] border-t border-white">
                     <div className="container mx-auto px-6 max-w-6xl">
@@ -132,30 +133,67 @@ export default function FrostifyPage() {
                             <h2 className="text-[6vw] md:text-4xl font-serif text-[var(--color-primary)] mt-2 md:mt-3">{businessData.testimonials.title}</h2>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+                        {/* Mobile: Infinite Slider (1 item) */}
+                        <div className="block md:hidden relative h-[300px]"> {/* Fixed height container for slider */}
                             {businessData.testimonials.items.map((testimonial, index) => (
-                                <div key={index} className="bg-white p-4 md:p-8 rounded-tl-[20px] rounded-br-[20px] md:rounded-tl-[40px] md:rounded-br-[40px] shadow-sm hover:shadow-md transition-shadow relative">
-                                    <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 w-6 h-6 md:w-10 md:h-10 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
-                                        <span className="text-white text-lg md:text-2xl font-serif">”</span>
+                                <div
+                                    key={index}
+                                    className={`absolute top-0 left-0 w-full transition-opacity duration-1000 ease-in-out ${index === currentReview ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                                >
+                                    <div className="bg-white p-6 rounded-tl-[20px] rounded-br-[20px] shadow-sm relative mx-auto max-w-sm">
+                                        <div className="absolute -top-3 -right-3 w-8 h-8 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
+                                            <span className="text-white text-lg font-serif">”</span>
+                                        </div>
+
+                                        <div className="flex gap-1 mb-3">
+                                            {[1,2,3,4,5].map(i => <Star key={i} size={12} className="fill-[var(--color-accent)] text-[var(--color-accent)]" />)}
+                                        </div>
+
+                                        <p className="text-[var(--color-primary)] text-[3.5vw] leading-relaxed italic mb-4 line-clamp-4 min-h-[80px]">
+                                            "{testimonial.text}"
+                                        </p>
+
+                                        <div className="flex items-center gap-3 border-t border-gray-100 pt-4">
+                                            <img
+                                                src={testimonial.image}
+                                                alt={testimonial.author}
+                                                className="w-10 h-10 rounded-full object-cover"
+                                            />
+                                            <div className="overflow-hidden">
+                                                <h4 className="font-bold text-[3vw] text-[var(--color-primary)] uppercase tracking-wider truncate">{testimonial.author}</h4>
+                                                <span className="text-[2.5vw] text-gray-400">Happy Customer</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop: Grid (3 items) */}
+                        <div className="hidden md:grid grid-cols-3 gap-8">
+                            {businessData.testimonials.items.map((testimonial, index) => (
+                                <div key={index} className="bg-white p-8 rounded-tl-[40px] rounded-br-[40px] shadow-sm hover:shadow-md transition-shadow relative">
+                                    <div className="absolute -top-4 -right-4 w-10 h-10 bg-[var(--color-secondary)] rounded-full flex items-center justify-center">
+                                        <span className="text-white text-2xl font-serif">”</span>
                                     </div>
                                     
-                                    <div className="flex gap-1 mb-2 md:mb-4">
-                                        {[1,2,3,4,5].map(i => <Star key={i} size={10} className="fill-[var(--color-accent)] text-[var(--color-accent)] md:w-[14px] md:h-[14px]" />)}
+                                    <div className="flex gap-1 mb-4">
+                                        {[1,2,3,4,5].map(i => <Star key={i} size={14} className="fill-[var(--color-accent)] text-[var(--color-accent)]" />)}
                                     </div>
 
-                                    <p className="text-[var(--color-primary)] text-[2.5vw] md:text-base leading-tight md:leading-relaxed italic mb-4 md:mb-6 line-clamp-4">
+                                    <p className="text-[var(--color-primary)] leading-relaxed italic mb-6">
                                         "{testimonial.text}"
                                     </p>
 
-                                    <div className="flex items-center gap-2 md:gap-4 border-t border-gray-100 pt-4 md:pt-6">
+                                    <div className="flex items-center gap-4 border-t border-gray-100 pt-6">
                                         <img 
                                             src={testimonial.image} 
                                             alt={testimonial.author} 
-                                            className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover"
+                                            className="w-10 h-10 rounded-full object-cover"
                                         />
-                                        <div className="overflow-hidden">
-                                            <h4 className="font-bold text-[2vw] md:text-sm text-[var(--color-primary)] uppercase tracking-wider truncate">{testimonial.author}</h4>
-                                            <span className="text-[1.8vw] md:text-xs text-gray-400">Happy Customer</span>
+                                        <div>
+                                            <h4 className="font-bold text-sm text-[var(--color-primary)] uppercase tracking-wider">{testimonial.author}</h4>
+                                            <span className="text-xs text-gray-400">Happy Customer</span>
                                         </div>
                                     </div>
                                 </div>
