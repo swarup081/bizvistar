@@ -36,8 +36,12 @@ function WebsiteDashboardContent() {
         if (slugParam) {
            query = query.eq('site_slug', slugParam).single();
         } else {
-           // Default: Most recent
-           query = query.order('updated_at', { ascending: false }).limit(1).maybeSingle();
+           // Default: Most recent published site
+           query = query
+              .eq('is_published', true)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
         }
 
         const { data: site, error: dbError } = await query;
@@ -61,11 +65,30 @@ function WebsiteDashboardContent() {
                  }
              }
 
+             // --- INJECT REAL PRODUCTS & CATEGORIES ---
+             const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
+                 supabase
+                    .from('products')
+                    .select('*')
+                    .eq('website_id', site.id)
+                    .order('id', { ascending: false }),
+                 supabase
+                    .from('categories')
+                    .select('*')
+                    .eq('website_id', site.id)
+                    .order('name')
+             ]);
+
+             const finalData = site.draft_data || site.website_data || {};
+             // Overwrite with real DB data to remove demo data
+             finalData.allProducts = realProducts || [];
+             finalData.allCategories = realCategories || [];
+
              setWebsite({
                  id: site.id,
                  slug: site.site_slug,
                  templateName: templateName,
-                 data: site.draft_data || site.website_data
+                 data: finalData
              });
         } else {
             setError("You haven't created a website yet.");

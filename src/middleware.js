@@ -58,6 +58,7 @@ export async function middleware(request) {
       .select('id')
       .eq('user_id', user.id)
       .eq('is_published', true)
+      .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
