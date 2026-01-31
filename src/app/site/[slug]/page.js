@@ -80,6 +80,26 @@ export default async function LiveSitePage(props) {
   const templateName = site.template?.name;
   const websiteData = (isPreview && site.draft_data) ? site.draft_data : site.website_data;
 
+  // --- INJECT REAL PRODUCTS & CATEGORIES (Remove Demo Data) ---
+  const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
+     supabaseAdmin
+        .from("products")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("id", { ascending: false }),
+     supabaseAdmin
+        .from("categories")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("name")
+  ]);
+
+  if (websiteData) {
+    websiteData.allProducts = realProducts || [];
+    websiteData.allCategories = realCategories || [];
+  }
+  // -----------------------------------------------
+
   // Render selected template
   switch (templateName) {
     case "flara":

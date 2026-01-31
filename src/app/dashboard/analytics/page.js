@@ -79,6 +79,8 @@ export default function AnalyticsPage() {
         .from("websites")
         .select("id, site_slug")
         .eq("user_id", user.id)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
