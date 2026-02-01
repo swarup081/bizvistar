@@ -37,6 +37,28 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 
 
+  // State for dynamic scaling of desktop view on mobile screens
+  const [desktopScale, setDesktopScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (view === 'desktop' && window.innerWidth < 1024) {
+        // Calculate scale: (Viewport Width - Padding) / Desktop Width
+        // Padding is 40px, Desktop Width is 1024px
+        const scale = Math.min(1, (window.innerWidth - 40) / 1024);
+        setDesktopScale(scale);
+      } else {
+        setDesktopScale(1);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [view]);
+
   const defaultData = useMemo(() => {
     return JSON.parse(JSON.stringify(templateDataMap[templateName] || {}));
   }, [templateName]);
@@ -324,13 +346,31 @@ useEffect(() => {
           />
         </div>
 
-        <main className={`flex-grow flex items-center justify-center overflow-auto relative ${view === 'mobile' ? 'pt-8 lg:pt-0 pb-20 lg:pb-0' : ''}`}>
+        <main className={`flex-grow flex items-center justify-center overflow-auto relative bg-[#F3F4F6]`}>
           <div
-            className={`transition-all duration-300 ease-in-out bg-white shadow-lg rounded-xl overflow-hidden flex-shrink-0`}
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-top
+              ${view === 'mobile' ? 'lg:border-[8px] lg:border-gray-800 lg:rounded-[2.5rem]' : ''}
+              ${view === 'desktop' ? 'rounded-md' : 'rounded-none'}
+            `}
             style={{
-              width: view === 'desktop' ? '100%' : '375px',
-              height: view ==='desktop' ? '100%' : '812px',
-              minWidth: view === 'desktop' ? '1024px' : 'auto',
+              // Logic for Width
+              width: view === 'desktop'
+                ? '1024px' // Fixed desktop width
+                : '375px', // Fixed mobile width
+
+              // Logic for Height
+              height: view === 'desktop'
+                ? '100%' // Desktop takes full height
+                : '812px', // Mobile has fixed height
+
+              // Scaling Logic - Now using JavaScript state for valid CSS
+              transform: view === 'desktop'
+                 ? `scale(${desktopScale})` // Dynamic scale state
+                 : 'scale(0.9)', // Slight shrink for mobile-on-mobile as requested
+
+              // Responsive margins to handle the scaling "gap"
+              marginTop: view === 'desktop' ? '20px' : '20px',
+              marginBottom: '100px', // Space for bottom nav
             }}
           >
             <iframe

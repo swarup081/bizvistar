@@ -443,6 +443,15 @@ export default function EditorSidebar({
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
   const isMobile = useIsMobile();
 
+  // Watch for external accordion changes (e.g. from iframe click) to auto-expand sheet on mobile
+  useEffect(() => {
+    if (activeAccordion && isMobile) {
+      setIsMobileExpanded(true);
+      // We assume if a section is focused, we want the 'website' tab
+      onTabChange('website');
+    }
+  }, [activeAccordion, isMobile]); // Remove onTabChange from dep array to avoid loops, but it is stable from layout.
+
   const handleMobileTabChange = (tab) => {
     if (activeTab === tab && isMobileExpanded) {
         // Toggle off if clicking same tab? No, usually stays open.

@@ -224,7 +224,8 @@ export default function EditorTopNav({
               <Link href="/">
                 <Logo className="text-3xl cursor-pointer" />
               </Link>
-              <div className="flex items-center gap-2">
+              {/* Hide "Hire" and "Help" on mobile (< lg) */}
+              <div className="hidden lg:flex items-center gap-2">
                 <Tooltip
                   title="Hire a Professional"
                   description="Need help with design or content? Our experts are here to assist."
@@ -235,7 +236,7 @@ export default function EditorTopNav({
               </div>
             </>
           ) : (
-             <span className="text-xl font-bold text-gray-900">
+             <span className="text-xl font-bold text-gray-900 hidden lg:inline">
                Website Editor
              </span>
           )}
@@ -360,8 +361,8 @@ export default function EditorTopNav({
           </div>
           <VerticalSeparator />
         </div>
-        {/* Center: URL Bar with Tooltip */}
-        <div className="flex-grow min-w-0 mx-4">
+        {/* Center: URL Bar with Tooltip (Hidden on Mobile) */}
+        <div className="hidden lg:block flex-grow min-w-0 mx-4">
           <Tooltip
             title="Your Site Address"
             description="This is your temporary website URL. Click 'Connect Your Domain' to use a custom address."
