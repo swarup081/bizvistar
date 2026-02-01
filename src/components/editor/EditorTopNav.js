@@ -224,7 +224,8 @@ export default function EditorTopNav({
               <Link href="/">
                 <Logo className="text-3xl cursor-pointer" />
               </Link>
-              <div className="flex items-center gap-2">
+              {/* Hide "Hire" and "Help" on mobile (< lg) */}
+              <div className="hidden lg:flex items-center gap-2">
                 <Tooltip
                   title="Hire a Professional"
                   description="Need help with design or content? Our experts are here to assist."
@@ -235,7 +236,7 @@ export default function EditorTopNav({
               </div>
             </>
           ) : (
-             <span className="text-xl font-bold text-gray-900">
+             <span className="text-xl font-bold text-gray-900 hidden lg:inline">
                Website Editor
              </span>
           )}
@@ -258,15 +259,15 @@ export default function EditorTopNav({
 
           <div className="w-px h-5 bg-gray-300"></div> 
           
-          {/* --- SAVE STATUS --- */}
+          {/* --- SAVE STATUS (Hidden on Mobile, moved to Right) --- */}
           <div
-            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
-              saveStatus === 'Saved' ? 'text-gray-400' : 'text-blue-600'
+            className={`hidden lg:flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
+              saveStatus === 'Saved' ? 'text-gray-400' : 'text-[#8A63D2]'
             }`}
           >
             {saveStatus === 'Saved' && <Check size={16} />}
             {saveStatus === 'Saving...' && (
-              <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 text-[#8A63D2]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
@@ -331,7 +332,7 @@ export default function EditorTopNav({
                   <button
                     key={page.path}
                     onClick={() => handlePageSelect(page.path)}
-                    className={`w-full text-left px-3 py-2 text-sm ${activePage === page.path ? 'bg-blue-50 text-blue-600' : 'text-gray-700'} hover:bg-gray-100`}
+                    className={`w-full text-left px-3 py-2 text-sm ${activePage === page.path ? 'bg-[#8A63D2]/10 text-[#8A63D2]' : 'text-gray-700'} hover:bg-gray-100`}
                   >
                     {page.name}
                   </button>
@@ -344,7 +345,7 @@ export default function EditorTopNav({
             <Tooltip title="Desktop View" description="See how your site looks on a computer.">
               <button
                 onClick={() => onViewChange('desktop')}
-                className={`p-2 rounded-md ${view === 'desktop' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 '}`}
+                className={`p-2 rounded-md ${view === 'desktop' ? 'bg-[#8A63D2]/20 text-[#8A63D2]' : 'text-gray-500 '}`}
               >
                 <Monitor size={20} />
               </button>
@@ -352,7 +353,7 @@ export default function EditorTopNav({
             <Tooltip title="Mobile View" description="See how your site looks on a phone.">
               <button
                 onClick={() => onViewChange('mobile')}
-                className={`p-2 rounded-md ${view === 'mobile' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 '}`}
+                className={`p-2 rounded-md ${view === 'mobile' ? 'bg-[#8A63D2]/20 text-[#8A63D2]' : 'text-gray-500 '}`}
               >
                 <Smartphone size={20} />
               </button>
@@ -360,8 +361,8 @@ export default function EditorTopNav({
           </div>
           <VerticalSeparator />
         </div>
-        {/* Center: URL Bar with Tooltip */}
-        <div className="flex-grow min-w-0 mx-4">
+        {/* Center: URL Bar with Tooltip (Hidden on Mobile) */}
+        <div className="hidden lg:block flex-grow min-w-0 mx-4">
           <Tooltip
             title="Your Site Address"
             description="This is your temporary website URL. Click 'Connect Your Domain' to use a custom address."
@@ -372,8 +373,8 @@ export default function EditorTopNav({
             </div>
           </Tooltip>
         </div>
-        {/* Right: Tools (Undo/Redo) with conditional Tooltips */}
-        <div className="flex items-center gap-2 text-gray-600">
+        {/* Right: Tools (Undo/Redo) with conditional Tooltips (Hidden on Mobile) */}
+        <div className="hidden lg:flex items-center gap-2 text-gray-600">
           <VerticalSeparator />
           {canUndo ? (
             <Tooltip title="Undo" description="Undo your last action.">
@@ -413,6 +414,13 @@ export default function EditorTopNav({
               <IconRedo />
             </button>
           )}
+        </div>
+        {/* Mobile: Reset & Save (Replaces Undo/Redo) */}
+        <div className="flex lg:hidden items-center gap-3 pl-5 mx-auto">
+           
+            <div className="text-base text-[#8A63D2] font-bold">
+                {saveStatus}
+            </div>
         </div>
       </div>
 

@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Pencil,
   ChevronDown,
+  ChevronLeft, // Added
   CheckCircle,
   UploadCloud,
   Trash,
@@ -32,13 +33,25 @@ import {
   Menu, // Added Menu Icon
 } from 'lucide-react';
 
+// Hook to detect mobile view
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+};
+
 // Reusable tab button
 const MainTab = ({ icon: Icon, label, isActive, onClick }) => (
   <button
     onClick={onClick}
     className={`flex flex-col items-center gap-1 w-full py-4 px-2 font-medium ${
       isActive
-        ? 'border-b-2 border-blue-600 text-blue-600'
+        ? 'border-b-2 border-[#8A63D2] text-[#8A63D2]'
         : 'text-gray-500 hover:text-gray-900 transition-colors'
     }`}
   >
@@ -53,7 +66,7 @@ const SidebarLink = ({ icon: Icon, label, isActive = false, onClick }) => (
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm text-left ${
       isActive
-        ? 'bg-blue-50 text-blue-600'
+        ? 'bg-[#8A63D2]/10 text-[#8A63D2]'
         : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
     }`}
   >
@@ -83,7 +96,7 @@ const EditorInput = ({ label, value, onChange, isRequired = false, onFocus }) =>
         value={value || ''} // The box shows the *real* data
         onChange={onChange} // This updates the real data on every keystroke
         onFocus={onFocus} // <-- ADDED
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent"
       />
     </div>
   );
@@ -102,7 +115,7 @@ const EditorTextArea = ({ label, value, onChange, onFocus }) => {
         onChange={onChange} // This updates the real data on every keystroke
         onFocus={onFocus} // <-- ADDED
         rows={3}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent resize-none"
       />
     </div>
   );
@@ -160,7 +173,7 @@ const EditorSelect = ({
         <button
           type="button"
           onClick={handleOpen} // <-- Use custom open handler
-          className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex justify-between items-center"
+          className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent flex justify-between items-center"
         >
           <span className={selectedOption ? 'text-gray-900' : 'text-gray-500'}>
             {displayValue}
@@ -186,7 +199,7 @@ const EditorSelect = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search..."
-                  className="w-full pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8A63D2]"
                 />
               </div>
             </div>
@@ -197,9 +210,9 @@ const EditorSelect = ({
                   <li
                     key={option.value}
                     onClick={() => handleSelect(option.value)}
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 ${
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-[#8A63D2]/10 hover:text-[#8A63D2] ${
                       option.value === value
-                        ? 'bg-blue-50 text-blue-600'
+                        ? 'bg-[#8A63D2]/10 text-[#8A63D2]'
                         : 'text-gray-900'
                     }`}
                   >
@@ -274,8 +287,38 @@ const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
 };
 
 // Accordion UI
-const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children }) => {
+const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile, onCloseMobile }) => {
   const displayIcon = <Icon size={18} className="text-gray-500" />;
+
+  // Mobile Drill Down Render
+  if (isMobile && isOpen) {
+      return (
+          // We still render the trigger in the list (so it can be clicked to open), 
+          // BUT the content renders in a portal-like overlay.
+          // Wait, if it renders in the list, and the overlay covers the list, that's fine.
+          // The return here replaces the list item in the DOM, so if we return full screen, 
+          // the list item disappears and becomes full screen. That is one way.
+          // OR we return a fragment: The list item + The overlay.
+          // If we return just the overlay, the user loses context of the list (which is covered anyway).
+          // But when they close, we need to return to the list.
+          // React Re-render will handle that if isOpen becomes false.
+          
+          <div className="fixed inset-0 z-[80] bg-white flex flex-col animate-in slide-in-from-right duration-200">
+              <div className="flex items-center gap-3 p-4 border-b bg-white shadow-sm shrink-0">
+                  <button onClick={onCloseMobile} className="p-1 -ml-1">
+                      <ChevronLeft className="text-gray-600" size={24} />
+                  </button>
+                  <div className="flex items-center gap-2">
+                      <Icon size={20} className="text-[#8A63D2]" />
+                      <span className="font-semibold text-lg text-gray-900">{title}</span>
+                  </div>
+              </div>
+              <div className="flex-grow overflow-y-auto p-4 pb-24">
+                  {children}
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="border-b border-gray-200">
@@ -287,15 +330,17 @@ const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children }) => {
           {displayIcon}
           <span className="font-medium">{title}</span>
         </div>
-        <ChevronDown
-          size={18}
-          className={`text-gray-400 transition-transform ${
-            isOpen ? 'rotate-180' : 'rotate-0'
-          }`}
-        />
+        {!isMobile && (
+            <ChevronDown
+            size={18}
+            className={`text-gray-400 transition-transform ${
+                isOpen ? 'rotate-180' : 'rotate-0'
+            }`}
+            />
+        )}
       </button>
-      {isOpen && (
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
+      {!isMobile && isOpen && (
+        <div className="p-4 bg-[#8A63D2]/10 border-t border-gray-200">
           {children}
         </div>
       )}
@@ -311,7 +356,7 @@ const ColorSwatchButton = ({ palette, isSelected, onClick }) => (
     onClick={onClick}
     className={`block w-full text-left p-2 rounded-lg transition-all ${
       isSelected
-        ? 'bg-blue-50' // Selected state background
+        ? 'bg-[#8A63D2]/10' // Selected state background
         : 'bg-transparent hover:bg-gray-100' // Default and hover state
     }`}
   >
@@ -395,6 +440,28 @@ export default function EditorSidebar({
   onAccordionToggle
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const isMobile = useIsMobile();
+
+  // Watch for external accordion changes (e.g. from iframe click) to auto-expand sheet on mobile
+  // ONLY if it is a NEW interaction (activeAccordion changes to something not null)
+  // We don't want it to open just because we resized to mobile.
+  useEffect(() => {
+    if (activeAccordion && isMobile) {
+      setIsMobileExpanded(true);
+      // We assume if a section is focused, we want the 'website' tab
+      onTabChange('website');
+    }
+  }, [activeAccordion]); // Removed isMobile from deps to prevent auto-opening on resize
+
+  const handleMobileTabChange = (tab) => {
+    if (activeTab === tab && isMobileExpanded) {
+        // Toggle off if clicking same tab? No, usually stays open.
+        // Let's keep it open.
+    }
+    onTabChange(tab);
+    setIsMobileExpanded(true);
+  };
 
   const handleDataChange = (path, value) => {
     setBusinessData((prev) => {
@@ -617,33 +684,10 @@ export default function EditorSidebar({
     (p) => !homepageProductIDs.includes(p.value)
   );
 
-  return (
-    <div className="w-80 flex flex-col h-full bg-white">
-      {/* Main Tab Navigation */}
-      <div className="flex items-center border-b border-gray-200">
-        <MainTab
-          icon={LayoutDashboard}
-          label="Website"
-          isActive={activeTab === 'website'}
-          onClick={() => onTabChange('website')}
-        />
-        <MainTab
-          icon={Paintbrush} // <-- ICON CHANGED HERE
-          label="Theme"
-          isActive={activeTab === 'theme'}
-          onClick={() => onTabChange('theme')}
-        />
-        <MainTab
-          icon={Settings}
-          label="Settings"
-          isActive={activeTab === 'settings'}
-          onClick={() => onTabChange('settings')}
-        />
-      </div>
-
-      {/* Conditional Content Area */}
-      <div className="flex-grow overflow-y-auto">
-        {/* WEBSITE Panel (NEW ACCORDION UI) */}
+  // Helper to render content (shared between Desktop and Mobile)
+  const renderPanelContent = () => (
+    <>
+        {/* WEBSITE Panel */}
         {activeTab === 'website' && (
           <section>
             <AccordionItem
@@ -651,6 +695,8 @@ export default function EditorSidebar({
               icon={Info}
               isOpen={activeAccordion === 'global'}
               onClick={() => toggleAccordion('global')}
+              isMobile={isMobile}
+              onCloseMobile={() => toggleAccordion(null)}
             >
               {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
               {businessData?.infoBar !== undefined && (
@@ -723,6 +769,8 @@ export default function EditorSidebar({
                 icon={ImageIcon}
                 isOpen={activeAccordion === 'hero'}
                 onClick={() => toggleAccordion('hero')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -765,6 +813,8 @@ export default function EditorSidebar({
                 icon={ImageIcon}
                 isOpen={activeAccordion === 'hero'}
                 onClick={() => toggleAccordion('hero')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Line 1"
@@ -824,6 +874,8 @@ export default function EditorSidebar({
                 icon={Home}
                 isOpen={activeAccordion === 'about'}
                 onClick={() => toggleAccordion('about')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -867,6 +919,8 @@ export default function EditorSidebar({
                 icon={Home}
                 isOpen={activeAccordion === 'about'}
                 onClick={() => toggleAccordion('about')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Heading"
@@ -918,6 +972,8 @@ export default function EditorSidebar({
                 icon={Home}
                 isOpen={activeAccordion === 'about'}
                 onClick={() => toggleAccordion('about')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -987,6 +1043,8 @@ export default function EditorSidebar({
                   icon={Home}
                   isOpen={activeAccordion === 'about'}
                   onClick={() => toggleAccordion('about')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
                 >
                   <EditorInput
                     label="Title"
@@ -1014,6 +1072,8 @@ export default function EditorSidebar({
                 icon={Calendar}
                 isOpen={activeAccordion === 'events'}
                 onClick={() => toggleAccordion('events')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Section Title"
@@ -1057,6 +1117,8 @@ export default function EditorSidebar({
                 icon={Menu}
                 isOpen={activeAccordion === 'menu'}
                 onClick={() => toggleAccordion('menu')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Badge Text"
@@ -1125,6 +1187,8 @@ export default function EditorSidebar({
                 icon={Columns}
                 isOpen={activeAccordion === 'feature2'}
                 onClick={() => toggleAccordion('feature2')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -1176,6 +1240,8 @@ export default function EditorSidebar({
                 icon={Megaphone}
                 isOpen={activeAccordion === 'cta'}
                 onClick={() => toggleAccordion('cta')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -1219,6 +1285,8 @@ export default function EditorSidebar({
                 icon={Megaphone}
                 isOpen={activeAccordion === 'cta'}
                 onClick={() => toggleAccordion('cta')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -1252,6 +1320,8 @@ export default function EditorSidebar({
                 icon={TrendingUp}
                 isOpen={activeAccordion === 'stats'}
                 onClick={() => toggleAccordion('stats')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Title"
@@ -1311,6 +1381,8 @@ export default function EditorSidebar({
                 icon={MessageSquare}
                 isOpen={activeAccordion === 'testimonials'}
                 onClick={() => toggleAccordion('testimonials')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorTextArea
                   label="Testimonial 1 Quote"
@@ -1355,6 +1427,8 @@ export default function EditorSidebar({
                 icon={MessageSquare}
                 isOpen={activeAccordion === 'reviews'}
                 onClick={() => toggleAccordion('reviews')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Section Title"
@@ -1388,6 +1462,8 @@ export default function EditorSidebar({
               icon={ShoppingBag}
               isOpen={activeAccordion === 'products'}
               onClick={() => toggleAccordion('products')}
+              isMobile={isMobile}
+              onCloseMobile={() => toggleAccordion(null)}
             >
                 {/* --- CATEGORY MANAGER --- */}
                 <h4 className="text-base font-semibold text-gray-800 mb-2">Categories</h4>
@@ -1414,11 +1490,11 @@ export default function EditorSidebar({
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
                         onFocus={() => handleSectionFocus('products')}
-                        className="flex-grow px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-grow px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A63D2]"
                     />
                     <button
                         onClick={handleAddCategory}
-                        className="flex-shrink-0 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                        className="flex-shrink-0 px-3 py-2 bg-[#8A63D2] text-white text-sm font-medium rounded-md hover:bg-[#7c59bd]"
                     >
                         Add
                     </button>
@@ -1464,7 +1540,7 @@ export default function EditorSidebar({
                 ))}
                 <button
                     onClick={handleAddProduct}
-                    className="w-full mt-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                    className="w-full mt-2 px-3 py-2 bg-[#8A63D2] text-white text-sm font-medium rounded-md hover:bg-[#7c59bd]"
                 >
                     Add New Product
                 </button>
@@ -1477,6 +1553,8 @@ export default function EditorSidebar({
                 icon={LayoutDashboard}
                 isOpen={activeAccordion === 'collection'}
                 onClick={() => toggleAccordion('collection')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <p className="text-xs text-gray-500 mb-3">
                   Select the products to feature on your homepage.
@@ -1685,6 +1763,8 @@ export default function EditorSidebar({
                 icon={Pencil}
                 isOpen={activeAccordion === 'blog'}
                 onClick={() => toggleAccordion('blog')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Section Heading"
@@ -1774,6 +1854,8 @@ export default function EditorSidebar({
                 icon={Pencil}
                 isOpen={activeAccordion === 'blog'}
                 onClick={() => toggleAccordion('blog')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Section Title"
@@ -1829,6 +1911,8 @@ export default function EditorSidebar({
                 icon={FileText}
                 isOpen={activeAccordion === 'footer'}
                 onClick={() => toggleAccordion('footer')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <h4 className="text-base font-semibold text-gray-800 mb-2">
                   "About" Links
@@ -1887,6 +1971,8 @@ export default function EditorSidebar({
                 icon={FileText}
                 isOpen={activeAccordion === 'footer'}
                 onClick={() => toggleAccordion('footer')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                   Footer Content
@@ -1941,6 +2027,8 @@ export default function EditorSidebar({
                 icon={FileText}
                 isOpen={activeAccordion === 'footer'}
                 onClick={() => toggleAccordion('footer')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Promo Title"
@@ -2025,6 +2113,8 @@ export default function EditorSidebar({
                 icon={FileText}
                 isOpen={activeAccordion === 'footer'}
                 onClick={() => toggleAccordion('footer')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
               >
                 <EditorInput
                   label="Made By Text"
@@ -2118,8 +2208,89 @@ export default function EditorSidebar({
             </section>
           </div>
         )}
+    </>
+  );
 
+  return (
+    <div className={`flex flex-col h-full bg-white ${isMobile ? 'w-full' : 'w-80'}`}>
+      
+      {/* Desktop Tabs (Top) */}
+      {!isMobile && (
+        <div className="flex items-center border-b border-gray-200">
+            <MainTab
+            icon={LayoutDashboard}
+            label="Website"
+            isActive={activeTab === 'website'}
+            onClick={() => onTabChange('website')}
+            />
+            <MainTab
+            icon={Paintbrush}
+            label="Theme"
+            isActive={activeTab === 'theme'}
+            onClick={() => onTabChange('theme')}
+            />
+            <MainTab
+            icon={Settings}
+            label="Settings"
+            isActive={activeTab === 'settings'}
+            onClick={() => onTabChange('settings')}
+            />
+        </div>
+      )}
+
+      {/* Content Area */}
+      <div className={`flex-grow overflow-y-auto ${isMobile ? 'pb-[70px]' : ''}`}>
+           {/* Mobile Content Wrapper - Animate Slide Up */}
+           {isMobile && (
+              <div className={`fixed bottom-[60px] left-0 w-full bg-white rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 z-50 flex flex-col border-t border-gray-200
+                  ${isMobileExpanded ? 'h-[85vh] translate-y-0' : 'h-0 translate-y-full overflow-hidden'}
+              `}>
+                  {/* Header for Sheet */}
+                  <div className="flex items-center justify-between p-4 border-b">
+                      <h3 className="font-semibold text-lg capitalize">{activeTab}</h3>
+                      <button onClick={() => setIsMobileExpanded(false)}>
+                          <X size={24} />
+                      </button>
+                  </div>
+                  
+                  {/* Scrollable Content */}
+                  <div className="flex-grow overflow-y-auto p-4">
+                      {renderPanelContent()}
+                  </div>
+              </div>
+           )}
+
+           {/* Desktop Content - Render normally */}
+           {!isMobile && (
+              <div className="flex-grow overflow-y-auto">
+                 {renderPanelContent()}
+              </div>
+           )}
       </div>
+
+      {/* Mobile Tabs (Bottom) */}
+      {isMobile && (
+         <div className="flex items-center justify-around border-t border-gray-200 h-[60px] bg-white fixed bottom-0 w-full z-[70]">
+            <MainTab
+            icon={LayoutDashboard}
+            label="Website"
+            isActive={activeTab === 'website'}
+            onClick={() => handleMobileTabChange('website')}
+            />
+            <MainTab
+            icon={Paintbrush}
+            label="Theme"
+            isActive={activeTab === 'theme'}
+            onClick={() => handleMobileTabChange('theme')}
+            />
+            <MainTab
+            icon={Settings}
+            label="Settings"
+            isActive={activeTab === 'settings'}
+            onClick={() => handleMobileTabChange('settings')}
+            />
+         </div>
+      )}
       
     </div>
   );

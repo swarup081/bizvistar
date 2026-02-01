@@ -22,10 +22,19 @@ const templateDataMap = {
 
 // Main component updated to read site_id
 export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
-  const [view, setView] = useState('desktop');
+  // Initialize view state lazily to match window width on client
+  // Default to 'desktop' for SSR safety, then update in effect
+  const [view, setView] = useState('desktop'); 
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
+
+  // Detect default view on mount
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setView('mobile');
+    }
+  }, []);
   
   // Get websiteId from URL query or prop
   const searchParams = useSearchParams();
@@ -36,6 +45,52 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
 
   const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 
+  
+  // State for dynamic scaling
+  const [desktopScale, setDesktopScale] = useState(1);
+  const [mobileScale, setMobileScale] = useState(1);
+  const [isMobileViewport, setIsMobileViewport] = useState(false); // Safe SSR State
+  const mainContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Safe check for mobile viewport
+      const isMobile = window.innerWidth < 1024;
+      setIsMobileViewport(isMobile);
+
+      const container = mainContainerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+
+      // 1. Desktop View Scaling (on Mobile)
+      if (view === 'desktop' && isMobile) {
+        // Scale 1024px to fit within the container width (minus padding)
+        const scale = Math.min(1, (containerWidth - 40) / 1024);
+        setDesktopScale(scale);
+      } else {
+        setDesktopScale(1);
+      }
+
+      // 2. Mobile View Scaling (on Desktop/Laptop)
+      if (view === 'mobile') {
+        // Scale 812px height to fit within container height (minus vertical padding)
+        // We want some breathing room (e.g. 40px top + 40px bottom = 80px)
+        const availableHeight = containerHeight - 80;
+        const scale = Math.min(1, availableHeight / 812);
+        setMobileScale(scale);
+      } else {
+        setMobileScale(1);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [view]);
 
   const defaultData = useMemo(() => {
     return JSON.parse(JSON.stringify(templateDataMap[templateName] || {}));
@@ -299,12 +354,12 @@ useEffect(() => {
   };
 
   return (
-    <div className={`grid grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+    <div className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
       
       {/* Column 1: Main Content (Nav + Preview) */}
-      <div className={`flex flex-col overflow-hidden ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+      <div className={`flex flex-col overflow-hidden relative ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
         
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 z-20 relative">
           <EditorTopNav
             mode={mode}
             siteSlug={siteSlug}
@@ -324,12 +379,31 @@ useEffect(() => {
           />
         </div>
 
-        <main className="flex-grow flex items-center justify-center overflow-auto ">
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] ${view === 'mobile' && isMobileViewport ? 'p-0' : 'p-4 lg:p-0'}`}>
           <div
-            className={`transition-all duration-300 ease-in-out bg-white shadow-lg rounded-xl overflow-hidden flex-shrink-0`}
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-center
+              ${view === 'mobile' && !isMobileViewport ? 'rounded-3xl border border-gray-300' : ''} 
+              ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
+            `}
             style={{
-              width: view === 'desktop' ? '100%' : '375px',
-              height: view ==='desktop' ? '100%' : '812px',
+              // Logic for Width
+              width: view === 'desktop' 
+                ? (isMobileViewport ? '1024px' : '100%') // Fixed on mobile, Fluid on Desktop
+                : (isMobileViewport ? '100%' : '375px'), // 100% on actual mobile, Fixed on Desktop
+              
+              // Logic for Height
+              height: view === 'desktop'
+                ? '100%' // Desktop takes full height
+                : (isMobileViewport ? '100%' : '812px'), // 100% on actual mobile, Fixed on Desktop
+              
+              // Scaling Logic
+              transform: view === 'desktop'
+                 ? (isMobileViewport ? `scale(${desktopScale})` : 'none') 
+                 : (isMobileViewport ? 'none' : `scale(${mobileScale})`), // No scale on actual mobile
+
+              // Margins
+              marginTop: '0', 
+              marginBottom: view === 'desktop' && isMobileViewport ? '100px' : '0',
             }}
           >
             <iframe
@@ -343,8 +417,8 @@ useEffect(() => {
         </main>
       </div>
 
-      {/* Column 2: Sidebar (Full Height) */}
-      <div className={`bg-white border-l border-gray-200 overflow-y-auto ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+      {/* Column 2: Sidebar (Full Height / Mobile Bottom) */}
+      <div className={`bg-white border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 fixed bottom-0 left-0 w-full z-40 lg:z-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none`}>
         <EditorSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
