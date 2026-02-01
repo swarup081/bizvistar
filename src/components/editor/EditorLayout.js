@@ -299,12 +299,12 @@ useEffect(() => {
   };
 
   return (
-    <div className={`grid grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+    <div className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
       
       {/* Column 1: Main Content (Nav + Preview) */}
-      <div className={`flex flex-col overflow-hidden ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+      <div className={`flex flex-col overflow-hidden relative ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
         
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 z-20 relative">
           <EditorTopNav
             mode={mode}
             siteSlug={siteSlug}
@@ -324,12 +324,13 @@ useEffect(() => {
           />
         </div>
 
-        <main className="flex-grow flex items-center justify-center overflow-auto ">
+        <main className={`flex-grow flex items-center justify-center overflow-auto relative ${view === 'mobile' ? 'pt-8 lg:pt-0 pb-20 lg:pb-0' : ''}`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg rounded-xl overflow-hidden flex-shrink-0`}
             style={{
               width: view === 'desktop' ? '100%' : '375px',
               height: view ==='desktop' ? '100%' : '812px',
+              minWidth: view === 'desktop' ? '1024px' : 'auto',
             }}
           >
             <iframe
@@ -343,8 +344,8 @@ useEffect(() => {
         </main>
       </div>
 
-      {/* Column 2: Sidebar (Full Height) */}
-      <div className={`bg-white border-l border-gray-200 overflow-y-auto ${mode === 'dashboard' ? 'h-full' : 'h-screen'}`}>
+      {/* Column 2: Sidebar (Full Height / Mobile Bottom) */}
+      <div className={`bg-white border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 fixed bottom-0 left-0 w-full z-40 lg:z-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none`}>
         <EditorSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
