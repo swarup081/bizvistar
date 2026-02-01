@@ -71,10 +71,10 @@ const categories = [
 
       // --- NEW: Page Definitions ---
       pages: [
-        { name: 'Home', path: '/templates/avenix' },
-        { name: 'Shop', path: '/templates/avenix/shop' },
-        { name: 'Product (Example)', path: '/templates/avenix/product/1' },
-        { name: 'Checkout', path: '/templates/avenix/checkout' }
+        { name: 'Home', path: '' },
+        { name: 'Shop', path: '/shop' },
+        { name: 'Product (Example)', path: '/product/1' },
+        { name: 'Checkout', path: '/checkout' }
       ],
 
       // --- ADDED SECTION IDs FOR EDITOR NAVIGATION ---
@@ -99,13 +99,13 @@ const categories = [
       // --- NAVIGATION (Links Updated) ---
       navigation: {
           main: [
-              { href: "/templates/avenix/shop", label: "SHOP" },
-              { href: "/templates/avenix#story", label: "OUR STORY" },
-              { href: "/templates/avenix#blogs", label: "BLOGS" },
+              { href: "/shop", label: "SHOP" },
+              { href: "#story", label: "OUR STORY" },
+              { href: "#blogs", label: "BLOGS" },
           ],
           secondary: [
-              { href: "/templates/avenix/shop", label: "COLLECTION" },
-              { href: "/templates/avenix#contact", label: "CONTACT US" },
+              { href: "/shop", label: "COLLECTION" },
+              { href: "#contact", label: "CONTACT US" },
           ]
       },
   
@@ -226,11 +226,11 @@ const categories = [
           },
           links: {
               main: [
-                  { name: "About us", url: "/templates/avenix#story" },
-                  { name: "Categories", url: "/templates/avenix/shop" },
-                  { name: "Blogs", url: "/templates/avenix#blogs" },
-                  { name: "Shop", url: "/templates/avenix/shop" },
-                  { name: "Contact us", url: "/templates/avenix#contact" },
+                  { name: "About us", url: "#story" },
+                  { name: "Categories", url: "/shop" },
+                  { name: "Blogs", url: "#blogs" },
+                  { name: "Shop", url: "/shop" },
+                  { name: "Contact us", url: "#contact" },
               ],
               utility: [
                   { name: "Licensing", url: "#" },

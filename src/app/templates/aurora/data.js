@@ -85,9 +85,9 @@ export const businessData = {
     allProducts: allProducts,
     
     pages: [
-      { name: 'Home', path: '/templates/aurora' },
-      { name: 'Shop', path: '/templates/aurora/shop' },
-      { name: 'Checkout', path: '/templates/aurora/checkout' }
+      { name: 'Home', path: '' },
+      { name: 'Shop', path: '/shop' },
+      { name: 'Checkout', path: '/checkout' }
     ],
 
     // IDs for Editor Focus
@@ -104,8 +104,8 @@ export const businessData = {
 
     navigation: {
         main: [
-            { href: "/templates/aurora", label: "HOME" },
-            { href: "/templates/aurora/shop", label: "SHOP" },
+            { href: "", label: "HOME" },
+            { href: "/shop", label: "SHOP" },
         ],
         secondary: []
     },
@@ -225,10 +225,10 @@ export const businessData = {
         copyright: "© 2026 Aurora. All rights reserved.",
         links: {
             main: [
-                { name: "Home", url: "/templates/aurora" },
-                { name: "About", url: "/templates/aurora#story" },
-                { name: "Shop", url: "/templates/aurora/shop" },
-                { name: "Journal", url: "/templates/aurora#blog" }
+                { name: "Home", url: "" },
+                { name: "About", url: "#story" },
+                { name: "Shop", url: "/shop" },
+                { name: "Journal", url: "#blog" }
             ],
             utility: [
                 { name: "Terms & Conditions", url: "#" },

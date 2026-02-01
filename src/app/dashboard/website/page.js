@@ -79,7 +79,9 @@ function WebsiteDashboardContent() {
                     .order('name')
              ]);
 
-             const finalData = site.draft_data || site.website_data || {};
+             const rawData = site.draft_data || site.website_data || {};
+             const finalData = { ...rawData };
+             
              // Overwrite with real DB data to remove demo data
              finalData.allProducts = realProducts || [];
              finalData.allCategories = realCategories || [];

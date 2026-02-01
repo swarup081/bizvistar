@@ -43,8 +43,27 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
 
   const [businessData, setBusinessData] = useState(() => {
      // Priority: initialData (from DB) > defaultData
-     // Note: LocalStorage logic is in useEffect, but we might want to initialize with initialData first
-     return initialData || defaultData;
+     let data = initialData || defaultData;
+     
+     // Inject storeName from Get Started if available and we are starting fresh (using defaultData)
+     if (!initialData && typeof window !== 'undefined') {
+         const storedName = localStorage.getItem('storeName');
+         if (storedName && storedName !== 'My New Site') {
+             data = {
+                 ...data,
+                 name: storedName,
+                 logoText: storedName,
+                 // Update footer copyright if it exists
+                 footer: data.footer ? {
+                     ...data.footer,
+                     copyright: data.footer.copyright 
+                        ? data.footer.copyright.replace(/202[0-9] [A-Za-z]+,/, `202${new Date().getFullYear().toString().slice(-1)} ${storedName},`) 
+                        : `© ${new Date().getFullYear()} ${storedName},`
+                 } : undefined
+             };
+         }
+     }
+     return data;
   });
   
   const [history, setHistory] = useState([initialData || defaultData]);

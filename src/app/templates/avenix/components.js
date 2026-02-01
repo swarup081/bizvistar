@@ -50,7 +50,15 @@ const IconYouTube = () => (
 
 export const Header = ({ cartCount, onCartClick }) => {
     // Get business data from context
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const path = url.replace('/templates/avenix', '');
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : ''; 
+        return `${cleanBasePath}${path}`;
+    };
 
     return (
         <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full font-sans">
@@ -58,7 +66,7 @@ export const Header = ({ cartCount, onCartClick }) => {
                 {/* Left Nav */}
                 <nav className="hidden md:flex items-center gap-8">
                     {businessData.navigation.main.map(navItem => (
-                        <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
+                        <a key={navItem.label} href={resolveLink(navItem.href)} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
                             {navItem.label}
                         </a>
                     ))}
@@ -66,7 +74,7 @@ export const Header = ({ cartCount, onCartClick }) => {
                 
                 {/* Center Logo */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <a href="/templates/avenix" className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif">
+                    <a href={resolveLink("")} className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif">
                         {businessData.logoText}
                     </a>
                 </div>
@@ -75,7 +83,7 @@ export const Header = ({ cartCount, onCartClick }) => {
                 <div className="flex-1 flex justify-end items-center gap-4 md:gap-8">
                     <nav className="hidden md:flex items-center gap-8">
                         {businessData.navigation.secondary.map(navItem => (
-                            <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
+                            <a key={navItem.label} href={resolveLink(navItem.href)} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
                                 {navItem.label}
                             </a>
                         ))}
@@ -126,7 +134,7 @@ export const BlogCard = ({ post, size = 'small' }) => (
 // --- DYNAMIC PRODUCT CARD (Avenix Style) ---
 export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart(); // Get the addItem function from context
-    const { businessData } = useTemplateContext(); // Get businessData from context
+    const { businessData, basePath } = useTemplateContext(); // Get businessData from context
 
     const handleAddToCart = (e) => {
         e.preventDefault(); // Stop the link from navigating
@@ -136,12 +144,13 @@ export const ProductCard = ({ item, templateName }) => {
     
     // Find the category name from the master list
     const category = businessData.categories.find(c => c.id === item.category);
+    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
         <div className="group text-center h-full flex flex-col justify-between">
             {/* Top section: Image, Title, Price */}
             <div>
-                <a href={`/templates/${templateName}/product/${item.id}`} className="block bg-white overflow-hidden relative aspect-[4/5] rounded-xl md:rounded-2xl">
+                <a href={productUrl} className="block bg-white overflow-hidden relative aspect-[4/5] rounded-xl md:rounded-2xl">
                     <img 
                         src={item.image} 
                         alt={item.name} 
@@ -150,7 +159,7 @@ export const ProductCard = ({ item, templateName }) => {
                     />
                 </a>
                 <div className="mt-2 md:mt-6 text-center">
-                    <a href={`/templates/${templateName}/product/${item.id}`} className="hover:opacity-70">
+                    <a href={productUrl} className="hover:opacity-70">
                         <h3 className="text-[3vw] md:text-lg font-medium text-brand-text font-sans tracking-wider uppercase">{item.name}</h3>
                     </a>
                     {category && (
@@ -163,7 +172,7 @@ export const ProductCard = ({ item, templateName }) => {
             {/* --- FIX: Bottom section: Horizontal Buttons (Always visible on mobile & desktop) --- */}
             <div className="mt-2 md:mt-4 px-0 md:px-1 flex gap-1 md:gap-2 opacity-100 pb-2">
                  <a 
-                    href={`/templates/${templateName}/product/${item.id}`}
+                    href={productUrl}
                     className="flex-1 text-center block bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:bg-gray-200"
                 >
                     View
@@ -182,7 +191,15 @@ export const ProductCard = ({ item, templateName }) => {
 
 export const Footer = () => {
     // Get business data from context
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const path = url.replace('/templates/avenix', '');
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : ''; 
+        return `${cleanBasePath}${path}`;
+    };
 
     return (
         <footer id="contact" className="py-12 md:py-20 pb-8 md:pb-12 bg-brand-secondary text-brand-bg font-sans">
@@ -219,7 +236,7 @@ export const Footer = () => {
                         <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links.main.map(link => (
                                 <li key={link.name}>
-                                    <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
+                                    <a href={resolveLink(link.url)} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
                                 </li>
                             ))}
                         </ul>
@@ -231,7 +248,7 @@ export const Footer = () => {
                         <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links.utility.map(link => (
                                 <li key={link.name}>
-                                    <a href={link.url} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
+                                    <a href={resolveLink(link.url)} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
                                 </li>
                             ))}
                         </ul>
