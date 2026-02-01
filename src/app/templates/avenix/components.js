@@ -55,8 +55,9 @@ export const Header = ({ cartCount, onCartClick }) => {
     const resolveLink = (url) => {
         if (!url) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        const cleanPath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanPath}${url}`;
+        const path = url.replace('/templates/avenix', '');
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanBasePath}${path}`;
     };
 
     return (
@@ -195,8 +196,9 @@ export const Footer = () => {
     const resolveLink = (url) => {
         if (!url) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        const cleanPath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanPath}${url}`;
+        const path = url.replace('/templates/avenix', '');
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanBasePath}${path}`;
     };
 
     return (
