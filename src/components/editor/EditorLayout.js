@@ -40,10 +40,15 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   // State for dynamic scaling
   const [desktopScale, setDesktopScale] = useState(1);
   const [mobileScale, setMobileScale] = useState(1);
+  const [isMobileViewport, setIsMobileViewport] = useState(false); // Safe SSR State
   const mainContainerRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
+      // Safe check for mobile viewport
+      const isMobile = window.innerWidth < 1024;
+      setIsMobileViewport(isMobile);
+
       const container = mainContainerRef.current;
       if (!container) return;
 
@@ -51,7 +56,7 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
       const containerHeight = container.offsetHeight;
 
       // 1. Desktop View Scaling (on Mobile)
-      if (view === 'desktop' && window.innerWidth < 1024) {
+      if (view === 'desktop' && isMobile) {
         // Scale 1024px to fit within the container width (minus padding)
         const scale = Math.min(1, (containerWidth - 40) / 1024);
         setDesktopScale(scale);
@@ -365,31 +370,31 @@ useEffect(() => {
           />
         </div>
 
-        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-4 lg:p-0`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] ${view === 'mobile' && isMobileViewport ? 'p-0' : 'p-4 lg:p-0'}`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-center
-              ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''}
+              ${view === 'mobile' && !isMobileViewport ? 'rounded-3xl border border-gray-300' : ''}
               ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
             `}
             style={{
               // Logic for Width
               width: view === 'desktop'
-                ? (window.innerWidth < 1024 ? '1024px' : '100%') // Fixed on mobile, Fluid on Desktop
-                : '375px', // Fixed mobile width
+                ? (isMobileViewport ? '1024px' : '100%') // Fixed on mobile, Fluid on Desktop
+                : (isMobileViewport ? '100%' : '375px'), // 100% on actual mobile, Fixed on Desktop
 
               // Logic for Height
               height: view === 'desktop'
                 ? '100%' // Desktop takes full height
-                : '812px', // Mobile has fixed height
+                : (isMobileViewport ? '100%' : '812px'), // 100% on actual mobile, Fixed on Desktop
 
               // Scaling Logic
               transform: view === 'desktop'
-                 ? (window.innerWidth < 1024 ? `scale(${desktopScale})` : 'none') // Scale down on mobile, none on desktop
-                 : `scale(${mobileScale})`, // Scale down mobile mockup if height is small
+                 ? (isMobileViewport ? `scale(${desktopScale})` : 'none')
+                 : (isMobileViewport ? 'none' : `scale(${mobileScale})`), // No scale on actual mobile
 
-              // Margins for mobile view only
-              marginTop: view === 'desktop' ? '0' : '0',
-              marginBottom: view === 'desktop' && window.innerWidth < 1024 ? '100px' : '0',
+              // Margins
+              marginTop: '0',
+              marginBottom: view === 'desktop' && isMobileViewport ? '100px' : '0',
             }}
           >
             <iframe

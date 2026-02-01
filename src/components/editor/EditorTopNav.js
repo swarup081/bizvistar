@@ -259,9 +259,9 @@ export default function EditorTopNav({
 
           <div className="w-px h-5 bg-gray-300"></div> 
           
-          {/* --- SAVE STATUS --- */}
+          {/* --- SAVE STATUS (Hidden on Mobile, moved to Right) --- */}
           <div
-            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
+            className={`hidden lg:flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
               saveStatus === 'Saved' ? 'text-gray-400' : 'text-[#8A63D2]'
             }`}
           >
@@ -373,8 +373,8 @@ export default function EditorTopNav({
             </div>
           </Tooltip>
         </div>
-        {/* Right: Tools (Undo/Redo) with conditional Tooltips */}
-        <div className="flex items-center gap-2 text-gray-600">
+        {/* Right: Tools (Undo/Redo) with conditional Tooltips (Hidden on Mobile) */}
+        <div className="hidden lg:flex items-center gap-2 text-gray-600">
           <VerticalSeparator />
           {canUndo ? (
             <Tooltip title="Undo" description="Undo your last action.">
@@ -414,6 +414,18 @@ export default function EditorTopNav({
               <IconRedo />
             </button>
           )}
+        </div>
+        {/* Mobile: Reset & Save (Replaces Undo/Redo) */}
+        <div className="flex lg:hidden items-center gap-2">
+            <button
+              onClick={() => setIsRestartModalOpen(true)}
+              className="text-sm font-medium text-gray-600"
+            >
+              Reset
+            </button>
+            <div className="text-xs text-[#8A63D2] font-medium bg-[#8A63D2]/10 px-2 py-1 rounded">
+                {saveStatus}
+            </div>
         </div>
       </div>
 
