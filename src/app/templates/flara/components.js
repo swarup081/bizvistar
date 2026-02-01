@@ -43,17 +43,27 @@ export const ShippingIcon = () => (
 export const Header = ({ business, cartCount, onCartClick }) => {
     const { basePath } = useTemplateContext();
 
+    // Helper to resolve links with basePath
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        // Ensure we don't double-slash or mis-path. `basePath` might be `/site/slug` or `.`
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        // If url already starts with basePath (legacy data), clean it? No, assumed data is clean now.
+        return `${cleanPath}${url}`;
+    };
+
     return (
         <header className="bg-brand-bg/90 backdrop-blur-sm sticky top-0 z-40 w-full">
             <div className="container mx-auto px-6 py-5 flex justify-between items-center">
-                <a href={basePath || "/"} className="text-3xl font-bold text-brand-text font-serif tracking-wider">
+                <a href={resolveLink("")} className="text-3xl font-bold text-brand-text font-serif tracking-wider">
                     {business.logoText}
                 </a>
                 <nav className="hidden md:flex space-x-10">
                     {business.navigation.map(navItem => (
                         <a 
-                          key={navItem.href} 
-                          href={navItem.href.startsWith('#') ? navItem.href : `${basePath}${navItem.href.replace('/templates/flara', '')}`} 
+                          key={navItem.label}
+                          href={resolveLink(navItem.href)}
                           className="inactive-nav hover:text-brand-secondary transition-colors text-sm font-medium tracking-widest uppercase"
                         >
                             {navItem.label}
@@ -85,11 +95,12 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
     };
     
     const category = businessData.categories.find(c => c.id === item.category);
+    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
         <div className="group text-center h-full flex flex-col justify-between border border-transparent hover:border-brand-primary/50 transition-all">
             <div>
-                <a href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] w-full ">
+                <a href={productUrl} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] w-full ">
                     <img 
                         src={item.image || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
                         alt={item.name} 
@@ -99,7 +110,7 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
                 </a>
                 <div className="mt-5 px-1">
                     <h3 className="text-xl font-serif font-medium text-brand-text">
-                        <a href={`${basePath}/product/${item.id}`} className="hover:text-brand-secondary">
+                        <a href={productUrl} className="hover:text-brand-secondary">
                             {item.name}
                         </a>
                     </h3>
@@ -112,7 +123,7 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
 
             <div className="mt-4 px-1 space-y-2 pb-2">
                  <a 
-                    href={`${basePath}/product/${item.id}`}
+                    href={productUrl}
                     className="w-full text-center block bg-brand-primary text-brand-text px-4 py-2.5 font-semibold text-sm hover:bg-brand-primary/80 transition-colors "
                 >
                     View Details
@@ -134,8 +145,10 @@ export const Footer = () => {
     const { businessData, basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url || url.startsWith('#') || url.startsWith('http')) return url;
-        return url.replace('/templates/flara', basePath || '');
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
     };
 
     return (

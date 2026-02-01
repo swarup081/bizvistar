@@ -40,10 +40,10 @@ export const businessData = {
 
     // --- NEW: Page Definitions ---
     pages: [
-      { name: 'Home', path: '/templates/flara' },
-      { name: 'Shop', path: '/templates/flara/shop' },
-      { name: 'Product (Example)', path: '/templates/flara/product/1' },
-      { name: 'Checkout', path: '/templates/flara/checkout' }
+      { name: 'Home', path: '' },
+      { name: 'Shop', path: '/shop' },
+      { name: 'Product (Example)', path: '/product/1' },
+      { name: 'Checkout', path: '/checkout' }
     ],
 
     // --- THEME SECTION ---
@@ -57,8 +57,8 @@ export const businessData = {
 
     // --- NAVIGATION (LINKS UPDATED) ---
     navigation: [
-        { href: "/templates/flara", label: "Home" },
-        { href: "/templates/flara/shop", label: "Shop" },
+        { href: "", label: "Home" },
+        { href: "/shop", label: "Shop" },
     ],
 
     // --- PAGE SECTIONS ---
@@ -121,8 +121,8 @@ export const businessData = {
             { name: "Sustainability", url: "#" }
           ],
           categories: [
-            { name: "Candles", url: "/templates/flara/shop" },
-            { name: "Apparel", url: "/templates/flara/shop" }
+            { name: "Candles", url: "/shop" },
+            { name: "Apparel", url: "/shop" }
           ],
           getHelp: [
             { name: "Contact Us", url: "#" },
