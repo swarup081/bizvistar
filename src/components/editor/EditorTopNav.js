@@ -416,14 +416,14 @@ export default function EditorTopNav({
           )}
         </div>
         {/* Mobile: Reset & Save (Replaces Undo/Redo) */}
-        <div className="flex lg:hidden items-center gap-2">
+        <div className="flex lg:hidden items-center gap-3 pl-2">
             <button
               onClick={() => setIsRestartModalOpen(true)}
               className="text-sm font-medium text-gray-600"
             >
               Reset
             </button>
-            <div className="text-xs text-[#8A63D2] font-medium bg-[#8A63D2]/10 px-2 py-1 rounded">
+            <div className="text-base text-[#8A63D2] font-bold">
                 {saveStatus}
             </div>
         </div>

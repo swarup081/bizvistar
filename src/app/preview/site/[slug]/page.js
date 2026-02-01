@@ -1,50 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { Monitor, Smartphone } from 'lucide-react';
 
 // --- Reusable SVG Icons ---
 const BackIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-  </svg>
-);
-
-const DesktopIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="w-8 h-10"
-  >
-    <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9h16Z" />
-    <path d="M12 16v4" />
-    <path d="M8 20h8" />
-  </svg>
-);
-
-const MobileIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="w-6 h-6"
-  >
-    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-    <path d="M12 18h.01" />
   </svg>
 );
 
@@ -54,6 +18,57 @@ export default function SitePreviewPage() {
   const { slug } = params; 
 
   const [view, setView] = useState('desktop');
+
+  // State for dynamic scaling (Reusing EditorLayout logic)
+  const [desktopScale, setDesktopScale] = useState(1);
+  const [mobileScale, setMobileScale] = useState(1);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const mainContainerRef = useRef(null);
+
+  // Initialize defaults
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setView('mobile');
+    }
+  }, []);
+
+  // Resize handler for scaling
+  useEffect(() => {
+    const handleResize = () => {
+      // Safe check for mobile viewport
+      const isMobile = window.innerWidth < 1024;
+      setIsMobileViewport(isMobile);
+
+      const container = mainContainerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+
+      // 1. Desktop View Scaling (on Mobile)
+      if (view === 'desktop' && isMobile) {
+        const scale = Math.min(1, (containerWidth - 40) / 1024);
+        setDesktopScale(scale);
+      } else {
+        setDesktopScale(1);
+      }
+
+      // 2. Mobile View Scaling (on Desktop/Laptop)
+      if (view === 'mobile') {
+        const availableHeight = containerHeight - 80;
+        const scale = Math.min(1, availableHeight / 812);
+        setMobileScale(scale);
+      } else {
+        setMobileScale(1);
+      }
+    };
+
+    // Run on mount
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [view]);
 
   // Point to the live site route with preview query
   const siteUrl = `/site/${slug}?preview=true`;
@@ -79,23 +94,21 @@ export default function SitePreviewPage() {
               </Link>
 
               {/* Device Toggles */}
-              <div className="flex items-center gap-3 justify-items-start ">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setView('desktop')}
-                  className={`p-2 transition-colors ${view === 'desktop' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-700'}`}
+                  className={`p-2 rounded-md transition-colors ${view === 'desktop' ? 'bg-[#8A63D2]/20 text-[#8A63D2]' : 'text-gray-500 hover:text-gray-700'}`}
                   aria-label="Desktop view"
                 >
-                  <DesktopIcon />
+                  <Monitor size={20} />
                 </button>
                 
-                <div className="h-6 w-px bg-gray-300"></div>
-
                 <button
                   onClick={() => setView('mobile')}
-                  className={`p-2 transition-colors ${view === 'mobile' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-700'}`}
+                  className={`p-2 rounded-md transition-colors ${view === 'mobile' ? 'bg-[#8A63D2]/20 text-[#8A63D2]' : 'text-gray-500 hover:text-gray-700'}`}
                   aria-label="Mobile view"
                 >
-                  <MobileIcon />
+                  <Smartphone size={20} />
                 </button>
               </div>
             </div>
@@ -104,35 +117,40 @@ export default function SitePreviewPage() {
         </div>
       </header>
       
-      {/* --- Iframe Content Area --- */}
-      <main className="flex-grow flex items-center justify-center overflow-hidden bg-gray-50">
-          
-          {/* Desktop View */}
-          <div 
-              className={`w-full h-full transition-all duration-300 ease-in-out ${view === 'desktop' ? 'opacity-100' : 'opacity-0 hidden'}`}
-           >
-              <iframe
-                  src={siteUrl}
-                  title={`${slug} Desktop Preview`}
-                  className="w-full h-full bg-white border border-gray-200 shadow-lg"
-              />
-          </div>
-
-          {/* Mobile Simulator View */}
+      {/* --- Iframe Content Area (Same Logic as EditorLayout) --- */}
+      <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] ${view === 'mobile' && isMobileViewport ? 'p-0' : 'p-4 lg:p-0'}`}>
           <div
-            className={`transition-all duration-300 ease-in-out ${view === 'mobile' ? 'opacity-100' : 'opacity-0 hidden'}`}
-          >
-            <div className="w-[320px] h-[660px] bg-black border-8 border-black rounded-[40px] shadow-2xl overflow-hidden relative">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-xl z-20"></div>
-              <iframe
-                src={siteUrl}
-                title={`${slug} Mobile Preview`}
-                className="w-full h-full bg-white rounded-[32px] overflow-hidden"
-              />
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-gray-300 rounded-full"></div>
-            </div>
-          </div>
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-center
+              ${view === 'mobile' && !isMobileViewport ? 'rounded-3xl border border-gray-300' : ''}
+              ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
+            `}
+            style={{
+              // Logic for Width
+              width: view === 'desktop'
+                ? (isMobileViewport ? '1024px' : '100%')
+                : (isMobileViewport ? '100%' : '375px'),
 
+              // Logic for Height
+              height: view === 'desktop'
+                ? '100%'
+                : (isMobileViewport ? '100%' : '812px'),
+
+              // Scaling Logic
+              transform: view === 'desktop'
+                 ? (isMobileViewport ? `scale(${desktopScale})` : 'none')
+                 : (isMobileViewport ? 'none' : `scale(${mobileScale})`),
+
+              // Margins
+              marginTop: '0',
+              marginBottom: view === 'desktop' && isMobileViewport ? '100px' : '0',
+            }}
+          >
+            <iframe
+              src={siteUrl}
+              title={`${slug} Preview`}
+              className="w-full h-full border-0"
+            />
+          </div>
       </main>
     </div>
   );

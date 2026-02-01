@@ -22,10 +22,19 @@ const templateDataMap = {
 
 // Main component updated to read site_id
 export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
+  // Initialize view state lazily to match window width on client
+  // Default to 'desktop' for SSR safety, then update in effect
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
+
+  // Detect default view on mount
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setView('mobile');
+    }
+  }, []);
   
   // Get websiteId from URL query or prop
   const searchParams = useSearchParams();
