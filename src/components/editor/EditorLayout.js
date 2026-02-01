@@ -37,18 +37,37 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 
 
-  // State for dynamic scaling of desktop view on mobile screens
+  // State for dynamic scaling
   const [desktopScale, setDesktopScale] = useState(1);
+  const [mobileScale, setMobileScale] = useState(1);
+  const mainContainerRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
+      const container = mainContainerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+
+      // 1. Desktop View Scaling (on Mobile)
       if (view === 'desktop' && window.innerWidth < 1024) {
-        // Calculate scale: (Viewport Width - Padding) / Desktop Width
-        // Padding is 40px, Desktop Width is 1024px
-        const scale = Math.min(1, (window.innerWidth - 40) / 1024);
+        // Scale 1024px to fit within the container width (minus padding)
+        const scale = Math.min(1, (containerWidth - 40) / 1024);
         setDesktopScale(scale);
       } else {
         setDesktopScale(1);
+      }
+
+      // 2. Mobile View Scaling (on Desktop/Laptop)
+      if (view === 'mobile') {
+        // Scale 812px height to fit within container height (minus vertical padding)
+        // We want some breathing room (e.g. 40px top + 40px bottom = 80px)
+        const availableHeight = containerHeight - 80;
+        const scale = Math.min(1, availableHeight / 812);
+        setMobileScale(scale);
+      } else {
+        setMobileScale(1);
       }
     };
 
@@ -346,16 +365,16 @@ useEffect(() => {
           />
         </div>
 
-        <main className={`flex-grow flex items-center justify-center overflow-auto relative bg-[#F3F4F6]`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-4 lg:p-0`}>
           <div
-            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-top
-              ${view === 'mobile' ? 'lg:border-[8px] lg:border-gray-800 lg:rounded-[2.5rem]' : ''}
-              ${view === 'desktop' ? 'rounded-md' : 'rounded-none'}
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-center
+              ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''}
+              ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
             `}
             style={{
               // Logic for Width
               width: view === 'desktop'
-                ? '1024px' // Fixed desktop width
+                ? (window.innerWidth < 1024 ? '1024px' : '100%') // Fixed on mobile, Fluid on Desktop
                 : '375px', // Fixed mobile width
 
               // Logic for Height
@@ -363,14 +382,14 @@ useEffect(() => {
                 ? '100%' // Desktop takes full height
                 : '812px', // Mobile has fixed height
 
-              // Scaling Logic - Now using JavaScript state for valid CSS
+              // Scaling Logic
               transform: view === 'desktop'
-                 ? `scale(${desktopScale})` // Dynamic scale state
-                 : 'scale(0.9)', // Slight shrink for mobile-on-mobile as requested
+                 ? (window.innerWidth < 1024 ? `scale(${desktopScale})` : 'none') // Scale down on mobile, none on desktop
+                 : `scale(${mobileScale})`, // Scale down mobile mockup if height is small
 
-              // Responsive margins to handle the scaling "gap"
-              marginTop: view === 'desktop' ? '20px' : '20px',
-              marginBottom: '100px', // Space for bottom nav
+              // Margins for mobile view only
+              marginTop: view === 'desktop' ? '0' : '0',
+              marginBottom: view === 'desktop' && window.innerWidth < 1024 ? '100px' : '0',
             }}
           >
             <iframe
