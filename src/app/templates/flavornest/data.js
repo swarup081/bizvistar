@@ -75,9 +75,9 @@ export const businessData = {
 
     // --- NEW: Page Definitions ---
     pages: [
-        { name: 'Home', path: '/templates/flavornest' },
-        { name: 'Shop', path: '/templates/flavornest/shop' },
-        { name: 'Checkout', path: '/templates/flavornest/checkout' }
+        { name: 'Home', path: '' },
+        { name: 'Shop', path: '/shop' },
+        { name: 'Checkout', path: '/checkout' }
     ],
 
     // --- SECTION ID MAP (FIXED) ---
@@ -101,8 +101,8 @@ export const businessData = {
 
     // --- NAVIGATION ---
     navigation: [
-        { href: "/templates/flavornest", label: "Home" },
-        { href: "/templates/flavornest/shop", label: "Shop" },
+        { href: "", label: "Home" },
+        { href: "/shop", label: "Shop" },
         { href: "#reviews", label: "Reviews" },
         { href: "#about", label: "About" },
     ],

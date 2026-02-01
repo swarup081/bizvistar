@@ -3,16 +3,26 @@ import { useCart } from './cartContext.js';
 import { useTemplateContext } from './templateContext.js'; // <-- 1. IMPORT THE CONTEXT
 
 // --- Header Component ---
-export const Header = ({ business, cartCount, onCartClick }) => (
+export const Header = ({ business, cartCount, onCartClick }) => {
+    const { basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
+    };
+
+    return (
     <header className="bg-brand-bg/80 backdrop-blur-sm sticky top-0 z-40 w-full border-b border-brand-primary">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/templates/flavornest" className="flex items-center space-x-3">
+            <a href={resolveLink("")} className="flex items-center space-x-3">
                 <img src={business.logo} alt={`${business.logoText} Logo`} className="h-12 w-12 rounded-full border-2 border-brand-primary shadow-sm" />
                 <h1 className="text-2xl font-bold text-brand-secondary font-serif">{business.logoText}</h1>
             </a>
             <nav className="hidden md:flex space-x-8">
                 {business.navigation.map(navItem => (
-                    <a key={navItem.href} href={navItem.href} className="inactive-nav hover:active-nav transition-colors">{navItem.label}</a>
+                    <a key={navItem.label} href={resolveLink(navItem.href)} className="inactive-nav hover:active-nav transition-colors">{navItem.label}</a>
                 ))}
             </nav>
             <button onClick={onCartClick} className="btn btn-primary px-4 py-2 rounded-full flex items-center space-x-2">
@@ -22,6 +32,7 @@ export const Header = ({ business, cartCount, onCartClick }) => (
         </div>
     </header>
 );
+};
 
 // --- Product Card Component (CORRECTED & REDESIGNED) ---
 export const ProductCard = ({ item }) => {
@@ -71,18 +82,19 @@ export const ProductCard = ({ item }) => {
 };
 
 // --- Footer Component ---
-// --- 2. UPDATED TO USE CONTEXT & ADDED ID ---
 export const Footer = () => {
-    // Get businessData from the context
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
 
-    // Guard against data not being loaded yet
+    // Note: This specific template footer only has external links in the data,
+    // so no dynamic internal link resolution is strictly needed here based on the current data structure.
+    // However, if internal links were added, we would use basePath.
+
     if (!businessData?.footer) {
         return <footer id="contact" className="bg-brand-secondary text-white py-8">...</footer>;
     }
 
     return (
-        <footer id="contact" className="bg-brand-secondary text-white py-8"> {/* <-- ID ADDED */}
+        <footer id="contact" className="bg-brand-secondary text-white py-8">
             <div className="container mx-auto px-6 text-center">
                 <p>{businessData.footer.copyright} | Made By <a href={businessData.footer.madeByLink} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-primary transition-colors">{businessData.footer.madeBy}</a></p>
                 <p className="mt-2">{businessData.footer.socialText} <a href={businessData.footer.socialLink} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-primary transition-colors">Instagram</a></p>

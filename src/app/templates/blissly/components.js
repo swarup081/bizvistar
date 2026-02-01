@@ -53,13 +53,23 @@ export const CartIcon = () => (
 
 
 // --- Header Component ---
-export const Header = ({ business, cartCount, onCartClick }) => (
+export const Header = ({ business, cartCount, onCartClick }) => {
+    const { basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
+    };
+
+    return (
     <header className="bg-brand-bg sticky top-0 z-40 w-full font-sans border-b border-brand-primary/50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center relative">
             {/* Left Nav */}
             <nav className="hidden md:flex items-center gap-6">
                 {business.navigation.map(navItem => (
-                    <a key={navItem.label} href={navItem.href} className="text-sm font-medium tracking-wide text-brand-text hover:opacity-70 transition-opacity">
+                    <a key={navItem.label} href={resolveLink(navItem.href)} className="text-sm font-medium tracking-wide text-brand-text hover:opacity-70 transition-opacity">
                         {navItem.label}
                     </a>
                 ))}
@@ -67,14 +77,14 @@ export const Header = ({ business, cartCount, onCartClick }) => (
             
             {/* Center Logo - Scaled Text on Mobile */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <a href="/templates/blissly" className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif whitespace-nowrap">
+                <a href={resolveLink("")} className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif whitespace-nowrap">
                     {business.logoText}
                 </a>
             </div>
             
              {/* Right Nav & Icons */}
             <div className="flex-1 flex justify-end items-center gap-6">
-                 <a href={business.headerButton.href} className="hidden lg:inline-block bg-brand-secondary text-brand-bg px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+                 <a href={resolveLink(business.headerButton.href)} className="hidden lg:inline-block bg-brand-secondary text-brand-bg px-6 py-3 text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
                     {business.headerButton.text}
                 </a>
                 <button onClick={onCartClick} className="relative text-brand-text hover:text-brand-secondary transition-colors">
@@ -93,7 +103,7 @@ export const Header = ({ business, cartCount, onCartClick }) => (
 // --- Product Card Component ---
 export const ProductCard = ({ item, templateName }) => {
     const { addItem } = useCart();
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -102,12 +112,13 @@ export const ProductCard = ({ item, templateName }) => {
     };
     
     const category = businessData.categories.find(c => c.id === item.category);
+    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
         <div className="group h-full flex flex-col border border-brand-primary/50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md">
             
             {/* Image */}
-            <a href={`/templates/${templateName}/product/${item.id}`} className="block aspect-[4/5] bg-brand-primary overflow-hidden">
+            <a href={productUrl} className="block aspect-[4/5] bg-brand-primary overflow-hidden">
                 <img 
                     src={item.image} 
                     alt={item.name} 
@@ -123,7 +134,7 @@ export const ProductCard = ({ item, templateName }) => {
                         <p className="text-brand-text/60 text-[2vw] md:text-sm truncate">{category.name}</p>
                     )}
                     <h4 className="text-[3vw] md:text-xl font-bold text-brand-text font-serif mt-1">
-                        <a href={`/templates/${templateName}/product/${item.id}`} className="hover:text-brand-secondary line-clamp-1">{item.name}</a>
+                        <a href={productUrl} className="hover:text-brand-secondary line-clamp-1">{item.name}</a>
                     </h4>
                     <p className="text-brand-secondary text-[2.5vw] md:text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
                 </div>
@@ -131,7 +142,7 @@ export const ProductCard = ({ item, templateName }) => {
                 {/* Actions (Always visible) */}
                 <div className="mt-2 md:mt-4 flex gap-2">
                      <a 
-                        href={`/templates/${templateName}/product/${item.id}`}
+                        href={productUrl}
                         className="flex-1 bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-2.5 font-semibold text-[2vw] md:text-sm rounded-md hover:bg-brand-secondary/20 transition-colors text-center flex items-center justify-center"
                     >
                         View
@@ -151,7 +162,14 @@ export const ProductCard = ({ item, templateName }) => {
 
 // --- Footer Component ---
 export const Footer = () => {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
+    };
 
     if (!businessData?.footer) {
         return <footer id="contact" className="py-20 pb-12 bg-brand-bg text-brand-text border-t border-brand-primary/50"></footer>;
@@ -190,7 +208,7 @@ export const Footer = () => {
                         <ul className="space-y-2 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links?.pages?.map(link => (
                                 <li key={link.name}>
-                                    <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
+                                    <a href={resolveLink(link.url)} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
                                 </li>
                             ))}
                         </ul>
@@ -202,7 +220,7 @@ export const Footer = () => {
                         <ul className="space-y-2 md:space-y-3 text-[2.5vw] md:text-sm">
                             {businessData.footer.links?.utility?.map(link => (
                                 <li key={link.name}>
-                                    <a href={link.url} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
+                                    <a href={resolveLink(link.url)} className="text-brand-text/70 hover:text-brand-text transition-colors">{link.name}</a>
                                 </li>
                             ))}
                         </ul>

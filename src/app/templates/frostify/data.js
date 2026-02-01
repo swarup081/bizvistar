@@ -102,9 +102,9 @@ export const businessData = {
     allProducts: allProducts,
     
     pages: [
-      { name: 'Home', path: '/templates/frostify' },
-      { name: 'Menu', path: '/templates/frostify/shop' },
-      { name: 'Contact', path: '/templates/frostify#contact' }
+      { name: 'Home', path: '' },
+      { name: 'Menu', path: '/shop' },
+      { name: 'Contact', path: '#contact' }
     ],
 
     // IDs for Editor Focus

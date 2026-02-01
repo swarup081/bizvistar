@@ -23,10 +23,17 @@ export const FeatureIcon = ({ name, size = 32 }) => {
 
 // --- HEADER (Matches Eglanto Layout) ---
 export const Header = () => {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     const { cartCount, openCart } = useCart();
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
+    };
 
     if (typeof window !== "undefined") {
         window.addEventListener("scroll", () => {
@@ -41,28 +48,23 @@ export const Header = () => {
                 {/* LEFT: Navigation Links */}
                 <nav className="hidden lg:flex items-center gap-10">
                     {['Home', 'Shop'].map((item) => (
-                        <Link 
+                        <a
                             key={item} 
-                            href={item === 'Home' ? '/templates/aurora' : `/templates/aurora/${item.toLowerCase()}`}
-                            className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors ${
-                                (item === 'Home' && pathname === '/templates/aurora') ||
-                                (item === 'Shop' && pathname.startsWith('/templates/aurora/shop'))
-                                    ? 'text-[#0F1C23] border-b-2 border-[#0F1C23] pb-1'
-                                    : 'text-gray-500 hover:text-[#0F1C23]'
-                            }`}
+                            href={resolveLink(item === 'Home' ? "" : `/shop`)}
+                            className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors text-gray-500 hover:text-[#0F1C23]`}
                         >
                             {item}
-                        </Link>
+                        </a>
                     ))}
                 </nav>
 
                 {/* CENTER: Logo */}
-                <Link href="/templates/aurora" className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
+                <a href={resolveLink("")} className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
                    
                     <span className="font-serif text-[6vw] md:text-3xl text-[#0F1C23] tracking-tight font-medium">
                         {businessData.name}
                     </span>
-                </Link>
+                </a>
 
                 {/* RIGHT: Icons */}
                 <div className="flex items-center gap-4 md:gap-8 text-[#0F1C23]">
@@ -84,6 +86,9 @@ export const Header = () => {
 // --- PRODUCT CARD ---
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
+    const { basePath } = useTemplateContext();
+    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
+
     return (
         <div className="group cursor-pointer flex flex-col gap-3 md:gap-5 h-full">
             <div className="relative overflow-hidden aspect-[3/4] bg-[#F5F5F5]">
@@ -94,19 +99,19 @@ export const ProductCard = ({ item }) => {
                 />
             </div>
             <div className="text-center flex flex-col gap-1 md:gap-2 flex-grow">
-                <Link href={`/templates/aurora/product/${item.id}`} className="flex-grow">
+                <a href={productUrl} className="flex-grow">
                     <h3 className="font-serif text-[3.5vw] md:text-lg text-[#0F1C23] leading-tight mb-1 md:mb-2 group-hover:text-[#D4A373] transition-colors">{item.name}</h3>
-                </Link>
+                </a>
                 <span className="text-[2.5vw] md:text-sm font-medium text-gray-500 tracking-wide">${item.price.toFixed(2)}</span>
                 
                 {/* Always Visible Buttons */}
                 <div className="mt-auto flex gap-2">
-                     <Link
-                        href={`/templates/aurora/product/${item.id}`}
+                     <a
+                        href={productUrl}
                         className="flex-1 border border-[#0F1C23]/20 py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] text-[#0F1C23] hover:border-[#0F1C23] transition-colors flex items-center justify-center"
                     >
                         View
-                    </Link>
+                    </a>
                     <button 
                         onClick={(e) => { e.preventDefault(); addItem(item); }}
                         className="flex-1 bg-[#0F1C23] text-white py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#D4A373] transition-colors"
@@ -260,7 +265,15 @@ export const FAQAccordion = ({ question, answer }) => {
 
 // --- FOOTER ---
 export const Footer = () => {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
+
+    const resolveLink = (url) => {
+        if (!url) return "#";
+        if (url.startsWith('#') || url.startsWith('http')) return url;
+        const cleanPath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanPath}${url}`;
+    };
+
     return (
         <footer className="bg-[#EBE5DF] pt-12 md:pt-24 pb-6 md:pb-12">
             <div className="container mx-auto px-6 lg:px-12">
@@ -274,7 +287,7 @@ export const Footer = () => {
                         <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[#0F1C23]">Explore</h4>
                         <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-gray-500 uppercase">
                             {businessData.footer.links.main.map(link => (
-                                <li key={link.name}><a href={link.url} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
+                                <li key={link.name}><a href={resolveLink(link.url)} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
                             ))}
                         </ul>
                     </div>
@@ -283,7 +296,7 @@ export const Footer = () => {
                         <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[#0F1C23]">Legal</h4>
                         <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-gray-500 uppercase">
                              {businessData.footer.links.utility.map(link => (
-                                <li key={link.name}><a href={link.url} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
+                                <li key={link.name}><a href={resolveLink(link.url)} className="hover:text-[#0F1C23] transition-colors">{link.name}</a></li>
                             ))}
                         </ul>
                     </div>

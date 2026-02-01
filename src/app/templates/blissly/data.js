@@ -88,10 +88,10 @@ export const businessData = {
 
     // --- NEW: Page Definitions ---
     pages: [
-        { name: 'Home', path: '/templates/blissly' },
-        { name: 'Shop', path: '/templates/blissly/shop' },
-        { name: 'Product (Example)', path: '/templates/blissly/product/1' },
-        { name: 'Checkout', path: '/templates/blissly/checkout' }
+        { name: 'Home', path: '' },
+        { name: 'Shop', path: '/shop' },
+        { name: 'Product (Example)', path: '/product/1' },
+        { name: 'Checkout', path: '/checkout' }
     ],
 
     // --- THIS IS THE NEWLY ADDED BLOCK ---
@@ -117,8 +117,8 @@ export const businessData = {
 
     // --- NAVIGATION (UPDATED) ---
     navigation: [
-        { href: "/templates/blissly", label: "Home" },
-        { href: "/templates/blissly/shop", label: "Shop" },
+        { href: "", label: "Home" },
+        { href: "/shop", label: "Shop" },
         { href: "#about", label: "About" },
         { href: "#events", label: "Events" },
         { href: "#contact", label: "Contact" },
@@ -127,7 +127,7 @@ export const businessData = {
     // --- HEADER BUTTON ---
     headerButton: {
         text: "Order Online",
-        href: "/templates/blissly/shop" // Links to the new shop page
+        href: "/shop" // Links to the new shop page
     },
 
     // --- PAGE SECTIONS (Original content preserved) ---
@@ -236,8 +236,8 @@ export const businessData = {
         },
         links: {
             pages: [
-                { name: "Home", url: "/templates/blissly" },
-                { name: "Shop", url: "/templates/blissly/shop" },
+                { name: "Home", url: "" },
+                { name: "Shop", url: "/shop" },
                 { name: "About", url: "#about" },
                 { name: "Events", url: "#events" }
             ],
