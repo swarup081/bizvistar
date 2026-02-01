@@ -427,7 +427,15 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       if (templateError) throw new Error(`Could not find template: ${templateError.message}`);
       if (!template) throw new Error('Template not found in database.');
 
-      const storeName = localStorage.getItem('storeName') || 'My New Site';
+      let storeName = localStorage.getItem('storeName');
+
+      // If storeName is missing or generic, ask the user
+      if (!storeName || storeName === 'My New Site' || storeName === 'Your Business') {
+          const input = prompt("Please enter your Business Name to create your site:", "My Business");
+          if (!input || input.trim() === "") return; // Cancelled
+          storeName = input.trim();
+          localStorage.setItem('storeName', storeName); // Save for future
+      }
       
       // Sanitize storeName to create a clean slug
       const cleanSlug = storeName.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');

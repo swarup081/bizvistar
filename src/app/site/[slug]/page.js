@@ -78,7 +78,7 @@ export default async function LiveSitePage(props) {
   }
 
   const templateName = site.template?.name;
-  const websiteData = (isPreview && site.draft_data) ? site.draft_data : site.website_data;
+  const rawWebsiteData = (isPreview && site.draft_data) ? site.draft_data : site.website_data;
 
   // --- INJECT REAL PRODUCTS & CATEGORIES (Remove Demo Data) ---
   const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
@@ -94,38 +94,40 @@ export default async function LiveSitePage(props) {
         .order("name")
   ]);
 
-  if (websiteData) {
-    websiteData.allProducts = realProducts || [];
-    websiteData.allCategories = realCategories || [];
-  }
+  // Create a mutable copy to ensure we override the template data
+  const finalData = rawWebsiteData ? { ...rawWebsiteData } : {};
+
+  // Always inject real data (even if empty) to prevent fallback to demo data
+  finalData.allProducts = realProducts || [];
+  finalData.allCategories = realCategories || [];
   // -----------------------------------------------
 
   // Render selected template
   switch (templateName) {
     case "flara":
       return (
-        <FlaraLayout serverData={websiteData} websiteId={site.id}>
+        <FlaraLayout serverData={finalData} websiteId={site.id}>
           <FlaraPage />
         </FlaraLayout>
       );
 
     case "avenix":
       return (
-        <AvenixLayout serverData={websiteData} websiteId={site.id}>
+        <AvenixLayout serverData={finalData} websiteId={site.id}>
           <AvenixPage />
         </AvenixLayout>
       );
 
     case "blissly":
       return (
-        <BlisslyLayout serverData={websiteData} websiteId={site.id}>
+        <BlisslyLayout serverData={finalData} websiteId={site.id}>
           <BlisslyPage />
         </BlisslyLayout>
       );
 
     case "flavornest":
       return (
-        <FlavornestLayout serverData={websiteData} websiteId={site.id}>
+        <FlavornestLayout serverData={finalData} websiteId={site.id}>
           <FlavornestPage />
         </FlavornestLayout>
       );
