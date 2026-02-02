@@ -1,7 +1,7 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Truck, CheckCircle, Package, FileText, MessageCircle, MapPin, User, Calendar, AlertCircle } from 'lucide-react';
+import { X, Truck, CheckCircle, Package, FileText, MessageCircle, MapPin, User, Calendar, AlertCircle, StickyNote } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import jsPDF from 'jspdf';
@@ -232,7 +232,11 @@ export default function OrderDetailsDrawer({ order, isOpen, onClose, onUpdate, b
 
   const logistics = order.logistics;
   const customerName = order.customers?.name || 'Customer';
-  const customerPhone = order.shipping_address?.phone || order.customers?.shipping_address?.phone;
+
+  // Extract customer details from either flat columns or shipping_address JSON
+  const addr = order.shipping_address || order.customers?.shipping_address || {};
+  const customerPhone = addr.phone || addr.phoneNumber || order.customers?.phone;
+  const customerNote = addr.note || order.customers?.note; // Get Note
 
   // WhatsApp Message Construction
   const constructWhatsAppLink = () => {
@@ -295,57 +299,18 @@ We will keep you updated!`;
                             <MapPin size={12} /> Address
                         </h3>
                         <div className="text-xs text-gray-700 leading-snug">
-                            {(order.shipping_address || order.customers?.shipping_address) ? (
-                                (() => {
-                                    const addr = order.shipping_address || order.customers.shipping_address;
-                                    if (typeof addr !== 'object') return <p>Invalid address</p>;
-                                    return (
-                                        <>
-                                            <p className="font-medium truncate">{addr.address}</p>
-                                            <p>{addr.city}, {addr.state}</p>
-                                            <p>{addr.zipCode}</p>
-                                        </>
-                                    );
-                                })()
+                            {addr && addr.address ? (
+                                <>
+                                    <p className="font-medium truncate">{addr.address}</p>
+                                    <p>{addr.city}, {addr.state}</p>
+                                    <p>{addr.zipCode}</p>
+                                </>
                             ) : <p className="italic text-gray-400">No address.</p>}
                         </div>
                     </section>
                 </div>
 
-                {/* 2. Order Items */}
-                <section>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <Package size={14} /> Items
-                    </h3>
-                    <div className="space-y-3">
-                        {order.order_items.map((item, idx) => (
-                            <div key={idx} className="flex gap-3 items-center group bg-white/40 p-2 rounded-lg border border-transparent hover:border-gray-100 transition-colors">
-                                <div className="h-10 w-10 bg-white rounded-md overflow-hidden flex-shrink-0 border border-gray-100 shadow-sm">
-                                     {item.products?.image_url ? (
-                                         <img src={item.products.image_url} alt="" className="h-full w-full object-cover"/>
-                                     ) : (
-                                         <div className="h-full w-full flex items-center justify-center text-gray-300"><Package size={14}/></div>
-                                     )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-gray-900 text-sm truncate">{item.products?.name || 'Unknown Product'}</p>
-                                    <p className="text-xs text-gray-500">{item.quantity} x ₹{item.price}</p>
-                                </div>
-                                <div className="font-bold text-gray-900 text-sm whitespace-nowrap">
-                                    ₹{item.quantity * item.price}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-4 flex justify-between items-center pt-4 border-t border-gray-100">
-                        <span className="text-gray-500 text-sm font-medium">Total Amount</span>
-                        <span className="text-lg font-bold text-gray-900 flex items-center">
-                             ₹{order.total_amount}
-                        </span>
-                    </div>
-                </section>
-
-                {/* 3. Logistics */}
+                {/* 2. Logistics */}
                 <section>
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Truck size={14} /> Logistics
@@ -390,7 +355,52 @@ We will keep you updated!`;
                     )}
                 </section>
 
-                {/* 4. Actions */}
+                {/* 3. Note (New Section) */}
+                {customerNote && (
+                    <section className="bg-yellow-50/50 p-3 rounded-xl border border-yellow-100">
+                        <h3 className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                            <StickyNote size={12} /> Note from Customer
+                        </h3>
+                        <p className="text-xs text-gray-700 italic">
+                            "{customerNote}"
+                        </p>
+                    </section>
+                )}
+
+                {/* 4. Order Items */}
+                <section>
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Package size={14} /> Items
+                    </h3>
+                    <div className="space-y-3">
+                        {order.order_items.map((item, idx) => (
+                            <div key={idx} className="flex gap-3 items-center group bg-white/40 p-2 rounded-lg border border-transparent hover:border-gray-100 transition-colors">
+                                <div className="h-10 w-10 bg-white rounded-md overflow-hidden flex-shrink-0 border border-gray-100 shadow-sm">
+                                     {item.products?.image_url ? (
+                                         <img src={item.products.image_url} alt="" className="h-full w-full object-cover"/>
+                                     ) : (
+                                         <div className="h-full w-full flex items-center justify-center text-gray-300"><Package size={14}/></div>
+                                     )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900 text-sm truncate">{item.products?.name || 'Unknown Product'}</p>
+                                    <p className="text-xs text-gray-500">{item.quantity} x ₹{item.price}</p>
+                                </div>
+                                <div className="font-bold text-gray-900 text-sm whitespace-nowrap">
+                                    ₹{item.quantity * item.price}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-4 flex justify-between items-center pt-4 border-t border-gray-100">
+                        <span className="text-gray-500 text-sm font-medium">Total Amount</span>
+                        <span className="text-lg font-bold text-gray-900 flex items-center">
+                             ₹{order.total_amount}
+                        </span>
+                    </div>
+                </section>
+
+                {/* 5. Actions */}
                 <section className="pb-24">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Actions</h3>
                     <div className="grid grid-cols-2 gap-3">
