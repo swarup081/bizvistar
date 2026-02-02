@@ -177,21 +177,31 @@ function OrdersContent() {
     <div className="h-full flex flex-col font-sans">
 
       {/* Header Section */}
-      <div className="flex flex-col gap-4 mb-4 md:mb-8 px-0 md:px-0">
+      {/* Mobile: Padded nicely */}
+      <div className="flex flex-col md:flex-row gap-4 mb-4 md:mb-8 px-0 md:px-0">
 
-        {/* Row 1: Title (Left) + Filter (Right) */}
-        <div className="flex items-center justify-between">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-                <p className="text-gray-500 mt-1 text-sm md:text-base hidden md:block">Manage and track your customer orders.</p>
-            </div>
+        {/* Mobile Layout: Row with [Title] [Search Input] [Filter Icon] */}
+        <div className="flex md:hidden items-center justify-between gap-3 px-4 pt-4">
+             {/* Title */}
+             <h1 className="text-xl font-bold text-gray-900 shrink-0">Orders</h1>
 
-            <DropdownMenu.Root>
+             {/* Search Input (Grow to fit) */}
+             <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-10 w-full rounded-full border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
+                />
+             </div>
+
+             {/* Filter Icon Button (Dashboard Style) */}
+             <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                    <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
-                        <Filter className="h-4 w-4" />
-                        {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                        <ChevronDown className="h-3 w-3 opacity-50" />
+                    <button className={`h-[38px] w-[38px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
+                        <Filter size={18} />
                     </button>
                 </DropdownMenu.Trigger>
 
@@ -212,22 +222,55 @@ function OrdersContent() {
             </DropdownMenu.Root>
         </div>
 
-        {/* Row 2: Search Input (Full Width on Mobile) */}
-        <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-                type="text"
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
-            />
+        {/* Desktop Layout (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center justify-between">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
+            </div>
+
+            <div className="flex gap-3">
+                 <div className="relative w-64">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input
+                    type="text"
+                    placeholder="Search orders..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
+                    />
+                </div>
+
+                <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                            <Filter className="h-4 w-4" />
+                            {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                            <ChevronDown className="h-3 w-3 opacity-50" />
+                        </button>
+                    </DropdownMenu.Trigger>
+                    {/* Portal content same as mobile */}
+                     <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+            </div>
         </div>
 
       </div>
 
       {/* Table Container: STRICT Edge-to-Edge on Mobile */}
-      {/* Remove padding, margin, borders, radius for mobile */}
       <div className="flex-1 bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
         <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
