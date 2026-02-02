@@ -173,51 +173,57 @@ function OrdersContent() {
       </div>
 
       <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+        <div className="w-full">
+            <table className="w-full text-left border-collapse table-auto">
                 <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
-                        <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%] md:w-auto">Order ID</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                        <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%] md:w-auto">Status</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                        <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
+                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right w-[20%] md:w-auto">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                     {loading ? (
-                        <tr><td colSpan="6" className="p-10 text-center text-gray-500">
-                            <div className="flex flex-col gap-2 animate-pulse">
-                                <div className="h-4 bg-gray-100 rounded w-full"></div>
-                                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
-                                <div className="h-4 bg-gray-100 rounded w-1/2"></div>
-                            </div>
-                        </td></tr>
+                        [1, 2, 3, 4, 5].map((i) => (
+                            <tr key={i}>
+                                <td colSpan="6" className="p-4 md:px-6">
+                                    <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+                                </td>
+                            </tr>
+                        ))
                     ) : orders.length === 0 ? (
                         <tr><td colSpan="6" className="p-10 text-center text-gray-500">No orders found.</td></tr>
                     ) : (
                         orders.map((order) => (
                             <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="py-4 px-6 font-bold text-gray-900 text-sm">#{order.id}</td>
-                                <td className="py-4 px-6 text-sm text-gray-500">
+                                <td className="py-4 pl-4 md:px-6 font-bold text-gray-900 text-sm align-middle">
+                                    #{order.id}
+                                    {/* Mobile Only Date */}
+                                    <div className="md:hidden text-[10px] text-gray-400 font-normal mt-0.5">
+                                        {new Date(order.created_at).toLocaleDateString()}
+                                    </div>
+                                </td>
+                                <td className="hidden md:table-cell py-4 px-6 text-sm text-gray-500 align-middle">
                                     <span className="block">{new Date(order.created_at).toLocaleDateString()}</span>
                                     <span className="text-xs text-gray-400">{new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </td>
-                                <td className="hidden md:table-cell py-4 px-6 text-sm font-medium text-gray-900">
+                                <td className="hidden md:table-cell py-4 px-6 text-sm font-medium text-gray-900 align-middle">
                                     {order.customers?.name || 'Guest'}
                                     <div className="text-xs text-gray-400 font-normal">{order.customers?.email}</div>
                                 </td>
-                                <td className="py-4 px-6">
-                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${getStatusStyle(order.status)}`}>
+                                <td className="py-4 px-2 md:px-6 align-middle">
+                                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-xs font-bold ${getStatusStyle(order.status)} whitespace-nowrap`}>
                                         {order.status}
                                     </span>
                                 </td>
-                                <td className="hidden md:table-cell py-4 px-6 text-sm font-bold text-gray-900">₹{order.total_amount}</td>
-                                <td className="py-4 px-6 text-right">
+                                <td className="hidden md:table-cell py-4 px-6 text-sm font-bold text-gray-900 align-middle">₹{order.total_amount}</td>
+                                <td className="py-4 pr-4 md:px-6 text-right align-middle">
                                     <button 
                                         onClick={() => setSelectedOrder(order)}
-                                        className="rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
+                                        className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
                                     >
                                         Manage
                                     </button>
