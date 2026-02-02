@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { 
   ChevronDown, 
   Search, 
@@ -11,11 +11,13 @@ import {
   XCircle, 
   FileText, 
   Package,
-  Eye
+  Eye,
+  X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
 import OrderDetailsDrawer from '@/components/dashboard/OrderDetailsDrawer';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 // --- Main Content Component (with Suspense logic) ---
 function OrdersContent() {
@@ -23,6 +25,11 @@ function OrdersContent() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [businessName, setBusinessName] = useState('Us');
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get('id');
 
@@ -138,6 +145,23 @@ function OrdersContent() {
     fetchOrders();
   }, []); // Run on mount
 
+  // --- Filtering & Searching Logic ---
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+        // 1. Search Query
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+            order.id.toString().includes(query) ||
+            order.customers?.name?.toLowerCase().includes(query) ||
+            order.customers?.email?.toLowerCase().includes(query);
+
+        // 2. Status Filter
+        const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter.toLowerCase();
+
+        return matchesSearch && matchesStatus;
+    });
+  }, [orders, searchQuery, statusFilter]);
+
   const getStatusStyle = (status) => {
     const styles = {
         delivered: "bg-green-50 text-green-600 border border-green-100",
@@ -151,28 +175,59 @@ function OrdersContent() {
 
   return (
     <div className="h-full flex flex-col font-sans">
-      <div className="flex items-center justify-between mb-8">
+
+      {/* Header Section: Title + Search/Filter */}
+      {/* Mobile: Padded internally to match 'Edge-to-Edge' table below, but header still needs some spacing */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 gap-4 px-4 md:px-0 pt-4 md:pt-0">
         <div>
             <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-            <p className="text-gray-500 mt-1">Manage and track your customer orders.</p>
+            <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
         </div>
-        <div className="flex gap-3">
-             <div className="relative hidden md:block">
+
+        {/* Controls: Search + Filter */}
+        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+             {/* Search Input */}
+             <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text" 
-                  placeholder="Search orders..." 
-                  className="h-10 w-64 rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  placeholder="Search order ID, customer..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
                 />
              </div>
-             <button className="flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <Filter className="h-4 w-4" />
-                Filter
-             </button>
+
+             {/* Filter Dropdown */}
+             <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                    <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm w-full md:w-auto ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                        <Filter className="h-4 w-4" />
+                        {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                        <ChevronDown className="h-3 w-3 opacity-50" />
+                    </button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Portal>
+                    <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                        {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                            <DropdownMenu.Item
+                                key={status}
+                                onClick={() => setStatusFilter(status)}
+                                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                            >
+                                <span className="capitalize">{status}</span>
+                                {statusFilter === status && <CheckCircle size={14} />}
+                            </DropdownMenu.Item>
+                        ))}
+                    </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+             </DropdownMenu.Root>
         </div>
       </div>
 
-      <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      {/* Table Container: Edge-to-Edge on Mobile (rounded-none, border-x-0), Rounded on Desktop */}
+      <div className="flex-1 bg-white md:rounded-2xl shadow-sm border-y md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0">
         <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
                 <thead className="bg-gray-50 border-b border-gray-100">
@@ -194,10 +249,23 @@ function OrdersContent() {
                                 </td>
                             </tr>
                         ))
-                    ) : orders.length === 0 ? (
-                        <tr><td colSpan="6" className="p-10 text-center text-gray-500">No orders found.</td></tr>
+                    ) : filteredOrders.length === 0 ? (
+                        <tr><td colSpan="6" className="p-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <Search className="text-gray-300 h-8 w-8" />
+                                <p>No orders found matching your filters.</p>
+                                {(searchQuery || statusFilter !== 'all') && (
+                                    <button
+                                        onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+                                        className="text-sm text-purple-600 font-bold hover:underline"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                )}
+                            </div>
+                        </td></tr>
                     ) : (
-                        orders.map((order) => (
+                        filteredOrders.map((order) => (
                             <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group text-[11px] md:text-sm">
                                 <td className="hidden md:table-cell py-4 px-6 font-bold text-gray-900 text-sm align-middle">
                                     #{order.id}
@@ -208,7 +276,6 @@ function OrdersContent() {
                                 </td>
                                 <td className="py-4 px-2 md:px-6 font-medium text-gray-900 align-middle">
                                     {order.customers?.name || 'Guest'}
-                                    {/* Mobile Only: Show ID here if needed, or just hide as requested */}
                                 </td>
                                 <td className="py-4 px-2 md:px-6 align-middle">
                                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-xs font-bold ${getStatusStyle(order.status)} whitespace-nowrap`}>
