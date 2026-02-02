@@ -12,7 +12,9 @@ import {
   FileText, 
   Package,
   Eye,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
@@ -30,8 +32,28 @@ function OrdersContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default
+
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get('id');
+
+  // Set Items per page based on screen size (Client Side)
+  useEffect(() => {
+      const handleResize = () => {
+          // Mobile: Show fewer items to avoid scrolling
+          if (window.innerWidth < 768) {
+              setItemsPerPage(7);
+          } else {
+              setItemsPerPage(10);
+          }
+      };
+
+      handleResize(); // Init
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -162,6 +184,25 @@ function OrdersContent() {
     });
   }, [orders, searchQuery, statusFilter]);
 
+  // --- Pagination Logic ---
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentOrders = useMemo(() => {
+      const start = (currentPage - 1) * itemsPerPage;
+      return filteredOrders.slice(start, start + itemsPerPage);
+  }, [filteredOrders, currentPage, itemsPerPage]);
+
+  const handlePageChange = (newPage) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+          setCurrentPage(newPage);
+      }
+  };
+
+  // Reset page on search/filter
+  useEffect(() => {
+      setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+
   const getStatusStyle = (status) => {
     const styles = {
         delivered: "bg-green-50 text-green-600 border border-green-100",
@@ -186,11 +227,11 @@ function OrdersContent() {
         </div>
 
         {/* Controls Group: Search + Filter (Unified Style) */}
-        {/* Removed flex-1 to prevent growing leftward. w-auto or min-w for Mobile gap. */}
+        {/* Mobile: Pushed to Right. Desktop: Pushed to Right. */}
         <div className="flex items-center gap-2 md:gap-3 justify-end w-auto">
 
              {/* Search Input */}
-             {/* Mobile: 180px fixed or similar to keep gap. Desktop: 256px */}
+             {/* Fixed width on mobile to ensure gap */}
              <div className="relative w-[180px] md:w-64">
                 <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-gray-400" />
                 <input
@@ -229,20 +270,18 @@ function OrdersContent() {
 
       </div>
 
-      {/* Table Container: Internal Scroll + Fixed Header */}
-      {/* Set specific height for internal scrolling (calc height minus header) */}
-      {/* Mobile: h-[calc(100vh-140px)] (approx header) */}
-      <div className="flex-1 bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0 h-[calc(100vh-140px)] md:h-[600px] lg:h-auto">
-        <div className="w-full h-full overflow-y-auto custom-scrollbar relative">
+      {/* Table Container: Normal height (no internal scroll/sticky) */}
+      <div className="bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
+        <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
-                <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Order ID</th>
-                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Date & Time</th>
-                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Customer</th>
-                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Status</th>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Total</th>
-                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right bg-gray-50">Action</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
+                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date & Time</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
+                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -254,7 +293,7 @@ function OrdersContent() {
                                 </td>
                             </tr>
                         ))
-                    ) : filteredOrders.length === 0 ? (
+                    ) : currentOrders.length === 0 ? (
                         <tr><td colSpan="6" className="p-12 text-center text-gray-500">
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <Search className="text-gray-300 h-8 w-8" />
@@ -270,7 +309,7 @@ function OrdersContent() {
                             </div>
                         </td></tr>
                     ) : (
-                        filteredOrders.map((order) => (
+                        currentOrders.map((order) => (
                             <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group text-[11px] md:text-sm">
                                 <td className="hidden md:table-cell py-4 px-6 font-bold text-gray-900 text-sm align-middle">
                                     #{order.id}
@@ -303,6 +342,33 @@ function OrdersContent() {
             </table>
         </div>
       </div>
+
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+          <div className="flex items-center justify-between p-4 bg-white/50 border-t border-gray-100 rounded-b-2xl md:rounded-b-2xl -mx-4 md:mx-0">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                  <ChevronLeft size={16} />
+                  Prev
+              </button>
+
+              <span className="text-sm font-medium text-gray-600">
+                  Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                  Next
+                  <ChevronRight size={16} />
+              </button>
+          </div>
+      )}
 
       <OrderDetailsDrawer
         isOpen={!!selectedOrder} 
