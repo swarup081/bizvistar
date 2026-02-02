@@ -104,28 +104,24 @@ export default function RecentSalesTable({ orders = [] }) {
         <table className="w-full border-collapse text-left font-sans table-fixed">
           <thead className="bg-white">
             <tr className="border-b border-gray-100 text-xs font-bold uppercase text-gray-400 tracking-wider">
-              <th className="py-4 pl-2 w-[25%] md:w-auto">Order ID</th>
-              <th className="hidden md:table-cell py-4">Date</th>
-              <th className="hidden md:table-cell py-4">Customer</th>
+              <th className="hidden md:table-cell py-4 pl-2">Order ID</th>
+              <th className="py-4 pl-2 md:pl-0 w-[30%] md:w-auto">Date & Time</th>
+              <th className="py-4 w-[25%] md:w-auto">Customer</th>
               <th className="hidden md:table-cell py-4">Payment</th>
-              <th className="py-4 w-[25%] md:w-auto">Status</th>
+              <th className="py-4 w-[20%] md:w-auto">Status</th>
               <th className="hidden md:table-cell py-4">Amount</th>
               <th className="p-4 text-right w-[25%] md:w-auto">Action</th>
             </tr>
           </thead>
           <tbody>
             {displayOrders.length > 0 ? displayOrders.map((row) => (
-              <tr key={row.id} className="group border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                <td className="py-5 pl-2 font-bold text-gray-900 text-sm align-middle">
-                    #{row.id}
-                    <div className="md:hidden text-[10px] text-gray-400 font-normal mt-0.5">
-                        {new Date(row.created_at).toLocaleDateString()}
-                    </div>
+              <tr key={row.id} className="group border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors text-[11px] md:text-sm">
+                <td className="hidden md:table-cell py-5 pl-2 font-bold text-gray-900 text-sm align-middle">#{row.id}</td>
+                <td className="py-5 pl-2 md:pl-0 text-gray-500 font-medium align-middle">
+                    <span className="block text-gray-900 md:text-gray-500">{new Date(row.created_at).toLocaleDateString()}</span>
+                    <span className="block text-gray-400 md:hidden text-[10px]">{new Date(row.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </td>
-                <td className="hidden md:table-cell py-5 text-sm text-gray-500 font-medium align-middle">
-                    {formatDate(row.created_at)}
-                </td>
-                <td className="hidden md:table-cell py-5 text-sm text-gray-900 font-medium align-middle">{row.customers?.name || "Guest"}</td>
+                <td className="py-5 text-gray-900 font-medium align-middle">{row.customers?.name || "Guest"}</td>
                 <td className="hidden md:table-cell py-5 text-sm font-medium text-gray-700 align-middle">{row.source === 'pos' ? 'Cash' : 'COD'}</td>
                 <td className="py-5 align-middle">
                   <StatusBadge status={row.status} />

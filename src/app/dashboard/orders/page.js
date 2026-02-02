@@ -177,12 +177,12 @@ function OrdersContent() {
             <table className="w-full text-left border-collapse table-auto">
                 <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%] md:w-auto">Order ID</th>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider w-[20%] md:w-auto">Status</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
+                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date & Time</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right w-[20%] md:w-auto">Action</th>
+                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -198,21 +198,17 @@ function OrdersContent() {
                         <tr><td colSpan="6" className="p-10 text-center text-gray-500">No orders found.</td></tr>
                     ) : (
                         orders.map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="py-4 pl-4 md:px-6 font-bold text-gray-900 text-sm align-middle">
+                            <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group text-[11px] md:text-sm">
+                                <td className="hidden md:table-cell py-4 px-6 font-bold text-gray-900 text-sm align-middle">
                                     #{order.id}
-                                    {/* Mobile Only Date */}
-                                    <div className="md:hidden text-[10px] text-gray-400 font-normal mt-0.5">
-                                        {new Date(order.created_at).toLocaleDateString()}
-                                    </div>
                                 </td>
-                                <td className="hidden md:table-cell py-4 px-6 text-sm text-gray-500 align-middle">
-                                    <span className="block">{new Date(order.created_at).toLocaleDateString()}</span>
-                                    <span className="text-xs text-gray-400">{new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                <td className="py-4 pl-4 md:px-6 text-gray-500 align-middle">
+                                    <span className="block font-medium text-gray-900 md:text-gray-500">{new Date(order.created_at).toLocaleDateString()}</span>
+                                    <span className="text-[10px] md:text-xs text-gray-400 block">{new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </td>
-                                <td className="hidden md:table-cell py-4 px-6 text-sm font-medium text-gray-900 align-middle">
+                                <td className="py-4 px-2 md:px-6 font-medium text-gray-900 align-middle">
                                     {order.customers?.name || 'Guest'}
-                                    <div className="text-xs text-gray-400 font-normal">{order.customers?.email}</div>
+                                    {/* Mobile Only: Show ID here if needed, or just hide as requested */}
                                 </td>
                                 <td className="py-4 px-2 md:px-6 align-middle">
                                     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-xs font-bold ${getStatusStyle(order.status)} whitespace-nowrap`}>
