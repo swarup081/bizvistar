@@ -109,7 +109,7 @@ export default function RecentSalesTable({ orders = [] }) {
               <th className="hidden md:table-cell py-4">Customer</th>
               <th className="hidden md:table-cell py-4">Payment</th>
               <th className="py-4">Status</th>
-              <th className="py-4">Amount</th>
+              <th className="hidden md:table-cell py-4">Amount</th>
               <th className="p-4 text-right">Action</th>
             </tr>
           </thead>
@@ -126,7 +126,7 @@ export default function RecentSalesTable({ orders = [] }) {
                 <td className="py-5 ">
                   <StatusBadge status={row.status} />
                 </td>
-                <td className="py-5 text-sm font-bold text-gray-900">{formatCurrency(row.total_amount)}</td>
+                <td className="hidden md:table-cell py-5 text-sm font-bold text-gray-900">{formatCurrency(row.total_amount)}</td>
                 <td className="py-5  text-right">
                    <button 
                      onClick={() => handleManage(row.id)}

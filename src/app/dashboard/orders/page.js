@@ -181,13 +181,19 @@ function OrdersContent() {
                         <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                         <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
                         <th className="py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                     {loading ? (
-                        <tr><td colSpan="6" className="p-10 text-center text-gray-500">Loading orders...</td></tr>
+                        <tr><td colSpan="6" className="p-10 text-center text-gray-500">
+                            <div className="flex flex-col gap-2 animate-pulse">
+                                <div className="h-4 bg-gray-100 rounded w-full"></div>
+                                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                                <div className="h-4 bg-gray-100 rounded w-1/2"></div>
+                            </div>
+                        </td></tr>
                     ) : orders.length === 0 ? (
                         <tr><td colSpan="6" className="p-10 text-center text-gray-500">No orders found.</td></tr>
                     ) : (
@@ -207,7 +213,7 @@ function OrdersContent() {
                                         {order.status}
                                     </span>
                                 </td>
-                                <td className="py-4 px-6 text-sm font-bold text-gray-900">₹{order.total_amount}</td>
+                                <td className="hidden md:table-cell py-4 px-6 text-sm font-bold text-gray-900">₹{order.total_amount}</td>
                                 <td className="py-4 px-6 text-right">
                                     <button 
                                         onClick={() => setSelectedOrder(order)}
