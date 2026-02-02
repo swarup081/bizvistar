@@ -176,32 +176,19 @@ function OrdersContent() {
   return (
     <div className="h-full flex flex-col font-sans">
 
-      {/* Header Section: Title + Search/Filter */}
-      {/* Mobile: Padded internally to match 'Edge-to-Edge' table below, but header still needs some spacing */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 gap-4 px-4 md:px-0 pt-4 md:pt-0">
-        <div>
-            <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-            <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
-        </div>
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 mb-4 md:mb-8 px-0 md:px-0">
 
-        {/* Controls: Search + Filter */}
-        <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-             {/* Search Input */}
-             <div className="relative w-full md:w-64">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search order ID, customer..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
-                />
-             </div>
+        {/* Row 1: Title (Left) + Filter (Right) */}
+        <div className="flex items-center justify-between">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base hidden md:block">Manage and track your customer orders.</p>
+            </div>
 
-             {/* Filter Dropdown */}
-             <DropdownMenu.Root>
+            <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                    <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm w-full md:w-auto ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                    <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
                         <Filter className="h-4 w-4" />
                         {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
                         <ChevronDown className="h-3 w-3 opacity-50" />
@@ -222,12 +209,26 @@ function OrdersContent() {
                         ))}
                     </DropdownMenu.Content>
                 </DropdownMenu.Portal>
-             </DropdownMenu.Root>
+            </DropdownMenu.Root>
         </div>
+
+        {/* Row 2: Search Input (Full Width on Mobile) */}
+        <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+                type="text"
+                placeholder="Search orders..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
+            />
+        </div>
+
       </div>
 
-      {/* Table Container: Edge-to-Edge on Mobile (rounded-none, border-x-0), Rounded on Desktop */}
-      <div className="flex-1 bg-white md:rounded-2xl shadow-sm border-y md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0">
+      {/* Table Container: STRICT Edge-to-Edge on Mobile */}
+      {/* Remove padding, margin, borders, radius for mobile */}
+      <div className="flex-1 bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
         <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
                 <thead className="bg-gray-50 border-b border-gray-100">

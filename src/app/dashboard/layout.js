@@ -66,11 +66,11 @@ export default function DashboardLayout({ children }) {
   }, [pathname]);
 
   return (
-    // The outer container has p-7 (28px) padding.
-    // To make the header full-width when scrolled, we use negative margins to counteract the padding.
+    // Outer container:
+    // - Desktop: Standard padding (p-7)
+    // - Mobile: NO padding (p-0) to ensure full edge-to-edge navbar and content
     <div className={`min-h-screen font-sans text-[#333333] bg-[#F3F4F6]
-        ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-4 lg:p-7'} 
-        ${/* Mobile: Remove padding for /website to be full screen */ ''}
+        ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-0 lg:p-7'}
     `}>
       <Suspense fallback={null}>
         <PostPaymentManager />
@@ -80,7 +80,7 @@ export default function DashboardLayout({ children }) {
       <header 
         className={`sticky top-0 z-50 bg-white flex items-center justify-between transition-all duration-300 ease-in-out
           ${isScrolled || isMobileViewport // Always flat/full-width on mobile or scrolled
-            ? 'rounded-none shadow-md w-full left-0 top-0 lg:w-[calc(100%+3.5rem)] lg:-mx-7 px-4 lg:px-10 py-4' // Mobile full width fix
+            ? 'rounded-none shadow-sm w-full left-0 top-0 px-4 py-4 lg:w-[calc(100%+3.5rem)] lg:-mx-7 lg:px-10' // Mobile: Standard full width, Desktop: Negative margins if scrolled
             : 'rounded-full shadow-sm px-6 py-4' // Default floating state (Desktop)
           }`}
       >
@@ -175,10 +175,11 @@ export default function DashboardLayout({ children }) {
 
       {/* Main Content */}
       <main className={`
-        mt-5 bg-[#fff] font-sans text-[#333333] transition-all
+        bg-[#fff] font-sans text-[#333333] transition-all
         ${pathname === '/dashboard/website' 
-            ? 'rounded-none lg:rounded-[2rem] p-0 overflow-hidden h-[calc(100vh-80px)] lg:h-[calc(100vh-140px)]' // Edge-to-edge on mobile for website editor
-            : 'rounded-[2rem] p-6 lg:p-10 min-h-[500px]'
+            ? 'rounded-none lg:rounded-[2rem] p-0 overflow-hidden h-[calc(100vh-80px)] lg:h-[calc(100vh-140px)] mt-0 lg:mt-5'
+            // Mobile: Full width (p-4), no rounding, no margin top to flush with header
+            : 'rounded-none lg:rounded-[2rem] p-4 lg:p-10 min-h-[500px] mt-0 lg:mt-5'
         }
       `}>
         {children}
