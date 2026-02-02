@@ -180,46 +180,50 @@ function OrdersContent() {
       {/* Mobile: Padded nicely */}
       <div className="flex flex-col md:flex-row gap-4 mb-4 md:mb-8 px-0 md:px-0">
 
-        {/* Mobile Layout: Row with [Title] [Search Input] [Filter Icon] */}
-        <div className="flex md:hidden items-center justify-between gap-3 px-4 pt-4">
-             {/* Title */}
+        {/* Mobile Layout: Row with [Title (Left)] ......... [Search Input] [Filter Icon] (Right) */}
+        <div className="flex md:hidden items-center justify-between gap-2 px-4 pt-4">
+             {/* Title (Left, Fixed) */}
              <h1 className="text-xl font-bold text-gray-900 shrink-0">Orders</h1>
 
-             {/* Search Input (Grow to fit) */}
-             <div className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-10 w-full rounded-full border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
-                />
+             {/* Right Side Group: Search + Filter */}
+             <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
+
+                 {/* Search Input (Flexible Width) */}
+                 <div className="relative w-full max-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-9 w-full rounded-full border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
+                    />
+                 </div>
+
+                 {/* Filter Icon Button (Dashboard Style) */}
+                 <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
+                            <Filter size={16} />
+                        </button>
+                    </DropdownMenu.Trigger>
+
+                    <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
              </div>
-
-             {/* Filter Icon Button (Dashboard Style) */}
-             <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
-                    <button className={`h-[38px] w-[38px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
-                        <Filter size={18} />
-                    </button>
-                </DropdownMenu.Trigger>
-
-                <DropdownMenu.Portal>
-                    <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
-                        {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
-                            <DropdownMenu.Item
-                                key={status}
-                                onClick={() => setStatusFilter(status)}
-                                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
-                            >
-                                <span className="capitalize">{status}</span>
-                                {statusFilter === status && <CheckCircle size={14} />}
-                            </DropdownMenu.Item>
-                        ))}
-                    </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-            </DropdownMenu.Root>
         </div>
 
         {/* Desktop Layout (Hidden on Mobile) */}
