@@ -13,13 +13,13 @@ export default function ProductDrawer({ product, isOpen, onClose }) {
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 transition-opacity" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-opacity" />
         <Dialog.Content 
-          className="fixed top-0 right-0 h-[100dvh] w-[450px] max-w-[90vw] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-gray-100 flex flex-col focus:outline-none"
+          className="fixed top-0 right-0 h-[100dvh] w-[450px] max-w-[90vw] bg-white/95 backdrop-blur-md shadow-2xl z-50 transform transition-transform duration-300 ease-in-out border-l border-white/20 flex flex-col focus:outline-none"
           style={{ animation: 'slideIn 0.3s ease-out' }}
         >
           {/* Header */}
-          <div className="flex-none bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex-none bg-white/50 border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
             <div>
                  <Dialog.Title className="text-lg font-bold text-gray-900">Product Details</Dialog.Title>
                  <p className="text-xs text-gray-500 font-mono mt-1">ID: {product.id}</p>

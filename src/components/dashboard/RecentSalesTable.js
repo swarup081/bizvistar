@@ -18,7 +18,7 @@ const StatusBadge = ({ status }) => {
   const style = styles[cleanStatus] || "bg-gray-50 text-gray-600";
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${style}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-xs font-bold capitalize whitespace-nowrap ${style}`}>
       {status}
     </span>
   );
@@ -67,10 +67,6 @@ export default function RecentSalesTable({ orders = [] }) {
   };
 
   const handleManage = (orderId) => {
-      // Redirect to orders page with query param to open modal?
-      // Or just orders page. User asked: "redirect it to order section".
-      // "if user click manage redirect to order to that perticular order manage"
-      // I'll add a query param ?id=orderId to /dashboard/orders
       router.push(`/dashboard/orders?id=${orderId}`);
   };
 
@@ -103,35 +99,38 @@ export default function RecentSalesTable({ orders = [] }) {
         </div>
       </div>
 
-      {/* Internal Scrolling Wrapper */}
-      <div className="flex-1 overflow-x-auto custom-scrollbar">
-        <table className="w-full border-collapse text-left font-sans min-w-[600px]">
+      {/* Internal Scrolling Wrapper (Hidden overflow, width auto to fit) */}
+      <div className="flex-1 w-full overflow-hidden">
+        <table className="w-full border-collapse text-left font-sans table-fixed">
           <thead className="bg-white">
             <tr className="border-b border-gray-100 text-xs font-bold uppercase text-gray-400 tracking-wider">
-              <th className="py-4 pl-2">Order ID</th>
-              <th className="py-4">Date</th>
-              <th className="py-4">Customer</th>
-              <th className="py-4">Payment</th>
-              <th className="py-4">Status</th>
-              <th className="py-4">Amount</th>
-              <th className="p-4 text-right">Action</th>
+              <th className="hidden md:table-cell py-4 pl-2">Order ID</th>
+              <th className="py-4 pl-2 md:pl-0 w-[30%] md:w-auto">Date & Time</th>
+              <th className="py-4 w-[25%] md:w-auto">Customer</th>
+              <th className="hidden md:table-cell py-4">Payment</th>
+              <th className="py-4 w-[20%] md:w-auto">Status</th>
+              <th className="hidden md:table-cell py-4">Amount</th>
+              <th className="p-4 text-right w-[25%] md:w-auto">Action</th>
             </tr>
           </thead>
           <tbody>
             {displayOrders.length > 0 ? displayOrders.map((row) => (
-              <tr key={row.id} className="group border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                <td className="py-5 pl-2 font-bold text-gray-900 text-sm">#{row.id}</td>
-                <td className="py-5 text-sm text-gray-500 font-medium">{formatDate(row.created_at)}</td>
-                <td className="py-5 text-sm text-gray-900 font-medium">{row.customers?.name || "Guest"}</td>
-                <td className="py-5 text-sm font-medium text-gray-700">{row.source === 'pos' ? 'Cash' : 'COD'}</td>
-                <td className="py-5 ">
+              <tr key={row.id} className="group border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors text-[11px] md:text-sm">
+                <td className="hidden md:table-cell py-5 pl-2 font-bold text-gray-900 text-sm align-middle">#{row.id}</td>
+                <td className="py-5 pl-2 md:pl-0 text-gray-500 font-medium align-middle">
+                    <span className="block text-gray-900 md:text-gray-500">{new Date(row.created_at).toLocaleDateString()}</span>
+                    <span className="block text-gray-400 md:hidden text-[10px]">{new Date(row.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </td>
+                <td className="py-5 text-gray-900 font-medium align-middle">{row.customers?.name || "Guest"}</td>
+                <td className="hidden md:table-cell py-5 text-sm font-medium text-gray-700 align-middle">{row.source === 'pos' ? 'Cash' : 'COD'}</td>
+                <td className="py-5 align-middle">
                   <StatusBadge status={row.status} />
                 </td>
-                <td className="py-5 text-sm font-bold text-gray-900">{formatCurrency(row.total_amount)}</td>
-                <td className="py-5  text-right">
+                <td className="hidden md:table-cell py-5 text-sm font-bold text-gray-900 align-middle">{formatCurrency(row.total_amount)}</td>
+                <td className="py-5 text-right align-middle">
                    <button 
                      onClick={() => handleManage(row.id)}
-                     className="rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
+                     className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
                    >
                      Manage
                    </button>
