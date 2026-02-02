@@ -128,7 +128,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity" />
-        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[20px] bg-white p-6 shadow-2xl focus:outline-none z-50 overflow-y-auto">
+        <Dialog.Content className="fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[500px] translate-x-[-50%] translate-y-[-50%] rounded-[20px] bg-white/95 backdrop-blur-md border border-white/20 p-6 shadow-2xl focus:outline-none z-50 overflow-y-auto">
           
           <div className="flex items-center justify-between mb-6">
             <Dialog.Title className="text-xl font-bold text-gray-900">
@@ -144,7 +144,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
           <form onSubmit={handleSubmit} className="space-y-4">
             
             <div className="flex justify-center mb-6">
-              <div className="relative group w-32 h-32 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-colors cursor-pointer">
+              <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-colors cursor-pointer">
                 {formData.imageUrl ? (
                   <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
@@ -170,7 +170,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                   onChange={handleChange}
                   required
                   placeholder="e.g. Leather Pouch"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all"
                 />
             </div>
 
@@ -185,7 +185,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                   onChange={handleChange}
                   required
                   placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all"
                 />
               </div>
               
@@ -204,7 +204,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                      </label>
                  </div>
                  {formData.isUnlimited ? (
-                     <div className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 text-sm italic">
+                     <div className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50/50 text-gray-500 text-sm italic">
                          Stock is unlimited
                      </div>
                  ) : (
@@ -214,8 +214,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                     min="0"
                     value={formData.stock}
                     onChange={handleChange}
-                    placeholder="Enter stock amount..."
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                    placeholder="Enter stock..."
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all"
                     />
                  )}
               </div>
@@ -227,7 +227,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm bg-white"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm transition-all"
               >
                 <option value="">Select Category</option>
                 {categories.map(c => (
@@ -244,7 +244,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                 onChange={handleChange}
                 rows={3}
                 placeholder="Product details..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm resize-none transition-all"
               />
             </div>
 

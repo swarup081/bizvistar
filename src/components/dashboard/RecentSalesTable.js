@@ -67,10 +67,6 @@ export default function RecentSalesTable({ orders = [] }) {
   };
 
   const handleManage = (orderId) => {
-      // Redirect to orders page with query param to open modal?
-      // Or just orders page. User asked: "redirect it to order section".
-      // "if user click manage redirect to order to that perticular order manage"
-      // I'll add a query param ?id=orderId to /dashboard/orders
       router.push(`/dashboard/orders?id=${orderId}`);
   };
 
@@ -105,13 +101,13 @@ export default function RecentSalesTable({ orders = [] }) {
 
       {/* Internal Scrolling Wrapper */}
       <div className="flex-1 overflow-x-auto custom-scrollbar">
-        <table className="w-full border-collapse text-left font-sans min-w-[600px]">
+        <table className="w-full border-collapse text-left font-sans min-w-[600px] md:min-w-0">
           <thead className="bg-white">
             <tr className="border-b border-gray-100 text-xs font-bold uppercase text-gray-400 tracking-wider">
               <th className="py-4 pl-2">Order ID</th>
               <th className="py-4">Date</th>
-              <th className="py-4">Customer</th>
-              <th className="py-4">Payment</th>
+              <th className="hidden md:table-cell py-4">Customer</th>
+              <th className="hidden md:table-cell py-4">Payment</th>
               <th className="py-4">Status</th>
               <th className="py-4">Amount</th>
               <th className="p-4 text-right">Action</th>
@@ -121,9 +117,12 @@ export default function RecentSalesTable({ orders = [] }) {
             {displayOrders.length > 0 ? displayOrders.map((row) => (
               <tr key={row.id} className="group border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                 <td className="py-5 pl-2 font-bold text-gray-900 text-sm">#{row.id}</td>
-                <td className="py-5 text-sm text-gray-500 font-medium">{formatDate(row.created_at)}</td>
-                <td className="py-5 text-sm text-gray-900 font-medium">{row.customers?.name || "Guest"}</td>
-                <td className="py-5 text-sm font-medium text-gray-700">{row.source === 'pos' ? 'Cash' : 'COD'}</td>
+                <td className="py-5 text-sm text-gray-500 font-medium">
+                    <span className="block md:hidden">{new Date(row.created_at).toLocaleDateString()}</span>
+                    <span className="hidden md:block">{formatDate(row.created_at)}</span>
+                </td>
+                <td className="hidden md:table-cell py-5 text-sm text-gray-900 font-medium">{row.customers?.name || "Guest"}</td>
+                <td className="hidden md:table-cell py-5 text-sm font-medium text-gray-700">{row.source === 'pos' ? 'Cash' : 'COD'}</td>
                 <td className="py-5 ">
                   <StatusBadge status={row.status} />
                 </td>
