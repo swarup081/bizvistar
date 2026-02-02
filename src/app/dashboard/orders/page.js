@@ -177,23 +177,21 @@ function OrdersContent() {
     <div className="h-full flex flex-col font-sans">
 
       {/* Header Section: Consolidated for Mobile & Desktop */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-4 md:px-0 pt-4 md:pt-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-4 md:px-0 pt-4 md:pt-0 shrink-0">
 
         {/* Title Group */}
         <div className="flex items-center justify-between md:block">
              <h1 className="text-xl md:text-2xl font-bold text-gray-900 shrink-0">Orders</h1>
              <p className="text-gray-500 mt-1 text-sm hidden md:block">Manage and track your customer orders.</p>
-
-             {/* Mobile: If we wanted strict [Title] ... [Search] [Filter], we can put them here in a single flex container.
-                 Currently, I'll stick to the proven structure but unify styles. */}
         </div>
 
         {/* Controls Group: Search + Filter (Unified Style) */}
-        {/* Mobile: Row with Search growing. Desktop: Row with Search fixed/growing. */}
-        <div className="flex items-center gap-2 md:gap-3 flex-1 md:flex-none justify-end min-w-0">
+        {/* Removed flex-1 to prevent growing leftward. w-auto or min-w for Mobile gap. */}
+        <div className="flex items-center gap-2 md:gap-3 justify-end w-auto">
 
              {/* Search Input */}
-             <div className="relative w-full md:w-64">
+             {/* Mobile: 180px fixed or similar to keep gap. Desktop: 256px */}
+             <div className="relative w-[180px] md:w-64">
                 <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
@@ -231,18 +229,20 @@ function OrdersContent() {
 
       </div>
 
-      {/* Table Container: STRICT Edge-to-Edge on Mobile */}
-      <div className="flex-1 bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
-        <div className="w-full">
+      {/* Table Container: Internal Scroll + Fixed Header */}
+      {/* Set specific height for internal scrolling (calc height minus header) */}
+      {/* Mobile: h-[calc(100vh-140px)] (approx header) */}
+      <div className="flex-1 bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0 h-[calc(100vh-140px)] md:h-[600px] lg:h-auto">
+        <div className="w-full h-full overflow-y-auto custom-scrollbar relative">
             <table className="w-full text-left border-collapse table-auto">
-                <thead className="bg-gray-50 border-b border-gray-100">
+                <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10 shadow-sm">
                     <tr>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
-                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Date & Time</th>
-                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Order ID</th>
+                        <th className="py-4 pl-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Date & Time</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Customer</th>
+                        <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Status</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider bg-gray-50">Total</th>
+                        <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right bg-gray-50">Action</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
