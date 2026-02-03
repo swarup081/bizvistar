@@ -228,59 +228,112 @@ function OrdersContent() {
       {/* Header Section: Consolidated for Mobile & Desktop */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-4 md:px-0 pt-4 md:pt-0 shrink-0">
 
-        {/* Title Group */}
-        <div className="flex items-center justify-between md:block">
-             <h1 className="text-xl md:text-2xl font-bold text-gray-900 shrink-0">Orders</h1>
-             <p className="text-gray-500 mt-1 text-sm hidden md:block">Manage and track your customer orders.</p>
-        </div>
+        {/* Mobile Header Layout: Two Rows */}
+        <div className="flex md:hidden flex-col w-full gap-3 px-4 pt-4">
+             {/* Row 1: Title (Left) and Add Order Button (Right) */}
+             <div className="flex items-center justify-between w-full">
+                 <h1 className="text-xl font-bold text-gray-900 shrink-0">Orders</h1>
 
-        {/* Controls Group: Search + Filter + Add Order */}
-        <div className="flex items-center gap-2 md:gap-3 justify-end w-auto">
-
-             {/* Search Input */}
-             <div className="relative w-[180px] md:w-64">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 md:h-10 w-full rounded-full border border-gray-200 bg-white pl-9 md:pl-10 pr-3 md:pr-4 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
-                />
+                 {/* Add Order Button (Black, Small Icon) */}
+                 <button
+                    onClick={() => setIsAddOrderOpen(true)}
+                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
+                    title="Add Manual Order"
+                >
+                    <Plus size={16} />
+                </button>
              </div>
 
-             {/* Filter Icon Button */}
-             <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
-                    <button className={`h-[36px] w-[36px] md:h-[40px] md:w-[40px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
-                        <Filter size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
-                </DropdownMenu.Trigger>
+             {/* Row 2: Search (Grow) and Filter (Fixed) */}
+             <div className="flex items-center gap-2 w-full">
+                 <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-9 w-full rounded-full border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
+                    />
+                 </div>
 
-                <DropdownMenu.Portal>
-                    <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
-                        {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
-                            <DropdownMenu.Item
-                                key={status}
-                                onClick={() => setStatusFilter(status)}
-                                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
-                            >
-                                <span className="capitalize">{status}</span>
-                                {statusFilter === status && <CheckCircle size={14} />}
-                            </DropdownMenu.Item>
-                        ))}
-                    </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+                 <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
+                            <Filter size={16} />
+                        </button>
+                    </DropdownMenu.Trigger>
 
-            {/* Add Order Button */}
-            <button
-                onClick={() => setIsAddOrderOpen(true)}
-                className="h-[36px] w-[36px] md:h-[40px] md:w-[40px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
-                title="Add Manual Order"
-            >
-                <Plus size={16} className="md:w-[18px] md:h-[18px]" />
-            </button>
+                    <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+             </div>
+        </div>
+
+        {/* Desktop Layout (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center justify-between w-full">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+                 <div className="relative w-64">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input
+                    type="text"
+                    placeholder="Search orders..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
+                    />
+                </div>
+
+                <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                            <Filter className="h-4 w-4" />
+                            {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                            <ChevronDown className="h-3 w-3 opacity-50" />
+                        </button>
+                    </DropdownMenu.Trigger>
+                     <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+
+                {/* Add Order Button (Desktop) */}
+                <button
+                    onClick={() => setIsAddOrderOpen(true)}
+                    className="h-10 px-4 flex items-center justify-center gap-2 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
+                >
+                    <Plus size={18} />
+                    Add Order
+                </button>
+            </div>
         </div>
 
       </div>
@@ -296,10 +349,7 @@ function OrdersContent() {
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
-
-                        {/* New Source Column */}
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
-
                         <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
@@ -334,7 +384,7 @@ function OrdersContent() {
                                     #{order.id}
                                 </td>
                                 <td className="py-4 pl-4 md:px-6 text-gray-500 align-middle">
-                                    <span className="block font-medium text-gray-900 md:text-gray-500">{new Date(order.created_at).toLocaleDateString()}</span>
+                                    <span className="block font-medium text-gray-900 md:text-gray-500">{new Date(order.created_at).toLocaleDateString('en-GB')}</span>
                                     <span className="text-[10px] md:text-xs text-gray-400 block">{new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </td>
                                 <td className="py-4 px-2 md:px-6 font-medium text-gray-900 align-middle">

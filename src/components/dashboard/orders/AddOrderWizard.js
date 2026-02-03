@@ -4,8 +4,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useState, useEffect } from 'react';
 import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { submitOrder } from '@/app/actions/orderActions'; // Reuse logic
-import StateSelector from '@/components/checkout/StateSelector'; // Reuse State Selector
+import { submitOrder } from '@/app/actions/orderActions';
+import StateSelector from '@/components/checkout/StateSelector';
 
 // Source Options
 const SOURCE_OPTIONS = [
@@ -19,7 +19,7 @@ const SOURCE_OPTIONS = [
 export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState([]); // Available products
+  const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState('');
 
   // Form State
@@ -27,7 +27,6 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
       firstName: '',
       lastName: '',
       phone: '',
-      email: '', // Optional for manual? User can add dummy if needed, but we'll try to keep optional.
       address: '',
       city: '',
       state: '',
@@ -37,9 +36,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
       note: ''
   });
 
-  const [cart, setCart] = useState([]); // [{id, name, price, quantity, image_url}]
+  const [cart, setCart] = useState([]);
 
-  // Fetch products on mount
   useEffect(() => {
       if (isOpen && websiteId) {
           const fetchProds = async () => {
@@ -76,47 +74,9 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const handleSubmit = async () => {
-      setLoading(true);
-      try {
-          const manualSource = formData.sourceType === 'other' ? formData.sourceOther : SOURCE_OPTIONS.find(s => s.value === formData.sourceType)?.label || 'Manual';
-
-          const result = await submitOrder({
-              siteSlug: null, // Manual order, we bypass slug lookup in action if we modify it or handle ID directly?
-              // Wait, submitOrder uses slug. I need to pass websiteId or handle manual mode.
-              // I'll create a special wrapper or modify submitOrder to take websiteId directly if slug is missing.
-              // For now, I'll pass a "manual" flag in customerDetails or similar.
-              // Actually, I can fetch the slug from props if available?
-              // Better: I'll invoke a NEW action or modify existing.
-              // Let's use a Direct DB call here for simplicity since I'm in dashboard (authenticated),
-              // OR modify submitOrder. modifying submitOrder is safer for consistency.
-              // I'll pass "manual_entry" as a flag.
-              // *Correction*: submitOrder requires siteSlug to find website.
-              // I should fetch the slug for this websiteId first.
-              cartDetails: cart,
-              customerDetails: {
-                  ...formData,
-                  source: manualSource // Pass source to save in metadata/notes
-              },
-              totalAmount // Redundant, calculated backend
-          });
-
-          // WAIT: submitOrder expects siteSlug. I need to get it.
-          // I will assume the parent passes slug or I fetch it.
-          // Let's fetch it quickly if not passed.
-
-      } catch (e) {
-          alert('Error: ' + e.message);
-      } finally {
-          setLoading(false);
-      }
-  };
-
-  // Custom Submit Handler to bridge the gap
   const handleFinalSubmit = async () => {
       setLoading(true);
       try {
-        // 1. Get Slug
         const { data: web } = await supabase.from('websites').select('site_slug').eq('id', websiteId).single();
         if(!web) throw new Error("Website not found");
 
@@ -124,7 +84,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
         const result = await submitOrder({
             siteSlug: web.site_slug,
-            cartDetails: cart.map(c => ({...c, image: c.image_url})), // Map image_url to image for action compatibility
+            cartDetails: cart.map(c => ({...c, image: c.image_url})),
             customerDetails: {
                 ...formData,
                 isManual: true,
@@ -135,10 +95,9 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
         if (result.success) {
             onOrderAdded();
             onClose();
-            // Reset
             setStep(1);
             setCart([]);
-            setFormData({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: '', sourceType: '', sourceOther: '' });
+            setFormData({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: '', sourceType: '', sourceOther: '', note: '' });
         } else {
             alert('Failed: ' + result.error);
         }
@@ -160,7 +119,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl z-[70] flex flex-col max-h-[90vh] focus:outline-none overflow-hidden font-sans">
 
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                 <h2 className="text-xl font-bold text-gray-900">Create New Order</h2>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500">
                     <X size={20} />
@@ -168,7 +127,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Steps Indicator */}
-            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between sticky top-[76px] z-10">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= s ? 'bg-[#8A63D2] text-white' : 'bg-gray-200 text-gray-500'}`}>
@@ -183,48 +142,42 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-8">
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                 {step === 1 && (
                     <div className="space-y-6 animate-in slide-in-from-right duration-200">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
-                                <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Jane" />
+                                <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Jane" />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
-                                <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Doe" />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Phone</label>
-                                <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="9876543210" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Email (Opt)</label>
-                                <input value={formData.email} onChange={e => updateField('email', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="jane@example.com" />
+                                <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Doe" />
                             </div>
                         </div>
 
                         <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Phone</label>
+                            <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="9876543210" />
+                        </div>
+
+                        <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
-                            <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Street Address" />
+                            <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Street Address" />
                         </div>
 
                         <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                                <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
+                                <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="p-2.5 border-gray-200 rounded-lg text-sm" />
+                                <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[42px] px-3 border-gray-200 rounded-lg text-sm" />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-500 uppercase">Zip</label>
-                                <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full p-2.5 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
+                                <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
                             </div>
                         </div>
 
@@ -233,7 +186,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             <select
                                 value={formData.sourceType}
                                 onChange={e => updateField('sourceType', e.target.value)}
-                                className="w-full p-2.5 border rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2]"
+                                className="w-full h-[42px] px-3 border rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2]"
                             >
                                 <option value="">Select Source</option>
                                 {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -242,7 +195,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <input
                                     value={formData.sourceOther}
                                     onChange={e => updateField('sourceOther', e.target.value)}
-                                    className="w-full p-2.5 mt-2 border rounded-lg text-sm outline-none focus:border-[#8A63D2]"
+                                    className="w-full h-[42px] px-3 mt-2 border rounded-lg text-sm outline-none focus:border-[#8A63D2]"
                                     placeholder="Type source name..."
                                 />
                             )}
@@ -262,34 +215,36 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             />
                         </div>
 
-                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50 p-2 space-y-2 min-h-[200px] max-h-[300px]">
-                            {products
-                                .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()))
-                                .map(product => (
-                                    <div key={product.id} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 bg-gray-100 rounded overflow-hidden">
+                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50 p-2 min-h-[300px] custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-3">
+                                {products
+                                    .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                                    .map(product => (
+                                        <div key={product.id} className="flex flex-col p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-purple-100 transition-colors">
+                                            <div className="h-24 w-full bg-gray-100 rounded-lg overflow-hidden mb-3">
                                                 {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover" />}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-gray-900">{product.name}</p>
-                                                <p className="text-xs text-gray-500">₹{product.price}</p>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <p className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">{product.name}</p>
+                                            </div>
+                                            <div className="mt-auto flex items-center justify-between">
+                                                <p className="text-xs text-gray-500 font-medium">₹{product.price}</p>
+                                                <button
+                                                    onClick={() => addToCart(product)}
+                                                    className="p-1.5 bg-gray-100 hover:bg-[#8A63D2] hover:text-white rounded-full transition-colors"
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => addToCart(product)}
-                                            className="p-2 bg-gray-100 hover:bg-[#8A63D2] hover:text-white rounded-lg transition-colors"
-                                        >
-                                            <Plus size={16} />
-                                        </button>
-                                    </div>
-                                ))}
+                                    ))}
+                            </div>
                         </div>
 
                         {cart.length > 0 && (
                             <div className="border-t border-gray-100 pt-4">
                                 <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Selected Items</h3>
-                                <div className="space-y-2 max-h-[150px] overflow-y-auto">
+                                <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
                                     {cart.map(item => (
                                         <div key={item.id} className="flex items-center justify-between text-sm">
                                             <span className="flex-1 truncate pr-2">{item.name}</span>
@@ -367,7 +322,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Footer Actions */}
-            <div className="p-6 border-t border-gray-100 flex justify-between bg-white">
+            <div className="p-6 border-t border-gray-100 flex justify-between bg-white sticky bottom-0 z-10">
                 <button
                     onClick={() => setStep(s => Math.max(1, s - 1))}
                     disabled={step === 1}

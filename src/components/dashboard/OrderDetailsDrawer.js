@@ -270,7 +270,7 @@ We will keep you updated!`;
                     <div className="flex flex-col gap-1 mt-1">
                         <p className="text-sm text-gray-500 flex items-center gap-1">
                             <Calendar size={14} />
-                            {new Date(order.created_at).toLocaleString()}
+                        {new Date(order.created_at).toLocaleDateString('en-GB')} at {new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </p>
                         {/* Display Source here */}
                         <p className="text-xs text-gray-400 flex items-center gap-1">

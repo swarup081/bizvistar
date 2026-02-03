@@ -168,13 +168,17 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
     }
 
     // 4. Create Order
+    // Determine Source
+    const orderSource = customerDetails.isManual ? 'pos' : 'website';
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         website_id: websiteId,
         customer_id: customerId,
         total_amount: calculatedTotal,
-        status: 'pending'
+        status: 'pending',
+        source: orderSource // Explicitly set source
       })
       .select('id')
       .single();
