@@ -14,11 +14,13 @@ import {
   Eye,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
 import OrderDetailsDrawer from '@/components/dashboard/OrderDetailsDrawer';
+import AddOrderWizard from '@/components/dashboard/orders/AddOrderWizard'; // Import Wizard
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 // --- Main Content Component (with Suspense logic) ---
@@ -27,6 +29,8 @@ function OrdersContent() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [businessName, setBusinessName] = useState('Us');
+  const [websiteId, setWebsiteId] = useState(null);
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false); // Add Order State
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +79,8 @@ function OrdersContent() {
         setLoading(false);
         return;
     }
+
+    setWebsiteId(website.id); // Set ID for Wizard
 
     // Fetch business name from onboarding
     const { data: onboarding } = await supabase
@@ -142,7 +148,9 @@ function OrdersContent() {
                 provider: deliveriesMap[o.id][0].provider,
                 trackingNumber: deliveriesMap[o.id][0].tracking_number,
                 date: deliveriesMap[o.id][0].created_at
-            } : null
+            } : null,
+            // Extract Source from Customer Shipping Address Note/Field if manual
+            manualSource: o.customers?.shipping_address?.manualSource || null
         }));
 
         setOrders(merged);
@@ -226,12 +234,10 @@ function OrdersContent() {
              <p className="text-gray-500 mt-1 text-sm hidden md:block">Manage and track your customer orders.</p>
         </div>
 
-        {/* Controls Group: Search + Filter (Unified Style) */}
-        {/* Mobile: Pushed to Right. Desktop: Pushed to Right. */}
+        {/* Controls Group: Search + Filter + Add Order */}
         <div className="flex items-center gap-2 md:gap-3 justify-end w-auto">
 
              {/* Search Input */}
-             {/* Fixed width on mobile to ensure gap */}
              <div className="relative w-[180px] md:w-64">
                 <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-gray-400" />
                 <input
@@ -243,7 +249,7 @@ function OrdersContent() {
                 />
              </div>
 
-             {/* Filter Icon Button (Unified) */}
+             {/* Filter Icon Button */}
              <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                     <button className={`h-[36px] w-[36px] md:h-[40px] md:w-[40px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
@@ -266,11 +272,20 @@ function OrdersContent() {
                     </DropdownMenu.Content>
                 </DropdownMenu.Portal>
             </DropdownMenu.Root>
+
+            {/* Add Order Button */}
+            <button
+                onClick={() => setIsAddOrderOpen(true)}
+                className="h-[36px] w-[36px] md:h-[40px] md:w-[40px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
+                title="Add Manual Order"
+            >
+                <Plus size={16} className="md:w-[18px] md:h-[18px]" />
+            </button>
         </div>
 
       </div>
 
-      {/* Table Container: Normal height (no internal scroll/sticky) */}
+      {/* Table Container */}
       <div className="bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
         <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
@@ -281,6 +296,10 @@ function OrdersContent() {
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
+
+                        {/* New Source Column */}
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
+
                         <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
@@ -288,13 +307,13 @@ function OrdersContent() {
                     {loading ? (
                         [1, 2, 3, 4, 5].map((i) => (
                             <tr key={i}>
-                                <td colSpan="6" className="p-4 md:px-6">
+                                <td colSpan="7" className="p-4 md:px-6">
                                     <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse"></div>
                                 </td>
                             </tr>
                         ))
                     ) : currentOrders.length === 0 ? (
-                        <tr><td colSpan="6" className="p-12 text-center text-gray-500">
+                        <tr><td colSpan="7" className="p-12 text-center text-gray-500">
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <Search className="text-gray-300 h-8 w-8" />
                                 <p>No orders found matching your filters.</p>
@@ -327,6 +346,18 @@ function OrdersContent() {
                                     </span>
                                 </td>
                                 <td className="hidden md:table-cell py-4 px-6 text-sm font-bold text-gray-900 align-middle">₹{order.total_amount}</td>
+
+                                {/* Manual Source Display */}
+                                <td className="hidden md:table-cell py-4 px-6 text-sm align-middle">
+                                    {order.manualSource ? (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                            {order.manualSource}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400 text-xs">Website</span>
+                                    )}
+                                </td>
+
                                 <td className="py-4 pr-4 md:px-6 text-right align-middle">
                                     <button 
                                         onClick={() => setSelectedOrder(order)}
@@ -378,6 +409,13 @@ function OrdersContent() {
             setSelectedOrder(null);
         }} 
         onUpdate={fetchOrders}
+      />
+
+      <AddOrderWizard
+        isOpen={isAddOrderOpen}
+        onClose={() => setIsAddOrderOpen(false)}
+        onOrderAdded={fetchOrders}
+        websiteId={websiteId}
       />
     </div>
   );
