@@ -9,12 +9,12 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 // Source Options
 const SOURCE_OPTIONS = [
-    { value: 'social_media', label: 'Social Media (IG/FB)' },
+    { value: 'social_media', label: 'Social Media' },
     { value: 'website', label: 'Website' },
-    { value: 'whatsapp', label: 'WhatsApp / DM' },
+    { value: 'whatsapp', label: 'WhatsApp' },
     { value: 'phone', label: 'Phone Call' },
     { value: 'walk_in', label: 'Walk-in' },
-    { value: 'other', label: 'Other (Specify)' }
+    { value: 'other', label: 'Other' }
 ];
 
 export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId }) {
@@ -23,6 +23,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]); 
   const [productSearch, setProductSearch] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Form State
   const [formData, setFormData] = useState({
@@ -50,7 +51,12 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
       }
   }, [isOpen, websiteId]);
 
-  const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+  const updateField = (field, value) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      if (fieldErrors[field]) {
+          setFieldErrors(prev => ({ ...prev, [field]: null }));
+      }
+  };
 
   const addToCart = (product) => {
       setCart(prev => {
@@ -117,16 +123,37 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   // Helper for sub-step navigation
   const handleNext = () => {
       if (step === 1) {
+          const errors = {};
           if (subStep1 === 1) {
-              if (!formData.firstName || !formData.phone) return alert("Please fill required details");
+              if (!formData.firstName.trim()) errors.firstName = "First name is required";
+              if (!formData.phone.trim()) errors.phone = "Phone number is required";
+
+              if (Object.keys(errors).length > 0) {
+                  setFieldErrors(errors);
+                  return;
+              }
               setSubStep1(2);
           } else {
-              // Address validation optional? Let's require at least source
-              if (!formData.sourceType) return alert("Please select an Order Source");
+              // Address validation
+              // Optional fields logic: Source is required as per previous logic
+              if (!formData.sourceType) errors.sourceType = "Please select an Order Source";
+              // Address fields were optional in previous code but prompted?
+              // "Address validation optional? Let's require at least source" -> logic from before.
+              // Prompt "Please fill required details" implies some check.
+              // Let's make address/city/state/zip required as they are standard order fields.
+              if (!formData.address.trim()) errors.address = "Address is required";
+              if (!formData.city.trim()) errors.city = "City is required";
+              if (!formData.state.trim()) errors.state = "State is required";
+              if (!formData.zipCode.trim()) errors.zipCode = "Zip Code is required";
+
+              if (Object.keys(errors).length > 0) {
+                  setFieldErrors(errors);
+                  return;
+              }
               setStep(2);
           }
       } else if (step === 2) {
-          if (cart.length === 0) return alert("Add at least one product");
+          if (cart.length === 0) return alert("Add at least one product"); // Keeping alert for cart empty as it's not a field
           setStep(3);
       }
   };
@@ -154,7 +181,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                <h2 className="text-xl font-bold text-gray-900">Create New Order</h2>
+                <Dialog.Title className="text-xl font-bold text-gray-900">Create New Order</Dialog.Title>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />
                 </button>
@@ -191,16 +218,34 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
-                                        <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Jane" autoFocus />
+                                        <input
+                                            value={formData.firstName}
+                                            onChange={e => updateField('firstName', e.target.value)}
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
+                                            placeholder="Jane"
+                                            autoFocus
+                                        />
+                                        {fieldErrors.firstName && <p className="text-xs text-red-500">{fieldErrors.firstName}</p>}
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
-                                        <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Doe" />
+                                        <input
+                                            value={formData.lastName}
+                                            onChange={e => updateField('lastName', e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                            placeholder="Doe"
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Phone Number</label>
-                                    <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="9876543210" />
+                                    <input
+                                        value={formData.phone}
+                                        onChange={e => updateField('phone', e.target.value)}
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
+                                        placeholder="9876543210"
+                                    />
+                                    {fieldErrors.phone && <p className="text-xs text-red-500">{fieldErrors.phone}</p>}
                                 </div>
                             </div>
                         ) : (
@@ -212,23 +257,45 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
-                                    <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Street Address" autoFocus />
+                                    <input
+                                        value={formData.address}
+                                        onChange={e => updateField('address', e.target.value)}
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.address ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
+                                        placeholder="Street Address"
+                                        autoFocus
+                                    />
+                                    {fieldErrors.address && <p className="text-xs text-red-500">{fieldErrors.address}</p>}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                                        <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" />
+                                        <input
+                                            value={formData.city}
+                                            onChange={e => updateField('city', e.target.value)}
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.city ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
+                                        />
+                                        {fieldErrors.city && <p className="text-xs text-red-500">{fieldErrors.city}</p>}
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} />
+                                        <StateSelector
+                                            value={formData.state}
+                                            onChange={val => updateField('state', val)}
+                                            error={!!fieldErrors.state}
+                                        />
+                                        {fieldErrors.state && <p className="text-xs text-red-500">{fieldErrors.state}</p>}
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Zip Code</label>
-                                    <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" />
+                                    <input
+                                        value={formData.zipCode}
+                                        onChange={e => updateField('zipCode', e.target.value)}
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.zipCode ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
+                                    />
+                                    {fieldErrors.zipCode && <p className="text-xs text-red-500">{fieldErrors.zipCode}</p>}
                                 </div>
 
                                 <div className="space-y-1.5 pt-4 border-t border-gray-100">
@@ -236,11 +303,12 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <select 
                                         value={formData.sourceType} 
                                         onChange={e => updateField('sourceType', e.target.value)}
-                                        className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                        className={`w-full p-3 border rounded-md text-sm bg-white outline-none transition-all ${fieldErrors.sourceType ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
                                     >
                                         <option value="">Select Source</option>
                                         {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                     </select>
+                                    {fieldErrors.sourceType && <p className="text-xs text-red-500">{fieldErrors.sourceType}</p>}
                                     {formData.sourceType === 'other' && (
                                         <input 
                                             value={formData.sourceOther} 
