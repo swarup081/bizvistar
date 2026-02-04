@@ -6,19 +6,21 @@ import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, Use
 import { supabase } from '@/lib/supabaseClient';
 import { submitOrder } from '@/app/actions/orderActions'; 
 import StateSelector from '@/components/checkout/StateSelector'; 
+import StyledInput from '@/components/ui/StyledInput';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 import { cn } from '@/lib/utils';
 
 // Source Options
 const SOURCE_OPTIONS = [
     { value: 'social_media', label: 'Social Media' },
-    { value: 'whatsapp', label: 'WhatsApp' },
     { value: 'website', label: 'Website' },
+    { value: 'whatsapp', label: 'WhatsApp' },
     { value: 'phone', label: 'Phone Call' },
     { value: 'walk_in', label: 'Walk-in' },
     { value: 'other', label: 'Other' }
 ];
 
-export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId }) {
+export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId, initialProducts }) {
   const [step, setStep] = useState(1);
   const [subStep1, setSubStep1] = useState(1); // 1: Personal, 2: Address
   const [loading, setLoading] = useState(false);
@@ -43,14 +45,18 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const [cart, setCart] = useState([]); 
 
   useEffect(() => {
-      if (isOpen && websiteId) {
-          const fetchProds = async () => {
-              const { data } = await supabase.from('products').select('*').eq('website_id', websiteId);
-              if (data) setProducts(data);
-          };
-          fetchProds();
+      if (isOpen) {
+          if (initialProducts) {
+              setProducts(initialProducts);
+          } else if (websiteId) {
+              const fetchProds = async () => {
+                  const { data } = await supabase.from('products').select('*').eq('website_id', websiteId);
+                  if (data) setProducts(data);
+              };
+              fetchProds();
+          }
       }
-  }, [isOpen, websiteId]);
+  }, [isOpen, websiteId, initialProducts]);
 
   const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
@@ -217,16 +223,29 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
-                                        <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Jane" autoFocus />
+                                        <StyledInput
+                                            value={formData.firstName}
+                                            onChange={e => updateField('firstName', e.target.value)}
+                                            placeholder="Jane"
+                                            autoFocus
+                                        />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
-                                        <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Doe" />
+                                        <StyledInput
+                                            value={formData.lastName}
+                                            onChange={e => updateField('lastName', e.target.value)}
+                                            placeholder="Doe"
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Phone Number</label>
-                                    <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="9876543210" />
+                                    <StyledInput
+                                        value={formData.phone}
+                                        onChange={e => updateField('phone', e.target.value)}
+                                        placeholder="9876543210"
+                                    />
                                 </div>
                             </div>
                         ) : (
@@ -238,49 +257,51 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
-                                    <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Street Address" autoFocus />
+                                    <StyledInput
+                                        value={formData.address}
+                                        onChange={e => updateField('address', e.target.value)}
+                                        placeholder="Street Address"
+                                        autoFocus
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                                        <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                        <StyledInput
+                                            value={formData.city}
+                                            onChange={e => updateField('city', e.target.value)}
+                                        />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[42px] px-3 border-gray-200 rounded-lg text-sm" />
+                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[48px]" />
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Zip Code</label>
-                                    <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                    <StyledInput
+                                        value={formData.zipCode}
+                                        onChange={e => updateField('zipCode', e.target.value)}
+                                    />
                                 </div>
 
                                 <div className="space-y-3 pt-4 border-t border-gray-100">
                                     <label className="text-xs font-bold text-[#8A63D2] uppercase">Order Source</label>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {SOURCE_OPTIONS.map((opt) => (
-                                            <div
-                                                key={opt.value}
-                                                onClick={() => updateField('sourceType', opt.value)}
-                                                className={cn(
-                                                    "cursor-pointer rounded-xl border p-3 text-sm font-medium transition-all text-center flex items-center justify-center",
-                                                    formData.sourceType === opt.value
-                                                        ? "border-[#8A63D2] bg-purple-50 text-[#8A63D2] shadow-sm"
-                                                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
-                                                )}
-                                            >
-                                                {opt.label}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <SearchableSelect
+                                        options={SOURCE_OPTIONS}
+                                        value={formData.sourceType}
+                                        onChange={val => updateField('sourceType', val)}
+                                        placeholder="Select Source..."
+                                        searchPlaceholder="Search sources..."
+                                    />
 
                                     {formData.sourceType === 'other' && (
-                                        <input 
+                                        <StyledInput
                                             value={formData.sourceOther} 
                                             onChange={e => updateField('sourceOther', e.target.value)} 
-                                            className="w-full h-[42px] px-3 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors animate-in fade-in slide-in-from-top-2"
+                                            className="mt-2 animate-in fade-in slide-in-from-top-2"
                                             placeholder="Specify source..."
                                             autoFocus
                                         />
@@ -303,20 +324,20 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             </div>
                         )}
 
-                        <div className="relative shrink-0">
+                        <div className="relative shrink-0 z-10">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <input 
+                            <StyledInput
                                 value={productSearch}
                                 onChange={e => setProductSearch(e.target.value)}
                                 placeholder="Search products to add..."
-                                className="w-full pl-9 p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] transition-all"
+                                className="pl-9"
                                 autoFocus
                             />
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-[300px] custom-scrollbar relative">
+                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-0 custom-scrollbar relative">
                             {displayProducts.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-3 pb-2">
                                     {displayProducts.map(product => {
                                         const isOutOfStock = product.stock !== -1 && product.stock <= 0;
                                         return (
@@ -420,7 +441,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 </div>
                                 <div>
                                     <span className="block text-xs text-gray-500 uppercase mb-0.5">Source</span>
-                                    <span className="text-[#8A63D2] font-bold bg-purple-50 px-2 py-0.5 rounded text-xs inline-block border border-purple-100">
+                                    <span className="text-gray-900 font-medium">
                                         {formData.sourceType === 'other' ? formData.sourceOther : SOURCE_OPTIONS.find(s => s.value === formData.sourceType)?.label}
                                     </span>
                                 </div>
