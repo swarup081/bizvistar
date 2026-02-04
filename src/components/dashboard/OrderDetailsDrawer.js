@@ -1,7 +1,7 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Truck, CheckCircle, Package, FileText, MessageCircle, MapPin, User, Calendar, AlertCircle, StickyNote } from 'lucide-react';
+import { X, Truck, CheckCircle, Package, FileText, MessageCircle, MapPin, User, Calendar, AlertCircle, StickyNote, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import jsPDF from 'jspdf';
@@ -233,10 +233,11 @@ export default function OrderDetailsDrawer({ order, isOpen, onClose, onUpdate, b
   const logistics = order.logistics;
   const customerName = order.customers?.name || 'Customer';
   
-  // Extract customer details from either flat columns or shipping_address JSON
+  // Extract customer details
   const addr = order.shipping_address || order.customers?.shipping_address || {};
   const customerPhone = addr.phone || addr.phoneNumber || order.customers?.phone;
   const customerNote = addr.note || order.customers?.note; // Get Note
+  const manualSource = addr.manualSource || order.manualSource; // Get Source
 
   // WhatsApp Message Construction
   const constructWhatsAppLink = () => {
@@ -266,10 +267,17 @@ We will keep you updated!`;
                             {order.status}
                         </span>
                     </Dialog.Title>
-                    <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-                        <Calendar size={14} />
-                        {new Date(order.created_at).toLocaleString()}
-                    </p>
+                    <div className="flex flex-col gap-1 mt-1">
+                        <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Calendar size={14} />
+                        {new Date(order.created_at).toLocaleDateString('en-GB')} at {new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                        {/* Display Source here */}
+                        <p className="text-xs text-gray-400 flex items-center gap-1">
+                            <Globe size={12} />
+                            Source: <span className="font-medium text-gray-600">{manualSource || 'Website'}</span>
+                        </p>
+                    </div>
                 </div>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />

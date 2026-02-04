@@ -14,11 +14,13 @@ import {
   Eye,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
 import OrderDetailsDrawer from '@/components/dashboard/OrderDetailsDrawer';
+import AddOrderWizard from '@/components/dashboard/orders/AddOrderWizard'; // Import Wizard
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 // --- Main Content Component (with Suspense logic) ---
@@ -27,6 +29,8 @@ function OrdersContent() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [businessName, setBusinessName] = useState('Us');
+  const [websiteId, setWebsiteId] = useState(null);
+  const [isAddOrderOpen, setIsAddOrderOpen] = useState(false); // Add Order State
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +79,8 @@ function OrdersContent() {
         setLoading(false);
         return;
     }
+    
+    setWebsiteId(website.id); // Set ID for Wizard
 
     // Fetch business name from onboarding
     const { data: onboarding } = await supabase
@@ -133,17 +139,35 @@ function OrdersContent() {
             return acc;
         }, {});
 
-        const merged = orders.map(o => ({
-            ...o,
-            customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' },
-            order_items: itemsMap[o.id] || [],
-            deliveries: deliveriesMap[o.id] || [],
-            logistics: deliveriesMap[o.id]?.[0] ? {
-                provider: deliveriesMap[o.id][0].provider,
-                trackingNumber: deliveriesMap[o.id][0].tracking_number,
-                date: deliveriesMap[o.id][0].created_at
-            } : null
-        }));
+        const merged = orders.map(o => {
+            const customer = customersMap[o.customer_id] || { name: 'Unknown', email: '' };
+            // Extract Source from Customer Shipping Address JSON (manualSource)
+            // Or fallback to 'website' if 'source' column says so.
+            // Note: `o.source` is 'pos' or 'website'.
+            // `customer.shipping_address.manualSource` is the specific string (e.g. "WhatsApp").
+            
+            let displaySource = 'Website';
+            if (o.source === 'pos') {
+                displaySource = customer.shipping_address?.manualSource || 'Manual';
+            } else if (o.source === 'website') {
+                displaySource = 'Website';
+            } else {
+                displaySource = o.source || 'Website';
+            }
+
+            return {
+                ...o,
+                customers: customer,
+                order_items: itemsMap[o.id] || [],
+                deliveries: deliveriesMap[o.id] || [],
+                logistics: deliveriesMap[o.id]?.[0] ? {
+                    provider: deliveriesMap[o.id][0].provider,
+                    trackingNumber: deliveriesMap[o.id][0].tracking_number,
+                    date: deliveriesMap[o.id][0].created_at
+                } : null,
+                displaySource: displaySource
+            };
+        });
 
         setOrders(merged);
 
@@ -218,59 +242,119 @@ function OrdersContent() {
     <div className="h-full flex flex-col font-sans">
       
       {/* Header Section: Consolidated for Mobile & Desktop */}
-      <div className="flex flex-row items-center md:flex-row justify-between gap-5 mb-4 md:mb-8 px-0 md:px-0 pt-4 md:pt-0 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-4 md:px-0 pt-4 md:pt-0 shrink-0">
         
-        {/* Title Group */}
-        <div className="flex items-center justify-between md:block">
-             <h1 className="text-xl md:text-2xl font-bold text-gray-900 shrink-0">Orders</h1>
-             <p className="text-gray-500 mt-1 text-sm hidden md:block">Manage and track your customer orders.</p>
-        </div>
-
-        {/* Controls Group: Search + Filter (Unified Style) */}
-        {/* Mobile: Pushed to Right. Desktop: Pushed to Right. */}
-        <div className="flex items-center gap-2 md:gap-3 justify-end w-auto">
-             
-             {/* Search Input */}
-             {/* Fixed width on mobile to ensure gap */}
-             <div className="relative w-[180px] md:w-64">
-                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 md:h-4 md:w-4 -translate-y-1/2 text-gray-400" />
-                <input 
-                  type="text" 
-                  placeholder="Search..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 md:h-10 w-full rounded-full border border-gray-200 bg-white pl-9 md:pl-10 pr-3 md:pr-4 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
-                />
+        {/* Mobile Header Layout: Two Rows */}
+        <div className="flex md:hidden flex-col w-full gap-3 px-4 pt-4">
+             {/* Row 1: Title (Left) and Add Order Button (Right) */}
+             <div className="flex items-center justify-between w-full">
+                 <h1 className="text-xl font-bold text-gray-900 shrink-0">Orders</h1>
+                 
+                 {/* Add Order Button (Black, Small Icon) */}
+                 <button 
+                    onClick={() => setIsAddOrderOpen(true)}
+                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
+                    title="Add Manual Order"
+                >
+                    <Plus size={16} />
+                </button>
              </div>
 
-             {/* Filter Icon Button (Unified) */}
-             <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
-                    <button className={`h-[36px] w-[36px] md:h-[40px] md:w-[40px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
-                        <Filter size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
-                </DropdownMenu.Trigger>
+             {/* Row 2: Search (Grow) and Filter (Fixed) */}
+             <div className="flex items-center gap-2 w-full">
+                 <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="text" 
+                      placeholder="Search..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-9 w-full rounded-full border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
+                    />
+                 </div>
 
-                <DropdownMenu.Portal>
-                    <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
-                        {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
-                            <DropdownMenu.Item 
-                                key={status}
-                                onClick={() => setStatusFilter(status)}
-                                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
-                            >
-                                <span className="capitalize">{status}</span>
-                                {statusFilter === status && <CheckCircle size={14} />}
-                            </DropdownMenu.Item>
-                        ))}
-                    </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+                 <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
+                            <Filter size={16} />
+                        </button>
+                    </DropdownMenu.Trigger>
+
+                    <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item 
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+             </div>
+        </div>
+
+        {/* Desktop Layout (Hidden on Mobile) */}
+        <div className="hidden md:flex items-center justify-between w-full">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+                 <div className="relative w-64">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <input 
+                    type="text" 
+                    placeholder="Search orders..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
+                    />
+                </div>
+                
+                <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                        <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
+                            <Filter className="h-4 w-4" />
+                            {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                            <ChevronDown className="h-3 w-3 opacity-50" />
+                        </button>
+                    </DropdownMenu.Trigger>
+                     <DropdownMenu.Portal>
+                        <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
+                            {['all', 'pending', 'paid', 'shipped', 'delivered', 'canceled'].map((status) => (
+                                <DropdownMenu.Item 
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                >
+                                    <span className="capitalize">{status}</span>
+                                    {statusFilter === status && <CheckCircle size={14} />}
+                                </DropdownMenu.Item>
+                            ))}
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                </DropdownMenu.Root>
+
+                {/* Add Order Button (Desktop) */}
+                <button 
+                    onClick={() => setIsAddOrderOpen(true)}
+                    className="h-10 px-4 flex items-center justify-center gap-2 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
+                >
+                    <Plus size={18} />
+                    Add Order
+                </button>
+            </div>
         </div>
 
       </div>
 
-      {/* Table Container: Normal height (no internal scroll/sticky) */}
+      {/* Table Container */}
       <div className="bg-white md:rounded-2xl shadow-sm md:border border-gray-200 overflow-hidden flex flex-col -mx-4 md:mx-0 border-y border-gray-100 md:border-0">
         <div className="w-full">
             <table className="w-full text-left border-collapse table-auto">
@@ -281,6 +365,7 @@ function OrdersContent() {
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Source</th>
                         <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                 </thead>
@@ -288,13 +373,13 @@ function OrdersContent() {
                     {loading ? (
                         [1, 2, 3, 4, 5].map((i) => (
                             <tr key={i}>
-                                <td colSpan="6" className="p-4 md:px-6">
+                                <td colSpan="7" className="p-4 md:px-6">
                                     <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse"></div>
                                 </td>
                             </tr>
                         ))
                     ) : currentOrders.length === 0 ? (
-                        <tr><td colSpan="6" className="p-12 text-center text-gray-500">
+                        <tr><td colSpan="7" className="p-12 text-center text-gray-500">
                             <div className="flex flex-col items-center justify-center gap-2">
                                 <Search className="text-gray-300 h-8 w-8" />
                                 <p>No orders found matching your filters.</p>
@@ -315,7 +400,7 @@ function OrdersContent() {
                                     #{order.id}
                                 </td>
                                 <td className="py-4 pl-4 md:px-6 text-gray-500 align-middle">
-                                    <span className="block font-medium text-gray-900 md:text-gray-500">{new Date(order.created_at).toLocaleDateString()}</span>
+                                    <span className="block font-medium text-gray-900 md:text-gray-500">{new Date(order.created_at).toLocaleDateString('en-GB')}</span>
                                     <span className="text-[10px] md:text-xs text-gray-400 block">{new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                 </td>
                                 <td className="py-4 px-2 md:px-6 font-medium text-gray-900 align-middle">
@@ -327,6 +412,18 @@ function OrdersContent() {
                                     </span>
                                 </td>
                                 <td className="hidden md:table-cell py-4 px-6 text-sm font-bold text-gray-900 align-middle">₹{order.total_amount}</td>
+                                
+                                {/* Manual Source Display */}
+                                <td className="hidden md:table-cell py-4 px-6 text-sm align-middle">
+                                    {order.displaySource && order.displaySource !== 'Website' ? (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                            {order.displaySource}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400 text-xs">Website</span>
+                                    )}
+                                </td>
+
                                 <td className="py-4 pr-4 md:px-6 text-right align-middle">
                                     <button 
                                         onClick={() => setSelectedOrder(order)}
@@ -349,7 +446,7 @@ function OrdersContent() {
               <button 
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-400 rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                   <ChevronLeft size={16} />
                   Prev
@@ -362,7 +459,7 @@ function OrdersContent() {
               <button 
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-400 rounded-full hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                   Next
                   <ChevronRight size={16} />
@@ -378,6 +475,13 @@ function OrdersContent() {
             setSelectedOrder(null);
         }} 
         onUpdate={fetchOrders}
+      />
+
+      <AddOrderWizard 
+        isOpen={isAddOrderOpen}
+        onClose={() => setIsAddOrderOpen(false)}
+        onOrderAdded={fetchOrders}
+        websiteId={websiteId}
       />
     </div>
   );
