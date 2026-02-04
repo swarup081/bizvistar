@@ -122,11 +122,18 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
   // Helper for sub-step navigation
   const handleNext = () => {
+      const errors = {};
       if (step === 1) {
-          const errors = {};
           if (subStep1 === 1) {
               if (!formData.firstName.trim()) errors.firstName = "First name is required";
+              if (!formData.lastName.trim()) errors.lastName = "Last name is required";
               if (!formData.phone.trim()) errors.phone = "Phone number is required";
+
+              // Strict Phone Validation
+              const phoneRegex = /^\d{10}$/;
+              if (formData.phone.trim() && !phoneRegex.test(formData.phone.trim())) {
+                  errors.phone = "Phone number must be exactly 10 digits";
+              }
 
               if (Object.keys(errors).length > 0) {
                   setFieldErrors(errors);
@@ -134,17 +141,17 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
               }
               setSubStep1(2);
           } else {
-              // Address validation
-              // Optional fields logic: Source is required as per previous logic
-              if (!formData.sourceType) errors.sourceType = "Please select an Order Source";
-              // Address fields were optional in previous code but prompted?
-              // "Address validation optional? Let's require at least source" -> logic from before.
-              // Prompt "Please fill required details" implies some check.
-              // Let's make address/city/state/zip required as they are standard order fields.
               if (!formData.address.trim()) errors.address = "Address is required";
               if (!formData.city.trim()) errors.city = "City is required";
               if (!formData.state.trim()) errors.state = "State is required";
               if (!formData.zipCode.trim()) errors.zipCode = "Zip Code is required";
+              if (!formData.sourceType) errors.sourceType = "Please select an Order Source";
+
+              // Strict Zip Validation
+              const zipRegex = /^\d{6}$/;
+              if (formData.zipCode.trim() && !zipRegex.test(formData.zipCode.trim())) {
+                   errors.zipCode = "ZIP code must be exactly 6 digits";
+              }
 
               if (Object.keys(errors).length > 0) {
                   setFieldErrors(errors);
@@ -153,7 +160,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
               setStep(2);
           }
       } else if (step === 2) {
-          if (cart.length === 0) return alert("Add at least one product"); // Keeping alert for cart empty as it's not a field
+          if (cart.length === 0) return alert("Add at least one product");
           setStep(3);
       }
   };
@@ -177,10 +184,11 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg bg-white rounded-2xl shadow-2xl z-[70] flex flex-col max-h-[90vh] focus:outline-none overflow-hidden font-sans">
+        {/* Fixed Height Modal: h-[600px] on md+, full screen minus margin on mobile */}
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg h-[80vh] md:h-[600px] bg-white rounded-2xl shadow-2xl z-[70] flex flex-col focus:outline-none overflow-hidden font-sans">
             
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 z-10">
                 <Dialog.Title className="text-xl font-bold text-gray-900">Create New Order</Dialog.Title>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />
@@ -188,7 +196,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Steps Indicator */}
-            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between sticky top-[76px] z-10">
+            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0 z-10">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= s ? 'bg-[#8A63D2] text-white' : 'bg-gray-200 text-gray-500'}`}>
@@ -202,8 +210,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                 ))}
             </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+            {/* Body - Flex 1 with Overflow Auto handles the scrolling */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
                 
                 {/* STEP 1: CUSTOMER */}
                 {step === 1 && (
@@ -232,9 +240,10 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input
                                             value={formData.lastName}
                                             onChange={e => updateField('lastName', e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`}
                                             placeholder="Doe"
                                         />
+                                        {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
@@ -325,8 +334,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
                 {/* STEP 2: PRODUCTS */}
                 {step === 2 && (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-200 h-full flex flex-col">
-                        <div className="relative">
+                    <div className="space-y-6 animate-in slide-in-from-right duration-200 min-h-0 flex flex-col h-full">
+                        <div className="relative shrink-0">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input 
                                 value={productSearch}
@@ -336,7 +345,13 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             />
                         </div>
                         
-                        <div className="overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 max-h-[300px] custom-scrollbar">
+                        {/*
+                           FIX: Allow this specific container to scroll internally if needed,
+                           but the parent "Body" already handles main scrolling.
+                           To make it "internal scrolling" for the list specifically (keeping search and cart visible),
+                           we need to restrict this container's height.
+                        */}
+                        <div className="flex-1 min-h-[200px] overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 custom-scrollbar">
                             {displayProducts.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
                                     {displayProducts.map(product => (
@@ -360,14 +375,14 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     ))}
                                 </div>
                             ) : (
-                                <div className="h-[200px] flex flex-col items-center justify-center text-gray-400 text-sm">
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
                                     <p>{productSearch ? 'No products found.' : 'Search to find products...'}</p>
                                 </div>
                             )}
                         </div>
 
                         {cart.length > 0 && (
-                            <div className="border-t border-gray-100 pt-4">
+                            <div className="border-t border-gray-100 pt-4 shrink-0">
                                 <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
                                 <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                                     {cart.map(item => (
@@ -450,7 +465,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Footer Actions */}
-            <div className="p-6 border-t border-gray-100 flex justify-between bg-white sticky bottom-0 z-10">
+            <div className="p-6 border-t border-gray-100 flex justify-between bg-white shrink-0 z-10">
                 <button 
                     onClick={handleBack}
                     disabled={step === 1 && subStep1 === 1}
