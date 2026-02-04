@@ -1,0 +1,66 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1468ms
+ ○ Compiling /verify-ui ...
+ GET /verify-ui 200 in 9.4s (compile: 8.8s, render: 527ms)
+ ⨯ Error: supabaseKey is required.
+    at module evaluation (src/app/actions/orderActions.js:8:35)
+    at module evaluation (.next-internal/server/app/verify-ui/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/_96304ee5._.js:279:519)
+   6 |
+   7 | // Initialize Supabase Admin Client
+>  8 | const supabaseAdmin = createClient(
+     |                                   ^
+   9 |   process.env.NEXT_PUBLIC_SUPABASE_URL,
+  10 |   process.env.SUPABASE_SERVICE_ROLE_KEY
+  11 | ); {
+  digest: '2327670416'
+}
+ POST /verify-ui 500 in 1358ms (compile: 15ms, render: 1343ms)
+ GET /verify-ui 200 in 99ms (compile: 9ms, render: 91ms)
+ ⨯ Error: supabaseKey is required.
+    at module evaluation (src/app/actions/orderActions.js:8:35)
+    at module evaluation (.next-internal/server/app/verify-ui/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/_96304ee5._.js:279:519)
+   6 |
+   7 | // Initialize Supabase Admin Client
+>  8 | const supabaseAdmin = createClient(
+     |                                   ^
+   9 |   process.env.NEXT_PUBLIC_SUPABASE_URL,
+  10 |   process.env.SUPABASE_SERVICE_ROLE_KEY
+  11 | ); {
+  digest: '2327670416'
+}
+ POST /verify-ui 500 in 583ms (compile: 6ms, render: 577ms)
+ GET /verify-ui 200 in 92ms (compile: 11ms, render: 80ms)
+ ⨯ Error: supabaseKey is required.
+    at module evaluation (src/app/actions/orderActions.js:8:35)
+    at module evaluation (.next-internal/server/app/verify-ui/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/_96304ee5._.js:279:519)
+   6 |
+   7 | // Initialize Supabase Admin Client
+>  8 | const supabaseAdmin = createClient(
+     |                                   ^
+   9 |   process.env.NEXT_PUBLIC_SUPABASE_URL,
+  10 |   process.env.SUPABASE_SERVICE_ROLE_KEY
+  11 | ); {
+  digest: '2327670416'
+}
+ POST /verify-ui 500 in 619ms (compile: 5ms, render: 614ms)
+ ✓ Compiled in 673ms
+[?25h
