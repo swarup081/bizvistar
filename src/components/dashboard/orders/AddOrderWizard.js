@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useState, useEffect } from 'react';
-import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { submitOrder } from '@/app/actions/orderActions';
 import StateSelector from '@/components/checkout/StateSelector';
@@ -18,6 +18,7 @@ const SOURCE_OPTIONS = [
 
 export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId }) {
   const [step, setStep] = useState(1);
+  const [subStep1, setSubStep1] = useState(1); // 1: Personal, 2: Address
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState('');
@@ -95,7 +96,9 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
         if (result.success) {
             onOrderAdded();
             onClose();
+            // Reset
             setStep(1);
+            setSubStep1(1);
             setCart([]);
             setFormData({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: '', sourceType: '', sourceOther: '', note: '' });
         } else {
@@ -110,18 +113,48 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
       }
   };
 
+  // Helper for sub-step navigation
+  const handleNext = () => {
+      if (step === 1) {
+          if (subStep1 === 1) {
+              if (!formData.firstName || !formData.phone) return alert("Please fill required details");
+              setSubStep1(2);
+          } else {
+              // Address validation optional? Let's require at least source
+              if (!formData.sourceType) return alert("Please select an Order Source");
+              setStep(2);
+          }
+      } else if (step === 2) {
+          if (cart.length === 0) return alert("Add at least one product");
+          setStep(3);
+      }
+  };
+
+  const handleBack = () => {
+      if (step === 3) setStep(2);
+      else if (step === 2) setStep(1);
+      else if (step === 1) {
+          if (subStep1 === 2) setSubStep1(1);
+      }
+  };
+
   if (!isOpen) return null;
+
+  // Products to Display
+  const displayProducts = productSearch
+      ? products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+      : products.slice(0, 4);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl z-[70] flex flex-col max-h-[90vh] focus:outline-none overflow-hidden font-sans">
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg bg-white rounded-2xl shadow-2xl z-[70] flex flex-col max-h-[90vh] focus:outline-none overflow-hidden font-sans">
 
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                 <h2 className="text-xl font-bold text-gray-900">Create New Order</h2>
-                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500">
+                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />
                 </button>
             </div>
@@ -136,73 +169,92 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         <span className={`text-sm font-medium ${step >= s ? 'text-gray-900' : 'text-gray-400'}`}>
                             {s === 1 ? 'Customer' : s === 2 ? 'Products' : 'Review'}
                         </span>
-                        {s < 3 && <div className="w-12 h-px bg-gray-200 mx-2 hidden sm:block"></div>}
+                        {s < 3 && <div className="w-8 h-px bg-gray-200 mx-1 hidden sm:block"></div>}
                     </div>
                 ))}
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+
+                {/* STEP 1: CUSTOMER */}
                 {step === 1 && (
                     <div className="space-y-6 animate-in slide-in-from-right duration-200">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
-                                <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Jane" />
+                        {subStep1 === 1 ? (
+                            // Sub-step 1.1: Personal
+                            <div className="space-y-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><User size={18}/></div>
+                                    <h3 className="font-bold text-gray-900">Personal Details</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
+                                        <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Jane" autoFocus />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
+                                        <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Doe" />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Phone Number</label>
+                                    <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="9876543210" />
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
-                                <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Doe" />
-                            </div>
-                        </div>
+                        ) : (
+                            // Sub-step 1.2: Address & Source
+                            <div className="space-y-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><MapPin size={18}/></div>
+                                    <h3 className="font-bold text-gray-900">Address & Source</h3>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
+                                    <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Street Address" autoFocus />
+                                </div>
 
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Phone</label>
-                            <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="9876543210" />
-                        </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">City</label>
+                                        <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">State</label>
+                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[42px] px-3 border-gray-200 rounded-lg text-sm" />
+                                    </div>
+                                </div>
 
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
-                            <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" placeholder="Street Address" />
-                        </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-gray-500 uppercase">Zip Code</label>
+                                    <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                </div>
 
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                                <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
+                                <div className="space-y-1.5 pt-4 border-t border-gray-100">
+                                    <label className="text-xs font-bold text-[#8A63D2] uppercase">Order Source</label>
+                                    <select
+                                        value={formData.sourceType}
+                                        onChange={e => updateField('sourceType', e.target.value)}
+                                        className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2] transition-colors"
+                                    >
+                                        <option value="">Select Source</option>
+                                        {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                    </select>
+                                    {formData.sourceType === 'other' && (
+                                        <input
+                                            value={formData.sourceOther}
+                                            onChange={e => updateField('sourceOther', e.target.value)}
+                                            className="w-full h-[42px] px-3 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors"
+                                            placeholder="Type source name..."
+                                        />
+                                    )}
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[42px] px-3 border-gray-200 rounded-lg text-sm" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Zip</label>
-                                <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border rounded-lg text-sm outline-none focus:border-[#8A63D2]" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1 pt-4 border-t border-gray-100">
-                            <label className="text-xs font-bold text-[#8A63D2] uppercase">Order Source</label>
-                            <select
-                                value={formData.sourceType}
-                                onChange={e => updateField('sourceType', e.target.value)}
-                                className="w-full h-[42px] px-3 border rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2]"
-                            >
-                                <option value="">Select Source</option>
-                                {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </select>
-                            {formData.sourceType === 'other' && (
-                                <input
-                                    value={formData.sourceOther}
-                                    onChange={e => updateField('sourceOther', e.target.value)}
-                                    className="w-full h-[42px] px-3 mt-2 border rounded-lg text-sm outline-none focus:border-[#8A63D2]"
-                                    placeholder="Type source name..."
-                                />
-                            )}
-                        </div>
+                        )}
                     </div>
                 )}
 
+                {/* STEP 2: PRODUCTS */}
                 {step === 2 && (
                     <div className="space-y-6 animate-in slide-in-from-right duration-200 h-full flex flex-col">
                         <div className="relative">
@@ -211,80 +263,93 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 value={productSearch}
                                 onChange={e => setProductSearch(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-9 p-3 border rounded-xl text-sm outline-none focus:border-[#8A63D2]"
+                                className="w-full pl-9 p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] transition-all"
                             />
                         </div>
 
-                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50 p-2 min-h-[300px] custom-scrollbar">
-                            <div className="grid grid-cols-2 gap-3">
-                                {products
-                                    .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()))
-                                    .map(product => (
-                                        <div key={product.id} className="flex flex-col p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-purple-100 transition-colors">
-                                            <div className="h-24 w-full bg-gray-100 rounded-lg overflow-hidden mb-3">
-                                                {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover" />}
+                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-[300px] custom-scrollbar">
+                            {displayProducts.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {displayProducts.map(product => (
+                                        <div key={product.id} className="flex flex-col p-2.5 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group">
+                                            <div className="h-20 w-full bg-gray-100 rounded-lg overflow-hidden mb-2 relative">
+                                                {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />}
                                             </div>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <p className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight">{product.name}</p>
+                                            <div className="flex justify-between items-start mb-1">
+                                                <p className="text-xs font-bold text-gray-900 line-clamp-1">{product.name}</p>
                                             </div>
                                             <div className="mt-auto flex items-center justify-between">
                                                 <p className="text-xs text-gray-500 font-medium">₹{product.price}</p>
                                                 <button
                                                     onClick={() => addToCart(product)}
-                                                    className="p-1.5 bg-gray-100 hover:bg-[#8A63D2] hover:text-white rounded-full transition-colors"
+                                                    className="p-1.5 bg-gray-50 text-gray-600 hover:bg-[#8A63D2] hover:text-white rounded-lg transition-colors"
                                                 >
-                                                    <Plus size={16} />
+                                                    <Plus size={14} />
                                                 </button>
                                             </div>
                                         </div>
                                     ))}
-                            </div>
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
+                                    <p>No products found.</p>
+                                </div>
+                            )}
+
+                            {!productSearch && products.length > 4 && (
+                                <p className="text-xs text-center text-gray-400 mt-4 italic">
+                                    Showing top 4. Use search to find more.
+                                </p>
+                            )}
                         </div>
 
                         {cart.length > 0 && (
                             <div className="border-t border-gray-100 pt-4">
-                                <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Selected Items</h3>
-                                <div className="space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
+                                <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                                     {cart.map(item => (
-                                        <div key={item.id} className="flex items-center justify-between text-sm">
-                                            <span className="flex-1 truncate pr-2">{item.name}</span>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center border rounded-md">
-                                                    <button onClick={() => updateQuantity(item.id, -1)} className="px-2 py-1 hover:bg-gray-100">-</button>
-                                                    <span className="px-2 text-xs">{item.quantity}</span>
-                                                    <button onClick={() => updateQuantity(item.id, 1)} className="px-2 py-1 hover:bg-gray-100">+</button>
+                                        <div key={item.id} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded-lg">
+                                            <span className="flex-1 truncate pr-2 font-medium">{item.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm">
+                                                    <button onClick={() => updateQuantity(item.id, -1)} className="px-2 py-0.5 hover:bg-gray-50 text-gray-500">-</button>
+                                                    <span className="px-1 text-xs font-medium w-4 text-center">{item.quantity}</span>
+                                                    <button onClick={() => updateQuantity(item.id, 1)} className="px-2 py-0.5 hover:bg-gray-50 text-gray-500">+</button>
                                                 </div>
-                                                <span className="w-16 text-right font-medium">₹{item.price * item.quantity}</span>
-                                                <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
+                                                <button onClick={() => removeFromCart(item.id)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-3 text-right font-bold text-lg">Total: ₹{totalAmount}</div>
+                                <div className="mt-3 flex justify-between items-center bg-purple-50 p-3 rounded-xl border border-purple-100">
+                                    <span className="text-purple-900 font-medium text-sm">Total Amount</span>
+                                    <span className="text-lg font-bold text-[#8A63D2]">₹{totalAmount}</span>
+                                </div>
                             </div>
                         )}
                     </div>
                 )}
 
+                {/* STEP 3: REVIEW */}
                 {step === 3 && (
                     <div className="space-y-6 animate-in slide-in-from-right duration-200">
-                        <div className="bg-gray-50 p-4 rounded-xl space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-xl space-y-4 border border-gray-100">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span className="block text-xs text-gray-500 uppercase">Customer</span>
-                                    <span className="font-bold">{formData.firstName} {formData.lastName}</span>
+                                    <span className="block text-xs text-gray-500 uppercase mb-0.5">Customer</span>
+                                    <span className="font-bold text-gray-900">{formData.firstName} {formData.lastName}</span>
                                 </div>
                                 <div>
-                                    <span className="block text-xs text-gray-500 uppercase">Contact</span>
-                                    <span>{formData.phone}</span>
+                                    <span className="block text-xs text-gray-500 uppercase mb-0.5">Contact</span>
+                                    <span className="text-gray-900">{formData.phone}</span>
                                 </div>
                                 <div className="col-span-2">
-                                    <span className="block text-xs text-gray-500 uppercase">Address</span>
-                                    <span>{formData.address}, {formData.city}, {formData.state} {formData.zipCode}</span>
+                                    <span className="block text-xs text-gray-500 uppercase mb-0.5">Address</span>
+                                    <span className="text-gray-900">{formData.address}, {formData.city}, {formData.state} {formData.zipCode}</span>
                                 </div>
                                 <div>
-                                    <span className="block text-xs text-gray-500 uppercase">Source</span>
-                                    <span className="text-[#8A63D2] font-medium">
+                                    <span className="block text-xs text-gray-500 uppercase mb-0.5">Source</span>
+                                    <span className="text-[#8A63D2] font-bold bg-purple-50 px-2 py-0.5 rounded text-xs inline-block border border-purple-100">
                                         {formData.sourceType === 'other' ? formData.sourceOther : SOURCE_OPTIONS.find(s => s.value === formData.sourceType)?.label}
                                     </span>
                                 </div>
@@ -292,27 +357,27 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         </div>
 
                         <div>
-                            <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Order Summary</h3>
-                            <div className="space-y-2">
+                            <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Items</h3>
+                            <div className="space-y-2 border border-gray-100 rounded-xl overflow-hidden">
                                 {cart.map(item => (
-                                    <div key={item.id} className="flex justify-between text-sm border-b border-gray-50 pb-2">
-                                        <span>{item.name} x {item.quantity}</span>
-                                        <span className="font-medium">₹{item.price * item.quantity}</span>
+                                    <div key={item.id} className="flex justify-between text-sm p-3 bg-white border-b border-gray-50 last:border-0">
+                                        <span className="text-gray-700">{item.name} <span className="text-gray-400">x {item.quantity}</span></span>
+                                        <span className="font-medium text-gray-900">₹{item.price * item.quantity}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-4 flex justify-between items-center pt-2 border-t border-gray-100">
-                                <span className="font-bold text-gray-900">Total Amount</span>
-                                <span className="text-xl font-bold text-[#8A63D2]">₹{totalAmount}</span>
+                            <div className="mt-4 flex justify-between items-center pt-2">
+                                <span className="font-bold text-gray-900 text-lg">Total Payble</span>
+                                <span className="text-2xl font-bold text-[#8A63D2]">₹{totalAmount}</span>
                             </div>
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Internal Note (Optional)</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Note (Optional)</label>
                             <textarea
                                 value={formData.note}
                                 onChange={e => updateField('note', e.target.value)}
-                                className="w-full p-3 border rounded-xl text-sm outline-none focus:border-[#8A63D2] resize-none"
+                                className="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] resize-none transition-colors"
                                 placeholder="Any special instructions..."
                                 rows={2}
                             />
@@ -324,8 +389,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             {/* Footer Actions */}
             <div className="p-6 border-t border-gray-100 flex justify-between bg-white sticky bottom-0 z-10">
                 <button
-                    onClick={() => setStep(s => Math.max(1, s - 1))}
-                    disabled={step === 1}
+                    onClick={handleBack}
+                    disabled={step === 1 && subStep1 === 1}
                     className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                     <ChevronLeft size={16} /> Back
@@ -333,16 +398,10 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
                 {step < 3 ? (
                     <button
-                        onClick={() => {
-                            if (step === 1) {
-                                if (!formData.firstName || !formData.phone || !formData.sourceType) return alert("Please fill required details");
-                            }
-                            if (step === 2 && cart.length === 0) return alert("Add at least one product");
-                            setStep(s => s + 1);
-                        }}
+                        onClick={handleNext}
                         className="px-6 py-2.5 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
                     >
-                        Next Step <ChevronRight size={16} />
+                        {step === 1 && subStep1 === 1 ? 'Next: Address' : 'Next Step'} <ChevronRight size={16} />
                     </button>
                 ) : (
                     <button

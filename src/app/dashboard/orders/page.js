@@ -139,19 +139,35 @@ function OrdersContent() {
             return acc;
         }, {});
 
-        const merged = orders.map(o => ({
-            ...o,
-            customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' },
-            order_items: itemsMap[o.id] || [],
-            deliveries: deliveriesMap[o.id] || [],
-            logistics: deliveriesMap[o.id]?.[0] ? {
-                provider: deliveriesMap[o.id][0].provider,
-                trackingNumber: deliveriesMap[o.id][0].tracking_number,
-                date: deliveriesMap[o.id][0].created_at
-            } : null,
-            // Extract Source from Customer Shipping Address Note/Field if manual
-            manualSource: o.customers?.shipping_address?.manualSource || null
-        }));
+        const merged = orders.map(o => {
+            const customer = customersMap[o.customer_id] || { name: 'Unknown', email: '' };
+            // Extract Source from Customer Shipping Address JSON (manualSource)
+            // Or fallback to 'website' if 'source' column says so.
+            // Note: `o.source` is 'pos' or 'website'.
+            // `customer.shipping_address.manualSource` is the specific string (e.g. "WhatsApp").
+
+            let displaySource = 'Website';
+            if (o.source === 'pos') {
+                displaySource = customer.shipping_address?.manualSource || 'Manual';
+            } else if (o.source === 'website') {
+                displaySource = 'Website';
+            } else {
+                displaySource = o.source || 'Website';
+            }
+
+            return {
+                ...o,
+                customers: customer,
+                order_items: itemsMap[o.id] || [],
+                deliveries: deliveriesMap[o.id] || [],
+                logistics: deliveriesMap[o.id]?.[0] ? {
+                    provider: deliveriesMap[o.id][0].provider,
+                    trackingNumber: deliveriesMap[o.id][0].tracking_number,
+                    date: deliveriesMap[o.id][0].created_at
+                } : null,
+                displaySource: displaySource
+            };
+        });
 
         setOrders(merged);
 
@@ -399,9 +415,9 @@ function OrdersContent() {
 
                                 {/* Manual Source Display */}
                                 <td className="hidden md:table-cell py-4 px-6 text-sm align-middle">
-                                    {order.manualSource ? (
+                                    {order.displaySource && order.displaySource !== 'Website' ? (
                                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                            {order.manualSource}
+                                            {order.displaySource}
                                         </span>
                                     ) : (
                                         <span className="text-gray-400 text-xs">Website</span>
