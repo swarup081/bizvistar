@@ -2,18 +2,20 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useState, useEffect } from 'react';
-import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin } from 'lucide-react';
+import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { submitOrder } from '@/app/actions/orderActions'; 
 import StateSelector from '@/components/checkout/StateSelector'; 
+import { cn } from '@/lib/utils';
 
 // Source Options
 const SOURCE_OPTIONS = [
-    { value: 'social_media', label: 'Social Media (IG/FB)' },
-    { value: 'whatsapp', label: 'WhatsApp / DM' },
+    { value: 'social_media', label: 'Social Media' },
+    { value: 'whatsapp', label: 'WhatsApp' },
+    { value: 'website', label: 'Website' },
     { value: 'phone', label: 'Phone Call' },
     { value: 'walk_in', label: 'Walk-in' },
-    { value: 'other', label: 'Other (Specify)' }
+    { value: 'other', label: 'Other' }
 ];
 
 export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId }) {
@@ -22,6 +24,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]); 
   const [productSearch, setProductSearch] = useState('');
+  const [outOfStockAlert, setOutOfStockAlert] = useState(null); // { id: productId, message: string }
 
   // Form State
   const [formData, setFormData] = useState({
@@ -52,6 +55,22 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const updateField = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
   const addToCart = (product) => {
+      // Check for Out of Stock
+      if (product.stock !== -1 && product.stock <= 0) {
+          setOutOfStockAlert({ id: product.id, message: "This product cannot be added since it is out of stock." });
+          // Clear alert after 3 seconds
+          setTimeout(() => setOutOfStockAlert(null), 3000);
+          return;
+      }
+
+      // Check if adding exceeds stock (if managing stock strictly in cart too)
+      const currentInCart = cart.find(p => p.id === product.id)?.quantity || 0;
+      if (product.stock !== -1 && currentInCart + 1 > product.stock) {
+           setOutOfStockAlert({ id: product.id, message: `Only ${product.stock} items available in stock.` });
+           setTimeout(() => setOutOfStockAlert(null), 3000);
+           return;
+      }
+
       setCart(prev => {
           const existing = prev.find(p => p.id === product.id);
           if (existing) {
@@ -64,8 +83,16 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const updateQuantity = (id, delta) => {
       setCart(prev => prev.map(p => {
           if (p.id === id) {
-              const newQ = Math.max(1, p.quantity + delta);
-              return { ...p, quantity: newQ };
+              const product = products.find(prod => prod.id === id);
+              const newQ = p.quantity + delta;
+
+              // Validate max stock
+              if (delta > 0 && product && product.stock !== -1 && newQ > product.stock) {
+                   // Optional: could show alert here too, but simple blocking is usually enough for +/- buttons
+                   return p;
+              }
+
+              return { ...p, quantity: Math.max(1, newQ) };
           }
           return p;
       }));
@@ -140,10 +167,10 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
   if (!isOpen) return null;
 
-  // Products to Display
+  // Products to Display - ONLY SHOW IF SEARCHED
   const displayProducts = productSearch 
       ? products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())) 
-      : products.slice(0, 4);
+      : [];
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -152,7 +179,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg bg-white rounded-2xl shadow-2xl z-[70] flex flex-col max-h-[90vh] focus:outline-none overflow-hidden font-sans">
             
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10 shrink-0">
                 <h2 className="text-xl font-bold text-gray-900">Create New Order</h2>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />
@@ -160,7 +187,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Steps Indicator */}
-            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between sticky top-[76px] z-10">
+            <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between sticky top-[76px] z-10 shrink-0">
                 {[1, 2, 3].map((s) => (
                     <div key={s} className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= s ? 'bg-[#8A63D2] text-white' : 'bg-gray-200 text-gray-500'}`}>
@@ -230,22 +257,32 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
                                 </div>
 
-                                <div className="space-y-1.5 pt-4 border-t border-gray-100">
+                                <div className="space-y-3 pt-4 border-t border-gray-100">
                                     <label className="text-xs font-bold text-[#8A63D2] uppercase">Order Source</label>
-                                    <select 
-                                        value={formData.sourceType} 
-                                        onChange={e => updateField('sourceType', e.target.value)}
-                                        className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2] transition-colors"
-                                    >
-                                        <option value="">Select Source</option>
-                                        {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                                    </select>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {SOURCE_OPTIONS.map((opt) => (
+                                            <div
+                                                key={opt.value}
+                                                onClick={() => updateField('sourceType', opt.value)}
+                                                className={cn(
+                                                    "cursor-pointer rounded-xl border p-3 text-sm font-medium transition-all text-center flex items-center justify-center",
+                                                    formData.sourceType === opt.value
+                                                        ? "border-[#8A63D2] bg-purple-50 text-[#8A63D2] shadow-sm"
+                                                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                {opt.label}
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     {formData.sourceType === 'other' && (
                                         <input 
                                             value={formData.sourceOther} 
                                             onChange={e => updateField('sourceOther', e.target.value)} 
-                                            className="w-full h-[42px] px-3 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" 
-                                            placeholder="Type source name..." 
+                                            className="w-full h-[42px] px-3 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors animate-in fade-in slide-in-from-top-2"
+                                            placeholder="Specify source..."
+                                            autoFocus
                                         />
                                     )}
                                 </div>
@@ -256,55 +293,89 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
 
                 {/* STEP 2: PRODUCTS */}
                 {step === 2 && (
-                    <div className="space-y-6 animate-in slide-in-from-right duration-200 h-full flex flex-col">
-                        <div className="relative">
+                    <div className="space-y-6 animate-in slide-in-from-right duration-200 h-full flex flex-col relative">
+
+                        {/* Out of Stock Alert Overlay */}
+                        {outOfStockAlert && (
+                            <div className="absolute top-16 left-0 right-0 z-20 mx-auto w-[90%] md:w-[80%] bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+                                <AlertCircle className="shrink-0 w-5 h-5 text-red-600" />
+                                <span className="text-sm font-medium">{outOfStockAlert.message}</span>
+                            </div>
+                        )}
+
+                        <div className="relative shrink-0">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <input 
                                 value={productSearch}
                                 onChange={e => setProductSearch(e.target.value)}
-                                placeholder="Search products..."
+                                placeholder="Search products to add..."
                                 className="w-full pl-9 p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] transition-all"
+                                autoFocus
                             />
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-[300px] custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-[300px] custom-scrollbar relative">
                             {displayProducts.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
-                                    {displayProducts.map(product => (
-                                        <div key={product.id} className="flex flex-col p-2.5 bg-white rounded-xl shadow-sm border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all group">
-                                            <div className="h-20 w-full bg-gray-100 rounded-lg overflow-hidden mb-2 relative">
-                                                {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />}
+                                    {displayProducts.map(product => {
+                                        const isOutOfStock = product.stock !== -1 && product.stock <= 0;
+                                        return (
+                                            <div key={product.id} className={cn(
+                                                "flex flex-col p-2.5 bg-white rounded-xl shadow-sm border border-gray-100 transition-all group relative",
+                                                isOutOfStock ? "opacity-75" : "hover:border-purple-200 hover:shadow-md"
+                                            )}>
+                                                {isOutOfStock && (
+                                                    <div className="absolute inset-0 bg-white/40 z-10 flex items-center justify-center rounded-xl pointer-events-none">
+                                                        <span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded-full font-bold">OUT OF STOCK</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="h-20 w-full bg-gray-100 rounded-lg overflow-hidden mb-2 relative">
+                                                    {product.image_url ? (
+                                                        <img src={product.image_url} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-gray-300 bg-gray-50">
+                                                            <div className="w-8 h-8 rounded-full border-2 border-gray-200" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <p className="text-xs font-bold text-gray-900 line-clamp-1">{product.name}</p>
+                                                </div>
+                                                <div className="mt-auto flex items-center justify-between">
+                                                    <p className="text-xs text-gray-500 font-medium">₹{product.price}</p>
+                                                    <button
+                                                        onClick={() => addToCart(product)}
+                                                        className={cn(
+                                                            "p-1.5 rounded-lg transition-colors",
+                                                            isOutOfStock
+                                                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                : "bg-gray-50 text-gray-600 hover:bg-[#8A63D2] hover:text-white"
+                                                        )}
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between items-start mb-1">
-                                                <p className="text-xs font-bold text-gray-900 line-clamp-1">{product.name}</p>
-                                            </div>
-                                            <div className="mt-auto flex items-center justify-between">
-                                                <p className="text-xs text-gray-500 font-medium">₹{product.price}</p>
-                                                <button 
-                                                    onClick={() => addToCart(product)}
-                                                    className="p-1.5 bg-gray-50 text-gray-600 hover:bg-[#8A63D2] hover:text-white rounded-lg transition-colors"
-                                                >
-                                                    <Plus size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
-                                    <p>No products found.</p>
+                                <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm p-4 text-center">
+                                    {productSearch ? (
+                                        <p>No products found for "{productSearch}"</p>
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2 opacity-50">
+                                            <Search className="w-8 h-8" />
+                                            <p>Search for a product to add it to the order.</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            
-                            {!productSearch && products.length > 4 && (
-                                <p className="text-xs text-center text-gray-400 mt-4 italic">
-                                    Showing top 4. Use search to find more.
-                                </p>
                             )}
                         </div>
 
                         {cart.length > 0 && (
-                            <div className="border-t border-gray-100 pt-4">
+                            <div className="border-t border-gray-100 pt-4 shrink-0">
                                 <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
                                 <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                                     {cart.map(item => (
@@ -387,7 +458,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
             </div>
 
             {/* Footer Actions */}
-            <div className="p-6 border-t border-gray-100 flex justify-between bg-white sticky bottom-0 z-10">
+            <div className="p-6 border-t border-gray-100 flex justify-between bg-white sticky bottom-0 z-10 shrink-0">
                 <button 
                     onClick={handleBack}
                     disabled={step === 1 && subStep1 === 1}
