@@ -10,6 +10,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 // Source Options
 const SOURCE_OPTIONS = [
     { value: 'social_media', label: 'Social Media (IG/FB)' },
+    { value: 'website', label: 'Website' },
     { value: 'whatsapp', label: 'WhatsApp / DM' },
     { value: 'phone', label: 'Phone Call' },
     { value: 'walk_in', label: 'Walk-in' },
@@ -143,7 +144,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   // Products to Display
   const displayProducts = productSearch 
       ? products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())) 
-      : products.slice(0, 4);
+      : [];
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -190,16 +191,16 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">First Name</label>
-                                        <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Jane" autoFocus />
+                                        <input value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Jane" autoFocus />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Last Name</label>
-                                        <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Doe" />
+                                        <input value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Doe" />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Phone Number</label>
-                                    <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="9876543210" />
+                                    <input value={formData.phone} onChange={e => updateField('phone', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="9876543210" />
                                 </div>
                             </div>
                         ) : (
@@ -211,23 +212,23 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
-                                    <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" placeholder="Street Address" autoFocus />
+                                    <input value={formData.address} onChange={e => updateField('address', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" placeholder="Street Address" autoFocus />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">City</label>
-                                        <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                        <input value={formData.city} onChange={e => updateField('city', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[42px] px-3 border-gray-200 rounded-lg text-sm" />
+                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} />
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Zip Code</label>
-                                    <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" />
+                                    <input value={formData.zipCode} onChange={e => updateField('zipCode', e.target.value)} className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" />
                                 </div>
 
                                 <div className="space-y-1.5 pt-4 border-t border-gray-100">
@@ -235,7 +236,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <select 
                                         value={formData.sourceType} 
                                         onChange={e => updateField('sourceType', e.target.value)}
-                                        className="w-full h-[42px] px-3 border border-gray-200 rounded-lg text-sm bg-white outline-none focus:border-[#8A63D2] transition-colors"
+                                        className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                                     >
                                         <option value="">Select Source</option>
                                         {SOURCE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
@@ -244,7 +245,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input 
                                             value={formData.sourceOther} 
                                             onChange={e => updateField('sourceOther', e.target.value)} 
-                                            className="w-full h-[42px] px-3 mt-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#8A63D2] transition-colors" 
+                                            className="w-full p-3 mt-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                                             placeholder="Type source name..." 
                                         />
                                     )}
@@ -263,11 +264,11 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 value={productSearch}
                                 onChange={e => setProductSearch(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-9 p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] transition-all"
+                                className="w-full pl-9 p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                             />
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 min-h-[300px] custom-scrollbar">
+                        <div className="overflow-y-auto border border-gray-100 rounded-xl bg-gray-50/50 p-2 max-h-[300px] custom-scrollbar">
                             {displayProducts.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-3">
                                     {displayProducts.map(product => (
@@ -291,15 +292,9 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     ))}
                                 </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm">
-                                    <p>No products found.</p>
+                                <div className="h-[200px] flex flex-col items-center justify-center text-gray-400 text-sm">
+                                    <p>{productSearch ? 'No products found.' : 'Search to find products...'}</p>
                                 </div>
-                            )}
-                            
-                            {!productSearch && products.length > 4 && (
-                                <p className="text-xs text-center text-gray-400 mt-4 italic">
-                                    Showing top 4. Use search to find more.
-                                </p>
                             )}
                         </div>
 
@@ -308,7 +303,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
                                 <div className="space-y-2 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                                     {cart.map(item => (
-                                        <div key={item.id} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded-lg">
+                                        <div key={item.id} className="flex items-center justify-between text-sm bg-white p-2 rounded-lg">
                                             <span className="flex-1 truncate pr-2 font-medium">{item.name}</span>
                                             <div className="flex items-center gap-2">
                                                 <div className="flex items-center bg-white border border-gray-200 rounded-md shadow-sm">
@@ -377,7 +372,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             <textarea 
                                 value={formData.note}
                                 onChange={e => updateField('note', e.target.value)}
-                                className="w-full p-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#8A63D2] resize-none transition-colors"
+                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
                                 placeholder="Any special instructions..."
                                 rows={2}
                             />
