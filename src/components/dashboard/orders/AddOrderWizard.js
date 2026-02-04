@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { submitOrder } from '@/app/actions/orderActions'; 
-import StateSelector from '@/components/checkout/StateSelector'; 
 import StyledInput from '@/components/ui/StyledInput';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 import { cn } from '@/lib/utils';
@@ -18,6 +17,15 @@ const SOURCE_OPTIONS = [
     { value: 'phone', label: 'Phone Call' },
     { value: 'walk_in', label: 'Walk-in' },
     { value: 'other', label: 'Other' }
+];
+
+const INDIAN_STATES = [
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+  "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa",
+  "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka",
+  "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+  "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim",
+  "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
 
 export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteId, initialProducts }) {
@@ -275,7 +283,13 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-gray-500 uppercase">State</label>
-                                        <StateSelector value={formData.state} onChange={val => updateField('state', val)} className="h-[48px]" />
+                                        <SearchableSelect
+                                            options={INDIAN_STATES}
+                                            value={formData.state}
+                                            onChange={val => updateField('state', val)}
+                                            placeholder="Select State"
+                                            searchPlaceholder="Search state..."
+                                        />
                                     </div>
                                 </div>
                                 
