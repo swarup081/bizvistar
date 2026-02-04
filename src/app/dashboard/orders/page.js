@@ -416,7 +416,7 @@ function OrdersContent() {
                                 {/* Manual Source Display */}
                                 <td className="hidden md:table-cell py-4 px-6 text-sm align-middle">
                                     {order.displaySource && order.displaySource !== 'Website' ? (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-gray-800">
                                             {order.displaySource}
                                         </span>
                                     ) : (
