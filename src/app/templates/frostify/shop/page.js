@@ -1,58 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTemplateContext } from '../templateContext.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
-export default function FrostifyShopPage() {
+export default function ShopPage() {
+    const [selectedCategoryId, setSelectedCategoryId] = useState('all');
     const { businessData } = useTemplateContext();
-    const [filter, setFilter] = useState('all');
 
-    const allProducts = businessData.allProducts;
-    const categories = [{ id: 'all', name: 'All Treats' }, ...businessData.categories];
+    // --- 1. Get Sorted List (Pinned > Stock > Sales > Newest) ---
+    const allProducts = useMemo(() => {
+        return sortProducts(businessData.allProducts, businessData);
+    }, [businessData]);
 
-    const filteredProducts = filter === 'all' 
+    const categories = [
+        { id: 'all', name: 'All' },
+        ...businessData.categories
+    ];
+
+    const filteredProducts = selectedCategoryId === 'all'
         ? allProducts 
-        : allProducts.filter(p => p.category === filter);
+        : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
     return (
-        <div className="bg-white min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">
-            <div className="container mx-auto px-6">
-                
-                {/* Header */}
-                <div className="text-center mb-8 md:mb-16">
-                    <span className="text-[var(--color-secondary)] text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em]">Freshly Baked</span>
-                    <h1 className="text-[7vw] md:text-5xl font-serif text-[var(--color-primary)] mt-2 md:mt-4">Our Menu</h1>
-                </div>
+        <div className="container mx-auto px-6 py-20 min-h-screen">
+            <h1 className="text-6xl font-black uppercase text-center mb-16 italic tracking-tighter">
+                Catalogue
+            </h1>
 
-                {/* Filter Tabs */}
-                <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 md:mb-16">
-                    {categories.map(cat => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setFilter(cat.id)}
-                            className={`px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest transition-all ${
-                                filter === cat.id 
-                                    ? 'bg-[var(--color-primary)] text-white' 
-                                    : 'bg-[#F9F4F6] text-[var(--color-primary)] hover:bg-[var(--color-accent)]/20'
-                            }`}
-                        >
-                            {cat.name}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Product Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {filteredProducts.map(product => (
-                        <ProductCard key={product.id} item={product} />
-                    ))}
-                </div>
-
-                {filteredProducts.length === 0 && (
-                    <p className="text-center text-gray-500 mt-12 text-[3vw] md:text-base">No delicious treats found in this category.</p>
-                )}
+            <div className="flex justify-center flex-wrap gap-4 mb-16">
+                {categories.map((category, index) => (
+                    <button
+                        key={`${category.id}-${index}`}
+                        onClick={() => setSelectedCategoryId(category.id)}
+                        className={`px-6 py-3 font-bold uppercase border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none transition-all ${
+                            String(selectedCategoryId) === String(category.id)
+                                ? 'bg-black text-white'
+                                : 'bg-white text-black'
+                        }`}
+                    >
+                        {category.name}
+                    </button>
+                ))}
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProducts.map(item => (
+                    <ProductCard
+                        key={item.id}
+                        item={item}
+                        templateName="frostify"
+                    />
+                ))}
+            </div>
+
+            {filteredProducts.length === 0 && (
+                <p className="text-center text-xl font-bold uppercase mt-20">Nothing here yet.</p>
+            )}
         </div>
     );
 }

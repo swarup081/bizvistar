@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { businessData } from '../data.js';
+import { useState, useMemo } from 'react';
+import { useTemplateContext } from '../templateContext.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const { businessData } = useTemplateContext();
     
-    const allProducts = businessData.allProducts; 
+    // --- 1. Get Sorted List (Pinned > Stock > Sales > Newest) ---
+    const allProducts = useMemo(() => {
+        return sortProducts(businessData.allProducts, businessData);
+    }, [businessData]);
     
     const categories = [
         { id: 'all', name: 'All' }, 
@@ -16,22 +21,24 @@ export default function ShopPage() {
     
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
-        : allProducts.filter(p => p.category === selectedCategoryId);
+        : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
     return (
-        <div className="container mx-auto px-6 py-24">
-            <h1 className="text-5xl md:text-6xl font-bold text-brand-secondary font-serif text-center mb-16">All Products</h1>
+        <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
+            <div className="text-center mb-12">
+                <span className="text-brand-primary font-bold uppercase tracking-wider text-sm">Order Online</span>
+                <h1 className="text-4xl md:text-5xl font-bold mt-2 text-brand-text">Full Menu</h1>
+            </div>
             
-            {/* Category Filters */}
-            <div className="flex justify-center flex-wrap gap-3 mb-16">
-                {categories.map(category => (
+            <div className="flex justify-center flex-wrap gap-3 mb-12">
+                {categories.map((category, index) => (
                     <button 
-                        key={category.id}
+                        key={`${category.id || category.name}-${index}`}
                         onClick={() => setSelectedCategoryId(category.id)}
-                        className={`btn px-6 py-2 rounded-full font-medium transition-colors ${
-                            selectedCategoryId === category.id 
-                                ? 'btn-primary' // Active state
-                                : 'bg-brand-primary text-brand-text hover:bg-brand-secondary/20' // Inactive
+                        className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
+                            String(selectedCategoryId) === String(category.id)
+                                ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/30'
+                                : 'bg-white text-brand-text hover:bg-gray-100'
                         }`}
                     >
                         {category.name}
@@ -39,17 +46,20 @@ export default function ShopPage() {
                 ))}
             </div>
             
-            {/* Products Grid (Updated gap) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredProducts.map(item => (
                     <ProductCard 
                         key={item.id} 
                         item={item}
+                        templateName="flavornest"
                     />
                 ))}
             </div>
+
             {filteredProducts.length === 0 && (
-                <p className="text-center text-brand-text/70 text-lg mt-12">No products found in this category.</p>
+                <div className="text-center py-20">
+                    <p className="text-brand-text/50 text-lg">No dishes found in this category.</p>
+                </div>
             )}
         </div>
     );
