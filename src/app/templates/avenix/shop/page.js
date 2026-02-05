@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTemplateContext } from '../templateContext.js'; // Import the context hook
 import { ProductCard } from '../components.js';
 import { useSearchParams } from 'next/navigation';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const searchParams = useSearchParams();
@@ -33,6 +34,8 @@ export default function ShopPage() {
         ? allProducts 
         : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
+    const sortedProducts = sortProducts(filteredProducts, businessData);
+
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
             <h1 className="text-[8vw] md:text-6xl font-serif font-medium text-brand-text text-center mb-8 md:mb-16">Shop Collection</h1>
@@ -60,7 +63,7 @@ export default function ShopPage() {
             
             {/* Products Grid - UPDATED to grid-cols-2 on mobile */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 items-stretch">
-                {filteredProducts.map(item => (
+                {sortedProducts.map(item => (
                     <ProductCard 
                         key={item.id} // This key is also required
                         item={item}
@@ -70,7 +73,7 @@ export default function ShopPage() {
             </div>
 
             {/* "No products" message */}
-            {filteredProducts.length === 0 && (
+            {sortedProducts.length === 0 && (
                 <p className="text-center text-brand-text/70 text-lg col-span-full">No products found in this category.</p>
             )}
         </div>

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { businessData } from '../data.js';
+import { useTemplateContext } from '../templateContext.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const { businessData } = useTemplateContext();
     
     const allProducts = businessData.allProducts; 
     
@@ -17,6 +19,8 @@ export default function ShopPage() {
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
         : allProducts.filter(p => p.category === selectedCategoryId);
+
+    const sortedProducts = sortProducts(filteredProducts, businessData);
 
     return (
         <div className="w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -42,7 +46,7 @@ export default function ShopPage() {
                 
                 {/* Products Grid - UPDATED GAPS & COLS - 2 cols on mobile */}
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8 items-stretch">
-                    {filteredProducts.map(item => (
+                    {sortedProducts.map(item => (
                         <ProductCard 
                             key={item.id} 
                             item={item}
@@ -52,7 +56,7 @@ export default function ShopPage() {
                 </div>
 
                 {/* "No products" message */}
-                {filteredProducts.length === 0 && (
+                {sortedProducts.length === 0 && (
                     <p className="text-center text-brand-text/70 text-lg mt-12 col-span-full">No products found in this category.</p>
                 )}
             </div>

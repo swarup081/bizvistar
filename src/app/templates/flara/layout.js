@@ -200,7 +200,7 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
 // --- NEW WRAPPER COMPONENT ---
 // This component manages the state and Provides the TemplateContext.
 // CartProvider is INSIDE this provider.
-function TemplateStateProvider({ children, serverData }) {
+function TemplateStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
     const router = useRouter();
     const pathname = usePathname();
@@ -245,7 +245,7 @@ function TemplateStateProvider({ children, serverData }) {
         }
     }, [router, serverData]);
 
-    const value = { businessData, setBusinessData, basePath };
+    const value = { businessData, setBusinessData, basePath, websiteId };
 
     return (
         <TemplateContext.Provider value={value}>
@@ -257,7 +257,7 @@ function TemplateStateProvider({ children, serverData }) {
 export default function FlaraLayout({ children, serverData, websiteId }) {
     return (
         // 1. First provide Template Context (State)
-        <TemplateStateProvider serverData={serverData}>
+        <TemplateStateProvider serverData={serverData} websiteId={websiteId}>
             {/* 2. Then provide Cart Context (depends on Template Context) */}
             <CartProvider>
                 {/* 3. Then render the actual layout content */}

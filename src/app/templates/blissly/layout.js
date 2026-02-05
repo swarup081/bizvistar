@@ -122,7 +122,7 @@ function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverDa
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             <div 
               className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
               style={fontVariables}

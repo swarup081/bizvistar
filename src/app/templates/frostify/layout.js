@@ -7,7 +7,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import { X, Minus, Plus } from 'lucide-react'; // Added icons
 
-function CartLayout({ children, serverData }) {
+function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
     
     // Get data from the NEW context
@@ -38,7 +38,7 @@ function CartLayout({ children, serverData }) {
     }, [serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             <style jsx global>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Quicksand:wght@300;400;500;600;700&display=swap');
                 :root {
@@ -130,6 +130,6 @@ function CartLayout({ children, serverData }) {
     );
 }
 
-export default function FrostifyLayout({ children, serverData }) {
-    return <CartProvider><CartLayout serverData={serverData}>{children}</CartLayout></CartProvider>;
+export default function FrostifyLayout({ children, serverData, websiteId }) {
+    return <CartProvider><CartLayout serverData={serverData} websiteId={websiteId}>{children}</CartLayout></CartProvider>;
 }

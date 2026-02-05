@@ -204,7 +204,7 @@ function AvenixContent({ children, serverData, websiteId }) {
 }
 
 // Wrapper to Provide State & Context
-function AvenixStateProvider({ children, serverData }) {
+function AvenixStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
     const router = useRouter();
 
@@ -236,7 +236,7 @@ function AvenixStateProvider({ children, serverData }) {
     }, [router, serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             {children}
         </TemplateContext.Provider>
     );
@@ -244,7 +244,7 @@ function AvenixStateProvider({ children, serverData }) {
 
 export default function AvenixLayout({ children, serverData, websiteId }) {
     return (
-        <AvenixStateProvider serverData={serverData}>
+        <AvenixStateProvider serverData={serverData} websiteId={websiteId}>
             <CartProvider>
                 <AvenixContent serverData={serverData} websiteId={websiteId}>
                     {children}
