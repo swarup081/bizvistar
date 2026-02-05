@@ -9,13 +9,22 @@ const getProductsByIds = (allProducts, ids) => {
     return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 };
 
-// Helper: Landing Page Algorithm
+// Helper: Landing Page Algorithm (REFACTORED)
 const getLandingItems = (businessData, requiredCount = 3) => {
     if (!businessData) return [];
 
     const settings = businessData.landing_settings || { mode: 'auto', manualItems: [], prioritizedProducts: [] };
     const allProducts = businessData.allProducts || [];
     const allCategories = businessData.categories || [];
+    const totalItems = allProducts.length + allCategories.length;
+
+    // 0. SMALL CATALOG CHECK
+    if (totalItems <= requiredCount) {
+         let everything = [];
+         allCategories.forEach(c => everything.push({ ...c, type: 'category' }));
+         allProducts.forEach(p => everything.push({ ...p, type: 'product' }));
+         return everything;
+    }
 
     // MANUAL MODE
     if (settings.mode === 'manual') {
@@ -32,46 +41,147 @@ const getLandingItems = (businessData, requiredCount = 3) => {
 
     // AUTO MODE
     let finalItems = [];
-    const prioritizedIds = settings.prioritizedProducts || [];
+    const usedImages = new Set();
+    const prioritizedIds = (settings.prioritizedProducts || []).map(String);
+
+    const isImageUsed = (url) => {
+        if (!url) return false;
+        return usedImages.has(url);
+    };
+
+    const addItem = (item, type, isOOS = false) => {
+        if (finalItems.length >= requiredCount) return false;
+        if (finalItems.find(x => x.type === type && String(x.id) === String(item.id))) return false;
+
+        let displayImage = item.image;
+        if (type === 'category') {
+             if (isImageUsed(displayImage)) {
+                 const catProducts = allProducts.filter(p => String(p.category) === String(item.id));
+                 const nextBest = catProducts
+                    .sort((a, b) => (b.sales || 0) - (a.sales || 0))
+                    .find(p => p.image && !isImageUsed(p.image));
+                 if (nextBest) displayImage = nextBest.image;
+             }
+        } else {
+             if (isImageUsed(displayImage)) return false;
+        }
+
+        if (displayImage) usedImages.add(displayImage);
+        finalItems.push({ ...item, type, isOOS, image: displayImage });
+        return true;
+    };
 
     // 1. Prioritized Products
-    prioritizedIds.forEach(id => {
-        const p = allProducts.find(x => String(x.id) === String(id));
-        if (p) finalItems.push({ ...p, type: 'product' });
+    const pinnedItems = prioritizedIds
+        .map(id => allProducts.find(p => String(p.id) === id))
+        .filter(Boolean)
+        .sort((a, b) => {
+            if (!!a.image !== !!b.image) return !!b.image - !!a.image;
+            return (b.sales || 0) - (a.sales || 0);
+        });
+
+    pinnedItems.forEach(p => addItem(p, 'product', (p.stock !== -1 && p.stock <= 0)));
+
+    if (finalItems.length >= requiredCount) return finalItems;
+
+    // 2. Top Categories
+    const sortedCats = [...allCategories].sort((a, b) => {
+        if (!!a.image !== !!b.image) return !!b.image - !!a.image;
+        return (b.sales || 0) - (a.sales || 0);
     });
 
-    // 2. Top Categories (by sales)
-    const sortedCats = [...allCategories].sort((a, b) => (b.sales || 0) - (a.sales || 0));
     for (const cat of sortedCats) {
         if (finalItems.length >= requiredCount) break;
-        if (!finalItems.find(x => x.type === 'category' && String(x.id) === String(cat.id))) {
-            finalItems.push({ ...cat, type: 'category' });
-        }
+        addItem(cat, 'category');
     }
 
-    // 3. Fill with Top Products
-    if (finalItems.length < requiredCount) {
-        const sortedProducts = [...allProducts]
-             .filter(p => (p.stock === -1 || p.stock > 0))
-             .sort((a, b) => (b.sales || 0) - (a.sales || 0));
+    if (finalItems.length >= requiredCount) return finalItems;
 
-        for (const p of sortedProducts) {
-             if (finalItems.length >= requiredCount) break;
-             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
-                 finalItems.push({ ...p, type: 'product' });
-             }
-        }
+    // 3. Top Products
+    const availableProducts = [...allProducts]
+         .filter(p => (p.stock === -1 || p.stock > 0))
+         .filter(p => !prioritizedIds.includes(String(p.id)))
+         .sort((a, b) => {
+            if (!!a.image !== !!b.image) return !!b.image - !!a.image;
+            return (b.sales || 0) - (a.sales || 0);
+         });
+
+    for (const p of availableProducts) {
+         if (finalItems.length >= requiredCount) break;
+         addItem(p, 'product');
     }
 
-    // 4. Fallback OOS Products (Badged)
+    // 4. Fallback OOS
     if (finalItems.length < requiredCount) {
-         const oosProducts = allProducts.filter(p => p.stock !== -1 && p.stock <= 0);
+         const oosProducts = allProducts
+            .filter(p => p.stock !== -1 && p.stock <= 0)
+            .filter(p => !prioritizedIds.includes(String(p.id)))
+            .sort((a, b) => (b.sales || 0) - (a.sales || 0));
+
          for (const p of oosProducts) {
              if (finalItems.length >= requiredCount) break;
-             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
-                 finalItems.push({ ...p, type: 'product', isOOS: true });
-             }
+             addItem(p, 'product', true);
          }
+    }
+
+    return finalItems.slice(0, requiredCount);
+};
+
+// Helper: Best Seller Logic
+const getBestSellerItems = (businessData, requiredCount = 4) => {
+    if (!businessData) return [];
+
+    // Best Sellers strictly shows products.
+    // It follows similar logic: Priority > Image > Sales > Availability
+    const settings = businessData.landing_settings || { prioritizedProducts: [] };
+    const allProducts = businessData.allProducts || [];
+    const prioritizedIds = (settings.prioritizedProducts || []).map(String);
+    let finalItems = [];
+    const usedIds = new Set();
+
+    // 1. Pinned
+    const pinnedItems = prioritizedIds
+        .map(id => allProducts.find(p => String(p.id) === id))
+        .filter(Boolean);
+
+    pinnedItems.forEach(p => {
+        if (!usedIds.has(p.id)) {
+            finalItems.push(p);
+            usedIds.add(p.id);
+        }
+    });
+
+    if (finalItems.length >= requiredCount) return finalItems.slice(0, requiredCount);
+
+    // 2. Best Sellers (Available)
+    const available = allProducts
+        .filter(p => !usedIds.has(p.id))
+        .filter(p => (p.stock === -1 || p.stock > 0))
+        .sort((a, b) => {
+             // Image > Sales
+             if (!!a.image !== !!b.image) return !!b.image - !!a.image;
+             return (b.sales || 0) - (a.sales || 0);
+        });
+
+    available.forEach(p => {
+        if (finalItems.length < requiredCount) {
+            finalItems.push(p);
+            usedIds.add(p.id);
+        }
+    });
+
+    // 3. OOS if needed
+    if (finalItems.length < requiredCount) {
+        const oos = allProducts
+            .filter(p => !usedIds.has(p.id))
+            .filter(p => p.stock !== -1 && p.stock <= 0)
+            .sort((a, b) => (b.sales || 0) - (a.sales || 0));
+
+        oos.forEach(p => {
+            if (finalItems.length < requiredCount) {
+                 finalItems.push({ ...p, isOOS: true });
+            }
+        });
     }
 
     return finalItems.slice(0, requiredCount);
@@ -81,13 +191,8 @@ export default function CandleaPage() {
     
     const { businessData, basePath } = useTemplateContext();
 
-    const allProducts = businessData?.allProducts || [];
-    const bestSellerItemIDs = businessData?.bestSellers?.itemIDs || [];
-    
-    // Use Landing Logic for Collection (3 Items)
     const collectionItems = getLandingItems(businessData, 3);
-
-    const bestSellerProducts = getProductsByIds(allProducts, bestSellerItemIDs);
+    const bestSellerItems = getBestSellerItems(businessData, 4);
 
     if (!businessData || !businessData.hero) {
         return <div>Loading preview...</div>; 
@@ -233,7 +338,7 @@ export default function CandleaPage() {
                     <div className="container mx-auto px-6 text-center">
                         <h2 className="text-4xl font-bold text-brand-text mb-16 font-serif">{businessData.bestSellers.title}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 items-stretch">
-                            {bestSellerProducts.map(item => (
+                            {bestSellerItems.map(item => (
                                 <ProductCard 
                                     key={item.id} 
                                     item={item}
