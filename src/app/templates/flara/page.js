@@ -3,6 +3,7 @@ import { useTemplateContext } from './templateContext.js';
 import { ArrowRightIcon, ShippingIcon, ProductCard } from './components.js';
 import Link from 'next/link';
 import { Editable } from '@/components/editor/Editable'; 
+import { getLandingItems, getBestSellerItems } from '@/lib/templates/templateLogic'; // --- NEW IMPORT ---
 
 const getProductsByIds = (allProducts, ids) => {
     if (!allProducts || !ids) return []; 
@@ -14,11 +15,10 @@ export default function CandleaPage() {
     const { businessData, basePath } = useTemplateContext();
 
     const allProducts = businessData?.allProducts || [];
-    const collectionItemIDs = businessData?.collection?.itemIDs || [];
-    const bestSellerItemIDs = businessData?.bestSellers?.itemIDs || [];
     
-    const collectionProducts = getProductsByIds(allProducts, collectionItemIDs);
-    const bestSellerProducts = getProductsByIds(allProducts, bestSellerItemIDs);
+    // --- NEW: Use Shared Logic ---
+    const collectionItems = getLandingItems(businessData, 3);
+    const bestSellerItems = getBestSellerItems(businessData, 4);
 
     if (!businessData || !businessData.hero) {
         return <div>Loading preview...</div>; 
@@ -117,30 +117,42 @@ export default function CandleaPage() {
                             </Link>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-8 md:gap-8">
-                            {collectionProducts.map((item, index) => (
-                                <div key={item.id} className={`${index >= 2 ? 'hidden md:block' : ''}`}>
-                                    <Link 
-                                    href={`${basePath}/product/${item.id}`}
-                                    className="group relative block overflow-hidden shadow-lg aspect-[4/5] rounded-t-full md:rounded-none md:hover:rounded-t-full transition-all duration-500"
-                                    >
-                                        <img 
-                                            src={item.image} 
-                                            alt={item.name} 
-                                            className="w-full h-full object-cover transition-transform duration-300"
-                                        />
-                                        <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                        <h3 className="hidden md:block absolute bottom-2 left-2 md:bottom-6 md:left-6 text-xs md:text-3xl font-bold text-white font-serif">{item.name}</h3>
-                                        <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <span className="bg-brand-bg text-brand-text px-6 py-3 font-semibold uppercase tracking-wider shadow-lg">
-                                                View Product
-                                            </span>
+                            {collectionItems.map((item, index) => {
+                                const isCategory = item.type === 'category';
+                                const href = isCategory ? `${basePath}/shop?category=${item.id}` : `${basePath}/product/${item.id}`;
+                                const btnText = isCategory ? 'View Collection' : 'View Product';
+
+                                return (
+                                    <div key={item.id} className={`${index >= 2 ? 'hidden md:block' : ''}`}>
+                                        <Link 
+                                        href={href}
+                                        className="group relative block overflow-hidden shadow-lg aspect-[4/5] rounded-t-full md:rounded-none md:hover:rounded-t-full transition-all duration-500"
+                                        >
+                                            <img 
+                                                src={item.image || item.image_url} 
+                                                alt={item.name} 
+                                                className={`w-full h-full object-cover transition-transform duration-300 ${item.isOOS ? 'grayscale opacity-70' : ''}`}
+                                            />
+                                            {item.isOOS && (
+                                                <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold uppercase z-10">
+                                                    Out of Stock
+                                                </div>
+                                            )}
+                                            
+                                            <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                            <h3 className="hidden md:block absolute bottom-2 left-2 md:bottom-6 md:left-6 text-xs md:text-3xl font-bold text-white font-serif">{item.name}</h3>
+                                            <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <span className="bg-brand-bg text-brand-text px-6 py-3 font-semibold uppercase tracking-wider shadow-lg">
+                                                    {btnText}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                        <div className="block md:hidden text-center mt-3">
+                                            <h3 className="text-sm font-bold text-brand-text font-serif">{item.name}</h3>
                                         </div>
-                                    </Link>
-                                    <div className="block md:hidden text-center mt-3">
-                                        <h3 className="text-sm font-bold text-brand-text font-serif">{item.name}</h3>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </Editable>
@@ -152,7 +164,7 @@ export default function CandleaPage() {
                     <div className="container mx-auto px-6 text-center">
                         <h2 className="text-4xl font-bold text-brand-text mb-16 font-serif">{businessData.bestSellers.title}</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 items-stretch">
-                            {bestSellerProducts.map(item => (
+                            {bestSellerItems.map(item => (
                                 <ProductCard 
                                     key={item.id} 
                                     item={item}

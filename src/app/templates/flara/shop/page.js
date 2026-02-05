@@ -1,13 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTemplateContext } from '../templateContext.js'; // Import the context hook
 import { ProductCard } from '../components.js';
+import { useSearchParams } from 'next/navigation';
 
 export default function ShopPage() {
-    const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const searchParams = useSearchParams();
+    const initialCategory = searchParams.get('category') || 'all';
+
+    const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategory);
     const { businessData } = useTemplateContext(); // Get data from context
     
+    useEffect(() => {
+        const cat = searchParams.get('category');
+        if (cat) setSelectedCategoryId(cat);
+    }, [searchParams]);
+
     // Get master lists from dynamic data
     const allProducts = businessData.allProducts; 
     
@@ -20,11 +29,10 @@ export default function ShopPage() {
     // Filter products
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
-        : allProducts.filter(p => p.category === selectedCategoryId);
+        : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
     return (
         <div className="container mx-auto px-6 py-16">
-            {/* ... (rest of the component JSX remains the same) ... */}
             <h1 className="text-5xl font-bold text-brand-text font-serif text-center mb-12">Shop Our Collection</h1>
             
             {/* Category Filters (Now dynamic) */}
@@ -34,7 +42,7 @@ export default function ShopPage() {
                         key={category.id}
                         onClick={() => setSelectedCategoryId(category.id)}
                         className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                            selectedCategoryId === category.id 
+                            String(selectedCategoryId) === String(category.id) 
                                 ? 'bg-brand-secondary text-brand-bg' 
                                 : 'bg-brand-primary text-brand-text hover:bg-brand-secondary/20'
                         }`}
