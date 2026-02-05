@@ -1,23 +1,43 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useTemplateContext } from '../../templateContext.js';
 import { useCart } from '../../cartContext.js';
 import { ProductCard } from '../../components.js';
+import { fetchSuggestedProducts } from '@/app/actions/recommendations';
 
 export default function ProductPage() {
     const { productId } = useParams();
-    const { businessData } = useTemplateContext();
+    const { businessData, websiteId } = useTemplateContext();
     const { addToCart } = useCart();
     const [qty, setQty] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
-    if (!product) return <div className="py-20 text-center">Product not found</div>;
 
-    // Related products logic
-    const relatedProducts = businessData.allProducts
-        .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 3); // Show 3 related items
+    useEffect(() => {
+        const loadSuggestions = async () => {
+             if (product) {
+                 if (websiteId) {
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 3);
+                     if (suggestions && suggestions.length > 0) {
+                         setRelatedProducts(suggestions);
+                         return;
+                     }
+                 }
+
+                 // Fallback
+                 const local = businessData.allProducts
+                    .filter(p => String(p.category) === String(product.category) && String(p.id) !== String(product.id))
+                    .slice(0, 3);
+                 setRelatedProducts(local);
+             }
+        };
+        loadSuggestions();
+    }, [product, websiteId, businessData.allProducts]);
+
+    if (!product) return <div className="py-20 text-center">Product not found</div>;
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden min-h-screen">

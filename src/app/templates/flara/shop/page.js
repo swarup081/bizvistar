@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTemplateContext } from '../templateContext.js'; // Import the context hook
 import { ProductCard } from '../components.js';
 import { useSearchParams } from 'next/navigation';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const searchParams = useSearchParams();
@@ -31,6 +32,8 @@ export default function ShopPage() {
         ? allProducts 
         : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
+    const sortedProducts = sortProducts(filteredProducts, businessData);
+
     return (
         <div className="container mx-auto px-6 py-16">
             <h1 className="text-5xl font-bold text-brand-text font-serif text-center mb-12">Shop Our Collection</h1>
@@ -54,7 +57,7 @@ export default function ShopPage() {
             
             {/* Products Grid (No changes needed, ProductCard handles it) */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 items-stretch">
-                {filteredProducts.map(item => (
+                {sortedProducts.map(item => (
                     <ProductCard 
                         key={item.id} 
                         item={item}
@@ -62,7 +65,7 @@ export default function ShopPage() {
                     />
                 ))}
             </div>
-            {filteredProducts.length === 0 && (
+            {sortedProducts.length === 0 && (
                 <p className="text-center text-brand-text/70 text-lg">No products found in this category.</p>
             )}
         </div>

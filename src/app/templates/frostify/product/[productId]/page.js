@@ -1,25 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useTemplateContext } from '../../templateContext.js';
 import { useCart } from '../../cartContext.js';
 import { ProductCard } from '../../components.js';
+import { fetchSuggestedProducts } from '@/app/actions/recommendations';
 
 export default function FrostifyProductPage() {
     const { productId } = useParams();
-    const { businessData } = useTemplateContext();
+    const { businessData, websiteId } = useTemplateContext();
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
 
-    if (!product) return <div className="py-32 text-center text-[var(--color-primary)]">Product not found.</div>;
+    useEffect(() => {
+        const loadSuggestions = async () => {
+             if (product) {
+                 if (websiteId) {
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 4);
+                     if (suggestions && suggestions.length > 0) {
+                         setRelatedProducts(suggestions);
+                         return;
+                     }
+                 }
 
-    // Related products (same category)
-    const relatedProducts = businessData.allProducts
-        .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 4);
+                 // Fallback
+                 const local = businessData.allProducts
+                    .filter(p => p.category === product.category && String(p.id) !== String(product.id))
+                    .slice(0, 4);
+                 setRelatedProducts(local);
+             }
+        };
+        loadSuggestions();
+    }, [product, websiteId, businessData.allProducts]);
+
+    if (!product) return <div className="py-32 text-center text-[var(--color-primary)]">Product not found.</div>;
 
     return (
         <div className="bg-white min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">

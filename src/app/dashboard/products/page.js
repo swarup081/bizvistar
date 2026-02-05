@@ -115,9 +115,7 @@ export default function ProductsPage() {
             .eq('website_id', websiteId)
             .order('id', { ascending: false });
 
-        if (searchTerm) {
-            query = query.ilike('name', `%${searchTerm}%`);
-        }
+        // We fetch all and filter client-side to support ID and Category Name search
         if (selectedCategory && selectedCategory !== 'all') {
             query = query.eq('category_id', selectedCategory);
         }
@@ -197,8 +195,18 @@ export default function ProductsPage() {
             };
         });
 
-        // Filter Stock Status in Memory
+        // Filter Stock Status in Memory & Search
         let final = processed;
+
+        if (searchTerm) {
+             const lowerTerm = searchTerm.toLowerCase();
+             final = final.filter(p =>
+                 p.name.toLowerCase().includes(lowerTerm) ||
+                 String(p.id).includes(lowerTerm) ||
+                 p.categoryName.toLowerCase().includes(lowerTerm)
+             );
+        }
+
         if (stockFilters.length > 0) {
             final = final.filter(p => stockFilters.includes(p.stockStatus));
         }
@@ -283,11 +291,12 @@ export default function ProductsPage() {
              <div className="flex items-center justify-between w-full">
                  <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">Products</h1>
                  <button 
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
-                    title="Website Settings"
+                    onClick={() => { setProductToEdit(null); setIsAddOpen(true); }}
+                    disabled={!websiteId}
+                    className="h-9 px-4 flex items-center justify-center gap-2 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition-all shadow-sm"
                  >
-                    <Settings size={20} />
+                    <Plus size={16} />
+                    Add Product
                  </button>
              </div>
 
@@ -296,7 +305,7 @@ export default function ProductsPage() {
                     <Search className="absolute rounded-full left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="text" 
-                      placeholder="Search..." 
+                      placeholder="Search Name, ID, Category..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="h-9 w-full rounded-full border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
@@ -315,13 +324,12 @@ export default function ProductsPage() {
                  </button>
 
                  <button 
-                   onClick={() => { setProductToEdit(null); setIsAddOpen(true); }}
-                   disabled={!websiteId}
-                   className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
-                   title="Add Product"
-                >
-                   <Plus size={16} />
-                </button>
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
+                    title="Website Settings"
+                 >
+                    <Settings size={18} />
+                 </button>
              </div>
              
              {/* Mobile Filter Dropdown */}

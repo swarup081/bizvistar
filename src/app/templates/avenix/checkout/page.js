@@ -1,124 +1,23 @@
 'use client';
 
 import { useCart } from '../cartContext.js';
-import { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { submitOrder } from '@/app/actions/orderActions';
+import { useCheckout } from '@/hooks/useCheckout';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import StateSelector from '@/components/checkout/StateSelector'; // Import the StateSelector component
+import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
-    const { cartDetails, subtotal, shipping, total, openCart, clearCart } = useCart();
+    const cart = useCart();
+    const {
+        formData, fieldErrors, isSubmitting, message,
+        handleChange, handleStateChange, submit,
+        cartDetails, subtotal, shipping, total
+    } = useCheckout(cart);
     
-    // Logic from Flara: No email, Phone required, Note optional.
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        phone: '', 
-        note: ''   
-    });
-    
-    const [fieldErrors, setFieldErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [message, setMessage] = useState('');
-    const pathname = usePathname();
-    const router = useRouter();
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        if (fieldErrors[name]) {
-             setFieldErrors(prev => ({ ...prev, [name]: null }));
-        }
-    };
-    
-    // Separate handler for StateSelector as it might return value directly or event
-    const handleStateChange = (value) => {
-        setFormData({ ...formData, state: value });
-        if (fieldErrors.state) {
-             setFieldErrors(prev => ({ ...prev, state: null }));
-        }
-    }
-
-    const validateForm = () => {
-        const errors = {};
-        if (!formData.firstName.trim()) errors.firstName = "First name is required";
-        if (!formData.lastName.trim()) errors.lastName = "Last name is required";
-        if (!formData.phone.trim()) errors.phone = "Phone number is required";
-        
-        const phoneRegex = /^\d{10}$/;
-        if (formData.phone.trim() && !phoneRegex.test(formData.phone.trim())) {
-             errors.phone = "Phone number must be exactly 10 digits";
-        }
-
-        if (!formData.address.trim()) errors.address = "Address is required";
-        if (!formData.city.trim()) errors.city = "City is required";
-        if (!formData.state.trim()) errors.state = "State is required";
-        if (!formData.zipCode.trim()) errors.zipCode = "ZIP Code is required";
-        
-        const zipRegex = /^\d{6}$/;
-        if (formData.zipCode.trim() && !zipRegex.test(formData.zipCode.trim())) {
-             errors.zipCode = "ZIP code must be exactly 6 digits";
-        }
-
-        setFieldErrors(errors);
-        return Object.keys(errors).length === 0;
-    }
-
-    const handlePlaceOrder = async (e) => {
+    // Wrapper for submit to match event handler signature
+    const handlePlaceOrder = (e) => {
         e.preventDefault();
-        setMessage('');
-
-        if (!validateForm()) {
-            setMessage("Please fix the highlighted errors before continuing.");
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            const pathParts = pathname.split('/');
-            let siteSlug = null;
-            if (pathParts[1] === 'site') {
-                siteSlug = pathParts[2];
-            } else {
-                 console.warn("Checkout is running in preview/template mode.");
-            }
-
-            if (!siteSlug && pathParts[1] !== 'site') {
-                 setMessage('Cannot place real orders in Template Preview mode. Please publish the site first.');
-                 setIsSubmitting(false);
-                 return;
-            }
-
-            const result = await submitOrder({
-                siteSlug,
-                cartDetails,
-                customerDetails: formData,
-                totalAmount: total
-            });
-
-            if (result.success) {
-                setMessage('Order placed successfully!');
-                clearCart();
-                setTimeout(() => {
-                    // Success redirect logic here if needed
-                }, 2000);
-            } else {
-                setMessage('Failed to place order: ' + result.error);
-            }
-
-        } catch (error) {
-            setMessage('An unexpected error occurred.');
-            console.error(error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        submit();
     };
 
     return (

@@ -197,8 +197,8 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
   return (
     <div className="space-y-6">
       
-      {/* Header Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm">
+      {/* Header Actions - Hidden on Mobile */}
+      <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm">
          <div className="relative w-full md:w-96">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input 
@@ -226,8 +226,8 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
                    <tr className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                        <th className="px-6 py-4 rounded-tl-2xl">Category Name</th>
                        <th className="px-6 py-4">Total Items</th>
-                       <th className="px-6 py-4">Top Product</th>
-                       <th className="px-6 py-4">Total Sales</th>
+                       <th className="hidden md:table-cell px-6 py-4">Top Product</th>
+                       <th className="hidden md:table-cell px-6 py-4">Total Sales</th>
                        <th className="px-6 py-4 rounded-tr-2xl text-right">Action</th>
                    </tr>
                </thead>
@@ -259,7 +259,7 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
                                            <span className="text-sm font-medium text-gray-700">{stat.count} items</span>
                                        </div>
                                    </td>
-                                   <td className="px-6 py-4">
+                                   <td className="hidden md:table-cell px-6 py-4">
                                        {stat.topProduct ? (
                                            <div className="flex items-center gap-3">
                                                <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0">
@@ -274,7 +274,7 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
                                            <span className="text-xs text-gray-400 italic">No products</span>
                                        )}
                                    </td>
-                                   <td className="px-6 py-4">
+                                   <td className="hidden md:table-cell px-6 py-4">
                                        <div className="flex items-center gap-2">
                                            <TrendingUp size={16} className="text-green-500" />
                                            <span className="text-sm font-bold text-gray-900">{stat.sales} sold</span>
