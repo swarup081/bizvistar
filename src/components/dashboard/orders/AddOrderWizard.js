@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin, ChevronDown } from 'lucide-react';
+import { X, Check, Search, Plus, Trash2, ChevronRight, ChevronLeft, Loader2, User, MapPin, ChevronDown, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { submitOrder } from '@/app/actions/orderActions'; 
 import StateSelector from '@/components/checkout/StateSelector'; 
@@ -139,21 +139,37 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   const addToCart = (product) => {
       setCart(prev => {
           const existing = prev.find(p => p.id === product.id);
+          // Check stock before adding
+          const currentQty = existing ? existing.quantity : 0;
+          const maxStock = product.stock === -1 ? Infinity : product.stock;
+
+          if (currentQty + 1 > maxStock) {
+              alert("Cannot add more items. Out of stock.");
+              return prev;
+          }
+
           if (existing) {
               return prev.map(p => p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p);
           }
           return [...prev, { ...product, quantity: 1 }];
       });
-      // Don't clear search to keep adding? Or clear?
-      // User said "product will come above everything".
-      // Usually picking one keeps you there.
   };
 
   const updateQuantity = (id, delta) => {
       setCart(prev => prev.map(p => {
           if (p.id === id) {
-              const newQ = Math.max(1, p.quantity + delta);
-              return { ...p, quantity: newQ };
+              const product = products.find(prod => prod.id === id);
+              const maxStock = product?.stock === -1 ? Infinity : (product?.stock || 0);
+
+              const newQ = p.quantity + delta;
+
+              if (newQ > maxStock) {
+                  // Optionally show toast/alert
+                  return p;
+              }
+
+              const finalQ = Math.max(1, newQ);
+              return { ...p, quantity: finalQ };
           }
           return p;
       }));
@@ -271,17 +287,17 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                 </button>
             </div>
 
-            {/* Steps */}
+            {/* Steps - INCREASED SPACING (gap-4 sm:gap-6) */}
             <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0 z-10">
                 {[1, 2, 3].map((s) => (
-                    <div key={s} className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step >= s ? 'bg-[#8A63D2] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    <div key={s} className="flex items-center gap-4 sm:gap-6">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${step >= s ? 'bg-[#8A63D2] text-white' : 'bg-gray-200 text-gray-500'}`}>
                             {step > s ? <Check size={16} /> : s}
                         </div>
-                        <span className={`text-sm font-medium ${step >= s ? 'text-gray-900' : 'text-gray-400'}`}>
+                        <span className={`text-sm font-medium whitespace-nowrap ${step >= s ? 'text-gray-900' : 'text-gray-400'}`}>
                             {s === 1 ? 'Customer' : s === 2 ? 'Products' : 'Review'}
                         </span>
-                        {s < 3 && <div className="w-8 h-px bg-gray-200 mx-1 hidden sm:block"></div>}
+                        {s < 3 && <div className="w-8 h-px bg-gray-200 hidden sm:block"></div>}
                     </div>
                 ))}
             </div>
@@ -420,20 +436,37 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-[300px] overflow-y-auto z-[60] custom-scrollbar">
                                     {displayProducts.length > 0 ? (
                                         <div className="p-2 grid grid-cols-1 gap-1">
-                                            {displayProducts.map(product => (
-                                                <div key={product.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border-b border-gray-50 last:border-0" onClick={() => addToCart(product)}>
-                                                    <div className="h-10 w-10 bg-gray-100 rounded-md overflow-hidden shrink-0">
-                                                        {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover" />}
+                                            {displayProducts.map(product => {
+                                                const isOutOfStock = product.stock !== -1 && product.stock <= 0;
+                                                return (
+                                                    <div
+                                                        key={product.id}
+                                                        className={`flex items-center gap-3 p-2 rounded-lg transition-colors border-b border-gray-50 last:border-0 ${isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-50 cursor-pointer'}`}
+                                                        onClick={() => !isOutOfStock && addToCart(product)}
+                                                    >
+                                                        <div className="h-10 w-10 bg-gray-100 rounded-md overflow-hidden shrink-0">
+                                                            {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover" />}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                                                                {isOutOfStock && (
+                                                                    <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">
+                                                                        <AlertTriangle size={10} /> Out of Stock
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs text-gray-500">₹{product.price}</p>
+                                                        </div>
+                                                        <button
+                                                            disabled={isOutOfStock}
+                                                            className={`p-1.5 rounded-lg transition-colors ${isOutOfStock ? 'bg-gray-200 text-gray-400' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}
+                                                        >
+                                                            <Plus size={16} />
+                                                        </button>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                                                        <p className="text-xs text-gray-500">₹{product.price}</p>
-                                                    </div>
-                                                    <button className="p-1.5 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
-                                                        <Plus size={16} />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="p-4 text-center text-gray-500 text-sm">No products found</div>
