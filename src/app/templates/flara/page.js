@@ -9,15 +9,84 @@ const getProductsByIds = (allProducts, ids) => {
     return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 };
 
+// Helper: Landing Page Algorithm
+const getLandingItems = (businessData, requiredCount = 3) => {
+    if (!businessData) return [];
+
+    const settings = businessData.landing_settings || { mode: 'auto', manualItems: [], prioritizedProducts: [] };
+    const allProducts = businessData.allProducts || [];
+    const allCategories = businessData.categories || [];
+
+    // MANUAL MODE
+    if (settings.mode === 'manual') {
+        return (settings.manualItems || []).slice(0, requiredCount).map(item => {
+            if (item.type === 'product') {
+                 const p = allProducts.find(x => String(x.id) === String(item.id));
+                 return p ? { ...p, type: 'product' } : null;
+            } else {
+                 const c = allCategories.find(x => String(x.id) === String(item.id));
+                 return c ? { ...c, type: 'category' } : null;
+            }
+        }).filter(Boolean);
+    }
+
+    // AUTO MODE
+    let finalItems = [];
+    const prioritizedIds = settings.prioritizedProducts || [];
+
+    // 1. Prioritized Products
+    prioritizedIds.forEach(id => {
+        const p = allProducts.find(x => String(x.id) === String(id));
+        if (p) finalItems.push({ ...p, type: 'product' });
+    });
+
+    // 2. Top Categories (by sales)
+    const sortedCats = [...allCategories].sort((a, b) => (b.sales || 0) - (a.sales || 0));
+    for (const cat of sortedCats) {
+        if (finalItems.length >= requiredCount) break;
+        if (!finalItems.find(x => x.type === 'category' && String(x.id) === String(cat.id))) {
+            finalItems.push({ ...cat, type: 'category' });
+        }
+    }
+
+    // 3. Fill with Top Products
+    if (finalItems.length < requiredCount) {
+        const sortedProducts = [...allProducts]
+             .filter(p => (p.stock === -1 || p.stock > 0))
+             .sort((a, b) => (b.sales || 0) - (a.sales || 0));
+
+        for (const p of sortedProducts) {
+             if (finalItems.length >= requiredCount) break;
+             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
+                 finalItems.push({ ...p, type: 'product' });
+             }
+        }
+    }
+
+    // 4. Fallback OOS Products (Badged)
+    if (finalItems.length < requiredCount) {
+         const oosProducts = allProducts.filter(p => p.stock !== -1 && p.stock <= 0);
+         for (const p of oosProducts) {
+             if (finalItems.length >= requiredCount) break;
+             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
+                 finalItems.push({ ...p, type: 'product', isOOS: true });
+             }
+         }
+    }
+
+    return finalItems.slice(0, requiredCount);
+};
+
 export default function CandleaPage() {
     
     const { businessData, basePath } = useTemplateContext();
 
     const allProducts = businessData?.allProducts || [];
-    const collectionItemIDs = businessData?.collection?.itemIDs || [];
     const bestSellerItemIDs = businessData?.bestSellers?.itemIDs || [];
     
-    const collectionProducts = getProductsByIds(allProducts, collectionItemIDs);
+    // Use Landing Logic for Collection (3 Items)
+    const collectionItems = getLandingItems(businessData, 3);
+
     const bestSellerProducts = getProductsByIds(allProducts, bestSellerItemIDs);
 
     if (!businessData || !businessData.hero) {
@@ -117,30 +186,42 @@ export default function CandleaPage() {
                             </Link>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-8 md:gap-8">
-                            {collectionProducts.map((item, index) => (
-                                <div key={item.id} className={`${index >= 2 ? 'hidden md:block' : ''}`}>
-                                    <Link 
-                                    href={`${basePath}/product/${item.id}`}
-                                    className="group relative block overflow-hidden shadow-lg aspect-[4/5] rounded-t-full md:rounded-none md:hover:rounded-t-full transition-all duration-500"
-                                    >
-                                        <img 
-                                            src={item.image} 
-                                            alt={item.name} 
-                                            className="w-full h-full object-cover transition-transform duration-300"
-                                        />
-                                        <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                                        <h3 className="hidden md:block absolute bottom-2 left-2 md:bottom-6 md:left-6 text-xs md:text-3xl font-bold text-white font-serif">{item.name}</h3>
-                                        <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <span className="bg-brand-bg text-brand-text px-6 py-3 font-semibold uppercase tracking-wider shadow-lg">
-                                                View Product
-                                            </span>
+                            {collectionItems.map((item, index) => {
+                                const isCategory = item.type === 'category';
+                                const href = isCategory ? `${basePath}/shop?category=${item.id}` : `${basePath}/product/${item.id}`;
+                                const btnText = isCategory ? 'View Collection' : 'View Product';
+
+                                return (
+                                    <div key={item.id} className={`${index >= 2 ? 'hidden md:block' : ''}`}>
+                                        <Link
+                                        href={href}
+                                        className="group relative block overflow-hidden shadow-lg aspect-[4/5] rounded-t-full md:rounded-none md:hover:rounded-t-full transition-all duration-500"
+                                        >
+                                            <img
+                                                src={item.image || item.image_url}
+                                                alt={item.name}
+                                                className={`w-full h-full object-cover transition-transform duration-300 ${item.isOOS ? 'grayscale opacity-70' : ''}`}
+                                            />
+                                            {item.isOOS && (
+                                                <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold uppercase z-10">
+                                                    Out of Stock
+                                                </div>
+                                            )}
+
+                                            <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                            <h3 className="hidden md:block absolute bottom-2 left-2 md:bottom-6 md:left-6 text-xs md:text-3xl font-bold text-white font-serif">{item.name}</h3>
+                                            <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <span className="bg-brand-bg text-brand-text px-6 py-3 font-semibold uppercase tracking-wider shadow-lg">
+                                                    {btnText}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                        <div className="block md:hidden text-center mt-3">
+                                            <h3 className="text-sm font-bold text-brand-text font-serif">{item.name}</h3>
                                         </div>
-                                    </Link>
-                                    <div className="block md:hidden text-center mt-3">
-                                        <h3 className="text-sm font-bold text-brand-text font-serif">{item.name}</h3>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </Editable>

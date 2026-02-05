@@ -13,6 +13,75 @@ const getProductsByIds = (allProducts, ids) => {
     return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
 };
 
+// Helper: Landing Page Algorithm
+const getLandingItems = (businessData, requiredCount = 2) => {
+    if (!businessData) return [];
+
+    const settings = businessData.landing_settings || { mode: 'auto', manualItems: [], prioritizedProducts: [] };
+    const allProducts = businessData.allProducts || [];
+    const allCategories = businessData.categories || [];
+
+    // MANUAL MODE
+    if (settings.mode === 'manual') {
+        return (settings.manualItems || []).slice(0, requiredCount).map(item => {
+            if (item.type === 'product') {
+                 const p = allProducts.find(x => String(x.id) === String(item.id));
+                 return p ? { ...p, type: 'product' } : null;
+            } else {
+                 const c = allCategories.find(x => String(x.id) === String(item.id));
+                 return c ? { ...c, type: 'category' } : null;
+            }
+        }).filter(Boolean);
+    }
+
+    // AUTO MODE
+    let finalItems = [];
+    const prioritizedIds = settings.prioritizedProducts || [];
+
+    // 1. Prioritized Products
+    prioritizedIds.forEach(id => {
+        const p = allProducts.find(x => String(x.id) === String(id));
+        if (p) finalItems.push({ ...p, type: 'product' });
+    });
+
+    // 2. Top Categories (by sales)
+    const sortedCats = [...allCategories].sort((a, b) => (b.sales || 0) - (a.sales || 0));
+    for (const cat of sortedCats) {
+        if (finalItems.length >= requiredCount) break;
+        // Check duplication (unlikely for categories vs products but good safety)
+        if (!finalItems.find(x => x.type === 'category' && String(x.id) === String(cat.id))) {
+            finalItems.push({ ...cat, type: 'category' });
+        }
+    }
+
+    // 3. Fill with Top Products
+    if (finalItems.length < requiredCount) {
+        const sortedProducts = [...allProducts]
+             .filter(p => (p.stock === -1 || p.stock > 0)) // Skip OOS for main slots
+             .sort((a, b) => (b.sales || 0) - (a.sales || 0));
+
+        for (const p of sortedProducts) {
+             if (finalItems.length >= requiredCount) break;
+             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
+                 finalItems.push({ ...p, type: 'product' });
+             }
+        }
+    }
+
+    // 4. Fallback OOS Products (Badged)
+    if (finalItems.length < requiredCount) {
+         const oosProducts = allProducts.filter(p => p.stock !== -1 && p.stock <= 0);
+         for (const p of oosProducts) {
+             if (finalItems.length >= requiredCount) break;
+             if (!finalItems.find(x => x.type === 'product' && String(x.id) === String(p.id))) {
+                 finalItems.push({ ...p, type: 'product', isOOS: true });
+             }
+         }
+    }
+
+    return finalItems.slice(0, requiredCount);
+};
+
 // --- Reusable SVG Icons (KEPT HERE, as they are unique to this page) ---
 const HeelsHero = ({ heroData }) => {
     // Splits the bent text ("HIGH") into an array of letters: ['H', 'I', 'G', 'H']
@@ -101,8 +170,13 @@ export default function AvenixPage() {
         return <div>Loading preview...</div>; 
     }
 
-    // --- NEW: Get dynamic products ---
-    const featuredProducts = getProductsByIds(businessData.allProducts, businessData.featured.itemIDs);
+    // --- NEW: Dynamic Content using Logic ---
+    // Avenix "Collection" (Featured) takes 2 items (besides the large image)
+    const featuredItems = getLandingItems(businessData, 2);
+
+    // New Arrivals can still be manual or just latest products.
+    // Keeping it as originally intended (New Arrivals = latest),
+    // or we could apply logic here too. User said "landing page in collection", so I focus on Collection.
     const newArrivalsProducts = getProductsByIds(businessData.allProducts, businessData.newArrivals.itemIDs);
 
     return (
@@ -171,7 +245,7 @@ export default function AvenixPage() {
                     </section>
                 </Editable>
 
-                {/* --- 3. Featured Products (NOW DYNAMIC) --- */}
+                {/* --- 3. Featured Products / Collection (NOW DYNAMIC) --- */}
                 <Editable focusId="collection">
                     <section id="collection" className="py-12 md:py-24 w-full overflow-hidden"> 
                         <div className="container mx-auto px-4 md:px-6 text-center w-full max-w-full overflow-hidden">
@@ -193,35 +267,50 @@ export default function AvenixPage() {
                                 />
                             </div>
 
-                            {/* Item 2: Product 1 */}
-                            {featuredProducts[0] && (
-                                <div className="col-span-1 flex flex-col items-center text-center">
-                                    <div className="bg-white rounded-xl md:rounded-2xl w-full"> 
-                                        <img src={featuredProducts[0].image} alt={featuredProducts[0].name} className="w-full h-auto object-cover rounded-lg aspect-[4/5] pb-2 md:pb-6" />
-                                        <h3 className="text-[3vw] md:text-2xl font-serif font-medium mt-2 md:mt-6">{featuredProducts[0].name}</h3>
-                                        <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-1">${featuredProducts[0].price.toFixed(2)} USD</p>
-                                        <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-4 mt-2 md:mt-6 pb-2 md:pb-6 px-2 md:px-6">
-                                            <Link href={`/templates/avenix/product/${featuredProducts[0].id}`} className="w-full btn-primary bg-brand-secondary text-brand-bg px-2 py-2 md:px-6 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:opacity-80">Shop Now</Link>
-                                            <Link href={`/templates/avenix/product/${featuredProducts[0].id}`} className="hidden md:block w-full btn-secondary bg-white text-brand-secondary border border-brand-text/20 px-6 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-50">Learn More</Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            {/* Dynamic Items Render Loop */}
+                            {featuredItems.map((item, i) => {
+                                const isCategory = item.type === 'category';
+                                const href = isCategory
+                                    ? `/templates/avenix/shop?category=${item.id}`
+                                    : `/templates/avenix/product/${item.id}`;
+                                const btnText = isCategory ? 'View Collection' : 'Shop Now';
 
-                            {/* Item 3: Product 2 */}
-                            {featuredProducts[1] && (
-                                <div className="col-span-1 flex flex-col items-center text-center">
-                                    <div className="bg-white rounded-xl md:rounded-2xl w-full"> 
-                                        <img src={featuredProducts[1].image} alt={featuredProducts[1].name} className="w-full h-auto pb-2 md:pb-6 object-cover rounded-lg aspect-[4/5]" />
-                                        <h3 className="text-[3vw] md:text-2xl font-serif font-medium mt-2 md:mt-6">{featuredProducts[1].name}</h3>
-                                        <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-1">${featuredProducts[1].price.toFixed(2)} USD</p>
-                                        <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-4 mt-2 md:mt-6 pb-2 md:pb-6 px-2 md:px-6">
-                                            <Link href={`/templates/avenix/product/${featuredProducts[1].id}`} className="w-full btn-primary bg-brand-secondary text-brand-bg px-2 py-2 md:px-6 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:opacity-80">Shop Now</Link>
-                                            <Link href={`/templates/avenix/product/${featuredProducts[1].id}`} className="hidden md:block w-full btn-secondary bg-white text-brand-secondary border border-brand-text/20 px-6 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-50">Learn More</Link>
+                                return (
+                                    <div key={item.id} className="col-span-1 flex flex-col items-center text-center relative">
+                                        <div className="bg-white rounded-xl md:rounded-2xl w-full relative">
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                className={`w-full h-auto object-cover rounded-lg aspect-[4/5] pb-2 md:pb-6 ${item.isOOS ? 'opacity-60 grayscale' : ''}`}
+                                            />
+                                            {item.isOOS && (
+                                                <div className="absolute top-2 right-2 bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold uppercase">
+                                                    Out of Stock
+                                                </div>
+                                            )}
+
+                                            <h3 className="text-[3vw] md:text-2xl font-serif font-medium mt-2 md:mt-6">{item.name}</h3>
+
+                                            {!isCategory && (
+                                                <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-1">
+                                                    ${item.price.toFixed(2)} USD
+                                                </p>
+                                            )}
+
+                                            <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-4 mt-2 md:mt-6 pb-2 md:pb-6 px-2 md:px-6">
+                                                <Link href={href} className="w-full btn-primary bg-brand-secondary text-brand-bg px-2 py-2 md:px-6 md:py-3 font-sans font-medium text-[2vw] md:text-sm uppercase tracking-wider rounded-xl md:rounded-3xl text-center hover:opacity-80">
+                                                    {btnText}
+                                                </Link>
+                                                {!isCategory && (
+                                                    <Link href={href} className="hidden md:block w-full btn-secondary bg-white text-brand-secondary border border-brand-text/20 px-6 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-50">
+                                                        Learn More
+                                                    </Link>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })}
                         </div>
                     </section>
                 </Editable>
