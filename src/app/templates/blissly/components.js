@@ -160,6 +160,32 @@ export const ProductCard = ({ item, templateName }) => {
     );
 };
 
+// --- Blog Card Component (Added) ---
+export const BlogCard = ({ post }) => (
+    <div className="group cursor-pointer">
+        <div className="relative aspect-video overflow-hidden rounded-lg mb-4">
+            <img
+                src={post.image}
+                alt={post.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+        </div>
+        <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-brand-text/60">
+                <span>{post.date}</span>
+                <span>•</span>
+                <span>{post.category}</span>
+            </div>
+            <h3 className="text-xl font-serif font-bold group-hover:text-brand-secondary transition-colors">
+                {post.title}
+            </h3>
+            <p className="text-brand-text/70 line-clamp-2">
+                {post.excerpt || "Read more about this topic in our latest blog post..."}
+            </p>
+        </div>
+    </div>
+);
+
 
 // --- Footer Component ---
 export const Footer = () => {
