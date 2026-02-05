@@ -242,28 +242,19 @@ function OrdersContent() {
     <div className="h-full flex flex-col font-sans">
       
       {/* Header Section: Consolidated for Mobile & Desktop */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-4 md:px-0 pt-4 md:pt-0 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-8 px-2 md:px-0 pt-4 md:pt-0 shrink-0">
         
         {/* Mobile Header Layout: Two Rows */}
-        <div className="flex md:hidden flex-col w-full gap-3 px-4 pt-4">
-             {/* Row 1: Title (Left) and Add Order Button (Right) */}
+        <div className="flex md:hidden flex-col w-full gap-3 -px-2 pt-4">
+             {/* Row 1: Title (Left) */}
              <div className="flex items-center justify-between w-full">
-                 <h1 className="text-xl font-bold text-gray-900 shrink-0">Orders</h1>
-                 
-                 {/* Add Order Button (Black, Small Icon) */}
-                 <button 
-                    onClick={() => setIsAddOrderOpen(true)}
-                    className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
-                    title="Add Manual Order"
-                >
-                    <Plus size={16} />
-                </button>
+                 <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">Orders</h1>
              </div>
 
-             {/* Row 2: Search (Grow) and Filter (Fixed) */}
+             {/* Row 2: Search (Grow) and Filter (Fixed) with Add Order beside Filter */}
              <div className="flex items-center gap-2 w-full">
                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                    <Search className="absolute rounded-full left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="text" 
                       placeholder="Search..." 
@@ -295,6 +286,13 @@ function OrdersContent() {
                         </DropdownMenu.Content>
                     </DropdownMenu.Portal>
                 </DropdownMenu.Root>
+                <button 
+                   onClick={() => setIsAddOrderOpen(true)}
+                   className="h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-all shadow-sm"
+                   title="Add Manual Order"
+                >
+                   <Plus size={16} />
+                </button>
              </div>
         </div>
 
@@ -306,23 +304,21 @@ function OrdersContent() {
             </div>
             
             <div className="flex items-center gap-3">
-                 <div className="relative w-64">
+                <div className="relative w-64">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <input 
                     type="text" 
                     placeholder="Search orders..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
+                    className="h-10 w-full rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-sm"
                     />
                 </div>
                 
                 <DropdownMenu.Root>
                     <DropdownMenu.Trigger asChild>
-                        <button className={`flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}>
-                            <Filter className="h-4 w-4" />
-                            {statusFilter === 'all' ? 'Filter' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-                            <ChevronDown className="h-3 w-3 opacity-50" />
+                        <button className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${statusFilter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
+                            <Filter size={16} />
                         </button>
                     </DropdownMenu.Trigger>
                      <DropdownMenu.Portal>
@@ -344,7 +340,7 @@ function OrdersContent() {
                 {/* Add Order Button (Desktop) */}
                 <button 
                     onClick={() => setIsAddOrderOpen(true)}
-                    className="h-10 px-4 flex items-center justify-center gap-2 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
+                    className="h-10 px-4 flex items-center justify-center gap-2 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
                 >
                     <Plus size={18} />
                     Add Order
@@ -416,11 +412,11 @@ function OrdersContent() {
                                 {/* Manual Source Display */}
                                 <td className="hidden md:table-cell py-4 px-6 text-sm align-middle">
                                     {order.displaySource && order.displaySource !== 'Website' ? (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-gray-600">
                                             {order.displaySource}
                                         </span>
                                     ) : (
-                                        <span className="text-gray-400 text-xs">Website</span>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-gray-600">Website</span>
                                     )}
                                 </td>
 
