@@ -4,7 +4,7 @@ export async function syncWebsiteDataClient(websiteId) {
     if (!websiteId) return;
 
     try {
-        // 1. Fetch all products and categories for this website
+        // 1. Fetch all products, categories, and order items for this website
         const { data: products, error: prodError } = await supabase
             .from('products')
             .select('*')
@@ -15,6 +15,13 @@ export async function syncWebsiteDataClient(websiteId) {
             .from('categories')
             .select('id, name')
             .eq('website_id', websiteId);
+
+        // Fetch Order Items (via Orders) to calculate sales
+        // Note: Joining to ensure we count correct website sales
+        const { data: orderItems, error: salesError } = await supabase
+            .from('order_items')
+            .select('product_id, quantity, orders!inner(website_id)')
+            .eq('orders.website_id', websiteId);
 
         if (prodError || catError) {
             console.error("Sync fetch error:", prodError || catError);
@@ -36,7 +43,13 @@ export async function syncWebsiteDataClient(websiteId) {
 
         const currentData = website.website_data || {};
 
-        // 3. Map Data
+        // 3. Process Sales Data
+        const productSales = {}; // { prodId: totalQty }
+        (orderItems || []).forEach(item => {
+            productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity;
+        });
+
+        // 4. Map Products with Sales
         const mappedProducts = products.map(p => ({
             id: p.id,
             name: p.name,
@@ -44,15 +57,32 @@ export async function syncWebsiteDataClient(websiteId) {
             category: p.category_id ? String(p.category_id) : 'uncategorized',
             description: p.description,
             image: p.image_url,
-            stock: p.stock // -1 is Unlimited
+            stock: p.stock, // -1 is Unlimited
+            sales: productSales[p.id] || 0
         }));
 
-        const mappedCategories = categories ? categories.map(c => ({
-            id: String(c.id),
-            name: c.name
-        })) : [];
+        // 5. Map Categories with Stats (Top Image + Sales)
+        const mappedCategories = categories ? categories.map(c => {
+            const catProducts = mappedProducts.filter(p => String(p.category) === String(c.id));
 
-        // 4. Update website_data JSON
+            // Calculate total category sales
+            const totalSales = catProducts.reduce((sum, p) => sum + p.sales, 0);
+
+            // Find Top Selling Product Image
+            // Sort by sales (desc), then check for image
+            const topProduct = [...catProducts]
+                .sort((a, b) => b.sales - a.sales)
+                .find(p => p.image); // First one with an image
+
+            return {
+                id: String(c.id),
+                name: c.name,
+                sales: totalSales,
+                image: topProduct ? topProduct.image : null
+            };
+        }) : [];
+
+        // 6. Update website_data JSON
         const newData = {
             ...currentData,
             allProducts: mappedProducts,
@@ -68,7 +98,7 @@ export async function syncWebsiteDataClient(websiteId) {
         if (updateError) {
             console.error("Sync update error:", updateError);
         } else {
-            console.log("Website JSON synced successfully (Client-Side).");
+            console.log("Website JSON synced successfully (Client-Side) with Analytics.");
         }
 
     } catch (err) {

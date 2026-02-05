@@ -1,13 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTemplateContext } from '../templateContext.js'; // Import the context hook
 import { ProductCard } from '../components.js';
+import { useSearchParams } from 'next/navigation';
 
 export default function ShopPage() {
-    const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+    const searchParams = useSearchParams();
+    const initialCategory = searchParams.get('category') || 'all';
+
+    const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategory);
     const { businessData } = useTemplateContext(); // Get data from context
     
+    // Update state if URL changes (optional, but good for back button)
+    useEffect(() => {
+        const cat = searchParams.get('category');
+        if (cat) setSelectedCategoryId(cat);
+    }, [searchParams]);
+
     // Get master lists from dynamic data
     const allProducts = businessData.allProducts; 
     
@@ -18,9 +28,10 @@ export default function ShopPage() {
     ];
     
     // Filter products based on selected category ID
+    // Note: p.category is stored as String in sync logic
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
-        : allProducts.filter(p => p.category === selectedCategoryId);
+        : allProducts.filter(p => String(p.category) === String(selectedCategoryId));
 
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
@@ -31,9 +42,13 @@ export default function ShopPage() {
             {categories.map((category, index) => (
     <button 
         key={`${category.id || category.name}-${index}`}
-        onClick={() => setSelectedCategoryId(category.id)}
+        onClick={() => {
+            setSelectedCategoryId(category.id);
+            // Optional: Update URL without reload
+            // window.history.pushState(null, '', `?category=${category.id}`);
+        }}
         className={`font-sans font-medium uppercase tracking-wider text-[3vw] md:text-sm transition-colors ${
-            selectedCategoryId === category.id 
+            String(selectedCategoryId) === String(category.id)
                 ? 'text-brand-text border-b border-brand-text' 
                 : 'text-brand-text/50 hover:text-brand-text'
         }`}
