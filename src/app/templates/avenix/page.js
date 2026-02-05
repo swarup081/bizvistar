@@ -6,152 +6,12 @@ import {
 } from './components.js'; 
 import Link from 'next/link';
 import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
+import { getLandingItems } from '@/lib/templates/templateLogic'; // --- NEW IMPORT ---
 
 // Helper: Get product details from the master list by their IDs
 const getProductsByIds = (allProducts, ids) => {
     if (!allProducts || !ids) return []; // Guard against undefined data
     return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
-};
-
-// Helper: Landing Page Algorithm (REFACTORED)
-const getLandingItems = (businessData, requiredCount = 2) => {
-    if (!businessData) return [];
-
-    const settings = businessData.landing_settings || { mode: 'auto', manualItems: [], prioritizedProducts: [] };
-    const allProducts = businessData.allProducts || [];
-    const allCategories = businessData.categories || [];
-    const totalItems = allProducts.length + allCategories.length;
-
-    // 0. SMALL CATALOG CHECK: If we have fewer items than needed, show EVERYTHING (no filters)
-    if (totalItems <= requiredCount) {
-         let everything = [];
-         allCategories.forEach(c => everything.push({ ...c, type: 'category' }));
-         allProducts.forEach(p => everything.push({ ...p, type: 'product' }));
-         return everything;
-    }
-
-    // MANUAL MODE
-    if (settings.mode === 'manual') {
-        return (settings.manualItems || []).slice(0, requiredCount).map(item => {
-            if (item.type === 'product') {
-                 const p = allProducts.find(x => String(x.id) === String(item.id));
-                 return p ? { ...p, type: 'product' } : null;
-            } else {
-                 const c = allCategories.find(x => String(x.id) === String(item.id));
-                 return c ? { ...c, type: 'category' } : null;
-            }
-        }).filter(Boolean);
-    }
-
-    // AUTO MODE
-    let finalItems = [];
-    const usedImages = new Set(); // Track image URLs to prevent duplicates
-    const prioritizedIds = (settings.prioritizedProducts || []).map(String);
-
-    // Helper to check image duplication
-    const isImageUsed = (url) => {
-        if (!url) return false;
-        return usedImages.has(url);
-    };
-
-    // Helper to add item
-    const addItem = (item, type, isOOS = false) => {
-        if (finalItems.length >= requiredCount) return false;
-
-        // Check uniqueness by ID
-        if (finalItems.find(x => x.type === type && String(x.id) === String(item.id))) return false;
-
-        // Image Logic
-        let displayImage = item.image;
-        if (type === 'category') {
-             // For categories, find a product image that isn't used
-             // item.image is already the "Top Product" image from sync logic
-             // But we should check real-time against `usedImages`
-             if (isImageUsed(displayImage)) {
-                 // Try to find another product in this category with an unused image
-                 const catProducts = allProducts.filter(p => String(p.category) === String(item.id));
-                 const nextBest = catProducts
-                    .sort((a, b) => (b.sales || 0) - (a.sales || 0))
-                    .find(p => p.image && !isImageUsed(p.image));
-
-                 if (nextBest) {
-                     displayImage = nextBest.image;
-                 } else {
-                     // No unique image found, maybe skip this category?
-                     // Or just show it anyway (better than nothing).
-                     // Let's show it, but duplicates might happen if catalog is tiny.
-                 }
-             }
-        } else {
-             // For products
-             if (isImageUsed(displayImage)) {
-                 return false; // Skip this product if its image is already featured on a category card
-             }
-        }
-
-        if (displayImage) usedImages.add(displayImage);
-        finalItems.push({ ...item, type, isOOS, image: displayImage }); // Ensure we use the chosen image
-        return true;
-    };
-
-    // 1. Prioritized Products (Pinned)
-    // Sort pinned items by: Image Exists > Sales
-    const pinnedItems = prioritizedIds
-        .map(id => allProducts.find(p => String(p.id) === id))
-        .filter(Boolean)
-        .sort((a, b) => {
-            if (!!a.image !== !!b.image) return !!b.image - !!a.image; // Image first
-            return (b.sales || 0) - (a.sales || 0); // Then sales
-        });
-
-    pinnedItems.forEach(p => addItem(p, 'product', (p.stock !== -1 && p.stock <= 0)));
-
-    if (finalItems.length >= requiredCount) return finalItems;
-
-    // 2. Top Categories (by Sales)
-    // Preference: Categories with images > Sales
-    const sortedCats = [...allCategories].sort((a, b) => {
-        if (!!a.image !== !!b.image) return !!b.image - !!a.image;
-        return (b.sales || 0) - (a.sales || 0);
-    });
-
-    for (const cat of sortedCats) {
-        if (finalItems.length >= requiredCount) break;
-        addItem(cat, 'category');
-    }
-
-    if (finalItems.length >= requiredCount) return finalItems;
-
-    // 3. Top Products (Smart Fill)
-    // Filter out OOS for now (unless forced later)
-    // Sort: Image > Sales
-    const availableProducts = [...allProducts]
-         .filter(p => (p.stock === -1 || p.stock > 0))
-         .filter(p => !prioritizedIds.includes(String(p.id))) // Exclude already pinned
-         .sort((a, b) => {
-            if (!!a.image !== !!b.image) return !!b.image - !!a.image;
-            return (b.sales || 0) - (a.sales || 0);
-         });
-
-    for (const p of availableProducts) {
-         if (finalItems.length >= requiredCount) break;
-         addItem(p, 'product');
-    }
-
-    // 4. Fallback: Out of Stock Products (if we still need items)
-    if (finalItems.length < requiredCount) {
-         const oosProducts = allProducts
-            .filter(p => p.stock !== -1 && p.stock <= 0)
-            .filter(p => !prioritizedIds.includes(String(p.id)))
-            .sort((a, b) => (b.sales || 0) - (a.sales || 0));
-
-         for (const p of oosProducts) {
-             if (finalItems.length >= requiredCount) break;
-             addItem(p, 'product', true);
-         }
-    }
-
-    return finalItems.slice(0, requiredCount);
 };
 
 // --- Reusable SVG Icons (KEPT HERE, as they are unique to this page) ---
@@ -242,13 +102,10 @@ export default function AvenixPage() {
         return <div>Loading preview...</div>; 
     }
 
-    // --- NEW: Dynamic Content using Logic ---
-    // Avenix "Collection" (Featured) takes 2 items (besides the large image)
+    // --- NEW: Dynamic Content using Shared Logic ---
     const featuredItems = getLandingItems(businessData, 2);
 
     // New Arrivals can still be manual or just latest products.
-    // Keeping it as originally intended (New Arrivals = latest),
-    // or we could apply logic here too. User said "landing page in collection", so I focus on Collection.
     const newArrivalsProducts = getProductsByIds(businessData.allProducts, businessData.newArrivals.itemIDs);
 
     return (
