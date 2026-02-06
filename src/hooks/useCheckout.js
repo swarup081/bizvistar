@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { submitOrder } from '@/app/actions/orderActions';
 import { usePathname } from 'next/navigation';
 
-export const useCheckout = ({ cartDetails, subtotal, shipping, total, clearCart }) => {
+export const useCheckout = (cartContext = {}) => {
+    // Default cartDetails to empty array if cartContext is undefined or empty
+    const {
+        cartDetails = [],
+        subtotal = 0,
+        shipping = 0,
+        total = 0,
+        clearCart = () => {}
+    } = cartContext || {};
+
     const pathname = usePathname();
 
     const [formData, setFormData] = useState({
@@ -76,7 +85,7 @@ export const useCheckout = ({ cartDetails, subtotal, shipping, total, clearCart 
         setIsSubmitting(true);
 
         try {
-            const pathParts = pathname.split('/');
+            const pathParts = pathname ? pathname.split('/') : [];
             let siteSlug = null;
             if (pathParts[1] === 'site') {
                 siteSlug = pathParts[2];
@@ -122,6 +131,11 @@ export const useCheckout = ({ cartDetails, subtotal, shipping, total, clearCart 
         message,
         handleChange,
         handleStateChange,
-        submit
+        submit,
+        // Re-export cart details for convenience, safely defaulted
+        cartDetails,
+        subtotal,
+        shipping,
+        total
     };
 };
