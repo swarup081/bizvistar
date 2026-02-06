@@ -6,6 +6,7 @@ import { useTemplateContext } from '../../templateContext.js';
 import { useCart } from '../../cartContext.js';
 import { ProductCard } from '../../components.js';
 import { fetchSuggestedProducts } from '@/app/actions/recommendations';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ProductPage() {
     const { productId } = useParams();
@@ -13,20 +14,27 @@ export default function ProductPage() {
     const { addToCart } = useCart();
     const [qty, setQty] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState([]);
-    const [selectedImage, setSelectedImage] = useState('');
-    const [selectedVariants, setSelectedVariants] = useState({});
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
     const category = product ? businessData.categories.find(c => c.id === product.category) : null;
 
+    // Gallery State
+    const allImages = [product?.image, ...(product?.additional_images || [])].filter(Boolean);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const [selectedVariants, setSelectedVariants] = useState({});
+
     useEffect(() => {
         if (product) {
-            setSelectedImage(product.image);
             if (product.variants && Array.isArray(product.variants)) {
                 const defaults = {};
                 product.variants.forEach(v => {
                     const vals = v.values.split(',').map(s => s.trim());
                     if (vals.length > 0) defaults[v.name] = vals[0];
+                    if (v.type === 'color') {
+                         const colorParts = vals[0].split(':');
+                         defaults[v.name] = colorParts[0];
+                    }
                 });
                 setSelectedVariants(defaults);
             }
@@ -37,7 +45,8 @@ export default function ProductPage() {
         const loadSuggestions = async () => {
              if (product) {
                  if (websiteId) {
-                     const suggestions = await fetchSuggestedProducts(websiteId, product, 4);
+                     // Request 2-8
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 2, 8);
                      if (suggestions && suggestions.length > 0) {
                          setRelatedProducts(suggestions);
                          return;
@@ -64,7 +73,13 @@ export default function ProductPage() {
         setSelectedVariants(prev => ({ ...prev, [name]: value }));
     };
 
-    const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
+    // Carousel Logic
+    const nextImage = () => {
+        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    };
+    const prevImage = () => {
+        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    };
 
     // Stock
     const rawStock = product?.stock;
@@ -77,29 +92,46 @@ export default function ProductPage() {
             <div className="container mx-auto px-6 py-12 md:py-24">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 mt-8 md:mt-0 items-start">
                     
-                    {/* Gallery */}
+                    {/* Gallery (Carousel) */}
                     <div className="flex flex-col gap-4">
-                        <div className="bg-gray-50 aspect-[3/4] relative overflow-hidden max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0">
-                            <img src={selectedImage} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+                        <div className="bg-gray-50 aspect-[3/4] relative overflow-hidden max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0 group">
+                            <img
+                                src={allImages[currentImageIndex]}
+                                alt={product.name}
+                                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                            />
                             {isOutOfStock && (
                                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                     <span className="bg-white text-black px-4 py-2 uppercase tracking-widest text-xs font-bold">Sold Out</span>
                                 </div>
                             )}
-                        </div>
-                        {allImages.length > 1 && (
-                            <div className="flex gap-2 overflow-x-auto pb-2 justify-center md:justify-start">
-                                {allImages.map((img, idx) => (
+
+                             {/* Arrows */}
+                            {allImages.length > 1 && (
+                                <>
                                     <button
-                                        key={idx}
-                                        onClick={() => setSelectedImage(img)}
-                                        className={`w-14 h-14 shrink-0 border border-gray-200 ${selectedImage === img ? 'ring-1 ring-black' : 'opacity-70'}`}
+                                        onClick={prevImage}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
-                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                        <ChevronLeft size={20} />
                                     </button>
-                                ))}
-                            </div>
-                        )}
+                                    <button
+                                        onClick={nextImage}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                                        {allImages.map((_, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'bg-black w-3' : 'bg-black/30'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                     
                     {/* Info */}
@@ -126,24 +158,45 @@ export default function ProductPage() {
                         {product.variants && product.variants.length > 0 && (
                             <div className="mb-6 space-y-4">
                                 {product.variants.map((v, idx) => {
-                                    const options = v.values.split(',').map(s => s.trim());
+                                    const rawValues = v.values.split(',').map(s => s.trim());
                                     return (
                                         <div key={idx}>
                                             <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">{v.name}</h3>
                                             <div className="flex flex-wrap gap-2">
-                                                {options.map(opt => (
-                                                    <button
-                                                        key={opt}
-                                                        onClick={() => handleVariantChange(v.name, opt)}
-                                                        className={`px-3 py-1 border text-xs uppercase tracking-wider transition-all ${
-                                                            selectedVariants[v.name] === opt
-                                                                ? 'bg-black text-white border-black'
-                                                                : 'border-gray-300 text-gray-600 hover:border-black'
-                                                        }`}
-                                                    >
-                                                        {opt}
-                                                    </button>
-                                                ))}
+                                                {v.type === 'color' ? (
+                                                    rawValues.map(valStr => {
+                                                        const [hex, name] = valStr.split(':');
+                                                        const colorName = name || hex;
+                                                        const isSelected = selectedVariants[v.name] === hex;
+                                                        return (
+                                                            <button
+                                                                key={hex}
+                                                                onClick={() => handleVariantChange(v.name, hex)}
+                                                                className={`w-8 h-8 rounded-full border border-gray-200 transition-all relative group ${isSelected ? 'ring-1 ring-black ring-offset-2' : 'hover:scale-110'}`}
+                                                                style={{ backgroundColor: hex }}
+                                                                title={colorName}
+                                                            >
+                                                                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
+                                                                    {colorName}
+                                                                </span>
+                                                            </button>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    rawValues.map(opt => (
+                                                        <button
+                                                            key={opt}
+                                                            onClick={() => handleVariantChange(v.name, opt)}
+                                                            className={`px-3 py-1 border text-xs uppercase tracking-wider transition-all ${
+                                                                selectedVariants[v.name] === opt
+                                                                    ? 'bg-black text-white border-black'
+                                                                    : 'border-gray-300 text-gray-600 hover:border-black'
+                                                            }`}
+                                                        >
+                                                            {opt}
+                                                        </button>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     );
