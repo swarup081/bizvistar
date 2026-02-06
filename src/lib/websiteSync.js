@@ -58,7 +58,9 @@ export async function syncWebsiteDataClient(websiteId) {
             description: p.description,
             image: p.image_url,
             stock: p.stock, // -1 is Unlimited
-            sales: productSales[p.id] || 0
+            sales: productSales[p.id] || 0,
+            additional_images: p.additional_images || [],
+            variants: p.variants || []
         }));
 
         // 5. Map Categories with Stats (Top Image + Sales)
