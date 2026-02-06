@@ -552,6 +552,7 @@ export default function ProductsPage() {
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Stock</th>
                         <th className="py-4 px-2 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Price</th>
                         <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Analytics (7 Days)</th>
+                        <th className="hidden md:table-cell py-4 px-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Total Sales</th>
                         <th className="py-4 pr-4 md:px-6 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
                     </tr>
                     </thead>
@@ -624,6 +625,9 @@ export default function ProductsPage() {
                                 <div className="w-24">
                                     <Sparkline data={product.analytics} />
                                 </div>
+                            </td>
+                            <td className="hidden md:table-cell py-4 px-6 align-middle">
+                                <span className="text-sm font-medium text-gray-900">{product.totalSales}</span>
                             </td>
                             <td className="py-4 pr-4 md:px-6 text-right align-middle relative">
                                 <button 
