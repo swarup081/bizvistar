@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Select from '@radix-ui/react-select';
-import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2, Palette, Ruler } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -17,9 +17,16 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     categoryId: '',
     description: '',
     imageUrl: '', 
-    additionalImages: [], // Array of strings (base64 or url)
-    variants: [], // Array of { name: 'Size', values: 'S, M, L' }
+    additionalImages: [],
+    variants: [],
   });
+
+  // Pre-defined variant types
+  const VARIANT_TYPES = [
+      { id: 'size', label: 'Size', icon: Ruler },
+      { id: 'color', label: 'Color', icon: Palette },
+      { id: 'other', label: 'Other', icon: Plus },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -99,10 +106,23 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       }));
   };
 
-  const addVariant = () => {
+  const addVariant = (type) => {
+      let initialValues = '';
+      let initialName = '';
+
+      if (type === 'size') {
+          initialName = 'Size';
+          initialValues = 'S, M, L, XL'; // Default suggestion
+      } else if (type === 'color') {
+          initialName = 'Color';
+          initialValues = '#000000:Black, #FFFFFF:White'; // Default suggestion
+      } else {
+          initialName = 'Custom';
+      }
+
       setFormData(prev => ({
           ...prev,
-          variants: [...prev.variants, { name: '', values: '' }]
+          variants: [...prev.variants, { type: type, name: initialName, values: initialValues }]
       }));
   };
 
@@ -135,7 +155,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       if (formData.isUnlimited) finalStock = -1;
       if (finalStock < 0) finalStock = -1;
 
-      // Filter empty variants
       const cleanVariants = formData.variants.filter(v => v.name.trim() !== '' && v.values.trim() !== '');
 
       const payload = {
@@ -348,32 +367,68 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                     {/* Variants */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Variants (Optional)</label>
-                            <button type="button" onClick={addVariant} className="text-xs text-[#8A63D2] font-bold hover:underline flex items-center gap-1">
-                                <Plus size={12} /> Add Variant
-                            </button>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Variants</label>
+
+                            {/* Variant Type Selector */}
+                            <div className="flex gap-2">
+                                {VARIANT_TYPES.map(type => (
+                                    <button
+                                        key={type.id}
+                                        type="button"
+                                        onClick={() => addVariant(type.id)}
+                                        className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-purple-50 hover:text-[#8A63D2] font-medium flex items-center gap-1 transition-colors"
+                                    >
+                                        <type.icon size={12} /> {type.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
+
+                        {formData.variants.length === 0 && (
+                            <div className="text-center p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200 text-gray-400 text-sm">
+                                No variants added. Click buttons above to add Size, Color, etc.
+                            </div>
+                        )}
+
                         {formData.variants.map((variant, idx) => (
-                            <div key={idx} className="flex gap-2 items-start">
-                                <input
-                                    placeholder="Name (e.g. Size)"
-                                    className="w-1/3 p-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500"
-                                    value={variant.name}
-                                    onChange={(e) => updateVariant(idx, 'name', e.target.value)}
-                                />
-                                <input
-                                    placeholder="Values (e.g. S, M, L)"
-                                    className="flex-1 p-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500"
-                                    value={variant.values}
-                                    onChange={(e) => updateVariant(idx, 'values', e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => removeVariant(idx)}
-                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                            <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {variant.type === 'size' && <Ruler size={14} className="text-gray-500"/>}
+                                        {variant.type === 'color' && <Palette size={14} className="text-gray-500"/>}
+                                        {variant.type === 'other' && <Plus size={14} className="text-gray-500"/>}
+                                        <span className="text-sm font-bold text-gray-700">{variant.name}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeVariant(idx)}
+                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <div className="w-1/3">
+                                        <input
+                                            placeholder="Name"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                                            value={variant.name}
+                                            onChange={(e) => updateVariant(idx, 'name', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <input
+                                            placeholder={variant.type === 'color' ? "#HEX:Name, #HEX:Name" : "Values (comma separated)"}
+                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                                            value={variant.values}
+                                            onChange={(e) => updateVariant(idx, 'values', e.target.value)}
+                                        />
+                                        {variant.type === 'color' && (
+                                            <p className="text-[10px] text-gray-400 mt-1">Format: #hex:Name (e.g. #ff0000:Red, #000000:Black)</p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>

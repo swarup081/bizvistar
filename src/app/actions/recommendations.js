@@ -8,7 +8,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 4) {
+export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit = 2, maxLimit = 8) {
     if (!websiteId || !currentProduct) return [];
     
     // 1. Fetch "Also Bought" (Collaborative Filtering)
@@ -18,11 +18,10 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 
             .from('order_items')
             .select('order_id')
             .eq('product_id', currentProduct.id)
-            .limit(50); // Analyze last 50 orders involving this product
+            .limit(50);
         
         if (ordersWithProduct && ordersWithProduct.length > 0) {
             const orderIds = ordersWithProduct.map(o => o.order_id);
-            
             const { data: otherItems } = await supabase
                 .from('order_items')
                 .select('product_id')
@@ -40,10 +39,9 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 
         console.error("Error fetching recommendations (Also Bought):", err);
     }
 
-    // 2. Fetch Global Best Sellers (Top Selling in Store)
+    // 2. Fetch Global Best Sellers
     let globalBestSellerIds = [];
     try {
-        // Get recent orders for this website to determine popularity
         const { data: recentOrders } = await supabase
             .from('orders')
             .select('id')
@@ -70,7 +68,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 
         console.error("Error fetching recommendations (Best Sellers):", e);
     }
 
-    // 3. Fetch All Products (for fallback, scoring, and filtering)
+    // 3. Fetch All Products
     const { data: allProducts } = await supabase
         .from('products')
         .select('*')
@@ -79,7 +77,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 
         
     if (!allProducts) return [];
 
-    // 4. Get Pinned Products (from websites table)
+    // 4. Get Pinned Products
     let prioritizedIds = [];
     try {
         const { data: site } = await supabase
@@ -100,36 +98,44 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, limit = 
     const scored = candidates.map(p => {
         let score = 0;
         
-        // Pinned (Highest Priority)
+        // Pinned (Highest)
         if (prioritizedIds.includes(String(p.id))) score += 10000;
 
-        // Also Bought (High Relevance)
+        // Also Bought (High)
         const boughtIdx = alsoBoughtIds.indexOf(p.id);
-        if (boughtIdx !== -1) {
-            score += 5000 - (boughtIdx * 100); 
-        }
+        if (boughtIdx !== -1) score += 5000 - (boughtIdx * 100);
 
-        // Global Best Seller (Medium-High Relevance)
+        // Global Best Seller (Medium-High)
         const globalIdx = globalBestSellerIds.indexOf(p.id);
-        if (globalIdx !== -1) {
-            score += 2500 - (globalIdx * 50);
-        }
+        if (globalIdx !== -1) score += 2500 - (globalIdx * 50);
 
-        // Same Category (Contextual Relevance)
+        // Same Category (Contextual - Strong)
         if (String(p.category_id) === String(categoryId)) score += 1000;
 
-        // Stock (Prefer In-Stock items)
+        // Stock
         const stock = p.stock === -1 ? 999999 : p.stock;
         if (stock > 0) score += 500;
 
-        // Fallback: Use ID (Newest first as tie-breaker)
+        // Tie-breaker
         score += (p.id / 100000); 
 
         return { ...p, score };
     });
 
-    // Sort by score descending
     scored.sort((a, b) => b.score - a.score);
 
-    return scored.slice(0, limit);
+    // Filter to ensure we have at least minLimit if possible, max maxLimit
+    // If we have very few products, we just return what we have.
+    // The requirement says "at least 2 and at most 8 (given that there are this many product)".
+
+    let result = scored;
+    if (result.length > maxLimit) {
+        result = result.slice(0, maxLimit);
+    }
+
+    // Ensure at least minLimit if available
+    // (This logic is implicitly handled because we sliced; if we had < maxLimit, we kept all.
+    // If we have < minLimit, we return all we have, which is the best we can do).
+
+    return result;
 }
