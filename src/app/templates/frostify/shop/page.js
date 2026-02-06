@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTemplateContext } from '../templateContext.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function FrostifyShopPage() {
     const { businessData } = useTemplateContext();
@@ -14,6 +15,8 @@ export default function FrostifyShopPage() {
     const filteredProducts = filter === 'all' 
         ? allProducts 
         : allProducts.filter(p => p.category === filter);
+
+    const sortedProducts = sortProducts(filteredProducts, businessData);
 
     return (
         <div className="bg-white min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -44,12 +47,12 @@ export default function FrostifyShopPage() {
 
                 {/* Product Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {filteredProducts.map(product => (
+                    {sortedProducts.map(product => (
                         <ProductCard key={product.id} item={product} />
                     ))}
                 </div>
 
-                {filteredProducts.length === 0 && (
+                {sortedProducts.length === 0 && (
                     <p className="text-center text-gray-500 mt-12 text-[3vw] md:text-base">No delicious treats found in this category.</p>
                 )}
             </div>

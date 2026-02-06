@@ -1,34 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-// FIX: Path changed from ../ to ../../
-import { businessData } from '../../data.js'; 
-// FIX: Path changed from ../ to ../../
-import { useCart } from '../../cartContext.js'; 
-// FIX: Path changed from ../ to ../../
+import { useTemplateContext } from '../../templateContext.js';
+import { useCart } from '../../cartContext.js';
 import { ProductCard } from '../../components.js'; 
+import { fetchSuggestedProducts } from '@/app/actions/recommendations';
 
 export default function ProductDetailPage() {
     const params = useParams();
     const { productId } = params;
     const { addToCart } = useCart();
+    const { businessData, websiteId } = useTemplateContext();
     
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
     const category = product ? businessData.categories.find(c => c.id === product.category) : null;
     
     const [quantity, setQuantity] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState([]);
     
-    let relatedProducts = [];
-    if (product) {
-        const sameCategoryProducts = businessData.allProducts.filter(
-            p => p.category === product.category && p.id !== product.id
-        );
-        const otherProducts = businessData.allProducts.filter(
-            p => p.id !== product.id && p.category !== product.category
-        );
-        relatedProducts = [...sameCategoryProducts, ...otherProducts].slice(0, 4);
-    }
+    useEffect(() => {
+        const loadSuggestions = async () => {
+             if (product) {
+                 if (websiteId) {
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 4);
+                     if (suggestions && suggestions.length > 0) {
+                         setRelatedProducts(suggestions);
+                         return;
+                     }
+                 }
+                 
+                 // Fallback
+                 const sameCategoryProducts = businessData.allProducts.filter(
+                    p => String(p.category) === String(product.category) && String(p.id) !== String(product.id)
+                 );
+                 const otherProducts = businessData.allProducts.filter(
+                    p => String(p.id) !== String(product.id) && String(p.category) !== String(product.category)
+                 );
+                 setRelatedProducts([...sameCategoryProducts, ...otherProducts].slice(0, 4));
+             }
+        };
+        loadSuggestions();
+    }, [product, websiteId, businessData.allProducts]);
 
     if (!product) {
         return <div className="container mx-auto px-6 py-20 text-center text-brand-text">Product not found.</div>;

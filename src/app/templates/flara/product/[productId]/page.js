@@ -1,17 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useTemplateContext } from '../../templateContext.js'; // Import the context hook
+import { useTemplateContext } from '../../templateContext.js';
 import { useCart } from '../../cartContext.js';
 import Link from 'next/link';
+import { fetchSuggestedProducts } from '@/app/actions/recommendations';
 
 export default function ProductDetailPage() {
     const params = useParams();
     const { productId } = params;
     const { addToCart } = useCart();
     
-    const { businessData, basePath } = useTemplateContext(); 
+    const { businessData, basePath, websiteId } = useTemplateContext(); 
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
     
@@ -21,10 +22,9 @@ export default function ProductDetailPage() {
     
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(product?.image || null);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     // --- Stock Logic ---
-    // If stock is undefined, treat as 0 (safety) or legacy unlimited? 
-    // JSON sync ensures stock is present. If -1, it's unlimited.
     const rawStock = product?.stock;
     const isUnlimited = rawStock === -1;
     const stock = isUnlimited ? Infinity : (rawStock || 0);
@@ -32,9 +32,26 @@ export default function ProductDetailPage() {
     const isOutOfStock = !isUnlimited && stock === 0;
     const isLowStock = !isUnlimited && stock > 0 && stock < 10;
     
-    const relatedProducts = product 
-        ? businessData.allProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 3)
-        : [];
+    useEffect(() => {
+        const loadSuggestions = async () => {
+             if (product) {
+                 if (websiteId) {
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 3);
+                     if (suggestions && suggestions.length > 0) {
+                         setRelatedProducts(suggestions);
+                         return;
+                     }
+                 }
+                 
+                 // Fallback
+                 const local = businessData.allProducts
+                    .filter(p => String(p.category) === String(product.category) && String(p.id) !== String(product.id))
+                    .slice(0, 3);
+                 setRelatedProducts(local);
+             }
+        };
+        loadSuggestions();
+    }, [product, websiteId, businessData.allProducts]);
 
     if (!product) {
         return <div className="container mx-auto px-6 py-20 text-center text-brand-text">Product not found.</div>;

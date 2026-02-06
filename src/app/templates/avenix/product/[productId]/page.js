@@ -1,27 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useTemplateContext } from '../../templateContext.js'; // Import the context hook
-import { useCart } from '../../cartContext.js'; 
+import { useTemplateContext } from '../../templateContext.js';
+import { useCart } from '../../cartContext.js';
 import Link from 'next/link';
 import { ProductCard } from '../../components.js';
+import { fetchSuggestedProducts } from '@/app/actions/recommendations';
 
 export default function ProductDetailPage() {
     const params = useParams();
     const { productId } = params;
     const { addToCart } = useCart();
-    const { businessData } = useTemplateContext(); // Get data from context
+    const { businessData, websiteId } = useTemplateContext();
     
-    // Find the product from the master list
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
-    
-    // --- DYNAMIC CATEGORY ---
-    const category = product 
-        ? businessData.categories.find(c => c.id === product.category) 
-        : null;
+    const category = product ? businessData.categories.find(c => c.id === product.category) : null;
     
     const [quantity, setQuantity] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState([]);
     
     // --- Stock Logic ---
     const rawStock = product?.stock;
@@ -31,23 +28,29 @@ export default function ProductDetailPage() {
     const isOutOfStock = !isUnlimited && stock === 0;
     const isLowStock = !isUnlimited && stock > 0 && stock < 10;
     
-    // --- "You Might Also Like" Fix ---
-    let relatedProducts = [];
-    if (product) {
-        // 1. Get products from the same category (excluding self)
-        const sameCategoryProducts = businessData.allProducts.filter(
-            p => p.category === product.category && p.id !== product.id
-        );
-
-        // 2. Get other products (excluding self and already added)
-        const otherProducts = businessData.allProducts.filter(
-            p => p.id !== product.id && p.category !== product.category
-        );
-
-        // 3. Combine and take the first 4
-        relatedProducts = [...sameCategoryProducts, ...otherProducts].slice(0, 4);
-    }
-    // --- End Fix ---
+    useEffect(() => {
+        const loadSuggestions = async () => {
+             if (product) {
+                 if (websiteId) {
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 4);
+                     if (suggestions && suggestions.length > 0) {
+                         setRelatedProducts(suggestions);
+                         return;
+                     }
+                 }
+                 
+                 // Fallback Logic
+                 const sameCategoryProducts = businessData.allProducts.filter(
+                    p => String(p.category) === String(product.category) && String(p.id) !== String(product.id)
+                 );
+                 const otherProducts = businessData.allProducts.filter(
+                    p => String(p.id) !== String(product.id) && String(p.category) !== String(product.category)
+                 );
+                 setRelatedProducts([...sameCategoryProducts, ...otherProducts].slice(0, 4));
+             }
+        };
+        loadSuggestions();
+    }, [product, websiteId, businessData.allProducts]);
 
     if (!product) {
         return <div className="container mx-auto px-4 md:px-6 py-20 text-center text-brand-text">Product not found.</div>;
@@ -61,7 +64,6 @@ export default function ProductDetailPage() {
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 font-sans">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
                 
-                {/* --- FIX: Image (padding and bg removed) --- */}
                 <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-xl md:rounded-lg relative">
                     <img 
                         src={product.image} 
@@ -100,7 +102,6 @@ export default function ProductDetailPage() {
                         {product.description}
                     </p>
                     
-                    {/* Quantity & Add to Cart */}
                     <div className="flex items-stretch gap-2 md:gap-4 mt-6 md:mt-8">
                         <div className={`flex items-center border border-brand-text/20 rounded-full ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 md:w-12 md:h-12 text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-full">-</button>
@@ -118,7 +119,6 @@ export default function ProductDetailPage() {
                 </div>
             </div>
             
-            {/* Related Products (Now dynamic) */}
             <div className="mt-12 md:mt-24 pt-8 md:pt-16 border-t border-brand-text/10">
                 <h2 className="text-[6vw] md:text-4xl font-serif font-medium text-brand-text mb-8 md:mb-12 text-center">You Might Also Like</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 items-stretch">

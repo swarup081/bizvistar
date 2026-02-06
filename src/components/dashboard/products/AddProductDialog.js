@@ -1,7 +1,8 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, UploadCloud, Loader2, Check } from 'lucide-react';
+import * as Select from '@radix-ui/react-select'; // Import Select for styling
+import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -26,7 +27,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             price: productToEdit.price || '',
             stock: productToEdit.stock === -1 || productToEdit.stock === 'Unlimited' ? '0' : productToEdit.stock,
             isUnlimited: productToEdit.stock === -1 || productToEdit.stock === 'Unlimited',
-            categoryId: productToEdit.category_id || (categories?.[0]?.id || ''),
+            categoryId: productToEdit.category_id ? String(productToEdit.category_id) : (categories?.[0]?.id ? String(categories[0].id) : ''),
             description: productToEdit.description || '',
             imageUrl: productToEdit.image_url || '',
          });
@@ -36,7 +37,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             price: '',
             stock: '0', 
             isUnlimited: false,
-            categoryId: categories?.[0]?.id || '',
+            categoryId: categories?.[0]?.id ? String(categories[0].id) : '',
             description: '',
             imageUrl: '',
          });
@@ -77,7 +78,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     }
 
     try {
-      // 1. Prepare Data
       let finalStock = parseInt(formData.stock);
       if (isNaN(finalStock)) finalStock = -1;
       if (formData.isUnlimited) finalStock = -1;
@@ -93,7 +93,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         website_id: websiteId
       };
 
-      // 2. Insert or Update Client Side
       if (productToEdit) {
           const { error } = await supabase
             .from('products')
@@ -110,7 +109,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
           if (error) throw new Error(error.message);
       }
 
-      // 3. Sync JSON
       await syncWebsiteDataClient(websiteId);
 
       onProductAdded();
@@ -130,7 +128,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg h-[80vh] md:h-[600px] bg-white rounded-2xl shadow-2xl z-[70] flex flex-col focus:outline-none overflow-hidden font-sans">
           
-          {/* Header */}
           <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 z-10">
             <Dialog.Title className="text-xl font-bold text-gray-900">
               {productToEdit ? 'Edit Product' : 'Add New Product'}
@@ -143,11 +140,9 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full overflow-hidden">
-            {/* Body */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
                 <div className="space-y-6">
                     
-                    {/* Image Upload */}
                     <div className="flex justify-center">
                         <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all cursor-pointer">
                             {formData.imageUrl ? (
@@ -228,17 +223,38 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
                     <div className="space-y-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                        <select 
-                            name="categoryId"
-                            value={formData.categoryId}
-                            onChange={handleChange}
-                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all bg-white"
+                        {/* Radix UI Select Implementation */}
+                        <Select.Root 
+                            value={String(formData.categoryId)} 
+                            onValueChange={(val) => setFormData(prev => ({ ...prev, categoryId: val }))}
                         >
-                            <option value="">Select Category</option>
-                            {categories.map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </select>
+                            <Select.Trigger className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all bg-white flex justify-between items-center text-left">
+                                <Select.Value placeholder="Select Category">
+                                    {categories.find(c => String(c.id) === String(formData.categoryId))?.name || 'Select Category'}
+                                </Select.Value>
+                                <Select.Icon>
+                                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                                </Select.Icon>
+                            </Select.Trigger>
+                            <Select.Portal>
+                                <Select.Content className="overflow-hidden bg-white rounded-xl shadow-xl border border-gray-100 z-[80]">
+                                    <Select.Viewport className="p-1">
+                                        {categories.map((c) => (
+                                            <Select.Item 
+                                                key={c.id} 
+                                                value={String(c.id)} 
+                                                className="relative flex items-center px-8 py-2 text-sm text-gray-700 rounded-md select-none hover:bg-purple-50 hover:text-purple-700 cursor-pointer outline-none data-[highlighted]:bg-purple-50 data-[highlighted]:text-purple-700"
+                                            >
+                                                <Select.ItemText>{c.name}</Select.ItemText>
+                                                <Select.ItemIndicator className="absolute left-2 inline-flex items-center">
+                                                    <CheckCircle size={14} className="text-purple-600"/>
+                                                </Select.ItemIndicator>
+                                            </Select.Item>
+                                        ))}
+                                    </Select.Viewport>
+                                </Select.Content>
+                            </Select.Portal>
+                        </Select.Root>
                     </div>
 
                     <div className="space-y-1.5">
@@ -255,7 +271,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                 </div>
             </div>
 
-            {/* Footer */}
             <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-white shrink-0 z-10">
               <button 
                 type="button" 

@@ -7,7 +7,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import { X } from 'lucide-react';
 
-function CartLayout({ children, serverData }) {
+function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
     const { isCartOpen, closeCart, cartDetails, total, removeFromCart } = useCart();
 
@@ -28,7 +28,7 @@ function CartLayout({ children, serverData }) {
     }, [serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             <style jsx global>{`
                 /* IMPORT FONTS: Playfair Display (Serif) & DM Sans (Sans) */
                 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
@@ -134,6 +134,6 @@ function CartLayout({ children, serverData }) {
     );
 }
 
-export default function AuroraLayout({ children, serverData }) {
-    return <CartProvider><CartLayout serverData={serverData}>{children}</CartLayout></CartProvider>;
+export default function AuroraLayout({ children, serverData, websiteId }) {
+    return <CartProvider><CartLayout serverData={serverData} websiteId={websiteId}>{children}</CartLayout></CartProvider>;
 }

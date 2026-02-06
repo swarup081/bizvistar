@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useTemplateContext } from '../templateContext.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const { businessData } = useTemplateContext();
@@ -10,6 +11,8 @@ export default function ShopPage() {
     const products = filter === 'all' 
         ? businessData.allProducts 
         : businessData.allProducts.filter(p => p.category === filter);
+
+    const sortedProducts = sortProducts(products, businessData);
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden min-h-screen">
@@ -22,7 +25,7 @@ export default function ShopPage() {
                     ))}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {products.map(p => <ProductCard key={p.id} item={p} />)}
+                    {sortedProducts.map(p => <ProductCard key={p.id} item={p} />)}
                 </div>
             </div>
         </div>
