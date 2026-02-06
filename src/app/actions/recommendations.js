@@ -69,13 +69,14 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
     }
 
     // 3. Fetch All Products
+    // NOTE: Need to map columns here too if we want full consistency, but normally simple select * is enough
     const { data: allProducts } = await supabase
         .from('products')
         .select('*')
         .eq('website_id', websiteId)
         .order('id', { ascending: false });
         
-    if (!allProducts) return [];
+    if (!allProducts || allProducts.length === 0) return [];
 
     // 4. Get Pinned Products
     let prioritizedIds = [];
@@ -93,11 +94,19 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
 
     // 5. Scoring
     const candidates = allProducts.filter(p => String(p.id) !== String(currentProduct.id));
+
+    // Safety check: if no candidates (only 1 product in store), return empty
+    if (candidates.length === 0) return [];
+
     const categoryId = currentProduct.category_id || currentProduct.category;
     
     const scored = candidates.map(p => {
         let score = 0;
         
+        // Map image_url to image for consistent frontend usage
+        // (Just in case the server action result is used directly)
+        if (p.image_url && !p.image) p.image = p.image_url;
+
         // Pinned (Highest)
         if (prioritizedIds.includes(String(p.id))) score += 10000;
 
@@ -110,13 +119,15 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         if (globalIdx !== -1) score += 2500 - (globalIdx * 50);
 
         // Same Category (Contextual - Strong)
+        // Handle string/number mismatch
         if (String(p.category_id) === String(categoryId)) score += 1000;
 
         // Stock
         const stock = p.stock === -1 ? 999999 : p.stock;
         if (stock > 0) score += 500;
 
-        // Tie-breaker
+        // Tie-breaker: random element to rotate if scores are equal (e.g. all new)
+        // Or strictly ID for stability. Let's use ID.
         score += (p.id / 100000); 
 
         return { ...p, score };
@@ -124,18 +135,10 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
 
     scored.sort((a, b) => b.score - a.score);
 
-    // Filter to ensure we have at least minLimit if possible, max maxLimit
-    // If we have very few products, we just return what we have.
-    // The requirement says "at least 2 and at most 8 (given that there are this many product)".
-
     let result = scored;
     if (result.length > maxLimit) {
         result = result.slice(0, maxLimit);
     }
-
-    // Ensure at least minLimit if available
-    // (This logic is implicitly handled because we sliced; if we had < maxLimit, we kept all.
-    // If we have < minLimit, we return all we have, which is the best we can do).
 
     return result;
 }

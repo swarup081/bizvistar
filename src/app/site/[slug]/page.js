@@ -98,8 +98,22 @@ export default async function LiveSitePage(props) {
   const finalData = rawWebsiteData ? { ...rawWebsiteData } : {}; 
   
   // Always inject real data (even if empty) to prevent fallback to demo data
-  finalData.allProducts = realProducts || [];
+  // Map raw DB columns to the shape expected by templates (matching websiteSync.js)
+  finalData.allProducts = (realProducts || []).map(p => ({
+      ...p,
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      category: p.category_id ? String(p.category_id) : 'uncategorized', // Map category_id -> category
+      description: p.description,
+      image: p.image_url, // Map image_url -> image
+      stock: p.stock,
+      additional_images: p.additional_images || [],
+      variants: p.variants || []
+  }));
+
   finalData.allCategories = realCategories || [];
+  finalData.categories = finalData.allCategories; // Ensure both keys exist if templates use either
   // -----------------------------------------------
 
   // Render selected template
