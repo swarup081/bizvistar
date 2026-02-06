@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Loader2, Trash2, Edit, MoreVertical, Search, Package, TrendingUp, Filter, Check, ChevronLeft, CheckCircle } from 'lucide-react';
+import { Loader2, Trash2, Edit, Package, TrendingUp, Check, ChevronLeft, Search } from 'lucide-react'; // Added Search import
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
 import * as Dialog from '@radix-ui/react-dialog';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { X } from 'lucide-react';
 
 function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, websiteId }) {
@@ -22,7 +21,6 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
             setName(categoryToEdit?.name || '');
             setSelectedProducts(new Set());
             if (!categoryToEdit) {
-                // Fetch products only for new category flow
                 fetchProducts();
             }
         }
@@ -42,7 +40,7 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
     const handleNext = (e) => {
         e.preventDefault();
         if (categoryToEdit) {
-            handleSubmit(); // Skip step 2 for edit
+            handleSubmit();
         } else {
             setStep(2);
         }
@@ -167,15 +165,22 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
     );
 }
 
-export default function CategoryManager({ categories, onUpdate, websiteId }) {
+// Accepts props lifted from parent
+export default function CategoryManager({
+    categories,
+    onUpdate,
+    websiteId,
+    searchTerm, // Lifted
+    filter, // Lifted (populated/empty)
+    sortBy, // Lifted (date/top)
+    isAddOpen, // Lifted
+    onAddClose // Lifted
+}) {
   const [loading, setLoading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(true);
   const [categoryStats, setCategoryStats] = useState({});
-  const [filter, setFilter] = useState('all');
   
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch detailed stats
   useEffect(() => {
@@ -244,7 +249,6 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
               catId = data.id;
           }
 
-          // Update products if any selected (only for create flow currently supported in UI)
           if (productIds.length > 0 && catId) {
               const { error: prodError } = await supabase
                   .from('products')
@@ -255,7 +259,7 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
 
           await syncWebsiteDataClient(websiteId);
           onUpdate();
-          setIsDialogOpen(false);
+          onAddClose();
           setCategoryToEdit(null);
       } catch (err) {
           alert('Error: ' + err.message);
@@ -274,8 +278,10 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
       } catch(e) { alert(e.message); }
   };
 
-  const filteredCategories = useMemo(() => {
-      let result = categories;
+  const processedCategories = useMemo(() => {
+      let result = [...categories]; // Clone
+
+      // Filter
       if (searchTerm) {
           result = result.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
       }
@@ -284,62 +290,51 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
       } else if (filter === 'populated') {
           result = result.filter(c => (categoryStats[c.id]?.count || 0) > 0);
       }
+
+      // Sort
+      if (sortBy === 'top') {
+          result.sort((a, b) => (categoryStats[b.id]?.sales || 0) - (categoryStats[a.id]?.sales || 0));
+      } else if (sortBy === 'date') {
+          // Use ID as proxy for date if created_at not available or reliably sequential
+          result.sort((a, b) => b.id - a.id);
+      }
+
       return result;
-  }, [categories, searchTerm, categoryStats, filter]);
+  }, [categories, searchTerm, categoryStats, filter, sortBy]);
+
+  // Handle Edit triggering (from within table)
+  // We need to use the same Dialog but populate it
+  // Since the dialog control is lifted, we need to handle "Edit Mode" locally or lift that too.
+  // For simplicity, we can reuse the `isAddOpen` prop but we need to tell parent?
+  // Actually, parent controls visibility. `categoryToEdit` is local.
+  // When user clicks Edit, we set local `categoryToEdit` AND call `onAddClose()` then `onAddOpen()`?
+  // No, `onAddClose` closes it. We need `setAddOpen(true)`.
+  // BETTER: `CategoryManager` should probably control the dialog visibility for *Edit*,
+  // but *Add* is controlled by parent.
+  // OR: We just assume `isAddOpen` is for ADDING. Editing can use its own state or share.
+  // Let's keep `categoryToEdit` local. But we need to open the dialog.
+  // Solution: Pass a `triggerEdit` callback or just use a separate state for Edit Dialog?
+  // User wants "Add Category" button in parent.
+  // Let's use `isDialogOpen` locally for Edit, and `isAddOpen` prop for Add.
+  // Combined: The Dialog component is rendered once.
+
+  // Actually, simplest is to treat the prop `isAddOpen` as the source of truth for the "Add" flow.
+  // For "Edit", we can have a local state `isEditOpen`.
+  // AND render the Dialog if EITHER is true.
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const effectiveOpen = isAddOpen || isEditOpen;
+  const closeEffective = () => {
+      if (isAddOpen) onAddClose();
+      if (isEditOpen) {
+          setIsEditOpen(false);
+          setCategoryToEdit(null);
+      }
+  };
 
   return (
     <div className="space-y-6">
-      
-      {/* Header Actions - Hidden on Mobile */}
-      <div className="hidden md:flex flex-wrap items-center justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm">
-         <div className="relative w-96">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-                type="text" 
-                placeholder="Search categories..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm bg-purple-50 border-none rounded-full focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none"
-            />
-         </div>
-
-         <div className="flex items-center gap-3">
-             <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
-                    <button className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${filter !== 'all' ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}>
-                        <Filter size={16} />
-                    </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                    <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95 duration-100" align="end">
-                        {[
-                            { id: 'all', label: 'All Categories' },
-                            { id: 'populated', label: 'Has Products' },
-                            { id: 'empty', label: 'Empty' }
-                        ].map((item) => (
-                            <DropdownMenu.Item
-                                key={item.id}
-                                onClick={() => setFilter(item.id)}
-                                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${filter === item.id ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
-                            >
-                                <span>{item.label}</span>
-                                {filter === item.id && <CheckCircle size={14} />}
-                            </DropdownMenu.Item>
-                        ))}
-                    </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-            </DropdownMenu.Root>
-
-             <button
-                 onClick={() => { setCategoryToEdit(null); setIsDialogOpen(true); }}
-                 className="h-10 px-4 flex items-center justify-center gap-2 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
-             >
-                 <Plus size={18} />
-                 Add Category
-             </button>
-         </div>
-      </div>
-
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto min-h-[400px]">
@@ -364,10 +359,10 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
                                <td className="px-6 py-4"></td>
                            </tr>
                        ))
-                   ) : filteredCategories.length === 0 ? (
+                   ) : processedCategories.length === 0 ? (
                        <tr><td colSpan="5" className="p-8 text-center text-gray-400">No categories found.</td></tr>
                    ) : (
-                       filteredCategories.map(cat => {
+                       processedCategories.map(cat => {
                            const stat = categoryStats[cat.id] || { count: 0, topProduct: null, sales: 0 };
                            return (
                                <tr key={cat.id} className="hover:bg-gray-50/50 transition-colors group">
@@ -405,7 +400,7 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
                                    <td className="px-6 py-4 text-right">
                                        <div className="flex items-center justify-end gap-2">
                                            <button 
-                                               onClick={() => { setCategoryToEdit(cat); setIsDialogOpen(true); }}
+                                               onClick={() => { setCategoryToEdit(cat); setIsEditOpen(true); }}
                                                className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                                            >
                                                <Edit size={16} />
@@ -428,8 +423,8 @@ export default function CategoryManager({ categories, onUpdate, websiteId }) {
       </div>
 
       <CategoryDialog 
-         isOpen={isDialogOpen} 
-         onClose={() => setIsDialogOpen(false)} 
+         isOpen={effectiveOpen}
+         onClose={closeEffective}
          categoryToEdit={categoryToEdit} 
          onSave={handleSave}
          loading={loading}

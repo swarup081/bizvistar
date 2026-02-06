@@ -12,7 +12,9 @@ import {
   Trash,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  CheckCircle,
+  ArrowUpDown
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient'; 
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -21,6 +23,7 @@ import AddProductDialog from '@/components/dashboard/products/AddProductDialog';
 import ProductDrawer from '@/components/dashboard/products/ProductDrawer';
 import CategoryManager from '@/components/dashboard/products/CategoryManager';
 import WebsiteProductSettings from '@/components/dashboard/products/WebsiteProductSettings';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 export default function ProductsPage() {
   const [activeTab, setActiveTab] = useState('products'); 
@@ -34,18 +37,24 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  // Filters
+  // Filters & Sorting (Products)
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [stockFilters, setStockFilters] = useState([]); 
+  const [productSortBy, setProductSortBy] = useState('newest'); // newest, price-asc, price-desc, name-asc, name-desc
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Modals
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null); // For Drawer
-  const [productToEdit, setProductToEdit] = useState(null); // For Dialog
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // For Website Settings
+  // Filters & Sorting (Categories) - Lifted State
+  const [categorySearch, setCategorySearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all'); // all, populated, empty
+  const [categorySortBy, setCategorySortBy] = useState('date'); // date, top
 
-  // Dropdown State (Simple implementation)
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false); // Product Add
+  const [isCategoryAddOpen, setIsCategoryAddOpen] = useState(false); // Category Add (Lifted)
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [productToEdit, setProductToEdit] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const dropdownRef = useRef(null);
 
@@ -59,7 +68,6 @@ export default function ProductsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Responsive Items Per Page
   useEffect(() => {
     const handleResize = () => {
         if (window.innerWidth < 768) {
@@ -95,12 +103,11 @@ export default function ProductsPage() {
     init();
   }, []);
 
-  // 2. Fetch Data when websiteId is ready
+  // 2. Fetch Data
   const fetchData = useCallback(async () => {
     if (!websiteId) return; 
     setLoading(true);
     try {
-        // Fetch Categories
         const { data: cats } = await supabase
             .from('categories')
             .select('*')
@@ -108,45 +115,28 @@ export default function ProductsPage() {
             .order('name');
         setCategories(cats || []);
 
-        // Fetch Products
         let query = supabase
             .from('products')
             .select('*')
-            .eq('website_id', websiteId)
-            .order('id', { ascending: false });
+            .eq('website_id', websiteId);
 
-        // We fetch all and filter client-side to support ID and Category Name search
-        if (selectedCategory && selectedCategory !== 'all') {
-            query = query.eq('category_id', selectedCategory);
-        }
-
+        // Fetch all, sort client side or basic sort here.
+        // We'll rely on client-side sort for complex logic to match 'productSortBy' state easily without re-fetching
         const { data: productsData, error } = await query;
         if (error) throw error;
 
-        // Fetch Sales Analytics (Last 7 Days)
+        // Analytics Fetch (Last 7 Days)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const isoDate = sevenDaysAgo.toISOString();
 
-        // Join order_items with orders to filter by date
-        // Note: This requires a foreign key relationship setup in Supabase, assuming it exists based on schema.
-        // If exact FK join syntax fails, we might need a two-step fetch.
-        // Trying standard select with nested filter.
         const { data: salesData, error: salesError } = await supabase
             .from('order_items')
-            .select(`
-                product_id,
-                quantity,
-                orders!inner (
-                    created_at,
-                    website_id
-                )
-            `)
+            .select(`product_id, quantity, orders!inner(created_at, website_id)`)
             .eq('orders.website_id', websiteId)
             .gte('orders.created_at', isoDate);
 
-        const salesMap = {}; // { productId: { '2023-10-27': 5, ... } }
-        
+        const salesMap = {};
         if (!salesError && salesData) {
             salesData.forEach(item => {
                 const date = item.orders.created_at.split('T')[0];
@@ -157,31 +147,23 @@ export default function ProductsPage() {
             });
         }
 
-        // Create Map for categories
-        const catMap = (cats || []).reduce((acc, c) => {
-            acc[c.id] = c.name;
-            return acc;
-        }, {});
+        const catMap = (cats || []).reduce((acc, c) => { acc[c.id] = c.name; return acc; }, {});
 
-        // Process Client-Side
         const processed = productsData.map(p => {
             const stockCount = p.stock !== undefined ? p.stock : 0; 
             let status = 'Active';
-            if (stockCount === -1) {
-                status = 'Unlimited'; 
-            } else {
+            if (stockCount === -1) { status = 'Unlimited'; }
+            else {
                 if (stockCount === 0) status = 'Out Of Stock';
                 else if (stockCount < 10) status = 'Low Stock';
                 else if (stockCount > 100) status = 'Overflow Stock';
             }
 
-            // Analytics (7 Days)
             const analyticsData = [];
             for(let i=6; i>=0; i--) {
                 const d = new Date();
                 d.setDate(d.getDate() - i);
                 const dateStr = d.toISOString().split('T')[0];
-                // Get value from salesMap
                 const val = salesMap[p.id]?.[dateStr] || 0;
                 analyticsData.push({ date: dateStr, value: val });
             }
@@ -195,7 +177,7 @@ export default function ProductsPage() {
             };
         });
 
-        // Filter Stock Status in Memory & Search
+        // Client-Side Filter & Sort
         let final = processed;
 
         if (searchTerm) {
@@ -207,9 +189,23 @@ export default function ProductsPage() {
              );
         }
 
+        if (selectedCategory && selectedCategory !== 'all') {
+            final = final.filter(p => p.category_id === selectedCategory);
+        }
+
         if (stockFilters.length > 0) {
             final = final.filter(p => stockFilters.includes(p.stockStatus));
         }
+
+        // Sorting
+        final.sort((a, b) => {
+            if (productSortBy === 'price-asc') return a.price - b.price;
+            if (productSortBy === 'price-desc') return b.price - a.price;
+            if (productSortBy === 'name-asc') return a.name.localeCompare(b.name);
+            if (productSortBy === 'name-desc') return b.name.localeCompare(a.name);
+            // Newest (Default) - assuming higher ID is newer
+            return b.id - a.id;
+        });
 
         setProducts(final);
 
@@ -218,7 +214,7 @@ export default function ProductsPage() {
     } finally {
         setLoading(false);
     }
-  }, [websiteId, searchTerm, selectedCategory, stockFilters]);
+  }, [websiteId, searchTerm, selectedCategory, stockFilters, productSortBy]); // Added productSortBy dependency
 
   useEffect(() => {
     fetchData();
@@ -236,13 +232,10 @@ export default function ProductsPage() {
       try {
         const { error } = await supabase.from('products').delete().eq('id', product.id);
         if(error) throw error;
-        
         await syncWebsiteDataClient(websiteId);
         fetchData();
         setOpenDropdownId(null);
-      } catch (err) {
-        alert("Failed to delete: " + err.message);
-      }
+      } catch (err) { alert("Failed: " + err.message); }
   };
 
   const handleEditProduct = (product) => {
@@ -256,18 +249,13 @@ export default function ProductsPage() {
       setOpenDropdownId(null);
   }
 
-  // Client-Side Pagination
   const totalCount = products.length;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleStockFilterChange = (status) => {
     setCurrentPage(1);
-    setStockFilters(prev => 
-      prev.includes(status) 
-        ? prev.filter(s => s !== status)
-        : [...prev, status]
-    );
+    setStockFilters(prev => prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]);
   };
 
   const handleCategoryChange = (e) => {
@@ -275,10 +263,7 @@ export default function ProductsPage() {
     setSelectedCategory(e.target.value);
   };
 
-  // Reset page on search
-  useEffect(() => {
-      setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, selectedCategory]);
 
   return (
     <div className="h-full flex flex-col font-sans pb-20 md:pb-0">
@@ -289,14 +274,21 @@ export default function ProductsPage() {
         {/* Mobile Header Layout */}
         <div className="flex md:hidden flex-col w-full gap-3 -px-2 pt-4">
              <div className="flex items-center justify-between w-full">
-                 <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">Products</h1>
+                 <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">
+                    {activeTab === 'products' ? 'Products' : 'Categories'}
+                 </h1>
+
+                 {/* Mobile: Dynamic Add Button Position */}
                  <button 
-                    onClick={() => { setProductToEdit(null); setIsAddOpen(true); }}
+                    onClick={() => {
+                        if (activeTab === 'products') { setProductToEdit(null); setIsAddOpen(true); }
+                        else { setIsCategoryAddOpen(true); }
+                    }}
                     disabled={!websiteId}
                     className="h-9 px-4 flex items-center justify-center gap-2 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition-all shadow-sm"
                  >
                     <Plus size={16} />
-                    Add Product
+                    {activeTab === 'products' ? 'Add Product' : 'Add Category'}
                  </button>
              </div>
 
@@ -305,9 +297,9 @@ export default function ProductsPage() {
                     <Search className="absolute rounded-full left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
                     <input 
                       type="text" 
-                      placeholder="Search Name, ID, Category..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder={activeTab === 'products' ? "Search Name, ID, Category..." : "Search Categories..."}
+                      value={activeTab === 'products' ? searchTerm : categorySearch}
+                      onChange={(e) => activeTab === 'products' ? setSearchTerm(e.target.value) : setCategorySearch(e.target.value)}
                       className="h-9 w-full rounded-full border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2] transition-all shadow-sm"
                     />
                  </div>
@@ -315,7 +307,7 @@ export default function ProductsPage() {
                  <button 
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                     className={`h-[36px] w-[36px] shrink-0 flex items-center justify-center rounded-full transition-all shadow-sm ${
-                        isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all'
+                        isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all' || categoryFilter !== 'all'
                         ? 'bg-[#8A63D2] text-white' 
                         : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'
                     }`}
@@ -332,32 +324,75 @@ export default function ProductsPage() {
                  </button>
              </div>
              
-             {/* Mobile Filter Dropdown */}
+             {/* Mobile Filter Drawer */}
              {isFilterOpen && (
                 <div className="w-full bg-white rounded-xl shadow-lg border border-gray-100 p-4 animate-in fade-in slide-in-from-top-2 duration-200 mb-2">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold text-gray-900 text-sm">Filters</h3>
-                        <button onClick={() => { setStockFilters([]); setSelectedCategory('all'); setCurrentPage(1); setIsFilterOpen(false); }} className="text-xs text-purple-600 font-bold">Reset</button>
+                        <h3 className="font-semibold text-gray-900 text-sm">
+                            {activeTab === 'products' ? 'Product Filters' : 'Category Filters'}
+                        </h3>
+                        <button onClick={() => {
+                            if(activeTab === 'products') { setStockFilters([]); setSelectedCategory('all'); setProductSortBy('newest'); }
+                            else { setCategoryFilter('all'); setCategorySortBy('date'); }
+                            setCurrentPage(1);
+                            setIsFilterOpen(false);
+                        }} className="text-xs text-purple-600 font-bold">Reset</button>
                     </div>
+
                     <div className="space-y-4">
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Stock</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
-                                    <label key={status} className={`flex items-center justify-center px-2 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${stockFilters.includes(status) ? 'bg-purple-50 border-purple-200 text-purple-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
-                                        <input type="checkbox" className="hidden" checked={stockFilters.includes(status)} onChange={() => handleStockFilterChange(status)} />
-                                        {status}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Category</h4>
-                            <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
-                                <option value="all">All Categories</option>
-                                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
-                        </div>
+                        {/* PRODUCT FILTERS */}
+                        {activeTab === 'products' && (
+                            <>
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
+                                    <select value={productSortBy} onChange={(e) => setProductSortBy(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                        <option value="newest">Newest Added</option>
+                                        <option value="price-asc">Price: Low to High</option>
+                                        <option value="price-desc">Price: High to Low</option>
+                                        <option value="name-asc">Name: A-Z</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Stock</h4>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
+                                            <label key={status} className={`flex items-center justify-center px-2 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${stockFilters.includes(status) ? 'bg-purple-50 border-purple-200 text-purple-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+                                                <input type="checkbox" className="hidden" checked={stockFilters.includes(status)} onChange={() => handleStockFilterChange(status)} />
+                                                {status}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Category</h4>
+                                    <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                        <option value="all">All Categories</option>
+                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                            </>
+                        )}
+
+                        {/* CATEGORY FILTERS */}
+                        {activeTab === 'categories' && (
+                            <>
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button onClick={() => setCategorySortBy('date')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'date' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'border-gray-200'}`}>Date Created</button>
+                                        <button onClick={() => setCategorySortBy('top')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'top' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'border-gray-200'}`}>Top Performing</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">View</h4>
+                                    <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                        <option value="all">All Categories</option>
+                                        <option value="populated">With Products</option>
+                                        <option value="empty">Empty Categories</option>
+                                    </select>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
              )}
@@ -366,8 +401,8 @@ export default function ProductsPage() {
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-between w-full">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-                <p className="text-gray-500 mt-1 text-sm md:text-base">Manage your product catalog and inventory.</p>
+                <h1 className="text-2xl font-bold text-gray-900">{activeTab === 'products' ? 'Products' : 'Categories'}</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base">Manage your {activeTab === 'products' ? 'product catalog' : 'product categories'}.</p>
             </div>
             
             <div className="flex items-center gap-3">
@@ -379,21 +414,23 @@ export default function ProductsPage() {
                     Settings
                  </button>
 
-                 {activeTab === 'products' && (
-                    <button 
-                    onClick={() => { setProductToEdit(null); setIsAddOpen(true); }}
+                 {/* Dynamic Add Button (Positioned Same) */}
+                 <button
+                    onClick={() => {
+                        if (activeTab === 'products') { setProductToEdit(null); setIsAddOpen(true); }
+                        else { setIsCategoryAddOpen(true); }
+                    }}
                     disabled={!websiteId}
                     className="h-10 px-4 flex items-center justify-center gap-2 rounded-full bg-black text-white font-medium hover:bg-gray-800 transition-all shadow-sm"
-                    >
+                 >
                     <Plus size={18} />
-                    Add Product
-                    </button>
-                )}
+                    {activeTab === 'products' ? 'Add Product' : 'Add Category'}
+                 </button>
             </div>
         </div>
       </div>
 
-      {/* Tabs (Desktop Only - Mobile handles via specific views if needed, but for now we keep the list) */}
+      {/* Tabs */}
       <div className="hidden md:block border-b border-gray-200 mb-6">
         <nav className="-mb-px flex gap-6">
           <button onClick={() => setActiveTab('products')} className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'products' ? 'border-[#8A63D2] text-[#8A63D2]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>All Products</button>
@@ -401,33 +438,67 @@ export default function ProductsPage() {
         </nav>
       </div>
       
-      {/* Mobile Tab Switcher (Simple) */}
+      {/* Mobile Tab Switcher */}
       <div className="md:hidden flex p-1 bg-gray-100 rounded-xl mb-4 mx-2">
           <button onClick={() => setActiveTab('products')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'products' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>Products</button>
           <button onClick={() => setActiveTab('categories')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'categories' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>Categories</button>
       </div>
 
       {activeTab === 'categories' && (
-        <CategoryManager categories={categories} onUpdate={fetchData} websiteId={websiteId} />
+        <CategoryManager
+            categories={categories}
+            onUpdate={fetchData}
+            websiteId={websiteId}
+            // Lifted Props
+            searchTerm={categorySearch}
+            filter={categoryFilter}
+            sortBy={categorySortBy}
+            isAddOpen={isCategoryAddOpen}
+            onAddClose={() => setIsCategoryAddOpen(false)}
+        />
       )}
 
       {activeTab === 'products' && (
         <>
-            {/* Desktop Filter Bar (Hidden on Mobile) */}
+            {/* Desktop Filter Bar (Products) */}
             <div className="hidden md:flex flex-wrap items-center justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm mb-6">
                 <div className="relative w-96">
                     <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 text-sm bg-purple-50 border-none rounded-full focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none" />
                 </div>
-                {/* ... existing desktop filter buttons logic ... */}
-                <div className="relative">
+
+                <div className="flex items-center gap-3 relative">
+                    {/* Sort By Dropdown */}
+                    <DropdownMenu.Root>
+                        <DropdownMenu.Trigger asChild>
+                            <button className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 bg-white border border-gray-200 rounded-full hover:bg-gray-50">
+                                <ArrowUpDown size={14} />
+                                Sort
+                            </button>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Portal>
+                            <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-20 animate-in fade-in zoom-in-95 duration-200" align="end">
+                                {[
+                                    {id: 'newest', label: 'Newest Added'},
+                                    {id: 'price-asc', label: 'Price: Low to High'},
+                                    {id: 'price-desc', label: 'Price: High to Low'},
+                                    {id: 'name-asc', label: 'Name: A-Z'}
+                                ].map(opt => (
+                                    <DropdownMenu.Item key={opt.id} onClick={() => setProductSortBy(opt.id)} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${productSortBy === opt.id ? 'bg-purple-50 text-purple-700' : 'text-gray-700 hover:bg-gray-50'}`}>
+                                        {opt.label}
+                                        {productSortBy === opt.id && <CheckCircle size={14} />}
+                                    </DropdownMenu.Item>
+                                ))}
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+
                     <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center bg-purple-50 gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all' ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-purple text-gray-600 border-purple-200 hover:bg-purple-50'}`}>
                         <Filter size={16} /> Filter
                         {(stockFilters.length > 0 || selectedCategory !== 'all') && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-[10px] text-white">{stockFilters.length + (selectedCategory !== 'all' ? 1 : 0)}</span>}
                     </button>
                     {isFilterOpen && (
                         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 p-4 animate-in fade-in zoom-in-95 duration-200">
-                             {/* ... desktop filter content ... */}
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="font-semibold text-gray-900 text-sm not-italic">Filters</h3>
                                 <button onClick={() => { setStockFilters([]); setSelectedCategory('all'); setCurrentPage(1); setIsFilterOpen(false); }} className="text-xs not-italic text-gray-400 hover:text-gray-600">Reset</button>
@@ -589,7 +660,7 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {/* Pagination Footer - Fixed to match Orders style */}
+            {/* Pagination Footer */}
             {totalPages > 1 && (
                 <div className="flex items-center justify-between p-4 bg-white/50 border-t border-gray-100 rounded-b-2xl md:rounded-b-2xl -mx-4 md:mx-0">
                     <button 
