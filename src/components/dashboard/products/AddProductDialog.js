@@ -1,8 +1,8 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import * as Select from '@radix-ui/react-select'; // Import Select for styling
-import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle } from 'lucide-react';
+import * as Select from '@radix-ui/react-select';
+import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -17,6 +17,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     categoryId: '',
     description: '',
     imageUrl: '', 
+    additionalImages: [], // Array of strings (base64 or url)
+    variants: [], // Array of { name: 'Size', values: 'S, M, L' }
   });
 
   useEffect(() => {
@@ -30,6 +32,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             categoryId: productToEdit.category_id ? String(productToEdit.category_id) : (categories?.[0]?.id ? String(categories[0].id) : ''),
             description: productToEdit.description || '',
             imageUrl: productToEdit.image_url || '',
+            additionalImages: productToEdit.additional_images || [],
+            variants: productToEdit.variants || [],
          });
       } else {
          setFormData({
@@ -40,6 +44,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             categoryId: categories?.[0]?.id ? String(categories[0].id) : '',
             description: '',
             imageUrl: '',
+            additionalImages: [],
+            variants: [],
          });
       }
     }
@@ -67,6 +73,52 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     }
   };
 
+  const handleAdditionalImageUpload = (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length + formData.additionalImages.length > 9) {
+          alert("You can only add up to 9 additional images.");
+          return;
+      }
+
+      files.forEach(file => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setFormData(prev => {
+                  if (prev.additionalImages.length >= 9) return prev;
+                  return { ...prev, additionalImages: [...prev.additionalImages, reader.result] };
+              });
+          };
+          reader.readAsDataURL(file);
+      });
+  };
+
+  const removeAdditionalImage = (index) => {
+      setFormData(prev => ({
+          ...prev,
+          additionalImages: prev.additionalImages.filter((_, i) => i !== index)
+      }));
+  };
+
+  const addVariant = () => {
+      setFormData(prev => ({
+          ...prev,
+          variants: [...prev.variants, { name: '', values: '' }]
+      }));
+  };
+
+  const updateVariant = (index, field, value) => {
+      const newVariants = [...formData.variants];
+      newVariants[index][field] = value;
+      setFormData(prev => ({ ...prev, variants: newVariants }));
+  };
+
+  const removeVariant = (index) => {
+      setFormData(prev => ({
+          ...prev,
+          variants: prev.variants.filter((_, i) => i !== index)
+      }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,6 +135,9 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       if (formData.isUnlimited) finalStock = -1;
       if (finalStock < 0) finalStock = -1;
 
+      // Filter empty variants
+      const cleanVariants = formData.variants.filter(v => v.name.trim() !== '' && v.values.trim() !== '');
+
       const payload = {
         name: formData.name,
         price: parseFloat(formData.price),
@@ -90,7 +145,9 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         description: formData.description,
         image_url: formData.imageUrl,
         stock: finalStock,
-        website_id: websiteId
+        website_id: websiteId,
+        additional_images: formData.additionalImages,
+        variants: cleanVariants
       };
 
       if (productToEdit) {
@@ -143,6 +200,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
                 <div className="space-y-6">
                     
+                    {/* Main Image */}
                     <div className="flex justify-center">
                         <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all cursor-pointer">
                             {formData.imageUrl ? (
@@ -150,7 +208,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                             ) : (
                             <div className="flex flex-col items-center text-gray-400">
                                 <UploadCloud size={24} />
-                                <span className="text-xs mt-1">Upload</span>
+                                <span className="text-xs mt-1">Main Image</span>
                             </div>
                             )}
                             <input 
@@ -159,6 +217,37 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                             className="absolute inset-0 opacity-0 cursor-pointer" 
                             onChange={handleImageUpload}
                             />
+                        </div>
+                    </div>
+
+                    {/* Additional Images */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase">Additional Images (Max 9)</label>
+                        <div className="grid grid-cols-5 gap-2">
+                            {formData.additionalImages.map((img, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeAdditionalImage(idx)}
+                                        className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                            {formData.additionalImages.length < 9 && (
+                                <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-colors cursor-pointer">
+                                    <Plus size={16} className="text-gray-400" />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
+                                        onChange={handleAdditionalImageUpload}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -223,7 +312,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
                     <div className="space-y-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                        {/* Radix UI Select Implementation */}
                         <Select.Root 
                             value={String(formData.categoryId)} 
                             onValueChange={(val) => setFormData(prev => ({ ...prev, categoryId: val }))}
@@ -255,6 +343,39 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                 </Select.Content>
                             </Select.Portal>
                         </Select.Root>
+                    </div>
+
+                    {/* Variants */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-gray-500 uppercase">Variants (Optional)</label>
+                            <button type="button" onClick={addVariant} className="text-xs text-[#8A63D2] font-bold hover:underline flex items-center gap-1">
+                                <Plus size={12} /> Add Variant
+                            </button>
+                        </div>
+                        {formData.variants.map((variant, idx) => (
+                            <div key={idx} className="flex gap-2 items-start">
+                                <input
+                                    placeholder="Name (e.g. Size)"
+                                    className="w-1/3 p-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500"
+                                    value={variant.name}
+                                    onChange={(e) => updateVariant(idx, 'name', e.target.value)}
+                                />
+                                <input
+                                    placeholder="Values (e.g. S, M, L)"
+                                    className="flex-1 p-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500"
+                                    value={variant.values}
+                                    onChange={(e) => updateVariant(idx, 'values', e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removeVariant(idx)}
+                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="space-y-1.5">

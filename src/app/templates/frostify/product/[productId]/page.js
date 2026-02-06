@@ -13,8 +13,25 @@ export default function FrostifyProductPage() {
     const { addToCart } = useCart();
     const [quantity, setQuantity] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState([]);
+    const [selectedImage, setSelectedImage] = useState('');
+    const [selectedVariants, setSelectedVariants] = useState({});
 
     const product = businessData.allProducts.find(p => p.id.toString() === productId);
+    const category = product ? businessData.categories.find(c => c.id === product.category) : null;
+
+    useEffect(() => {
+        if (product) {
+            setSelectedImage(product.image);
+            if (product.variants && Array.isArray(product.variants)) {
+                const defaults = {};
+                product.variants.forEach(v => {
+                    const vals = v.values.split(',').map(s => s.trim());
+                    if (vals.length > 0) defaults[v.name] = vals[0];
+                });
+                setSelectedVariants(defaults);
+            }
+        }
+    }, [product]);
 
     useEffect(() => {
         const loadSuggestions = async () => {
@@ -39,37 +56,111 @@ export default function FrostifyProductPage() {
 
     if (!product) return <div className="py-32 text-center text-[var(--color-primary)]">Product not found.</div>;
 
+    const handleAddToCart = () => {
+        addToCart({ ...product, selectedVariants }, quantity);
+    };
+
+    const handleVariantChange = (name, value) => {
+        setSelectedVariants(prev => ({ ...prev, [name]: value }));
+    };
+
+    const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
+
+    // Stock
+    const rawStock = product?.stock;
+    const isUnlimited = rawStock === -1;
+    const stock = isUnlimited ? Infinity : (rawStock || 0);
+    const isOutOfStock = !isUnlimited && stock === 0;
+
     return (
         <div className="bg-white min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">
             <div className="container mx-auto px-6">
                 
-                {/* Main Product Display: 2 Cols on mobile (Shrink) */}
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-16 items-center mb-12 md:mb-24">
-                    {/* Image */}
-                    <div className="bg-[#F9F4F6] rounded-2xl overflow-hidden shadow-lg aspect-square">
-                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                {/* Main Product Display: 1 Col on mobile, 2 on Desktop */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start mb-12 md:mb-24">
+                    {/* Gallery */}
+                    <div className="flex flex-col gap-4">
+                        <div className="bg-[#F9F4F6] rounded-2xl overflow-hidden shadow-lg aspect-square relative max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0">
+                            <img src={selectedImage} alt={product.name} className="w-full h-full object-cover" />
+                            {isOutOfStock && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <span className="bg-white text-[var(--color-primary)] px-6 py-2 rounded-full font-bold uppercase tracking-widest shadow-lg">Sold Out</span>
+                                </div>
+                            )}
+                        </div>
+                        {allImages.length > 1 && (
+                            <div className="flex gap-2 overflow-x-auto pb-2 justify-center md:justify-start">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`w-16 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-[var(--color-secondary)]' : 'border-transparent opacity-70'}`}
+                                    >
+                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     
                     {/* Info */}
                     <div>
-                        <span className="text-[var(--color-secondary)] text-[2vw] md:text-xs font-bold uppercase tracking-[0.2em]">
-                            {businessData.categories.find(c => c.id === product.category)?.name}
-                        </span>
-                        <h1 className="text-[6vw] md:text-5xl font-serif text-[var(--color-primary)] mt-2 md:mt-4 mb-2 md:mb-6 leading-tight">{product.name}</h1>
-                        <p className="text-[4vw] md:text-3xl text-[var(--color-primary)] font-bold mb-4 md:mb-8">${product.price.toFixed(2)}</p>
-                        <p className="text-gray-600 leading-tight md:leading-relaxed mb-4 md:mb-10 text-[2.5vw] md:text-lg line-clamp-3 md:line-clamp-none">{product.description}</p>
+                        {category && (
+                            <span className="text-[var(--color-secondary)] text-xs font-bold uppercase tracking-[0.2em] block mb-2">
+                                {category.name}
+                            </span>
+                        )}
+                        <h1 className="text-4xl md:text-5xl font-serif text-[var(--color-primary)] mb-2 md:mb-6 leading-tight">{product.name}</h1>
+                        <p className="text-3xl text-[var(--color-primary)] font-bold mb-4 md:mb-8">${product.price.toFixed(2)}</p>
+
+                        {product.description && (
+                             <div className="mb-6">
+                                <span className="text-xs font-bold text-[var(--color-primary)]/50 uppercase tracking-widest block mb-2">Description</span>
+                                <p className="text-gray-600 leading-relaxed text-lg">{product.description}</p>
+                            </div>
+                        )}
+
+                         {/* Variants */}
+                         {product.variants && product.variants.length > 0 && (
+                            <div className="mb-8 space-y-4">
+                                {product.variants.map((v, idx) => {
+                                    const options = v.values.split(',').map(s => s.trim());
+                                    return (
+                                        <div key={idx}>
+                                            <span className="text-xs font-bold text-[var(--color-primary)]/50 uppercase tracking-widest block mb-2">{v.name}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {options.map(opt => (
+                                                    <button
+                                                        key={opt}
+                                                        onClick={() => handleVariantChange(v.name, opt)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                                                            selectedVariants[v.name] === opt
+                                                                ? 'bg-[var(--color-secondary)] text-white border-[var(--color-secondary)]'
+                                                                : 'bg-white border-[var(--color-primary)]/20 text-[var(--color-primary)] hover:border-[var(--color-secondary)]'
+                                                        }`}
+                                                    >
+                                                        {opt}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                         
-                        <div className="flex flex-col md:flex-row gap-2 md:gap-4">
-                            <div className="flex items-center border border-[var(--color-primary)] rounded-full px-1 md:px-2 h-[8vw] md:h-12 w-full md:w-auto justify-center">
-                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-2 md:px-3 text-[3vw] md:text-base text-[var(--color-primary)] font-bold">-</button>
-                                <span className="px-2 md:px-3 text-[3vw] md:text-base text-[var(--color-primary)] font-bold w-6 md:w-8 text-center">{quantity}</span>
-                                <button onClick={() => setQuantity(quantity + 1)} className="px-2 md:px-3 text-[3vw] md:text-base text-[var(--color-primary)] font-bold">+</button>
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className={`flex items-center border border-[var(--color-primary)] rounded-full px-2 h-12 w-full md:w-32 justify-center ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 text-lg text-[var(--color-primary)] font-bold hover:bg-gray-50 rounded-full">-</button>
+                                <span className="px-3 text-lg text-[var(--color-primary)] font-bold w-10 text-center">{quantity}</span>
+                                <button onClick={() => setQuantity(isUnlimited ? quantity+1 : Math.min(stock, quantity + 1))} className="px-3 text-lg text-[var(--color-primary)] font-bold hover:bg-gray-50 rounded-full">+</button>
                             </div>
                             <button 
-                                onClick={() => addToCart(product, quantity)}
-                                className="flex-grow bg-[var(--color-primary)] text-white px-4 py-2 md:px-8 md:py-4 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors h-[8vw] md:h-auto flex items-center justify-center whitespace-nowrap"
+                                onClick={handleAddToCart}
+                                disabled={isOutOfStock}
+                                className="flex-grow bg-[var(--color-primary)] text-white px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors h-12 flex items-center justify-center whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Add to Cart
+                                {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                             </button>
                         </div>
                     </div>

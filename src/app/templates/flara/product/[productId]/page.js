@@ -23,6 +23,22 @@ export default function ProductDetailPage() {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(product?.image || null);
     const [relatedProducts, setRelatedProducts] = useState([]);
+    const [selectedVariants, setSelectedVariants] = useState({});
+
+    // Initialize defaults
+    useEffect(() => {
+        if (product) {
+            setSelectedImage(product.image);
+            if (product.variants && Array.isArray(product.variants)) {
+                const defaults = {};
+                product.variants.forEach(v => {
+                    const vals = v.values.split(',').map(s => s.trim());
+                    if (vals.length > 0) defaults[v.name] = vals[0];
+                });
+                setSelectedVariants(defaults);
+            }
+        }
+    }, [product]);
 
     // --- Stock Logic ---
     const rawStock = product?.stock;
@@ -36,7 +52,8 @@ export default function ProductDetailPage() {
         const loadSuggestions = async () => {
              if (product) {
                  if (websiteId) {
-                     const suggestions = await fetchSuggestedProducts(websiteId, product, 3);
+                     // Request 4 items
+                     const suggestions = await fetchSuggestedProducts(websiteId, product, 4);
                      if (suggestions && suggestions.length > 0) {
                          setRelatedProducts(suggestions);
                          return;
@@ -46,7 +63,7 @@ export default function ProductDetailPage() {
                  // Fallback
                  const local = businessData.allProducts
                     .filter(p => String(p.category) === String(product.category) && String(p.id) !== String(product.id))
-                    .slice(0, 3);
+                    .slice(0, 4);
                  setRelatedProducts(local);
              }
         };
@@ -58,15 +75,22 @@ export default function ProductDetailPage() {
     }
     
     const handleAddToCart = () => {
-        addToCart(product, quantity);
+        addToCart({ ...product, selectedVariants }, quantity);
     };
 
+    const handleVariantChange = (name, value) => {
+        setSelectedVariants(prev => ({ ...prev, [name]: value }));
+    };
+
+    const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
+
     return (
-        <div className="container mx-auto px-6 py-20">
+        <div className="container mx-auto px-6 py-12 md:py-20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+
                 {/* Image Gallery */}
-                <div className="relative">
-                    <div className="bg-brand-primary aspect-[4/5] overflow-hidden">
+                <div className="flex flex-col gap-4">
+                    <div className="bg-brand-primary overflow-hidden rounded-xl relative aspect-[4/5] max-h-[60vh] md:max-h-[600px] w-full max-w-lg mx-auto md:mx-0">
                         <img 
                             src={selectedImage} 
                             alt={product.name} 
@@ -80,15 +104,26 @@ export default function ProductDetailPage() {
                             </div>
                         )}
                     </div>
+                    {/* Thumbnails */}
+                    {allImages.length > 1 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar justify-center md:justify-start">
+                            {allImages.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setSelectedImage(img)}
+                                    className={`w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-brand-secondary opacity-100' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                                >
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 
                 {/* Product Info */}
                 <div>
-                    {category && (
-                        <span className="text-sm text-brand-text/70 uppercase tracking-wider">{category.name}</span>
-                    )}
-                    <h1 className="text-5xl font-bold text-brand-text font-serif mt-2">{product.name}</h1>
-                    <p className="text-3xl text-brand-text font-serif mt-4">₹{product.price.toFixed(2)}</p>
+                    <h1 className="text-4xl md:text-5xl font-bold text-brand-text font-serif mt-2">{product.name}</h1>
+                    <p className="text-2xl md:text-3xl text-brand-text font-serif mt-4">₹{product.price.toFixed(2)}</p>
 
                     {/* Stock Status Badge */}
                     <div className="mt-4">
@@ -101,21 +136,62 @@ export default function ProductDetailPage() {
                         )}
                     </div>
                     
-                    <p className="text-brand-text/80 text-lg mt-6">
-                        {product.description}
-                    </p>
+                    {category && (
+                        <div className="mt-6">
+                            <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-1">Category</h3>
+                            <p className="text-brand-text/80 text-lg">{category.name}</p>
+                        </div>
+                    )}
+
+                    {product.description && (
+                        <div className="mt-6">
+                            <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-2">Description</h3>
+                            <p className="text-brand-text/80 text-lg leading-relaxed">
+                                {product.description}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Variants */}
+                    {product.variants && product.variants.length > 0 && (
+                        <div className="mt-8 space-y-4">
+                            {product.variants.map((v, idx) => {
+                                const options = v.values.split(',').map(s => s.trim());
+                                return (
+                                    <div key={idx}>
+                                        <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-2">{v.name}</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {options.map(opt => (
+                                                <button
+                                                    key={opt}
+                                                    onClick={() => handleVariantChange(v.name, opt)}
+                                                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-all ${
+                                                        selectedVariants[v.name] === opt
+                                                            ? 'bg-brand-secondary text-brand-bg border-brand-secondary'
+                                                            : 'border-brand-text/20 text-brand-text hover:border-brand-secondary'
+                                                    }`}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                     
                     {/* Quantity & Add to Cart */}
-                    <div className="flex items-center gap-4 mt-8">
-                        <div className={`flex items-center border border-brand-text/30 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary">-</button>
-                            <span className="w-12 h-12 flex items-center justify-center text-lg font-bold border-x border-brand-text/30">{quantity}</span>
-                            <button onClick={() => setQuantity(q => isUnlimited ? q + 1 : Math.min(stock, q + 1))} className="w-12 h-12 text-2xl text-brand-text/70 hover:bg-brand-primary">+</button>
+                    <div className="flex items-center gap-4 mt-8 border-t border-brand-text/10 pt-8">
+                        <div className={`flex items-center border border-brand-text/30 rounded ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-10 h-10 md:w-12 md:h-12 text-xl md:text-2xl text-brand-text/70 hover:bg-brand-primary">-</button>
+                            <span className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-lg font-bold border-x border-brand-text/30">{quantity}</span>
+                            <button onClick={() => setQuantity(q => isUnlimited ? q + 1 : Math.min(stock, q + 1))} className="w-10 h-10 md:w-12 md:h-12 text-xl md:text-2xl text-brand-text/70 hover:bg-brand-primary">+</button>
                         </div>
                         <button 
                             onClick={handleAddToCart}
                             disabled={isOutOfStock}
-                            className={`flex-grow h-12 bg-brand-secondary text-brand-bg font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`flex-grow h-10 md:h-12 rounded bg-brand-secondary text-brand-bg font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                         </button>
@@ -126,10 +202,11 @@ export default function ProductDetailPage() {
             {/* Related Products */}
             <div className="mt-24">
                 <h2 className="text-3xl font-bold text-brand-text font-serif mb-8">You Might Also Like</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* 2 cols on mobile (grid-cols-2), 4 on desktop (lg:grid-cols-4) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                      {relatedProducts.map(item => (
                         <div key={item.id} className="group text-left">
-                            <Link href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] h-80">
+                            <Link href={`${basePath}/product/${item.id}`} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] rounded-lg">
                                 <img 
                                     src={item.image} 
                                     alt={item.name} 
@@ -137,10 +214,10 @@ export default function ProductDetailPage() {
                                 />
                             </Link>
                             <div className="mt-4">
-                                <h3 className="text-xl font-serif font-medium text-brand-text">
+                                <h3 className="text-base md:text-xl font-serif font-medium text-brand-text line-clamp-1">
                                     <Link href={`${basePath}/product/${item.id}`} className="hover:text-brand-secondary">{item.name}</Link>
                                 </h3>
-                                <p className="text-brand-text font-medium text-base mt-1">₹{item.price.toFixed(2)}</p>
+                                <p className="text-brand-text font-medium text-sm md:text-base mt-1">₹{item.price.toFixed(2)}</p>
                             </div>
                         </div>
                     ))}

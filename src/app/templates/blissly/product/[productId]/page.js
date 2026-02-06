@@ -18,7 +18,23 @@ export default function ProductDetailPage() {
     
     const [quantity, setQuantity] = useState(1);
     const [relatedProducts, setRelatedProducts] = useState([]);
+    const [selectedImage, setSelectedImage] = useState('');
+    const [selectedVariants, setSelectedVariants] = useState({});
     
+    useEffect(() => {
+        if (product) {
+            setSelectedImage(product.image);
+            if (product.variants && Array.isArray(product.variants)) {
+                const defaults = {};
+                product.variants.forEach(v => {
+                    const vals = v.values.split(',').map(s => s.trim());
+                    if (vals.length > 0) defaults[v.name] = vals[0];
+                });
+                setSelectedVariants(defaults);
+            }
+        }
+    }, [product]);
+
     useEffect(() => {
         const loadSuggestions = async () => {
              if (product) {
@@ -48,48 +64,117 @@ export default function ProductDetailPage() {
     }
     
     const handleAddToCart = () => {
-        addToCart(product, quantity);
+        addToCart({ ...product, selectedVariants }, quantity);
     };
+
+    const handleVariantChange = (name, value) => {
+        setSelectedVariants(prev => ({ ...prev, [name]: value }));
+    };
+
+    const allImages = [product.image, ...(product.additional_images || [])].filter(Boolean);
+
+    // Stock
+    const rawStock = product?.stock;
+    const isUnlimited = rawStock === -1;
+    const stock = isUnlimited ? Infinity : (rawStock || 0);
+    const isOutOfStock = !isUnlimited && stock === 0;
 
     return (
         <div className="w-full max-w-full overflow-hidden overflow-x-hidden">
             <div className="container mx-auto px-4 md:px-6 py-10 md:py-20 font-sans">
-                {/* Mobile: Grid Cols 2 (Shrink Layout) */}
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-4 md:gap-12 items-start">
+                {/* Changed to grid-cols-1 on mobile for better spacing */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
                     
-                    {/* Image */}
-                    <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg">
-                        <img 
-                            src={product.image} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover"
-                        />
+                    {/* Gallery */}
+                    <div className="flex flex-col gap-4">
+                        <div className="bg-brand-primary aspect-[4/5] overflow-hidden rounded-lg relative max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0">
+                            <img
+                                src={selectedImage}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                            />
+                            {isOutOfStock && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <span className="bg-white text-black px-4 py-2 uppercase tracking-widest text-xs font-bold rounded-lg">Sold Out</span>
+                                </div>
+                            )}
+                        </div>
+                        {allImages.length > 1 && (
+                            <div className="flex gap-2 overflow-x-auto pb-2 justify-center md:justify-start">
+                                {allImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`w-16 h-16 shrink-0 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-brand-secondary ring-2 ring-brand-secondary/30' : 'border-transparent opacity-70'}`}
+                                    >
+                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     
                     {/* Product Info */}
                     <div className="py-0 md:py-4 flex flex-col h-full">
+                        <h1 className="text-4xl md:text-5xl font-serif font-medium text-brand-text mt-1 md:mt-2 leading-tight">{product.name}</h1>
+                        <p className="text-2xl md:text-3xl text-brand-secondary font-sans mt-2 md:mt-4 font-bold">${product.price.toFixed(2)}</p>
+
                         {category && (
-                            <span className="text-[2vw] md:text-sm text-brand-text/70 uppercase tracking-widest">{category.name}</span>
+                            <div className="mt-4">
+                                <span className="text-xs font-bold text-brand-text/50 uppercase tracking-widest">Category</span>
+                                <p className="text-brand-text/80">{category.name}</p>
+                            </div>
                         )}
-                        <h1 className="text-[5vw] md:text-5xl font-serif font-medium text-brand-text mt-1 md:mt-2 leading-tight">{product.name}</h1>
-                        <p className="text-[4vw] md:text-3xl text-brand-secondary font-sans mt-2 md:mt-4 font-bold">${product.price.toFixed(2)}</p>
-                        
-                        <p className="text-brand-text/80 text-[2.5vw] md:text-lg mt-2 md:mt-6 leading-tight">
-                            {product.description}
-                        </p>
+
+                        {product.description && (
+                            <div className="mt-4">
+                                <span className="text-xs font-bold text-brand-text/50 uppercase tracking-widest">Description</span>
+                                <p className="text-brand-text/80 text-lg leading-relaxed mt-1">{product.description}</p>
+                            </div>
+                        )}
+
+                        {/* Variants */}
+                        {product.variants && product.variants.length > 0 && (
+                            <div className="mt-6 space-y-4">
+                                {product.variants.map((v, idx) => {
+                                    const options = v.values.split(',').map(s => s.trim());
+                                    return (
+                                        <div key={idx}>
+                                            <span className="text-xs font-bold text-brand-text/50 uppercase tracking-widest block mb-2">{v.name}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {options.map(opt => (
+                                                    <button
+                                                        key={opt}
+                                                        onClick={() => handleVariantChange(v.name, opt)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                                                            selectedVariants[v.name] === opt
+                                                                ? 'bg-brand-secondary text-brand-bg border-brand-secondary'
+                                                                : 'bg-transparent border-brand-text/20 text-brand-text hover:border-brand-secondary'
+                                                        }`}
+                                                    >
+                                                        {opt}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                         
                         {/* Quantity & Add to Cart */}
-                        <div className="flex flex-col md:flex-row items-stretch gap-2 md:gap-4 mt-4 md:mt-8">
-                            <div className="flex items-center border border-brand-text/20 rounded-lg h-[8vw] md:h-12 w-full md:w-auto">
-                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-[8vw] md:w-12 h-full text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-lg flex items-center justify-center">-</button>
-                                <span className="flex-grow md:w-12 h-full flex items-center justify-center text-[3vw] md:text-lg font-bold border-x border-brand-text/20">{quantity}</span>
-                                <button onClick={() => setQuantity(q => q + 1)} className="w-[8vw] md:w-12 h-full text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-r-lg flex items-center justify-center">+</button>
+                        <div className="flex flex-col md:flex-row items-stretch gap-4 mt-8 border-t border-brand-text/10 pt-8">
+                            <div className={`flex items-center border border-brand-text/20 rounded-lg h-12 w-full md:w-32 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-10 h-full text-xl text-brand-text/70 hover:bg-brand-primary rounded-l-lg flex items-center justify-center">-</button>
+                                <span className="flex-grow h-full flex items-center justify-center text-lg font-bold border-x border-brand-text/20">{quantity}</span>
+                                <button onClick={() => setQuantity(q => isUnlimited ? q+1 : Math.min(stock, q + 1))} className="w-10 h-full text-xl text-brand-text/70 hover:bg-brand-primary rounded-r-lg flex items-center justify-center">+</button>
                             </div>
                             <button 
                                 onClick={handleAddToCart}
-                                className="h-[8vw] md:h-12 w-full bg-brand-secondary text-brand-bg font-medium tracking-wide transition-opacity rounded-lg hover:opacity-90 text-[3vw] md:text-base whitespace-nowrap px-4"
+                                disabled={isOutOfStock}
+                                className="h-12 w-full bg-brand-secondary text-brand-bg font-medium tracking-wide transition-opacity rounded-lg hover:opacity-90 text-base whitespace-nowrap px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Add to Cart
+                                {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                             </button>
                         </div>
                     </div>
