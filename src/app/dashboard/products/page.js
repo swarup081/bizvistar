@@ -168,12 +168,16 @@ export default function ProductsPage() {
                 analyticsData.push({ date: dateStr, value: val });
             }
 
+            // Calculate total sales for 'Top Products' sort
+            const totalSales = analyticsData.reduce((sum, item) => sum + item.value, 0);
+
             return {
                 ...p,
                 stock: stockCount === -1 ? 'Unlimited' : stockCount,
                 stockStatus: status,
                 categoryName: (p.category_id && catMap[p.category_id]) || 'Uncategorized',
-                analytics: analyticsData
+                analytics: analyticsData,
+                totalSales
             };
         });
 
@@ -203,6 +207,7 @@ export default function ProductsPage() {
             if (productSortBy === 'price-desc') return b.price - a.price;
             if (productSortBy === 'name-asc') return a.name.localeCompare(b.name);
             if (productSortBy === 'name-desc') return b.name.localeCompare(a.name);
+            if (productSortBy === 'top') return b.totalSales - a.totalSales; // Sort by Total Sales (Desc)
             // Newest (Default) - assuming higher ID is newer
             return b.id - a.id;
         });
@@ -347,6 +352,7 @@ export default function ProductsPage() {
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
                                     <select value={productSortBy} onChange={(e) => setProductSortBy(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
                                         <option value="newest">Newest Added</option>
+                                        <option value="top">Top Products</option>
                                         <option value="price-asc">Price: Low to High</option>
                                         <option value="price-desc">Price: High to Low</option>
                                         <option value="name-asc">Name: A-Z</option>
@@ -480,6 +486,7 @@ export default function ProductsPage() {
                             <DropdownMenu.Content className="min-w-[150px] bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-20 animate-in fade-in zoom-in-95 duration-200" align="end">
                                 {[
                                     {id: 'newest', label: 'Newest Added'},
+                                    {id: 'top', label: 'Top Products'},
                                     {id: 'price-asc', label: 'Price: Low to High'},
                                     {id: 'price-desc', label: 'Price: High to Low'},
                                     {id: 'name-asc', label: 'Name: A-Z'}
