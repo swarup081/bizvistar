@@ -30,15 +30,16 @@ export default function ProductDetailPage() {
     // Initialize defaults
     useEffect(() => {
         if (product) {
-            if (product.variants && Array.isArray(product.variants)) {
+            // Robust check for variants
+            const variants = Array.isArray(product.variants) ? product.variants : [];
+            if (variants.length > 0) {
                 const defaults = {};
-                product.variants.forEach(v => {
+                variants.forEach(v => {
                     const vals = v.values.split(',').map(s => s.trim());
-                    if (vals.length > 0) defaults[v.name] = vals[0]; // Default to first
-                    // Special case for color: values might be "#hex:Name"
+                    if (vals.length > 0) defaults[v.name] = vals[0];
                     if (v.type === 'color') {
-                         const colorParts = vals[0].split(':'); // #hex:Name
-                         defaults[v.name] = colorParts[0]; // Store Hex as value
+                         const colorParts = vals[0].split(':');
+                         defaults[v.name] = colorParts[0];
                     }
                 });
                 setSelectedVariants(defaults);
@@ -57,7 +58,6 @@ export default function ProductDetailPage() {
         const loadSuggestions = async () => {
              if (product) {
                  if (websiteId) {
-                     // Request range 2-8
                      const suggestions = await fetchSuggestedProducts(websiteId, product, 2, 8);
                      if (suggestions && suggestions.length > 0) {
                          setRelatedProducts(suggestions);
@@ -65,7 +65,6 @@ export default function ProductDetailPage() {
                      }
                  }
                  
-                 // Fallback Logic
                  const sameCategoryProducts = businessData.allProducts.filter(
                     p => String(p.category) === String(product.category) && String(p.id) !== String(product.id)
                  );
@@ -90,19 +89,17 @@ export default function ProductDetailPage() {
         setSelectedVariants(prev => ({ ...prev, [name]: value }));
     };
 
-    // Carousel Logic
-    const nextImage = () => {
-        setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-    };
-    const prevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-    };
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+
+    // Variants data safe access
+    const variants = Array.isArray(product.variants) ? product.variants : [];
 
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 font-sans">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
                 
-                {/* Image Gallery (Carousel) */}
+                {/* Image Gallery */}
                 <div className="relative group w-full max-w-lg mx-auto md:mx-0">
                     <div className="bg-brand-primary overflow-hidden rounded-xl md:rounded-lg relative aspect-[4/5] max-h-[60vh] md:max-h-[600px] w-full">
                         <img
@@ -118,30 +115,13 @@ export default function ProductDetailPage() {
                             </div>
                         )}
                     </div>
-
-                    {/* Arrows */}
                     {allImages.length > 1 && (
                         <>
-                            <button
-                                onClick={prevImage}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <ChevronLeft size={24} />
-                            </button>
-                            <button
-                                onClick={nextImage}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <ChevronRight size={24} />
-                            </button>
-
-                            {/* Dots */}
+                            <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"><ChevronLeft size={24} /></button>
+                            <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"><ChevronRight size={24} /></button>
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                                 {allImages.map((_, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`}
-                                    />
+                                    <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}`} />
                                 ))}
                             </div>
                         </>
@@ -154,13 +134,7 @@ export default function ProductDetailPage() {
                     <p className="text-[4vw] md:text-3xl text-brand-text font-sans mt-2 md:mt-4">${product.price.toFixed(2)}</p>
                     
                     <div className="mt-2 md:mt-4 text-[2.5vw] md:text-base">
-                        {isOutOfStock ? (
-                             <span className="text-red-600 font-medium">Currently Unavailable</span>
-                        ) : isLowStock ? (
-                             <span className="text-orange-600 font-medium">Only {stock} left in stock!</span>
-                        ) : (
-                             <span className="text-green-600 font-medium">In Stock</span>
-                        )}
+                        {isOutOfStock ? <span className="text-red-600 font-medium">Currently Unavailable</span> : isLowStock ? <span className="text-orange-600 font-medium">Only {stock} left in stock!</span> : <span className="text-green-600 font-medium">In Stock</span>}
                     </div>
 
                     {category && (
@@ -170,35 +144,22 @@ export default function ProductDetailPage() {
                         </div>
                     )}
 
-                    {product.description && (
-                        <div className="mt-6">
-                            <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-2">Description</h3>
-                            <p className="text-brand-text/80 text-[3vw] md:text-lg leading-relaxed">
-                                {product.description}
-                            </p>
-                        </div>
-                    )}
-                    
                     {/* Variants */}
-                    {product.variants && product.variants.length > 0 && (
+                    {variants.length > 0 && (
                         <div className="mt-8 space-y-6">
-                            {product.variants.map((v, idx) => {
+                            {variants.map((v, idx) => {
                                 const rawValues = v.values.split(',').map(s => s.trim());
-
                                 return (
                                     <div key={idx}>
                                         <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-3">
                                             {v.name}: <span className="text-brand-text normal-case font-normal ml-1">{selectedVariants[v.name]}</span>
                                         </h3>
-
                                         <div className="flex flex-wrap gap-3">
                                             {v.type === 'color' ? (
                                                 rawValues.map(valStr => {
-                                                    // valStr expected: "#hex:Name" or just "#hex"
                                                     const [hex, name] = valStr.split(':');
                                                     const colorName = name || hex;
                                                     const isSelected = selectedVariants[v.name] === hex;
-
                                                     return (
                                                         <button
                                                             key={hex}
@@ -207,24 +168,16 @@ export default function ProductDetailPage() {
                                                             style={{ backgroundColor: hex }}
                                                             title={colorName}
                                                         >
-                                                            {/* Tooltip */}
-                                                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">
-                                                                {colorName}
-                                                            </span>
+                                                            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-10">{colorName}</span>
                                                         </button>
                                                     );
                                                 })
                                             ) : (
-                                                // Size or Other
                                                 rawValues.map(opt => (
                                                     <button
                                                         key={opt}
                                                         onClick={() => handleVariantChange(v.name, opt)}
-                                                        className={`px-4 py-2 border rounded-full text-sm font-medium transition-all ${
-                                                            selectedVariants[v.name] === opt
-                                                                ? 'bg-brand-secondary text-brand-bg border-brand-secondary'
-                                                                : 'border-brand-text/20 text-brand-text hover:border-brand-secondary'
-                                                        }`}
+                                                        className={`px-4 py-2 border rounded-full text-sm font-medium transition-all ${selectedVariants[v.name] === opt ? 'bg-brand-secondary text-brand-bg border-brand-secondary' : 'border-brand-text/20 text-brand-text hover:border-brand-secondary'}`}
                                                     >
                                                         {opt}
                                                     </button>
@@ -237,7 +190,8 @@ export default function ProductDetailPage() {
                         </div>
                     )}
 
-                    <div className="flex items-stretch gap-2 md:gap-4 mt-8 md:mt-10 border-t border-brand-text/10 pt-8">
+                    {/* Add to Cart */}
+                    <div className="flex items-stretch gap-2 md:gap-4 mt-8 md:mt-10 border-t border-brand-text/10 pt-8 mb-8">
                         <div className={`flex items-center border border-brand-text/20 rounded-full ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-8 h-8 md:w-12 md:h-12 text-[4vw] md:text-2xl text-brand-text/70 hover:bg-brand-primary rounded-l-full">-</button>
                             <span className="w-8 h-8 md:w-12 md:h-12 flex items-center justify-center text-[3vw] md:text-lg font-bold border-x border-brand-text/20">{quantity}</span>
@@ -251,20 +205,23 @@ export default function ProductDetailPage() {
                             {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                         </button>
                     </div>
+
+                    {/* Description - Moved to Bottom */}
+                    {product.description && (
+                        <div className="mt-6 pt-6 border-t border-brand-text/10">
+                            <h3 className="text-sm font-bold text-brand-text/50 uppercase tracking-wider mb-2">Description</h3>
+                            <p className="text-brand-text/80 text-[3vw] md:text-lg leading-relaxed">
+                                {product.description}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
             
-            {/* Recommendations */}
             <div className="mt-12 md:mt-24 pt-8 md:pt-16 border-t border-brand-text/10">
                 <h2 className="text-[6vw] md:text-4xl font-serif font-medium text-brand-text mb-8 md:mb-12 text-center">You Might Also Like</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 items-stretch">
-                     {relatedProducts.map(item => (
-                        <ProductCard 
-                            key={item.id} 
-                            item={item}
-                            templateName="avenix"
-                        />
-                    ))}
+                     {relatedProducts.map(item => <ProductCard key={item.id} item={item} templateName="avenix" />)}
                 </div>
             </div>
         </div>

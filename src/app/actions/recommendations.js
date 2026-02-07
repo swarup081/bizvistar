@@ -69,7 +69,6 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
     }
 
     // 3. Fetch All Products
-    // NOTE: Need to map columns here too if we want full consistency, but normally simple select * is enough
     const { data: allProducts } = await supabase
         .from('products')
         .select('*')
@@ -92,10 +91,8 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         }
     } catch (e) { /* ignore */ }
 
-    // 5. Scoring
+    // 5. Scoring & Candidates
     const candidates = allProducts.filter(p => String(p.id) !== String(currentProduct.id));
-
-    // Safety check: if no candidates (only 1 product in store), return empty
     if (candidates.length === 0) return [];
 
     const categoryId = currentProduct.category_id || currentProduct.category;
@@ -103,8 +100,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
     const scored = candidates.map(p => {
         let score = 0;
         
-        // Map image_url to image for consistent frontend usage
-        // (Just in case the server action result is used directly)
+        // Map image_url to image
         if (p.image_url && !p.image) p.image = p.image_url;
 
         // Pinned (Highest)
@@ -119,15 +115,13 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         if (globalIdx !== -1) score += 2500 - (globalIdx * 50);
 
         // Same Category (Contextual - Strong)
-        // Handle string/number mismatch
         if (String(p.category_id) === String(categoryId)) score += 1000;
 
-        // Stock
+        // Stock (Prefer In-Stock)
         const stock = p.stock === -1 ? 999999 : p.stock;
         if (stock > 0) score += 500;
 
-        // Tie-breaker: random element to rotate if scores are equal (e.g. all new)
-        // Or strictly ID for stability. Let's use ID.
+        // Tie-breaker: ID (Newest)
         score += (p.id / 100000); 
 
         return { ...p, score };
@@ -135,6 +129,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
 
     scored.sort((a, b) => b.score - a.score);
 
+    // Filter to ensure maxLimit
     let result = scored;
     if (result.length > maxLimit) {
         result = result.slice(0, maxLimit);
