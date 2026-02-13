@@ -73,7 +73,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         .from('products')
         .select('*')
         .eq('website_id', websiteId)
-        .order('id', { ascending: false });
+        .order('id', { ascending: false }); // Fetch newest first
         
     if (!allProducts || allProducts.length === 0) return [];
 
@@ -91,7 +91,7 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         }
     } catch (e) { /* ignore */ }
 
-    // 5. Scoring & Candidates
+    // 5. Scoring
     const candidates = allProducts.filter(p => String(p.id) !== String(currentProduct.id));
     if (candidates.length === 0) return [];
 
@@ -100,37 +100,45 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
     const scored = candidates.map(p => {
         let score = 0;
         
-        // Map image_url to image
+        // Map image
         if (p.image_url && !p.image) p.image = p.image_url;
 
-        // Pinned (Highest)
+        // Pinned (Highest Priority)
         if (prioritizedIds.includes(String(p.id))) score += 10000;
 
-        // Also Bought (High)
+        // Also Bought (High Relevance)
         const boughtIdx = alsoBoughtIds.indexOf(p.id);
         if (boughtIdx !== -1) score += 5000 - (boughtIdx * 100);
 
-        // Global Best Seller (Medium-High)
+        // Global Best Seller (Medium-High Relevance)
         const globalIdx = globalBestSellerIds.indexOf(p.id);
         if (globalIdx !== -1) score += 2500 - (globalIdx * 50);
 
-        // Same Category (Contextual - Strong)
-        if (String(p.category_id) === String(categoryId)) score += 1000;
+        // Same Category (Contextual Relevance)
+        // Reduced weight slightly to allow popular/pinned items to compete if user has many categories
+        if (String(p.category_id) === String(categoryId)) score += 500;
 
-        // Stock (Prefer In-Stock)
+        // Stock (Prefer In-Stock items)
         const stock = p.stock === -1 ? 999999 : p.stock;
-        if (stock > 0) score += 500;
+        if (stock > 0) score += 200;
 
-        // Tie-breaker: ID (Newest)
-        score += (p.id / 100000); 
+        // Tie-breaker: Randomness to avoid stale "alphabetical" feeling
+        // Use a deterministic hash of ID + date or just ID if randomness causes hydration mismatch
+        // For server action, simple ID sort is stable.
+        // We'll use Newest (ID desc) as tie breaker.
+        score += (p.id / 1000000);
 
         return { ...p, score };
     });
 
+    // Sort by score descending
     scored.sort((a, b) => b.score - a.score);
 
-    // Filter to ensure maxLimit
+    // Filter logic: Ensure we respect minLimit/maxLimit
     let result = scored;
+
+    // If we have fewer than minLimit (2), we must return what we have (already doing that).
+    // If we have more than maxLimit, slice it.
     if (result.length > maxLimit) {
         result = result.slice(0, maxLimit);
     }
