@@ -22,6 +22,29 @@ export default function ProductPage() {
     const allImages = [product?.image, ...(product?.additional_images || [])].filter(Boolean);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        if (isLeftSwipe) {
+            nextImage();
+        } else if (isRightSwipe) {
+            prevImage();
+        }
+    };
     const [selectedVariants, setSelectedVariants] = useState({});
 
     useEffect(() => {
@@ -94,7 +117,7 @@ export default function ProductPage() {
                     
                     {/* Gallery (Carousel) */}
                     <div className="flex flex-col gap-4">
-                        <div className="bg-gray-50 aspect-[3/4] relative overflow-hidden max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0 group">
+                        <div className="bg-gray-50 aspect-[3/4] relative overflow-hidden max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0 group" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
                             <img
                                 src={allImages[currentImageIndex]}
                                 alt={product.name}

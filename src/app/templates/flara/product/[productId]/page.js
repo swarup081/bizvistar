@@ -28,6 +28,29 @@ export default function ProductDetailPage() {
     const allImages = [product?.image, ...(product?.additional_images || [])].filter(Boolean);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        if (isLeftSwipe) {
+            nextImage();
+        } else if (isRightSwipe) {
+            prevImage();
+        }
+    };
     const [selectedVariants, setSelectedVariants] = useState({});
 
     // Initialize defaults
@@ -103,7 +126,7 @@ export default function ProductDetailPage() {
 
                 {/* Image Gallery (Carousel) */}
                 <div className="relative group w-full max-w-lg mx-auto md:mx-0">
-                    <div className="bg-brand-primary overflow-hidden rounded-xl relative aspect-[4/5] max-h-[60vh] md:max-h-[600px] w-full">
+                    <div className="bg-brand-primary overflow-hidden rounded-xl relative aspect-[4/5] max-h-[60vh] md:max-h-[600px] w-full" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
                          <img
                             src={allImages[currentImageIndex]}
                             alt={product.name} 
