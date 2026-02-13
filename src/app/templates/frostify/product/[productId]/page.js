@@ -24,7 +24,6 @@ export default function FrostifyProductPage() {
     const allImages = [product?.image, ...(product?.additional_images || [])].filter(Boolean);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
     const minSwipeDistance = 50;
@@ -47,6 +46,7 @@ export default function FrostifyProductPage() {
             prevImage();
         }
     };
+
     useEffect(() => {
         if (product) {
             setSelectedImage(product.image);
@@ -77,7 +77,6 @@ export default function FrostifyProductPage() {
                      }
                  }
                  
-                 // Fallback
                  const local = businessData.allProducts
                     .filter(p => p.category === product.category && String(p.id) !== String(product.id))
                     .slice(0, 4);
@@ -117,10 +116,12 @@ export default function FrostifyProductPage() {
                 
                 {/* Main Product Display: 1 Col on mobile, 2 on Desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start mb-12 md:mb-24">
-
                     {/* Gallery (Carousel) */}
                     <div className="flex flex-col gap-4">
-                        <div className="bg-[#F9F4F6] rounded-2xl overflow-hidden shadow-lg aspect-square relative max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0 group" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+                        <div
+                            className="bg-[#F9F4F6] rounded-2xl overflow-hidden shadow-lg aspect-square relative max-h-[60vh] md:max-h-[600px] w-full max-w-md mx-auto md:max-w-none md:mx-0 group"
+                            onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+                        >
                             <img
                                 src={allImages[currentImageIndex]}
                                 alt={product.name}
@@ -169,13 +170,6 @@ export default function FrostifyProductPage() {
                         )}
                         <h1 className="text-4xl md:text-5xl font-serif text-[var(--color-primary)] mb-2 md:mb-6 leading-tight">{product.name}</h1>
                         <p className="text-3xl text-[var(--color-primary)] font-bold mb-4 md:mb-8">${product.price.toFixed(2)}</p>
-
-                        {product.description && (
-                             <div className="mb-6">
-                                <span className="text-xs font-bold text-[var(--color-primary)]/50 uppercase tracking-widest block mb-2">Description</span>
-                                <p className="text-gray-600 leading-relaxed text-lg">{product.description}</p>
-                            </div>
-                        )}
 
                          {/* Variants */}
                          {product.variants && product.variants.length > 0 && (
@@ -226,7 +220,7 @@ export default function FrostifyProductPage() {
                                 })}
                             </div>
                         )}
-                        
+
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className={`flex items-center border border-[var(--color-primary)] rounded-full px-2 h-12 w-full md:w-32 justify-center ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 text-lg text-[var(--color-primary)] font-bold hover:bg-gray-50 rounded-full">-</button>
@@ -241,6 +235,14 @@ export default function FrostifyProductPage() {
                                 {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                             </button>
                         </div>
+
+                        {/* Description - Bottom */}
+                        {product.description && (
+                             <div className="mt-8 pt-8 border-t border-gray-100">
+                                <span className="text-xs font-bold text-[var(--color-primary)]/50 uppercase tracking-widest block mb-2">Description</span>
+                                <p className="text-gray-600 leading-relaxed text-lg">{product.description}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
