@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter } from "lucide-react";
+import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { subDays, isAfter, isBefore } from "date-fns";
 import Fuse from "fuse.js";
@@ -17,6 +17,11 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [ownerName, setOwnerName] = useState("");
+
+    // Filter State
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [timeFilter, setTimeFilter] = useState("30"); // days: 7, 30, 90
 
     const [metrics, setMetrics] = useState({
         sales: { value: 0, change: 0, trend: 'neutral' },
@@ -38,10 +43,14 @@ export default function DashboardPage() {
         else if (hour >= 12 && hour < 18) setGreeting('Good Afternoon');
         else setGreeting('Good Evening');
         
+        // Cache Check
+        const cachedName = localStorage.getItem('bizvistar_owner_name');
+        if (cachedName) setOwnerName(cachedName);
+
         fetchDashboardData();
     }, []);
 
-    // Filter Logic
+    // Filter Logic (Search)
     useEffect(() => {
         if (!data.orders.length) {
             setFilteredOrders([]);
@@ -53,7 +62,6 @@ export default function DashboardPage() {
             return;
         }
 
-        // Fuzzy search configuration
         const fuse = new Fuse(data.orders, {
             keys: [
                 "id",
@@ -67,6 +75,51 @@ export default function DashboardPage() {
         const result = fuse.search(searchQuery);
         setFilteredOrders(result.map(r => r.item));
     }, [searchQuery, data.orders]);
+
+    // Recalculate Metrics based on Time Filter
+    useEffect(() => {
+        if (!data.orders.length) return;
+
+        const now = new Date();
+        const days = parseInt(timeFilter);
+        const currentPeriodStart = subDays(now, days);
+        const priorPeriodStart = subDays(now, days * 2);
+        const priorPeriodEnd = currentPeriodStart;
+
+        const currentPeriodOrders = data.orders.filter(o => {
+            const d = new Date(o.created_at);
+            return isAfter(d, currentPeriodStart) && isBefore(d, now);
+        });
+        const priorPeriodOrders = data.orders.filter(o => {
+            const d = new Date(o.created_at);
+            return isAfter(d, priorPeriodStart) && isBefore(d, priorPeriodEnd);
+        });
+
+        const currentSales = currentPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+        const priorSales = priorPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
+        const salesChange = calculateChange(currentSales, priorSales);
+
+        const getUnits = (periodOrders) => {
+            const periodOrderIds = new Set(periodOrders.map(o => o.id));
+            return data.orderItems
+                .filter(item => periodOrderIds.has(item.order_id))
+                .reduce((sum, item) => sum + item.quantity, 0);
+        };
+        const currentUnits = getUnits(currentPeriodOrders);
+        const priorUnits = getUnits(priorPeriodOrders);
+        const unitsChange = calculateChange(currentUnits, priorUnits);
+
+        const currentAOV = currentPeriodOrders.length ? (currentSales / currentPeriodOrders.length) : 0;
+        const priorAOV = priorPeriodOrders.length ? (priorSales / priorPeriodOrders.length) : 0;
+        const aovChange = calculateChange(currentAOV, priorAOV);
+
+        setMetrics({
+            sales: { value: currentSales, change: salesChange },
+            units: { value: currentUnits, change: unitsChange },
+            aov: { value: currentAOV, change: aovChange }
+        });
+
+    }, [timeFilter, data.orders, data.orderItems]);
 
 
     const fetchDashboardData = async () => {
@@ -87,6 +140,18 @@ export default function DashboardPage() {
             if (!website) {
                 setLoading(false);
                 return;
+            }
+
+            // Fetch Owner Name
+            const { data: onboarding } = await supabase
+                .from("onboarding_data")
+                .select("owner_name")
+                .eq("website_id", website.id)
+                .maybeSingle();
+
+            if (onboarding?.owner_name) {
+                setOwnerName(onboarding.owner_name);
+                localStorage.setItem('bizvistar_owner_name', onboarding.owner_name);
             }
 
             const { data: orders, error: ordersError } = await supabase
@@ -148,43 +213,8 @@ export default function DashboardPage() {
 
             const uniqueVisitorsAllTime = new Set(visitors.map(v => v.visitorId)).size;
 
-            const now = new Date();
-            const thirtyDaysAgo = subDays(now, 30);
-            const sixtyDaysAgo = subDays(now, 60);
-
-            const currentPeriodOrders = enrichedOrders.filter(o => {
-                const d = new Date(o.created_at);
-                return isAfter(d, thirtyDaysAgo) && isBefore(d, now);
-            });
-            const priorPeriodOrders = enrichedOrders.filter(o => {
-                const d = new Date(o.created_at);
-                return isAfter(d, sixtyDaysAgo) && isBefore(d, thirtyDaysAgo);
-            });
-
-            const currentSales = currentPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-            const priorSales = priorPeriodOrders.reduce((sum, o) => sum + Number(o.total_amount), 0);
-            const salesChange = calculateChange(currentSales, priorSales);
-
-            const getUnits = (periodOrders) => {
-                const periodOrderIds = new Set(periodOrders.map(o => o.id));
-                return enrichedItems
-                    .filter(item => periodOrderIds.has(item.order_id))
-                    .reduce((sum, item) => sum + item.quantity, 0);
-            };
-            const currentUnits = getUnits(currentPeriodOrders);
-            const priorUnits = getUnits(priorPeriodOrders);
-            const unitsChange = calculateChange(currentUnits, priorUnits);
-
-            const currentAOV = currentPeriodOrders.length ? (currentSales / currentPeriodOrders.length) : 0;
-            const priorAOV = priorPeriodOrders.length ? (priorSales / priorPeriodOrders.length) : 0;
-            const aovChange = calculateChange(currentAOV, priorAOV);
-
-            setMetrics({
-                sales: { value: currentSales, change: salesChange },
-                units: { value: currentUnits, change: unitsChange },
-                aov: { value: currentAOV, change: aovChange }
-            });
-
+            // Initial Metrics Calculation (Default 30 days)
+            // Logic moved to useEffect dependent on timeFilter, but we need initial data set
             setData({ 
                 orders: enrichedOrders, 
                 orderItems: enrichedItems, 
@@ -226,12 +256,12 @@ export default function DashboardPage() {
         {/* 1. Header Section (Title + Controls) */}
         <div className="col-span-1 md:col-span-4 order-1 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-[#111] not-italic">{greeting}, {ownerName || 'Owner'}!</h1>
             <p className="mt-1 text-sm md:text-base text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
           </div>
 
           {/* Controls: Search, Export, Filter */}
-          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto relative">
              <div className="relative flex-1 md:flex-none">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input 
@@ -253,21 +283,47 @@ export default function DashboardPage() {
              </button>
 
              {/* Filter Button */}
-             <button className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all shrink-0">
-                <Filter size={18} />
-              </button>
+             <div className="relative">
+                <button
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className={`h-[38px] w-[38px] flex items-center justify-center rounded-full transition-all shrink-0 ${isFilterOpen ? 'bg-[#8A63D2] text-white' : 'bg-[#EEE5FF] text-[#8A63D2] hover:bg-[#dcd0f5]'}`}
+                >
+                    {isFilterOpen ? <X size={18} /> : <Filter size={18} />}
+                </button>
+
+                {isFilterOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right">
+                        <div className="p-2">
+                            <p className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Time Period</p>
+                            {[
+                                { val: "7", label: "Last 7 Days" },
+                                { val: "30", label: "Last 30 Days" },
+                                { val: "90", label: "Last 3 Months" }
+                            ].map(opt => (
+                                <button
+                                    key={opt.val}
+                                    onClick={() => { setTimeFilter(opt.val); setIsFilterOpen(false); }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${timeFilter === opt.val ? 'text-purple-600 font-bold bg-purple-50' : 'text-gray-700'}`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+             </div>
           </div>
         </div>
 
         {/* 2. Top Metrics Cards (Horizontally Scrollable on Mobile) */}
         <div className="col-span-1 md:col-span-4 order-2">
-            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-3 md:gap-6 md:pb-0 snap-x hide-scrollbar no-scrollbar">
+            <div className="flex overflow-x-auto gap-3 py-4 md:grid md:grid-cols-3 md:gap-6 md:py-0 snap-x hide-scrollbar no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
                 <div className="min-w-[80vw] md:min-w-0 snap-center">
                     <StatCard
                     title="Sales"
                     value={formatCurrency(metrics.sales.value)}
                     change={`${metrics.sales.change.toFixed(1)}%`}
-                    period="vs. prior 30 days"
+                    period={`vs. prior ${timeFilter} days`}
                     icon={Coins}
                     />
                 </div>
@@ -276,7 +332,7 @@ export default function DashboardPage() {
                     title="Units"
                     value={formatNumber(metrics.units.value)}
                     change={`${metrics.units.change.toFixed(1)}%`}
-                    period="vs. prior 30 days"
+                    period={`vs. prior ${timeFilter} days`}
                     icon={ShoppingBag}
                     />
                 </div>
@@ -285,7 +341,7 @@ export default function DashboardPage() {
                     title="Average Order Value"
                     value={formatCurrency(metrics.aov.value)}
                     change={`${metrics.aov.change.toFixed(1)}%`}
-                    period="vs. prior 30 days"
+                    period={`vs. prior ${timeFilter} days`}
                     icon={DollarSign}
                     />
                 </div>
