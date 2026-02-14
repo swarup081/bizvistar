@@ -1,10 +1,10 @@
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { Globe, User, ChevronDown, Search, X } from 'lucide-react'; 
+import { User, ChevronDown, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 
@@ -16,9 +16,6 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
 
   const navLinks = [
     { label: 'My Sites', href: './dashboard', hasDropdown: false },
-    { label: 'Product', href: '#product', hasDropdown: true },
-    { label: 'Solutions', href: '#solutions', hasDropdown: true },
-    { label: 'Resources', href: '#resources', hasDropdown: true },
     { label: 'Pricing', href: '/pricing', hasDropdown: false },
   ];
 
@@ -55,28 +52,44 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
 
         {/* Right: Auth & Globe */}
         <div className="flex items-center ml-6 gap-4">
-            <Globe className="w-5 h-5 text-gray-700 cursor-pointer" />
             
             {session ? (
                 <div className="relative">
-                  <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                       <User size={18} className="text-gray-500" />
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 focus:outline-none transition-transform active:scale-95"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden hover:bg-gray-200 transition-colors">
+                       <User size={18} className="text-gray-600" />
                     </div>
                   </button>
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                      <div className="p-3 text-sm text-gray-700 border-b truncate">
-                         {session.user.email}
-                      </div>
-                      <button 
-                        onClick={handleLogOut}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden"
                       >
-                         Log Out
-                      </button>
-                    </div>
-                  )}
+                        <div className="px-4 py-4 border-b border-gray-50 bg-gray-50/50">
+                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
+                           <p className="text-sm font-medium text-gray-900 truncate" title={session.user.email}>
+                             {session.user.email}
+                           </p>
+                        </div>
+                        <div className="py-2">
+                          <button
+                            onClick={handleLogOut}
+                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-2"
+                          >
+                             Log Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
             ) : (
                 <button 
@@ -147,12 +160,12 @@ const SecondaryNav = ({ filter, setFilter }) => {
 
     // UPDATED NAV ITEMS - concise labels, added keywords for filtering logic
     const navItems = [
-        { label: 'All Templates', keyword: '', href: '#all-templates' }, 
-        { label: 'Services', keyword: 'Consultant', href: '#services' }, 
-        { label: 'Store', keyword: 'Retail', href: '#store' }, 
-        { label: 'Creative', keyword: 'Portfolio', href: '#creative' }, 
-        { label: 'Community', keyword: 'Event', href: '#community' }, 
-        { label: 'Blog/Media', keyword: 'Blogger', href: '#blog' },
+        { label: 'All Templates', keyword: '', href: '#all-templates' },
+        { label: 'Restaurant', keyword: 'Restaurant', href: '#restaurant' },
+        { label: 'Store', keyword: 'Store', href: '#store' },
+        { label: 'Bakery', keyword: 'Bakery', href: '#bakery' },
+        { label: 'Jewelry', keyword: 'Jewelry', href: '#jewelry' },
+        { label: 'Portfolio', keyword: 'Portfolio', href: '#portfolio' },
     ];
     
     // Function to get filtered suggestions
@@ -331,7 +344,7 @@ const templates = [
     url: '/templates/flara',
     previewUrl: '/preview/flara',
     editor:'/editor/flara',
-    keywords: ['Retail', 'E-commerce', 'Candles', 'Handmade', 'Clean', 'Online Store', 'Clothing Boutique'],
+    keywords: ['Retail', 'E-commerce', 'Candles', 'Handmade', 'Clean', 'Store', 'Online Store', 'Clothing Boutique'],
     isRecommended: false,
   },
   {
@@ -358,7 +371,7 @@ const templates = [
     url: '/templates/frostify',
     previewUrl: '/preview/frostify',
     editor:'/editor/frostify',
-    keywords: ['Cafe', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community'],
+    keywords: ['Cafe', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community', 'Store', 'Bakery'],
     isRecommended: false,
   },
   {
@@ -367,24 +380,9 @@ const templates = [
     url: '/templates/aurora',
     previewUrl: '/preview/aurora',
     editor:'/editor/aurora',
-    keywords: ['Craft', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community'],
+    keywords: ['Craft', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community', 'Store', 'Jewelry'],
     isRecommended: false,
   }
-];
-
-// --- Static List of Vibe Pills (from get-started/2) ---
-const businessVibes = [
-    { id: 'handcrafted', label: 'Handmade' },
-    { id: 'elegant', label: 'Trendy' },
-    { id: 'cozy', label: 'Friendly' },
-    { id: 'playful', label: 'Fun' },
-    { id: 'modern', label: 'Stylish' },
-    { id: 'trusted', label: 'Reliable' },
-    { id: 'natural', label: 'Eco-Friendly' },
-    { id: 'minimal', label: 'Clean' },
-    { id: 'vintage', label: 'Modern' },
-    { id: 'luxury', label: 'Premium' },
-    { id: 'fast', label: 'Quick' },
 ];
 
 // --- Reusable Template Card Component with Hover Logic ---
@@ -393,6 +391,14 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
   const pathname = usePathname();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleStartEditing = async () => {
     setIsCreating(true);
@@ -495,7 +501,9 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
   return (
     <motion.div
       className="group max-w-xl cursor-pointer relative" 
-      whileHover="hover"
+      whileHover={!isMobile ? "hover" : undefined}
+      whileInView={isMobile ? "hover" : undefined}
+      viewport={isMobile ? { once: false, amount: 0.4 } : undefined}
       initial="initial"
       animate="initial"
     >
@@ -600,7 +608,6 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 export default function TemplatesPage() {
   const [storeName, setStoreName] = useState("Your Business");
   const [session, setSession] = useState(null);
-  const [selectedVibes, setSelectedVibes] = useState({});
   const [filter, setFilter] = useState(''); // State for the search/filter input
   const router = useRouter();
   const pathname = usePathname();
@@ -610,15 +617,6 @@ export default function TemplatesPage() {
     const storedStoreName = localStorage.getItem('storeName');
     if (storedStoreName) {
       setStoreName(storedStoreName);
-    }
-    
-    const storedVibes = localStorage.getItem('businessVibes');
-    if (storedVibes) {
-      try {
-        setSelectedVibes(JSON.parse(storedVibes));
-      } catch (e) {
-        console.error("Failed to parse stored businessVibes:", e);
-      }
     }
     
     // Set initial filter to business type
@@ -686,26 +684,6 @@ export default function TemplatesPage() {
                 </div>
             </div>
 
-            <div className="text-center">
-                {/* Business Vibe Filter Pills (Dynamically styled based on previous input) */}
-                <div className="flex flex-wrap justify-center gap-3 mt-12 mb-20">
-                   {businessVibes.map(({ id, label }) => {
-                       const isSelected = !!selectedVibes[id];
-                       return (
-                           <button 
-                               key={id}
-                               className={`px-6 py-3 border rounded-full font-semibold transition-colors duration-200 ${
-                                   isSelected
-                                       ? 'bg-gray-900 text-white border-black' 
-                                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900'
-                               }`}
-                           >
-                               {label}
-                           </button>
-                       );
-                   })}
-                </div>
-            </div>
 
             {/* Template Grid Container */}
             <div className="mt-12 grid grid-cols-1 justify-items-start gap-x-16 gap-y-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-28 pl-6">
