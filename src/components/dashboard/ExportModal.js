@@ -1,13 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { X, FileSpreadsheet, FileText, Download, Calendar, ArrowLeft } from "lucide-react";
+import { X, FileSpreadsheet, FileText, Download, Calendar, ArrowLeft, Layers } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { supabase } from "@/lib/supabaseClient";
 import { subMonths, subYears, startOfMonth, startOfYear, isAfter } from "date-fns";
 
 const REPORT_TYPES = [
+  { id: "all", label: "Full Backup (All Data)", description: "Sales, Customers, Inventory, Analytics (Excel Only)" },
   { id: "sales", label: "Sales Report", description: "Order Date, Customer, Items, Total, Payment Mode, Status" },
   { id: "customers", label: "Customer List", description: "Name, WhatsApp, Total Orders, Last Order Date" },
   { id: "inventory", label: "Inventory Report", description: "Product Name, SKU/ID, Price, Stock, Category" },
@@ -24,7 +25,7 @@ const TIME_RANGES = [
 export default function ExportModal({ isOpen, onClose }) {
   const [step, setStep] = useState(1); // 1: Format, 2: Details
   const [format, setFormat] = useState(null); // 'excel', 'pdf', 'csv'
-  const [reportType, setReportType] = useState("sales");
+  const [reportType, setReportType] = useState("all");
   const [timeRange, setTimeRange] = useState("month");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -34,6 +35,9 @@ export default function ExportModal({ isOpen, onClose }) {
   const handleFormatSelect = (fmt) => {
     setFormat(fmt);
     setStep(2);
+    // Default to "All" if Excel, else "Sales" since PDF/CSV can't do multi-sheet easily
+    if (fmt === "excel") setReportType("all");
+    else setReportType("sales");
   };
 
   const handleBack = () => {
@@ -52,7 +56,117 @@ export default function ExportModal({ isOpen, onClose }) {
     }
   };
 
-  const fetchData = async () => {
+  const fetchDataset = async (type, websiteId, startDate) => {
+      if (type === "sales") {
+        let query = supabase
+          .from("orders")
+          .select("*, customers(*), order_items(*, products(name))")
+          .eq("website_id", websiteId)
+          .gte("created_at", startDate.toISOString())
+          .order("created_at", { ascending: false });
+
+        const { data: orders, error } = await query;
+        if (error) throw error;
+
+        return {
+            data: orders.map(o => ({
+                "Order Date": new Date(o.created_at).toLocaleDateString() + " " + new Date(o.created_at).toLocaleTimeString(),
+                "Customer Name": o.customers?.name || "Guest",
+                "Items": o.order_items.map(i => `${i.quantity}x ${i.products?.name || "Unknown"}`).join(", "),
+                "Total Amount": o.total_amount,
+                "Payment Mode": o.source === "pos" ? "Cash" : "COD",
+                "Status": o.status
+            })),
+            columns: ["Order Date", "Customer Name", "Items", "Total Amount", "Payment Mode", "Status"]
+        };
+      }
+      else if (type === "customers") {
+        let query = supabase
+          .from("orders")
+          .select("customer_id, created_at, total_amount, customers(name, shipping_address)")
+          .eq("website_id", websiteId)
+          .gte("created_at", startDate.toISOString());
+
+        const { data: orders, error } = await query;
+        if (error) throw error;
+
+        const customerMap = {};
+        orders.forEach(o => {
+          if (!o.customer_id) return;
+          if (!customerMap[o.customer_id]) {
+            customerMap[o.customer_id] = {
+              name: o.customers?.name || "Unknown",
+              phone: o.customers?.shipping_address?.phone || "",
+              orders: 0,
+              lastOrder: o.created_at,
+              totalSpent: 0
+            };
+          }
+          customerMap[o.customer_id].orders += 1;
+          customerMap[o.customer_id].totalSpent += Number(o.total_amount);
+          if (new Date(o.created_at) > new Date(customerMap[o.customer_id].lastOrder)) {
+            customerMap[o.customer_id].lastOrder = o.created_at;
+          }
+        });
+
+        return {
+            data: Object.values(customerMap).map(c => ({
+                "Name": c.name,
+                "WhatsApp Number": c.phone,
+                "Total Orders": c.orders,
+                "Last Order Date": new Date(c.lastOrder).toLocaleDateString(),
+                "Total Spent": c.totalSpent
+            })),
+            columns: ["Name", "WhatsApp Number", "Total Orders", "Last Order Date", "Total Spent"]
+        };
+      }
+      else if (type === "inventory") {
+        let query = supabase
+          .from("products")
+          .select("*, categories(name)")
+          .eq("website_id", websiteId);
+
+        const { data: products, error } = await query;
+        if (error) throw error;
+
+        return {
+            data: products.map(p => ({
+                "Product Name": p.name,
+                "SKU/ID": p.id,
+                "Price": p.price,
+                "Current Stock": p.stock,
+                "Category": p.categories?.name || "Uncategorized"
+            })),
+            columns: ["Product Name", "SKU/ID", "Price", "Current Stock", "Category"]
+        };
+      }
+      else if (type === "analytics") {
+        let query = supabase
+          .from("client_analytics")
+          .select("*")
+          .eq("website_id", websiteId)
+          .gte("timestamp", startDate.toISOString())
+          .order("timestamp", { ascending: false })
+          .limit(5000);
+
+        const { data: analytics, error } = await query;
+        if (error) throw error;
+
+        return {
+            data: analytics.map(a => ({
+                "Timestamp": new Date(a.timestamp).toLocaleString(),
+                "Event": a.event_type || "Pageview",
+                "Path": a.path,
+                "Location": a.location ? `${a.location.city || ''}, ${a.location.country || ''}` : "Unknown",
+                "User Agent": a.user_agent ? (a.user_agent.length > 50 ? a.user_agent.substring(0, 50) + "..." : a.user_agent) : "Unknown"
+            })),
+            columns: ["Timestamp", "Event", "Path", "Location", "User Agent"]
+        };
+      }
+      return { data: [], columns: [] };
+  };
+
+  const handleDownload = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -69,175 +183,75 @@ export default function ExportModal({ isOpen, onClose }) {
         .maybeSingle();
 
       if (!website) throw new Error("No website found");
-
       const startDate = getStartDate();
-      let exportData = [];
-      let columns = [];
+      const fileName = `BizVistar_Report_${timeRange}_${new Date().toISOString().slice(0,10)}`;
 
-      if (reportType === "sales") {
-        // Fetch Orders
-        let query = supabase
-          .from("orders")
-          .select("*, customers(*), order_items(*, products(name))")
-          .eq("website_id", website.id)
-          .gte("created_at", startDate.toISOString())
-          .order("created_at", { ascending: false });
-
-        const { data: orders, error } = await query;
-        if (error) throw error;
-
-        exportData = orders.map(o => ({
-          "Order Date": new Date(o.created_at).toLocaleDateString() + " " + new Date(o.created_at).toLocaleTimeString(),
-          "Customer Name": o.customers?.name || "Guest",
-          "Items": o.order_items.map(i => `${i.quantity}x ${i.products?.name || "Unknown"}`).join(", "),
-          "Total Amount": o.total_amount,
-          "Payment Mode": o.source === "pos" ? "Cash" : "COD", // Logic as requested
-          "Status": o.status
-        }));
-        columns = ["Order Date", "Customer Name", "Items", "Total Amount", "Payment Mode", "Status"];
-      }
-      else if (reportType === "customers") {
-        // Fetch Customers & Their Orders (to aggregate)
-        // Since we want aggregation based on time range, we fetch orders within range + customer info
-        // Wait, for "Customer List", usually it implies ALL customers, but the prompt says "Full History" option exists.
-        // If time range is "This Month", do we show customers who ordered this month? Yes.
-
-        // Strategy: Fetch orders in range, get unique customer IDs, then aggregate.
-        // OR Fetch all customers and filter.
-        // Let's go with: Fetch Orders in range -> Aggregate -> Join Customer Details.
-
-        let query = supabase
-          .from("orders")
-          .select("customer_id, created_at, total_amount, customers(name, shipping_address)")
-          .eq("website_id", website.id)
-          .gte("created_at", startDate.toISOString());
-
-        const { data: orders, error } = await query;
-        if (error) throw error;
-
-        const customerMap = {};
-        orders.forEach(o => {
-          if (!o.customer_id) return;
-          if (!customerMap[o.customer_id]) {
-            customerMap[o.customer_id] = {
-              name: o.customers?.name || "Unknown",
-              phone: o.customers?.shipping_address?.phone || "", // Attempt extract
-              orders: 0,
-              lastOrder: o.created_at,
-              totalSpent: 0
-            };
+      // Handle "Full Backup" (Excel Only)
+      if (reportType === "all") {
+          if (format !== "excel") {
+              setError("Full Backup is only available in Excel format.");
+              setLoading(false);
+              return;
           }
-          customerMap[o.customer_id].orders += 1;
-          customerMap[o.customer_id].totalSpent += Number(o.total_amount);
-          if (new Date(o.created_at) > new Date(customerMap[o.customer_id].lastOrder)) {
-            customerMap[o.customer_id].lastOrder = o.created_at;
+
+          const [sales, customers, inventory, analytics] = await Promise.all([
+              fetchDataset("sales", website.id, startDate),
+              fetchDataset("customers", website.id, startDate),
+              fetchDataset("inventory", website.id, startDate),
+              fetchDataset("analytics", website.id, startDate)
+          ]);
+
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sales.data), "Sales");
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(customers.data), "Customers");
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(inventory.data), "Inventory");
+          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(analytics.data), "Analytics");
+
+          XLSX.writeFile(workbook, `${fileName}_FullBackup.xlsx`);
+      }
+      else {
+          // Single Report
+          const result = await fetchDataset(reportType, website.id, startDate);
+          if (!result || !result.data.length) {
+            setError("No data found for selected range.");
+            setLoading(false);
+            return;
           }
-        });
 
-        exportData = Object.values(customerMap).map(c => ({
-          "Name": c.name,
-          "WhatsApp Number": c.phone, // Extracted
-          "Total Orders": c.orders,
-          "Last Order Date": new Date(c.lastOrder).toLocaleDateString(),
-          "Total Spent": c.totalSpent
-        }));
-        columns = ["Name", "WhatsApp Number", "Total Orders", "Last Order Date", "Total Spent"];
-      }
-      else if (reportType === "inventory") {
-        // Inventory is usually a snapshot, so time range might not apply, but we'll respect it if needed?
-        // Usually inventory is "Current State". The prompt says "Current Stock".
-        // Time range is irrelevant for "Current Stock". I'll ignore time range or maybe treat it as "created_at" for products?
-        // I will just fetch current state.
+          if (format === "excel" || format === "csv") {
+            const worksheet = XLSX.utils.json_to_sheet(result.data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
 
-        let query = supabase
-          .from("products")
-          .select("*, categories(name)")
-          .eq("website_id", website.id);
+            if (format === "csv") XLSX.writeFile(workbook, `${fileName}.csv`);
+            else XLSX.writeFile(workbook, `${fileName}.xlsx`);
+          }
+          else if (format === "pdf") {
+            const doc = new jsPDF();
+            doc.text(`BizVistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
+            doc.text(`Period: ${TIME_RANGES.find(t => t.id === timeRange)?.label}`, 14, 22);
 
-        const { data: products, error } = await query;
-        if (error) throw error;
+            const tableRows = result.data.map(row => result.columns.map(col => row[col]));
 
-        exportData = products.map(p => ({
-          "Product Name": p.name,
-          "SKU/ID": p.id, // Using ID as SKU fallback
-          "Price": p.price,
-          "Current Stock": p.stock,
-          "Category": p.categories?.name || "Uncategorized"
-        }));
-        columns = ["Product Name", "SKU/ID", "Price", "Current Stock", "Category"];
-      }
-      else if (reportType === "analytics") {
-        let query = supabase
-          .from("client_analytics")
-          .select("*")
-          .eq("website_id", website.id)
-          .gte("timestamp", startDate.toISOString())
-          .order("timestamp", { ascending: false })
-          .limit(5000); // Limit for performance
+            autoTable(doc, {
+              head: [result.columns],
+              body: tableRows,
+              startY: 30,
+              styles: { fontSize: 8 },
+              headStyles: { fillColor: [138, 99, 210] } // Purple
+            });
 
-        const { data: analytics, error } = await query;
-        if (error) throw error;
-
-        exportData = analytics.map(a => ({
-          "Timestamp": new Date(a.timestamp).toLocaleString(),
-          "Event": a.event_type || "Pageview",
-          "Path": a.path,
-          "Location": a.location ? `${a.location.city || ''}, ${a.location.country || ''}` : "Unknown",
-          "User Agent": a.user_agent ? (a.user_agent.length > 50 ? a.user_agent.substring(0, 50) + "..." : a.user_agent) : "Unknown"
-        }));
-        columns = ["Timestamp", "Event", "Path", "Location", "User Agent"];
+            doc.save(`${fileName}.pdf`);
+          }
       }
 
-      return { data: exportData, columns };
-
+      onClose();
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to fetch data");
-      return null;
+      setError(err.message || "Failed to generate report");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownload = async () => {
-    const result = await fetchData();
-    if (!result || !result.data.length) {
-      if (!error) setError("No data found for selected range.");
-      return;
-    }
-
-    const { data, columns } = result;
-    const fileName = `BizVistar_${reportType}_${timeRange}_${new Date().toISOString().slice(0,10)}`;
-
-    if (format === "excel" || format === "csv") {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-
-      if (format === "csv") {
-        XLSX.writeFile(workbook, `${fileName}.csv`);
-      } else {
-        XLSX.writeFile(workbook, `${fileName}.xlsx`);
-      }
-    } else if (format === "pdf") {
-      const doc = new jsPDF();
-      doc.text(`BizVistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
-      doc.text(`Period: ${TIME_RANGES.find(t => t.id === timeRange)?.label}`, 14, 22);
-
-      const tableRows = data.map(row => columns.map(col => row[col]));
-
-      doc.autoTable({
-        head: [columns],
-        body: tableRows,
-        startY: 30,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [138, 99, 210] } // Purple
-      });
-
-      doc.save(`${fileName}.pdf`);
-    }
-
-    onClose();
   };
 
   return (
@@ -267,7 +281,7 @@ export default function ExportModal({ isOpen, onClose }) {
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 font-sans">Excel (.xlsx)</h4>
-                  <p className="text-xs text-gray-500 font-sans">Best for analysis and editing.</p>
+                  <p className="text-xs text-gray-500 font-sans">Best for analysis and full backups.</p>
                 </div>
               </button>
 
@@ -280,7 +294,7 @@ export default function ExportModal({ isOpen, onClose }) {
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 font-sans">CSV (.csv)</h4>
-                  <p className="text-xs text-gray-500 font-sans">Compatible with most tools.</p>
+                  <p className="text-xs text-gray-500 font-sans">Single report compatibility.</p>
                 </div>
               </button>
 
@@ -293,7 +307,7 @@ export default function ExportModal({ isOpen, onClose }) {
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 font-sans">PDF (.pdf)</h4>
-                  <p className="text-xs text-gray-500 font-sans">Best for printing and sharing.</p>
+                  <p className="text-xs text-gray-500 font-sans">Best for printing single reports.</p>
                 </div>
               </button>
             </div>
@@ -302,26 +316,36 @@ export default function ExportModal({ isOpen, onClose }) {
               {/* Report Type */}
               <div className="space-y-3">
                 <label className="text-sm font-bold text-gray-900 font-sans block">Report Type</label>
-                <div className="grid gap-2">
-                  {REPORT_TYPES.map((type) => (
-                    <label
-                      key={type.id}
-                      className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${reportType === type.id ? "border-purple-500 bg-purple-50" : "border-gray-200 hover:border-gray-300"}`}
-                    >
-                      <input
-                        type="radio"
-                        name="reportType"
-                        value={type.id}
-                        checked={reportType === type.id}
-                        onChange={(e) => setReportType(e.target.value)}
-                        className="mt-1 h-4 w-4 text-purple-600 accent-purple-600"
-                      />
-                      <div>
-                        <span className="block text-sm font-bold text-gray-900 font-sans">{type.label}</span>
-                        <span className="block text-xs text-gray-500 font-sans mt-0.5">{type.description}</span>
-                      </div>
-                    </label>
-                  ))}
+                <div className="grid gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                  {REPORT_TYPES.map((type) => {
+                      const isDisabled = type.id === "all" && format !== "excel";
+                      return (
+                        <label
+                        key={type.id}
+                        className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
+                            isDisabled ? "opacity-50 cursor-not-allowed bg-gray-50 border-gray-100" :
+                            reportType === type.id ? "border-purple-500 bg-purple-50" : "border-gray-200 hover:border-gray-300"
+                        }`}
+                        >
+                        <input
+                            type="radio"
+                            name="reportType"
+                            value={type.id}
+                            checked={reportType === type.id}
+                            onChange={(e) => setReportType(e.target.value)}
+                            disabled={isDisabled}
+                            className="mt-1 h-4 w-4 text-purple-600 accent-purple-600"
+                        />
+                        <div>
+                            <span className="block text-sm font-bold text-gray-900 font-sans flex items-center gap-2">
+                                {type.label}
+                                {type.id === "all" && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold uppercase">Pro</span>}
+                            </span>
+                            <span className="block text-xs text-gray-500 font-sans mt-0.5">{type.description}</span>
+                        </div>
+                        </label>
+                      );
+                  })}
                 </div>
               </div>
 

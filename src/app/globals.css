@@ -1,20 +1,295 @@
-@import 'tailwindcss';
+/* src/app/globals.css */
+@import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-heading: var(--font-playfair-display);
+  --font-body: var(--font-inter);
+  --font-handwriting: var(--font-kalam); /* <-- 1. ADD THIS LINE */
 }
+
+/* --- 6 NEW, CURATED COLOR PALETTES --- */
+.theme-warm-bakery {
+  --color-brand-bg: #FFF8F2;
+  --color-brand-text: #5D4037;
+  --color-brand-primary: #F9EBE4;
+  --color-brand-secondary: #8D6E63;
+  --color-brand-accent: #8D6E63;
+}
+
+/* 2. Strawberry Cream (Soft, sweet, "baby pink" theme) */
+.theme-strawberry-cream {
+  --color-brand-bg: #FFF7F9;
+  --color-brand-text: #502D39;
+  --color-brand-primary: #FDE8EF;
+  --color-brand-secondary: #D81B60;
+  --color-brand-accent: #D81B60;
+}
+
+/* 3. Chocolate & Caramel (Rich and decadent) */
+.theme-chocolate-caramel {
+  --color-brand-bg: #FBF6F0;
+  --color-brand-text: #4E342E;
+  --color-brand-primary: #EFEBE9;
+  --color-brand-secondary: #6D4C41;
+  --color-brand-accent: #6D4C41;
+}
+
+/* 4. Cinnamon Spice (Warm, with reddish-brown tones) */
+.theme-cinnamon-spice {
+  --color-brand-bg: #FEF6F4;
+  --color-brand-text: #6c2b18;
+  --color-brand-primary: #FAEAE5;
+  --color-brand-secondary: #A14D2A;
+  --color-brand-accent: #A14D2A;
+}
+
+/* 5. Earl Grey (Sophisticated and muted with cool tones) */
+.theme-earl-grey {
+  --color-brand-bg: #F8F9FA;
+  --color-brand-text: #495057;
+  --color-brand-primary: #E9ECEF;
+  --color-brand-secondary: #8A7F7D;
+  --color-brand-accent: #8A7F7D;
+}
+
+/* 6. Dark Roast & Gold (Luxurious dark theme) */
+.theme-dark-roast {
+  --color-brand-bg: #211A16;
+  --color-brand-text: #F3EFE9;
+  --color-brand-primary: #3D2F28;
+  --color-brand-secondary: #E4A757;
+  --color-brand-accent: #E4A757;
+}
+
+
+/* 7. Candlea Beige (From Screenshot) */
+.theme-candlea-beige {
+  --color-brand-bg: #FDFCFB;     /* Main background (light cream) */
+  --color-brand-text: #261100;    /* Main text (dark brown/black) */
+  --color-brand-primary: #FBEAE4;  /* Peach accent background */
+  --color-brand-secondary: #000000; /* Buttons and accents (black) */
+  --color-brand-accent: #000000;
+}
+
+.theme-sage-green {
+  --color-brand-bg: #F7F9F5;     /* Soft sage background */
+  --color-brand-text: #344E41;    /* Deep forest green */
+  --color-brand-primary: #EBF2E8;  /* Lighter sage */
+  --color-brand-secondary: #588157; /* Rich, earthy green */
+  --color-brand-accent: #588157;
+}
+
+/* --- ADDING NEW THEMES --- */
+
+/* 9. NEW: Lavender Bliss (Soft purple/blue) */
+.theme-lavender-bliss {
+  --color-brand-bg: #F5F3FF;
+  --color-brand-text: #43389F;
+  --color-brand-primary: #EDE9FE;
+  --color-brand-secondary: #6D28D9;
+  --color-brand-accent: #6D28D9;
+}
+
+/* 10. NEW: Mint & Chocolate (Modern, fresh) */
+.theme-mint-chocolate {
+  --color-brand-bg: #F0FDF4;
+  --color-brand-text: #374151;
+  --color-brand-primary: #DCFCE7;
+  --color-brand-secondary: #166534;
+  --color-brand-accent: #166534;
+}
+
+/* 11. NEW: Peach & Cream (Soft, elegant) */
+.theme-peach-cream {
+  --color-brand-bg: #FFF7F5;
+  --color-brand-text: #7C2D12;
+  --color-brand-primary: #FFE4DE;
+  --color-brand-secondary: #EA580C;
+  --color-brand-accent: #EA580C;
+}
+
+/* ... (add this at the end, after your other theme classes) ... */
+
+/* 12. NEW: avenix Minimal */
+.theme-avenix-minimal {
+  --color-brand-bg: #F8F7F5;     /* Light beige/off-white */
+  --color-brand-text: #1A1A1A;    /* Dark charcoal text */
+  --color-brand-primary: #FFFFFF;  /* Card backgrounds, etc. */
+  --color-brand-secondary: #000; /* Black for buttons & footer */
+  --color-brand-accent: #D81B60;    /* ADD THIS LINE: Sets accent to black */
+
+}
+
+.theme-avenix-rose {
+  --color-brand-bg: #F8F7F5;     /* Light beige/off-white */
+  --color-brand-text: #1A1A1A;    /* Dark charcoal text */
+  --color-brand-primary: #FFFFFF;  /* Card backgrounds, etc. */
+  --color-brand-secondary: #611c1c; /* Black for buttons & footer */
+  --color-brand-accent: #321010;    /* ADD THIS LINE: Sets accent to black */
+
+}
+
+/* Special rule for dark theme button text */
+.theme-avenix-minimal .btn-primary {
+  color: var(--color-brand-bg); /* Light text on dark button */
+}
+
+/* ... (keep all existing theme classes) ... */
+
+/* 14. NEW: Brewhaven Cream */
+.theme-brewhaven-cream {
+  --color-brand-bg: #FBF9F3;       /* Creamy background from PDF */
+  --color-brand-text: #4B3832;      /* Dark brown text from PDF */
+  --color-brand-primary: #F5EFE6;    /* Lighter brown/beige cards from PDF */
+  --color-brand-secondary: #8A6E63;  /* Darker accent brown from PDF */
+  --color-brand-accent: #F5A623;     /* <-- 2. FIX THIS LINE (Was #8A6E63) */
+}
+
+/* Override default italic headings for this theme */
+.theme-brewhaven-cream h1,
+.theme-brewhaven-cream h2,
+.theme-brewhaven-cream h3,
+.theme-brewhaven-cream h4,
+.theme-brewhaven-cream h5,
+.theme-brewhaven-cream h6 {
+  font-style: normal;
+}
+/* --- 13. ADD THIS NEW PALETTE ---
+  A beautiful palette with a new accent color.
+*/
+.theme-elegant-botanics {
+  --color-brand-bg: #FCFBF9;       /* Light warm off-white */
+  --color-brand-text: #4B413E;      /* Dark, warm grey-brown */
+  --color-brand-primary: #F4ECE8;    /* Light dusty rose */
+  --color-brand-secondary: #8A9A8C;  /* Muted sage green */
+  --color-brand-accent: #B98B7F;      /* Stronger dusty rose (for HEELS/HIGH) */
+}
+
+
+/* Special rule for dark theme button text */
+.theme-nixiv-minimal .btn-primary {
+  color: var(--color-brand-bg); /* Light text on dark button */
+}
+
+/* --- 16. NEW: Sunny Yellow (From Screenshot) --- */
+.theme-sunny-yellow {
+  --color-brand-bg: #FFFDE7;
+  --color-brand-text: #424242;
+  --color-brand-primary: #FFF9C4;
+  --color-brand-secondary: #FBC02D;
+  --color-brand-accent: #FBC02D;
+}
+
+/* --- 17. NEW: Earthy Sage (From Screenshot) --- */
+.theme-earthy-sage {
+  --color-brand-bg: #F7F9F5;
+  --color-brand-text: #37474F;
+  --color-brand-primary: #E8F5E9;
+  --color-brand-secondary: #A5D6A7;
+  --color-brand-accent: #A5D6A7;
+}
+
+/* --- 18. NEW: Crimson Red (From Screenshot) --- */
+.theme-crimson-red {
+  --color-brand-bg: #FFF8F8;
+  --color-brand-text: #4A0404;
+  --color-brand-primary: #FFEBEE;
+  --color-brand-secondary: #E53935;
+  --color-brand-accent: #E53935;
+}
+
+/* --- 19. NEW: Sky Blue (From Screenshot) --- */
+.theme-sky-blue {
+  --color-brand-bg: #F0F9FF;
+  --color-brand-text: #075985;
+  --color-brand-primary: #E0F2FE;
+  --color-brand-secondary: #0284C7;
+  --color-brand-accent: #0284C7;
+}
+
+/* --- 20. NEW: Olive Green (From Screenshot) --- */
+.theme-olive-green {
+  --color-brand-bg: #FBFFF0;
+  --color-brand-text: #33691E;
+  --color-brand-primary: #F4FF81;
+  --color-brand-secondary: #9E9D24;
+  --color-brand-accent: #9E9D24;
+}
+
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-mona: 'Mona Sans', sans-serif;
+  --color-brand-bg: var(--color-brand-bg);
+  --color-brand-text: var(--color-brand-text);
+  --color-brand-primary: var(--color-brand-primary);
+  --color-brand-secondary: var(--color-brand-secondary);
+  --color-brand-accent: var(--color-brand-accent); /* <-- ADD THIS LINE */
+  --font-sans: var(--font-body), sans-serif;
+  --font-serif: var(--font-heading), serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: theme(colors.brand-bg);
+    color: theme(colors.brand-text);
+    font-family: theme(fontFamily.sans);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: theme(fontFamily.serif);
+    /* --- UPDATED HEADING STYLE --- */
+    font-style: italic;
+    /* --- END OF UPDATE --- */
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-secondary font-medium;
+    color: var(--color-brand-bg); /* Smart text color */
+  }
+  .theme-dark-roast .btn-primary {
+      color: #211A16; /* Darker text for light buttons */
+}
+}
+/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
+@layer utilities {
+  .marquee {
+    animation: marquee 10s linear infinite;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+}
+
+
+/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
+@layer utilities {
+  .marquee {
+    /* --- THIS IS THE FIX --- */
+    animation: marquee 40s linear infinite; /* Changed 20s to 40s */
+    /* --- END OF FIX --- */
+    flex-shrink: 0;
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-50%); }
+  }
+}
+/* Custom scrollbar for autocomplete */
+.autocomplete-scrollbar {
+  /* For Firefox */
+  scrollbar-width: none;
+  /* For Internet Explorer and Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+.autocomplete-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* make scrollbar transparent */
 }
 
 /* Hide Scrollbar Utility */
@@ -24,9 +299,4 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: theme('fontFamily.sans');
-  font-style: normal;
 }

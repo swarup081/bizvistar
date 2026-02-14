@@ -94,7 +94,7 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center relative">
-        <div className="h-[200px] w-full relative">
+        <div className="h-[200px] w-full relative hidden md:block">
             <ResponsiveContainer width="100%" height="100%">
             <PieChart>
                 <Pie
@@ -122,6 +122,12 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
                 <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
                 <span className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-1">Visitors</span>
             </div>
+        </div>
+
+        {/* Mobile View: Simple Stats (No Chart) */}
+        <div className="flex md:hidden flex-col items-center justify-center gap-1 py-4">
+            <span className="text-4xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Visitors (Period)</span>
         </div>
 
          {/* Total Visitors Section */}

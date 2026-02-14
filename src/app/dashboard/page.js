@@ -10,6 +10,7 @@ import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
 import UserGrowthChart from "../../components/dashboard/UserGrowthChart";
 import BestSellers from "../../components/dashboard/BestSellers";
 import ExportModal from "../../components/dashboard/ExportModal";
+import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
 
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
@@ -214,6 +215,10 @@ export default function DashboardPage() {
 
     const formatNumber = (num) => new Intl.NumberFormat('en-IN').format(num);
 
+  if (loading) {
+      return <DashboardSkeleton />;
+  }
+
   return (
     <div className="font-sans not-italic pb-8">
       <div className="grid grid-cols-1 gap-4 md:gap-8 md:grid-cols-4">
@@ -309,7 +314,7 @@ export default function DashboardPage() {
         {/* Mobile: Order 4 (Last) */}
         {/* Desktop: Order 3 (Left Main Col, Span 3) */}
         <div className="col-span-1 md:col-span-3 order-4 md:order-3">
-            <RecentSalesTable orders={filteredOrders} />
+            <RecentSalesTable orders={filteredOrders} isSearching={searchQuery.length > 0} />
         </div>
 
       </div>
