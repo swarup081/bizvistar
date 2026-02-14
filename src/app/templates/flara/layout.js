@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
