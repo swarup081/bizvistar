@@ -6,6 +6,7 @@ import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
+import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X } from 'lucide-react';
 
 function CartLayout({ children, serverData, websiteId }) {

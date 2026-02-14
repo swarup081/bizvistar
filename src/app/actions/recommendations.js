@@ -73,7 +73,6 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         .from('products')
         .select('*')
         .eq('website_id', websiteId);
-        // Removed order by ID to allow shuffle later if scores match
         
     if (!allProducts || allProducts.length === 0) return [];
 
@@ -91,68 +90,110 @@ export async function fetchSuggestedProducts(websiteId, currentProduct, minLimit
         }
     } catch (e) { /* ignore */ }
 
-    // 5. Scoring & Candidates
+    // 5. Scoring & Categorization
     const candidates = allProducts.filter(p => String(p.id) !== String(currentProduct.id));
     if (candidates.length === 0) return [];
 
     const categoryId = currentProduct.category_id || currentProduct.category;
     
-    const scored = candidates.map(p => {
+    const highRelevance = [];
+    const discovery = [];
+
+    candidates.forEach(p => {
         let score = 0;
 
-        // Map image URL for frontend consistency
+        // Map image
         if (p.image_url && !p.image) p.image = p.image_url;
 
-        // --- SCORING WEIGHTS ---
+        // Scoring Factors
+        let isRelevant = false;
 
-        // 1. Pinned (Highest Priority) - +10,000
-        if (prioritizedIds.includes(String(p.id))) score += 10000;
-
-        // 2. Also Bought (High Relevance) - +5,000 to +100
-        const boughtIdx = alsoBoughtIds.indexOf(p.id);
-        if (boughtIdx !== -1) {
-            // Decay score based on rank (0 is best)
-            score += 5000 - (boughtIdx * 100);
+        // Pinned
+        if (prioritizedIds.includes(String(p.id))) {
+            score += 10000;
+            isRelevant = true;
         }
 
-        // 3. Global Best Seller (Medium-High Relevance) - +2,500 to +50
+        // Also Bought
+        const boughtIdx = alsoBoughtIds.indexOf(p.id);
+        if (boughtIdx !== -1) {
+            score += 5000 - (boughtIdx * 100);
+            isRelevant = true;
+        }
+
+        // Global Best Seller
         const globalIdx = globalBestSellerIds.indexOf(p.id);
         if (globalIdx !== -1) {
             score += 2500 - (globalIdx * 50);
+            isRelevant = true;
         }
 
-        // 4. Same Category (Contextual Relevance) - +1,000
-        // Reduced from previous step to ensure Sales signals can override it,
-        // BUT we still want it high enough to beat random "In Stock" items.
-        // Wait, user said "fix recommendation model based on user previous buying, top product, pushed product and category and random".
-        // My previous logic was Category + Random.
-        // The user wants ALL signals.
-        // Category should be a strong signal, but maybe not stronger than "Also Bought".
-        // Also Bought (5000) > Best Seller (2500) > Category (1000) > In Stock (500) > Random (0-1).
+        // Same Category
+        if (String(p.category_id) === String(categoryId)) {
+            score += 1000;
+            isRelevant = true;
+        }
 
-        if (String(p.category_id) === String(categoryId)) score += 1000;
-
-        // 5. Stock (Prefer In-Stock items) - +500
+        // Stock
         const stock = p.stock === -1 ? 999999 : p.stock;
         if (stock > 0) score += 500;
 
-        // 6. Randomness (Tie-breaker) - 0 to 100
-        // Use random to shuffle items with equal scores (e.g., items that are just "In Stock" but no sales)
+        // Random Tie-breaker
         score += Math.random() * 100;
 
-        return { ...p, score };
+        p.score = score;
+
+        if (isRelevant) {
+            highRelevance.push(p);
+        } else {
+            discovery.push(p);
+        }
     });
 
-    // Sort by score descending
-    scored.sort((a, b) => b.score - a.score);
+    // Sort buckets
+    highRelevance.sort((a, b) => b.score - a.score);
+    discovery.sort((a, b) => b.score - a.score);
 
-    // Limit Result
-    let result = scored;
-    if (result.length > maxLimit) {
-        result = result.slice(0, maxLimit);
+    // Build Mixed Result
+    // Goal: 50% Relevant / 50% Discovery if possible
+    // But prioritize Relevant if Discovery is weak/empty
+
+    const finalResult = [];
+    const halfLimit = Math.ceil(maxLimit / 2);
+
+    // 1. Take up to 50% from High Relevance
+    const relevantSlice = highRelevance.slice(0, halfLimit);
+    finalResult.push(...relevantSlice);
+
+    // 2. Take up to 50% from Discovery (Random/Other)
+    const discoveryNeeded = maxLimit - finalResult.length;
+    const discoverySlice = discovery.slice(0, discoveryNeeded);
+    finalResult.push(...discoverySlice);
+
+    // 3. If we still have space and High Relevance has more, fill it up
+    if (finalResult.length < maxLimit) {
+        const remainingRelevant = highRelevance.slice(halfLimit);
+        const needed = maxLimit - finalResult.length;
+        finalResult.push(...remainingRelevant.slice(0, needed));
     }
 
-    // Ensure minLimit (if possible) is handled by slice logic implicitly (we return up to maxLimit, or all if less).
+    // 4. If still space, fill with any remaining Discovery
+    if (finalResult.length < maxLimit) {
+        const remainingDiscovery = discovery.slice(discoveryNeeded);
+        const needed = maxLimit - finalResult.length;
+        finalResult.push(...remainingDiscovery.slice(0, needed));
+    }
 
-    return result;
+    // 5. Shuffle final result to mix them visually?
+    // Or keep them sorted by score?
+    // User requested "random and all", implies a mix.
+    // Let's shuffle the final set so "Best" isn't always first if we want discovery.
+    // But usually "You might like" implies relevance first.
+    // Let's keep sorted by score for quality, but since we forced Discovery items in, they will be there.
+    // Actually, re-sorting by score might push Discovery items to the end if their score is low.
+    // We want them interleaved or visible.
+    // Let's just return the constructed list (Relevant first, then Discovery).
+    // Or shuffle. Let's shuffle to make it look "organic".
+
+    return finalResult.sort(() => Math.random() - 0.5);
 }
