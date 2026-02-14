@@ -143,7 +143,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
           const currentQty = existing ? existing.quantity : 0;
           const maxStock = product.stock === -1 ? Infinity : product.stock;
           
-          if (currentQty + 1 > maxStock) {
+          // Ensure we don't block adding if stock is unlimited (-1)
+          if (product.stock !== -1 && currentQty + 1 > maxStock) {
               alert("Cannot add more items. Out of stock.");
               return prev;
           }
@@ -163,7 +164,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
               
               const newQ = p.quantity + delta;
               
-              if (newQ > maxStock) {
+              // Only block if stock is finite
+              if (product?.stock !== -1 && newQ > maxStock) {
                   // Optionally show toast/alert
                   return p; 
               }
