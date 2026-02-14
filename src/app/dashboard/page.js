@@ -4,13 +4,16 @@ import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter, X } from "lucid
 import { supabase } from "@/lib/supabaseClient";
 import { subDays, isAfter, isBefore } from "date-fns";
 import Fuse from "fuse.js";
+import dynamic from 'next/dynamic';
 
-import StatCard from "../../components/dashboard/StatCard";
-import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
-import UserGrowthChart from "../../components/dashboard/UserGrowthChart";
-import BestSellers from "../../components/dashboard/BestSellers";
-import ExportModal from "../../components/dashboard/ExportModal";
 import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
+
+// Dynamic Imports to avoid SSR issues with heavy libraries (Recharts, jsPDF)
+const StatCard = dynamic(() => import("../../components/dashboard/StatCard"), { ssr: false });
+const RecentSalesTable = dynamic(() => import("../../components/dashboard/RecentSalesTable"), { ssr: false });
+const UserGrowthChart = dynamic(() => import("../../components/dashboard/UserGrowthChart"), { ssr: false });
+const BestSellers = dynamic(() => import("../../components/dashboard/BestSellers"), { ssr: false });
+const ExportModal = dynamic(() => import("../../components/dashboard/ExportModal"), { ssr: false });
 
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
@@ -63,18 +66,22 @@ export default function DashboardPage() {
             return;
         }
 
-        const fuse = new Fuse(data.orders, {
-            keys: [
-                "id",
-                "customers.name",
-                "total_amount",
-                "status"
-            ],
-            threshold: 0.3
-        });
-
-        const result = fuse.search(searchQuery);
-        setFilteredOrders(result.map(r => r.item));
+        try {
+            const fuse = new Fuse(data.orders, {
+                keys: [
+                    "id",
+                    "customers.name",
+                    "total_amount",
+                    "status"
+                ],
+                threshold: 0.3
+            });
+            const result = fuse.search(searchQuery);
+            setFilteredOrders(result.map(r => r.item));
+        } catch (e) {
+            console.error("Search Error", e);
+            setFilteredOrders(data.orders);
+        }
     }, [searchQuery, data.orders]);
 
     // Recalculate Metrics based on Time Filter
