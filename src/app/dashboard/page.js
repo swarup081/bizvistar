@@ -15,6 +15,7 @@ import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
     const [loading, setLoading] = useState(true);
+    const [analyticsLoading, setAnalyticsLoading] = useState(true);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [ownerName, setOwnerName] = useState("");
@@ -47,7 +48,7 @@ export default function DashboardPage() {
         const cachedName = localStorage.getItem('bizvistar_owner_name');
         if (cachedName) setOwnerName(cachedName);
 
-        fetchDashboardData();
+        fetchCoreData();
     }, []);
 
     // Filter Logic (Search)
@@ -122,7 +123,7 @@ export default function DashboardPage() {
     }, [timeFilter, data.orders, data.orderItems]);
 
 
-    const fetchDashboardData = async () => {
+    const fetchCoreData = async () => {
         setLoading(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -139,33 +140,38 @@ export default function DashboardPage() {
 
             if (!website) {
                 setLoading(false);
+                setAnalyticsLoading(false);
                 return;
             }
 
-            // Fetch Owner Name
-            const { data: onboarding } = await supabase
-                .from("onboarding_data")
-                .select("owner_name")
-                .eq("website_id", website.id)
-                .maybeSingle();
+            // Parallel Request: Core Data
+            const [onboardingRes, ordersRes] = await Promise.all([
+                supabase
+                    .from("onboarding_data")
+                    .select("owner_name")
+                    .eq("website_id", website.id)
+                    .maybeSingle(),
+                supabase
+                    .from("orders")
+                    .select("*")
+                    .eq("website_id", website.id)
+                    .neq("status", "canceled")
+                    .order("created_at", { ascending: false })
+                    .limit(500)
+            ]);
 
-            if (onboarding?.owner_name) {
-                setOwnerName(onboarding.owner_name);
-                localStorage.setItem('bizvistar_owner_name', onboarding.owner_name);
+            // Handle Onboarding
+            if (onboardingRes.data?.owner_name) {
+                setOwnerName(onboardingRes.data.owner_name);
+                localStorage.setItem('bizvistar_owner_name', onboardingRes.data.owner_name);
             }
 
-            const { data: orders, error: ordersError } = await supabase
-                .from("orders")
-                .select("*")
-                .eq("website_id", website.id)
-                .neq("status", "canceled") 
-                .order("created_at", { ascending: false })
-                .limit(500);
+            const orders = ordersRes.data || [];
+            if (ordersRes.error) console.error("Orders Error:", ordersRes.error);
 
-            if (ordersError) throw ordersError;
-            
-            const orderIds = (orders || []).map(o => o.id);
-            const customerIds = [...new Set((orders || []).map(o => o.customer_id).filter(Boolean))];
+            // Fetch Related Data for Orders
+            const orderIds = orders.map(o => o.id);
+            const customerIds = [...new Set(orders.map(o => o.customer_id).filter(Boolean))];
 
             const [
                 { data: customersRes },
@@ -186,12 +192,12 @@ export default function DashboardPage() {
             const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
             const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
 
-            const enrichedOrders = (orders || []).map(o => ({
+            const enrichedOrders = orders.map(o => ({
                 ...o,
                 customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' }
             }));
 
-            const ordersDateMap = (orders || []).reduce((acc, o) => ({...acc, [o.id]: o.created_at}), {});
+            const ordersDateMap = orders.reduce((acc, o) => ({...acc, [o.id]: o.created_at}), {});
             
             const enrichedItems = items.map(i => ({
                 ...i,
@@ -199,12 +205,38 @@ export default function DashboardPage() {
                 orders: { created_at: ordersDateMap[i.order_id] } 
             }));
 
+            // Set Initial Core Data
+            setData(prev => ({
+                ...prev,
+                orders: enrichedOrders,
+                orderItems: enrichedItems,
+                customers: customers || []
+            }));
+            setFilteredOrders(enrichedOrders);
+
+            // Core Data Loaded - Hide Skeleton
+            setLoading(false);
+
+            // Start Analytics Fetch (Non-blocking)
+            fetchAnalyticsData(website.id);
+
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+            setLoading(false);
+            setAnalyticsLoading(false);
+        }
+    };
+
+    const fetchAnalyticsData = async (websiteId) => {
+        setAnalyticsLoading(true);
+        try {
+            // Optimized: Fetch fewer rows, select only needed columns
             const { data: analyticsEvents } = await supabase
                 .from("client_analytics")
                 .select("timestamp, location")
-                .eq("website_id", website.id)
+                .eq("website_id", websiteId)
                 .order("timestamp", { ascending: false })
-                .limit(5000);
+                .limit(2000); // Reduced from 5000 to 2000 for performance balance
 
             const visitors = (analyticsEvents || []).map(e => ({
                 timestamp: e.timestamp,
@@ -213,21 +245,16 @@ export default function DashboardPage() {
 
             const uniqueVisitorsAllTime = new Set(visitors.map(v => v.visitorId)).size;
 
-            // Initial Metrics Calculation (Default 30 days)
-            // Logic moved to useEffect dependent on timeFilter, but we need initial data set
-            setData({ 
-                orders: enrichedOrders, 
-                orderItems: enrichedItems, 
-                customers: customers || [],
+            setData(prev => ({
+                ...prev,
                 visitors: visitors,
                 totalVisitorsCount: uniqueVisitorsAllTime 
-            });
-            setFilteredOrders(enrichedOrders);
+            }));
 
         } catch (error) {
-            console.error("Error fetching dashboard data:", error);
+            console.error("Error fetching analytics:", error);
         } finally {
-            setLoading(false);
+            setAnalyticsLoading(false);
         }
     };
 
@@ -357,6 +384,7 @@ export default function DashboardPage() {
                  <UserGrowthChart
                      visitors={data.visitors}
                      totalVisitorsCount={data.totalVisitorsCount}
+                     isLoading={analyticsLoading}
                  />
              </div>
 
