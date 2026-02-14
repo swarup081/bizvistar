@@ -529,7 +529,7 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
               boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
             },
             hover: {
-              x: [-25, 45, -30],
+              x: isMobile ? [-25, 10, -55] : [-25, 45, -30],
               zIndex: [0, 0, 20],
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
               transition: {
