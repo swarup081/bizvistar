@@ -6,6 +6,7 @@ import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2,
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
+import { notifyLowStock } from '@/app/actions/productStockActions';
 
 export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId, productToEdit }) {
   const [loading, setLoading] = useState(false);
@@ -169,6 +170,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         variants: cleanVariants
       };
 
+      let productId = productToEdit ? productToEdit.id : null;
+
       if (productToEdit) {
           const { error } = await supabase
             .from('products')
@@ -178,14 +181,22 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
           if (error) throw new Error(error.message);
 
       } else {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('products')
-            .insert(payload);
+            .insert(payload)
+            .select('id')
+            .single();
 
           if (error) throw new Error(error.message);
+          if (data) productId = data.id;
       }
 
       await syncWebsiteDataClient(websiteId);
+
+      // Trigger Notification if Low Stock via Server Action
+      if (productId && finalStock !== -1 && finalStock <= 5) {
+          await notifyLowStock(productId);
+      }
 
       onProductAdded();
       onClose();

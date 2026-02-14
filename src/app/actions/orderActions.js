@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createNotification } from '@/lib/notificationUtils';
 
 // Initialize Supabase Admin Client
 const supabaseAdmin = createClient(
@@ -159,6 +160,30 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
                 .update({ stock: newStock })
                 .eq('id', productData.id);
             stockUpdateMap.set(productData.id, newStock);
+
+            // Notification: Low Stock or Out of Stock
+            if (newStock <= 5) {
+                const type = newStock === 0 ? 'out_of_stock' : 'low_stock';
+                const title = newStock === 0 ? 'Out of Stock Alert' : 'Low Stock Alert';
+                const message = `${productData.name} is ${newStock === 0 ? 'out of stock' : 'running low'} (${newStock} remaining).`;
+
+                // Check if a similar unread notification exists to avoid spam (Optional, but good UX)
+                // Since this runs on server, we can query.
+                // However, for speed, we might just insert. The UI can group.
+                // Let's just insert for now as requested "alert popup... if stock is low".
+
+                await createNotification({
+                    websiteId,
+                    type,
+                    title,
+                    message,
+                    data: {
+                        product_id: productData.id,
+                        product_name: productData.name,
+                        current_stock: newStock
+                    }
+                });
+            }
         }
 
       } else {
@@ -207,6 +232,19 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
     if (stockUpdateMap.size > 0) {
         await syncStockToJSON(websiteId, stockUpdateMap);
     }
+
+    // Notification: New Order
+    await createNotification({
+        websiteId,
+        type: 'new_order',
+        title: 'New Order Received',
+        message: `New order #${order.id} from ${customerDetails.firstName} ${customerDetails.lastName} - ₹${calculatedTotal}`,
+        data: {
+            order_id: order.id,
+            amount: calculatedTotal,
+            customer_name: `${customerDetails.firstName} ${customerDetails.lastName}`
+        }
+    });
 
     return { success: true, orderId: order.id };
 
