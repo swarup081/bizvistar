@@ -8,10 +8,12 @@ import StatCard from "../../components/dashboard/StatCard";
 import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
 import UserGrowthChart from "../../components/dashboard/UserGrowthChart";
 import BestSellers from "../../components/dashboard/BestSellers";
+import ExportModal from "../../components/dashboard/ExportModal";
 
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
     const [loading, setLoading] = useState(true);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [metrics, setMetrics] = useState({
         sales: { value: 0, change: 0, trend: 'neutral' },
         units: { value: 0, change: 0, trend: 'neutral' },
@@ -21,8 +23,8 @@ export default function DashboardPage() {
         orders: [],
         orderItems: [],
         customers: [],
-        visitors: [], // Timestamp-only objects from client_analytics
-        totalVisitorsCount: 0 // All time unique count
+        visitors: [],
+        totalVisitorsCount: 0
     });
 
     useEffect(() => {
@@ -54,7 +56,6 @@ export default function DashboardPage() {
                 return;
             }
 
-            // --- 1. Fetch Orders (Limit 500) ---
             const { data: orders, error: ordersError } = await supabase
                 .from("orders")
                 .select("*")
@@ -65,7 +66,6 @@ export default function DashboardPage() {
 
             if (ordersError) throw ordersError;
             
-            // --- 2. Fetch Related Order Data ---
             const orderIds = (orders || []).map(o => o.id);
             const customerIds = [...new Set((orders || []).map(o => o.customer_id).filter(Boolean))];
 
@@ -80,7 +80,6 @@ export default function DashboardPage() {
             const customers = customersRes || [];
             let items = itemsRes || [];
 
-            // --- 3. Fetch Products ---
             const productIds = [...new Set(items.map(i => i.product_id))];
             const { data: products } = productIds.length > 0 
                 ? await supabase.from('products').select('id, name, image_url, price').in('id', productIds)
@@ -89,7 +88,6 @@ export default function DashboardPage() {
             const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
             const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
 
-            // Join Data in Memory
             const enrichedOrders = (orders || []).map(o => ({
                 ...o,
                 customers: customersMap[o.customer_id] || { name: 'Unknown', email: '' }
@@ -103,16 +101,6 @@ export default function DashboardPage() {
                 orders: { created_at: ordersDateMap[i.order_id] } 
             }));
 
-            // --- 4. Fetch Traffic (Visitors) ---
-            // For "Traffic vs Total": 
-            // Total = All time unique visitors.
-            // Period = Unique visitors in that period.
-            // We'll fetch recent analytics events to calculate period traffic.
-            // And we'll try to get a total count.
-            // Since counting distinct jsonb fields is hard in simple Supabase query, we will rely on client-side counting of a fetched sample for the *chart* (Period Traffic).
-            // For "Total", we might just count rows as a proxy if we can't do distinct, OR if `visitor_id` is reliable, we accept that for now we only know the total of what we fetch.
-            // Actually, let's fetch last 5000 analytics events. That should cover "Week/Month" traffic well. "Year" might be truncated but acceptable for dashboard v1.
-            
             const { data: analyticsEvents } = await supabase
                 .from("client_analytics")
                 .select("timestamp, location")
@@ -120,22 +108,13 @@ export default function DashboardPage() {
                 .order("timestamp", { ascending: false })
                 .limit(5000);
 
-            // Extract visitors with timestamps
-            // Structure: location: { visitor_id: '...' }
             const visitors = (analyticsEvents || []).map(e => ({
                 timestamp: e.timestamp,
                 visitorId: e.location?.visitor_id || e.location?.ip || 'anon'
             }));
 
-            // Calculate "Total Visitors" (All time estimate based on fetch limit or just rows count if we assume 1 visit = 1 row? No, 1 row = 1 pageview usually).
-            // We need unique visitors from the fetched set at least.
-            // A true "Total All Time" requires a count query that we can't easily do distinct on JSONB without SQL function.
-            // For now, we will use the unique count from our fetched sample as "Total (in fetched history)".
-            // If the user has millions, this will be wrong, but we can't solve Big Data analytics in this step without backend changes (e.g. creating a `visitors` table or SQL view).
-            // We will proceed with the "Best Effort" unique count from the 5000 rows.
             const uniqueVisitorsAllTime = new Set(visitors.map(v => v.visitorId)).size;
 
-            // --- 5. Calculate Metrics ---
             const now = new Date();
             const thirtyDaysAgo = subDays(now, 30);
             const sixtyDaysAgo = subDays(now, 60);
@@ -203,78 +182,104 @@ export default function DashboardPage() {
     const formatNumber = (num) => new Intl.NumberFormat('en-IN').format(num);
 
   return (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-4 font-sans not-italic">
-      {/* Left Column (Main Content) */}
-      <div className="xl:col-span-3 flex flex-col gap-8">
-        {/* Greeting & Controls */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <div className="font-sans not-italic pb-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+
+        {/* 1. Header Section (Title + Controls) */}
+        <div className="col-span-1 md:col-span-4 order-1 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
-          <h1 className="text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
-          <p className="mt-1 text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
+            <h1 className="text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
+            <p className="mt-1 text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-             <div className="relative">
+
+          {/* Controls: Search, Export, Filter */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+             <div className="relative flex-1 md:flex-none">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text" 
                   placeholder="Search product..." 
-                  className="h-10 w-64 rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2]"
+                  className="h-10 w-full md:w-64 rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2]"
                 />
              </div>
-             <button className="flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 font-sans not-italic">
+
+             {/* Export Button */}
+             <button
+               onClick={() => setIsExportModalOpen(true)}
+               className="flex h-10 items-center justify-center gap-2 rounded-full border border-gray-200 bg-white px-3 md:px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 font-sans not-italic shrink-0"
+             >
                 <Upload className="h-4 w-4" />
-                Export CSV
+                <span className="hidden md:inline">Export CSV</span>
              </button>
-             <button className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all">
+
+             {/* Filter Button */}
+             <button className="h-[38px] w-[38px] flex items-center justify-center bg-[#EEE5FF] text-[#8A63D2] rounded-full hover:bg-[#dcd0f5] transition-all shrink-0">
                 <Filter size={18} />
               </button>
           </div>
         </div>
 
-        {/* Top Metrics Cards */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <StatCard 
-               title="Sales" 
-               value={formatCurrency(metrics.sales.value)} 
-               change={`${metrics.sales.change.toFixed(1)}%`} 
-               period="vs. prior 30 days" 
-               icon={Coins} 
-            />
-            <StatCard 
-               title="Units" 
-               value={formatNumber(metrics.units.value)} 
-               change={`${metrics.units.change.toFixed(1)}%`} 
-               period="vs. prior 30 days" 
-               icon={ShoppingBag} 
-            />
-            <StatCard 
-               title="Average Order Value" 
-               value={formatCurrency(metrics.aov.value)} 
-               change={`${metrics.aov.change.toFixed(1)}%`} 
-               period="vs. prior 30 days" 
-               icon={DollarSign} 
-            />
+        {/* 2. Top Metrics Cards (Horizontally Scrollable on Mobile) */}
+        <div className="col-span-1 md:col-span-4 order-2">
+            <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:pb-0 snap-x hide-scrollbar">
+                <div className="min-w-[85vw] md:min-w-0 snap-center">
+                    <StatCard
+                    title="Sales"
+                    value={formatCurrency(metrics.sales.value)}
+                    change={`${metrics.sales.change.toFixed(1)}%`}
+                    period="vs. prior 30 days"
+                    icon={Coins}
+                    />
+                </div>
+                <div className="min-w-[85vw] md:min-w-0 snap-center">
+                    <StatCard
+                    title="Units"
+                    value={formatNumber(metrics.units.value)}
+                    change={`${metrics.units.change.toFixed(1)}%`}
+                    period="vs. prior 30 days"
+                    icon={ShoppingBag}
+                    />
+                </div>
+                <div className="min-w-[85vw] md:min-w-0 snap-center">
+                    <StatCard
+                    title="Average Order Value"
+                    value={formatCurrency(metrics.aov.value)}
+                    change={`${metrics.aov.change.toFixed(1)}%`}
+                    period="vs. prior 30 days"
+                    icon={DollarSign}
+                    />
+                </div>
+            </div>
         </div>
 
-        {/* Recent Sales Table */}
-        <RecentSalesTable orders={data.orders} />
+        {/* 3. Sidebar Content (Traffic & Best Sellers) */}
+        {/* Mobile: Order 3 (Before Recent Sales), In one line (Grid cols 2) */}
+        {/* Desktop: Order 4 (Right Sidebar), Stacked (Flex col) */}
+        <div className="col-span-1 md:col-span-1 order-3 md:order-4 grid grid-cols-2 gap-4 md:flex md:flex-col md:gap-8">
+             {/* Traffic Growth */}
+             <div className="h-[300px] md:h-[400px]">
+                 <UserGrowthChart
+                     visitors={data.visitors}
+                     totalVisitorsCount={data.totalVisitorsCount}
+                 />
+             </div>
+
+             {/* Top 3 Best Sellers */}
+             <div className="h-full md:flex-1">
+                <BestSellers orderItems={data.orderItems} />
+             </div>
+        </div>
+
+        {/* 4. Recent Sales Table */}
+        {/* Mobile: Order 4 (Last) */}
+        {/* Desktop: Order 3 (Left Main Col, Span 3) */}
+        <div className="col-span-1 md:col-span-3 order-4 md:order-3">
+            <RecentSalesTable orders={data.orders} />
+        </div>
+
       </div>
 
-      {/* Right Column (Sidebar) */}
-      <div className="xl:col-span-1 flex flex-col gap-8">
-         {/* Traffic Growth (Renamed from User Growth) */}
-         <div className="h-[400px]">
-             <UserGrowthChart 
-                 visitors={data.visitors} 
-                 totalVisitorsCount={data.totalVisitorsCount} 
-             />
-         </div>
-
-         {/* Top 3 Best Sellers */}
-         <BestSellers orderItems={data.orderItems} />
-
-      
-      </div>
+      <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
     </div>
   );
 }
