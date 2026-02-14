@@ -14,6 +14,7 @@ const RecentSalesTable = dynamic(() => import("../../components/dashboard/Recent
 const UserGrowthChart = dynamic(() => import("../../components/dashboard/UserGrowthChart"), { ssr: false });
 const BestSellers = dynamic(() => import("../../components/dashboard/BestSellers"), { ssr: false });
 const ExportModal = dynamic(() => import("../../components/dashboard/ExportModal"), { ssr: false });
+const PostPaymentManager = dynamic(() => import("../../components/dashboard/PostPaymentManager"), { ssr: false });
 
 export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
@@ -285,6 +286,7 @@ export default function DashboardPage() {
 
   return (
     <div className="font-sans not-italic pb-8">
+      <PostPaymentManager />
       <div className="grid grid-cols-1 gap-4 md:gap-8 md:grid-cols-4">
 
         {/* 1. Header Section (Title + Controls) */}
