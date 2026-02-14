@@ -318,12 +318,12 @@ export default function ExportModal({ isOpen, onClose }) {
                 <label className="text-sm font-bold text-gray-900 font-sans block">Report Type</label>
                 <div className="grid gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                   {REPORT_TYPES.map((type) => {
-                      const isDisabled = type.id === "all" && format !== "excel";
+                      if (type.id === "all" && format !== "excel") return null;
+
                       return (
                         <label
                         key={type.id}
                         className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
-                            isDisabled ? "opacity-50 cursor-not-allowed bg-gray-50 border-gray-100" :
                             reportType === type.id ? "border-purple-500 bg-purple-50" : "border-gray-200 hover:border-gray-300"
                         }`}
                         >
@@ -333,7 +333,6 @@ export default function ExportModal({ isOpen, onClose }) {
                             value={type.id}
                             checked={reportType === type.id}
                             onChange={(e) => setReportType(e.target.value)}
-                            disabled={isDisabled}
                             className="mt-1 h-4 w-4 text-purple-600 accent-purple-600"
                         />
                         <div>
