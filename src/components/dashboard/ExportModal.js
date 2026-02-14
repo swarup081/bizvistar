@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { X, FileSpreadsheet, FileText, Download, Calendar, ArrowLeft } from "lucide-react";
 import * as XLSX from "xlsx";
-import { jsPDF } from "jspdf";
+import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { supabase } from "@/lib/supabaseClient";
 import { subMonths, subYears, startOfMonth, startOfYear, isAfter } from "date-fns";

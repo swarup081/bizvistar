@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { subDays, isAfter, isBefore } from "date-fns";
+import Fuse from "fuse.js";
 
 import StatCard from "../../components/dashboard/StatCard";
 import RecentSalesTable from "../../components/dashboard/RecentSalesTable";
@@ -14,6 +15,8 @@ export default function DashboardPage() {
     const [greeting, setGreeting] = useState('Good Morning');
     const [loading, setLoading] = useState(true);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [metrics, setMetrics] = useState({
         sales: { value: 0, change: 0, trend: 'neutral' },
         units: { value: 0, change: 0, trend: 'neutral' },
@@ -26,6 +29,7 @@ export default function DashboardPage() {
         visitors: [],
         totalVisitorsCount: 0
     });
+    const [filteredOrders, setFilteredOrders] = useState([]);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -35,6 +39,34 @@ export default function DashboardPage() {
         
         fetchDashboardData();
     }, []);
+
+    // Filter Logic
+    useEffect(() => {
+        if (!data.orders.length) {
+            setFilteredOrders([]);
+            return;
+        }
+
+        if (!searchQuery.trim()) {
+            setFilteredOrders(data.orders);
+            return;
+        }
+
+        // Fuzzy search configuration
+        const fuse = new Fuse(data.orders, {
+            keys: [
+                "id",
+                "customers.name",
+                "total_amount",
+                "status"
+            ],
+            threshold: 0.3
+        });
+
+        const result = fuse.search(searchQuery);
+        setFilteredOrders(result.map(r => r.item));
+    }, [searchQuery, data.orders]);
+
 
     const fetchDashboardData = async () => {
         setLoading(true);
@@ -159,6 +191,7 @@ export default function DashboardPage() {
                 visitors: visitors,
                 totalVisitorsCount: uniqueVisitorsAllTime 
             });
+            setFilteredOrders(enrichedOrders);
 
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
@@ -183,22 +216,24 @@ export default function DashboardPage() {
 
   return (
     <div className="font-sans not-italic pb-8">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:gap-8 md:grid-cols-4">
 
         {/* 1. Header Section (Title + Controls) */}
-        <div className="col-span-1 md:col-span-4 order-1 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="col-span-1 md:col-span-4 order-1 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
-            <p className="mt-1 text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
+            <h1 className="text-xl md:text-2xl font-bold text-[#111] not-italic">{greeting}, Owner!</h1>
+            <p className="mt-1 text-sm md:text-base text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
           </div>
 
           {/* Controls: Search, Export, Filter */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
              <div className="relative flex-1 md:flex-none">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text" 
-                  placeholder="Search product..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search orders..."
                   className="h-10 w-full md:w-64 rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none focus:border-[#8A63D2] focus:ring-1 focus:ring-[#8A63D2]"
                 />
              </div>
@@ -221,8 +256,8 @@ export default function DashboardPage() {
 
         {/* 2. Top Metrics Cards (Horizontally Scrollable on Mobile) */}
         <div className="col-span-1 md:col-span-4 order-2">
-            <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:grid-cols-3 md:gap-6 md:pb-0 snap-x hide-scrollbar">
-                <div className="min-w-[85vw] md:min-w-0 snap-center">
+            <div className="flex overflow-x-auto gap-3 pb-2 md:grid md:grid-cols-3 md:gap-6 md:pb-0 snap-x hide-scrollbar no-scrollbar">
+                <div className="min-w-[80vw] md:min-w-0 snap-center">
                     <StatCard
                     title="Sales"
                     value={formatCurrency(metrics.sales.value)}
@@ -231,7 +266,7 @@ export default function DashboardPage() {
                     icon={Coins}
                     />
                 </div>
-                <div className="min-w-[85vw] md:min-w-0 snap-center">
+                <div className="min-w-[80vw] md:min-w-0 snap-center">
                     <StatCard
                     title="Units"
                     value={formatNumber(metrics.units.value)}
@@ -240,7 +275,7 @@ export default function DashboardPage() {
                     icon={ShoppingBag}
                     />
                 </div>
-                <div className="min-w-[85vw] md:min-w-0 snap-center">
+                <div className="min-w-[80vw] md:min-w-0 snap-center">
                     <StatCard
                     title="Average Order Value"
                     value={formatCurrency(metrics.aov.value)}
@@ -255,9 +290,9 @@ export default function DashboardPage() {
         {/* 3. Sidebar Content (Traffic & Best Sellers) */}
         {/* Mobile: Order 3 (Before Recent Sales), In one line (Grid cols 2) */}
         {/* Desktop: Order 4 (Right Sidebar), Stacked (Flex col) */}
-        <div className="col-span-1 md:col-span-1 order-3 md:order-4 grid grid-cols-2 gap-4 md:flex md:flex-col md:gap-8">
+        <div className="col-span-1 md:col-span-1 order-3 md:order-4 grid grid-cols-2 gap-3 md:flex md:flex-col md:gap-8">
              {/* Traffic Growth */}
-             <div className="h-[300px] md:h-[400px]">
+             <div className="h-[250px] md:h-[400px]">
                  <UserGrowthChart
                      visitors={data.visitors}
                      totalVisitorsCount={data.totalVisitorsCount}
@@ -265,7 +300,7 @@ export default function DashboardPage() {
              </div>
 
              {/* Top 3 Best Sellers */}
-             <div className="h-full md:flex-1">
+             <div className="h-[250px] md:h-full md:flex-1">
                 <BestSellers orderItems={data.orderItems} />
              </div>
         </div>
@@ -274,7 +309,7 @@ export default function DashboardPage() {
         {/* Mobile: Order 4 (Last) */}
         {/* Desktop: Order 3 (Left Main Col, Span 3) */}
         <div className="col-span-1 md:col-span-3 order-4 md:order-3">
-            <RecentSalesTable orders={data.orders} />
+            <RecentSalesTable orders={filteredOrders} />
         </div>
 
       </div>
