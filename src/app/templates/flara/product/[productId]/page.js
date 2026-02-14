@@ -90,11 +90,26 @@ export default function ProductDetailPage() {
                      }
                  }
                  
-                 // Fallback
-                 const local = businessData.allProducts
-                    .filter(p => String(p.category) === String(product.category) && String(p.id) !== String(product.id))
-                    .slice(0, 4);
-                 setRelatedProducts(local);
+
+                 // Fallback (Client-Side Mix)
+                 const otherProducts = businessData.allProducts.filter(p => String(p.id) !== String(product.id));
+                 const sameCategory = otherProducts.filter(p => String(p.category) === String(product.category));
+                 const differentCategory = otherProducts.filter(p => String(p.category) !== String(product.category));
+
+                 // Mix: 2 from Category + 2 Random Others
+                 const mixed = [
+                    ...sameCategory.slice(0, 2),
+                    ...differentCategory.sort(() => 0.5 - Math.random()).slice(0, 2)
+                 ];
+
+                 // If not enough, fill up
+                 if (mixed.length < 4) {
+                     const remaining = otherProducts.filter(p => !mixed.includes(p));
+                     mixed.push(...remaining.slice(0, 4 - mixed.length));
+                 }
+
+                 setRelatedProducts(mixed.slice(0, 4));
+
              }
         };
         loadSuggestions();
