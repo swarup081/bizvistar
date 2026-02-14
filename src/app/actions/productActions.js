@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateUserSubscription } from './subscriptionUtils';
 import { getPlanLimits } from '../config/razorpay-config';
+import { createNotification } from '@/lib/notificationUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -225,6 +226,25 @@ export async function addProduct(productData) {
     if (error) throw error;
 
     await syncWebsiteData(websiteId);
+
+    // Notification: Low Stock or Out of Stock (if newly added product is low)
+    if (finalStock !== -1 && finalStock <= 5) {
+        const type = finalStock === 0 ? 'out_of_stock' : 'low_stock';
+        const title = finalStock === 0 ? 'Out of Stock Alert' : 'Low Stock Alert';
+        const message = `${productData.name} is ${finalStock === 0 ? 'out of stock' : 'running low'} (${finalStock} remaining).`;
+
+        await createNotification({
+            websiteId,
+            type,
+            title,
+            message,
+            data: {
+                product_id: data.id,
+                product_name: data.name,
+                current_stock: finalStock
+            }
+        });
+    }
 
     return { success: true, product: data };
   } catch (err) {

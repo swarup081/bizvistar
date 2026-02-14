@@ -19,6 +19,8 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import { NotificationManager } from '@/components/dashboard/notifications/NotificationManager';
+import NotificationBell from '@/components/dashboard/notifications/NotificationBell';
 // import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {
@@ -69,6 +71,7 @@ export default function DashboardLayout({ children }) {
     // Outer container:
     // - Desktop: Standard padding (p-7)
     // - Mobile: NO padding (p-0) to ensure full edge-to-edge navbar and content
+    <NotificationManager>
     <div className={`min-h-screen font-sans text-[#333333] bg-[#F3F4F6]
         ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-0 lg:p-7'} 
     `}>
@@ -112,9 +115,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Right: User Controls (Desktop) */}
         <div className="hidden lg:flex items-center gap-4">
-          <button className="p-2 rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-            <Bell size={20} />
-          </button>
+          <NotificationBell />
           <div className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm">
              <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500">
                <User size={20} />
@@ -124,6 +125,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Right: Hamburger (Mobile) */}
         <div className="flex lg:hidden items-center gap-3">
+            <NotificationBell />
             <button className="p-2 text-gray-600" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu size={24} />
             </button>
@@ -186,5 +188,6 @@ export default function DashboardLayout({ children }) {
       </main>
 
     </div>
+    </NotificationManager>
   );
 }
