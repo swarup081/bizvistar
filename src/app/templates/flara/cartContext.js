@@ -54,7 +54,8 @@ export function CartProvider({ children }) {
 
       if (existingItemIndex > -1) {
           const existingItem = prevItems[existingItemIndex];
-          if (existingItem.quantity + quantity > currentStock) {
+          // Only check stock if it's NOT unlimited (-1)
+          if (currentStock !== -1 && existingItem.quantity + quantity > currentStock) {
               alert(`Cannot add more. Only ${currentStock} left in stock.`);
               return prevItems;
           }
@@ -67,7 +68,8 @@ export function CartProvider({ children }) {
           return newItems;
       } else {
           // Add new item with variants
-          if (quantity > currentStock) {
+          // Only check stock if it's NOT unlimited (-1)
+          if (currentStock !== -1 && quantity > currentStock) {
               alert(`Cannot add more. Only ${currentStock} left in stock.`);
               return prevItems;
           }
