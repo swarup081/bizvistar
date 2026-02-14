@@ -66,15 +66,15 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm h-full flex flex-col relative">
+    <div className="rounded-2xl bg-white p-3 md:p-6 shadow-sm h-full flex flex-col relative">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
+        <h3 className="text-sm md:text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
         <div className="relative">
             <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1 md:gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
-            {labels[timeFilter]}
+            <span className="max-w-[50px] md:max-w-none truncate">{labels[timeFilter]}</span>
             <ChevronDown className="h-3 w-3 text-gray-500" />
             </button>
             {isDropdownOpen && (
@@ -125,13 +125,13 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
         </div>
 
          {/* Total Visitors Section */}
-         <div className="flex items-center gap-4 mt-2 p-3 pr-7 rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
-                <Globe className="h-5 w-5" />
+         <div className="flex items-center gap-2 md:gap-4 mt-2 p-2 md:p-3 pr-4 md:pr-7 rounded-2xl md:rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
+            <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
+                <Globe className="h-4 w-4 md:h-5 md:w-5" />
             </div>
-            <div className="flex flex-row"> 
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total<br/> Visitors</p>
-                <p className="text-lg font-bold pt-1 pl-5 text-gray-900 leading-none">{metrics.totalCount}</p>
+            <div className="flex flex-col md:flex-row md:items-center min-w-0">
+                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase tracking-wide leading-tight">Total<br className="hidden md:block"/> Visitors</p>
+                <p className="text-sm md:text-lg font-bold text-gray-900 leading-none md:pl-5 truncate">{metrics.totalCount}</p>
             </div>
          </div>
       </div>
