@@ -98,7 +98,7 @@ export const ProductCard = ({ item }) => {
         <div className={`group cursor-pointer flex flex-col gap-3 md:gap-5 h-full ${isOutOfStock ? 'opacity-75' : ''}`}>
             <div className="relative overflow-hidden aspect-[3/4] bg-[#F5F5F5]">
                 <img 
-                    src={item.image} 
+                    src={item.image || item.image_url}
                     alt={item.name} 
                     className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}`}
                 />

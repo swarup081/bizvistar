@@ -108,7 +108,7 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
             <div>
                 <a href={productUrl} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] w-full ">
                     <img 
-                        src={item.image || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
+                        src={item.image || item.image_url || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                         alt={item.name} 
                         className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}

@@ -157,7 +157,7 @@ export const ProductCard = ({ item, templateName }) => {
             <div>
                 <a href={productUrl} className="block bg-white overflow-hidden relative aspect-[4/5] rounded-xl md:rounded-2xl">
                     <img 
-                        src={item.image} 
+                        src={item.image || item.image_url}
                         alt={item.name} 
                         className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}

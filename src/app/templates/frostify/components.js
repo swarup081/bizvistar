@@ -136,7 +136,7 @@ export const ProductCard = ({ item }) => {
             <a href={productUrl} className="block flex-grow-0">
                 <div className="aspect-[4/5] overflow-hidden relative bg-[#F9F4F6]">
                     <img 
-                        src={item.image} 
+                        src={item.image || item.image_url}
                         alt={item.name} 
                         className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}`}
                     />
