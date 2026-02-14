@@ -132,7 +132,7 @@ export default function ProductDetailPage() {
                         />
                         {isOutOfStock && (
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <span className="bg-red-600 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider">
+                                <span className="bg-red-400 text-white px-6 py-2 rounded-full font-bold uppercase tracking-wider">
                                     Out of Stock
                                 </span>
                             </div>

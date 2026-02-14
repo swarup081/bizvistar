@@ -356,7 +356,7 @@ export default function AvenixPage() {
                                                 className={`w-full h-auto object-cover rounded-lg aspect-[4/5] pb-2 md:pb-6 ${item.isOOS ? 'opacity-60 grayscale' : ''}`} 
                                             />
                                             {item.isOOS && (
-                                                <div className="absolute top-2 right-2 bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold uppercase">
+                                                <div className="absolute top-2 right-2 bg-red-100 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase">
                                                     Out of Stock
                                                 </div>
                                             )}

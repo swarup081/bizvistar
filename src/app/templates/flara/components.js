@@ -89,25 +89,37 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
     const { addItem } = useCart();
     const { businessData, basePath } = useTemplateContext(); 
     
+    // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
+    const isOutOfStock = item.stock !== -1 && item.stock <= 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault(); 
         e.stopPropagation();
-        addItem(item);
+        if (!isOutOfStock) {
+            addItem(item);
+        }
     };
     
     const category = businessData.categories.find(c => c.id === item.category);
     const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
-        <div className="group text-center h-full flex flex-col justify-between border border-transparent hover:border-brand-primary/50 transition-all">
+        <div className={`group text-center h-full flex flex-col justify-between border border-transparent hover:border-brand-primary/50 transition-all ${isOutOfStock ? 'opacity-75' : ''}`}>
             <div>
                 <a href={productUrl} className="block bg-brand-primary overflow-hidden relative aspect-[4/5] w-full ">
                     <img 
-                        src={item.image || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
+                        src={item.image || item.image_url || 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'} 
                         alt={item.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'grayscale' : ''}`}
                         onError={(e) => e.target.src = 'https://placehold.co/600x750/CCCCCC/909090?text=Image+Missing'}
                     />
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="bg-red-400 text-brand-text px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-lg">
+                                Out of Stock
+                            </span>
+                        </div>
+                    )}
                 </a>
                 <div className="mt-5 px-1">
                     <h3 className="text-xl font-serif font-medium text-brand-text">
@@ -131,9 +143,14 @@ export const ProductCard = ({ item, templateName }) => { // templateName is actu
                 </a>
                 <button 
                     onClick={handleAddToCart}
-                    className="w-full text-center block bg-brand-secondary text-brand-bg px-4 py-2.5 font-semibold text-sm hover:opacity-80 transition-opacity "
+                    disabled={isOutOfStock}
+                    className={`w-full text-center block px-4 py-2.5 font-semibold text-sm transition-opacity ${
+                        isOutOfStock 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-brand-secondary text-brand-bg hover:opacity-80'
+                    }`}
                 >
-                    Add to Cart
+                    {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                 </button>
             </div>
         </div>

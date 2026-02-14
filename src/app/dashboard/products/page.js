@@ -598,17 +598,21 @@ export default function ProductsPage() {
                         paginatedProducts.map((product) => (
                         <tr 
                             key={product.id} 
-                            className="group hover:bg-gray-50/50 transition-colors cursor-pointer text-[11px] md:text-sm"
+                            className={`group transition-colors cursor-pointer text-[11px] md:text-sm ${
+                                product.stockStatus === 'Out Of Stock' ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-gray-50/50'
+                            }`}
                             onClick={() => handleViewProduct(product)}
                         >
                             <td className="py-4 pl-4 md:px-6 align-middle">
                             <div className="flex items-center gap-2 md:gap-3">
-                                <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
-                                <img src={product.image_url || 'https://via.placeholder.com/40'} alt="" className="h-full w-full object-cover" />
+                                <div className={`h-8 w-8 md:h-10 md:w-10 rounded-lg bg-gray-100 border overflow-hidden flex-shrink-0 ${
+                                    product.stockStatus === 'Out Of Stock' ? 'border-red-200' : 'border-gray-200'
+                                }`}>
+                                <img src={product.image_url || 'https://via.placeholder.com/40'} alt="" className={`h-full w-full object-cover ${product.stockStatus === 'Out Of Stock' ? 'opacity-50 grayscale' : ''}`} />
                                 </div>
                                 <div>
-                                <div className="font-medium text-gray-900 line-clamp-1">{product.name}</div>
-                                <div className="hidden md:block text-xs text-gray-400">ID: {product.id}</div>
+                                <div className={`font-medium line-clamp-1 ${product.stockStatus === 'Out Of Stock' ? 'text-red-700' : 'text-gray-900'}`}>{product.name}</div>
+                                <div className={`hidden md:block text-xs ${product.stockStatus === 'Out Of Stock' ? 'text-red-400' : 'text-gray-400'}`}>ID: {product.id}</div>
                                 </div>
                             </div>
                             </td>

@@ -128,7 +128,14 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
             return (b.sales || 0) - (a.sales || 0);
         });
     
-    pinnedItems.forEach(p => addItem(p, 'product', (p.stock !== -1 && p.stock <= 0)));
+    // EXCLUDE OOS FROM LANDING unless no other option?
+    // User requirement: "in home no need to show out of stock products"
+    // So filtering pinned items if they are OOS
+    pinnedItems.forEach(p => {
+        if (p.stock === -1 || p.stock > 0) {
+            addItem(p, 'product');
+        }
+    });
 
     if (finalItems.length >= requiredCount) return finalItems;
 
@@ -163,6 +170,8 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
     }
 
     // 4. Fallback OOS
+    // REMOVED per user request: "dont show out of stock" on home
+    /*
     if (finalItems.length < requiredCount) {
          const oosProducts = allProducts
             .filter(p => p.stock !== -1 && p.stock <= 0)
@@ -175,6 +184,7 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
              addItem(p, 'product', true);
          }
     }
+    */
 
     return finalItems.slice(0, requiredCount);
 };
@@ -206,7 +216,12 @@ export const getBestSellerItems = (businessData, requiredCount = 4) => {
         .map(id => allProducts.find(p => String(p.id) === id))
         .filter(Boolean);
     
-    pinnedItems.forEach(p => addItem(p, (p.stock !== -1 && p.stock <= 0)));
+    // Filter out OOS from pinned
+    pinnedItems.forEach(p => {
+        if (p.stock === -1 || p.stock > 0) {
+            addItem(p);
+        }
+    });
 
     if (finalItems.length >= requiredCount) return finalItems;
 
@@ -223,7 +238,8 @@ export const getBestSellerItems = (businessData, requiredCount = 4) => {
 
     available.forEach(p => addItem(p));
 
-    // 3. OOS
+    // 3. OOS - REMOVED per user request
+    /*
     if (finalItems.length < requiredCount) {
         const oos = allProducts
             .filter(p => !usedIds.has(String(p.id)))
@@ -232,6 +248,7 @@ export const getBestSellerItems = (businessData, requiredCount = 4) => {
         
         oos.forEach(p => addItem(p, true));
     }
+    */
 
     return finalItems.slice(0, requiredCount);
 };

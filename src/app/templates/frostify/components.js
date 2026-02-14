@@ -118,23 +118,35 @@ export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
     const { basePath } = useTemplateContext();
     
+    // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
+    const isOutOfStock = item.stock !== -1 && item.stock <= 0;
+
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        addItem(item);
+        if (!isOutOfStock) {
+            addItem(item);
+        }
     };
 
     const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
-        <div className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-pink-50 h-full flex flex-col">
+        <div className={`group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-pink-50 h-full flex flex-col ${isOutOfStock ? 'opacity-75' : ''}`}>
             <a href={productUrl} className="block flex-grow-0">
                 <div className="aspect-[4/5] overflow-hidden relative bg-[#F9F4F6]">
                     <img 
-                        src={item.image} 
+                        src={item.image || item.image_url} 
                         alt={item.name} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}`} 
                     />
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="bg-red-400 text-[var(--color-primary)] px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full shadow-lg">
+                                Out of Stock
+                            </span>
+                        </div>
+                    )}
                 </div>
             </a>
             <div className="p-3 md:p-5 text-center flex flex-col items-center gap-1 md:gap-2 flex-grow">
@@ -153,9 +165,14 @@ export const ProductCard = ({ item }) => {
                     </a>
                     <button
                         onClick={handleAddToCart}
-                        className="flex-1 bg-[var(--color-primary)] text-white py-2 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-secondary)] transition-colors flex items-center justify-center gap-1 md:gap-2"
+                        disabled={isOutOfStock}
+                        className={`flex-1 py-2 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1 md:gap-2 transition-colors ${
+                            isOutOfStock 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-secondary)]'
+                        }`}
                     >
-                         <ShoppingBag size={14} className="hidden md:inline" /> Add
+                         {isOutOfStock ? 'Sold Out' : <><ShoppingBag size={14} className="hidden md:inline" /> Add</>}
                     </button>
                 </div>
             </div>

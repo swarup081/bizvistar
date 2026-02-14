@@ -88,16 +88,27 @@ export const Header = () => {
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
     const { basePath } = useTemplateContext();
+    
+    // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
+    const isOutOfStock = item.stock !== -1 && item.stock <= 0;
+
     const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
-        <div className="group cursor-pointer flex flex-col gap-3 md:gap-5 h-full">
+        <div className={`group cursor-pointer flex flex-col gap-3 md:gap-5 h-full ${isOutOfStock ? 'opacity-75' : ''}`}>
             <div className="relative overflow-hidden aspect-[3/4] bg-[#F5F5F5]">
                 <img 
-                    src={item.image} 
+                    src={item.image || item.image_url} 
                     alt={item.name} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110" 
+                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}`} 
                 />
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="bg-red-600 text-[#0F1C23] px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-lg">
+                            Out of Stock
+                        </span>
+                    </div>
+                )}
             </div>
             <div className="text-center flex flex-col gap-1 md:gap-2 flex-grow">
                 <a href={productUrl} className="flex-grow">
@@ -114,10 +125,15 @@ export const ProductCard = ({ item }) => {
                         View
                     </a>
                     <button 
-                        onClick={(e) => { e.preventDefault(); addItem(item); }}
-                        className="flex-1 bg-[#0F1C23] text-white py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] hover:bg-[#D4A373] transition-colors"
+                        onClick={(e) => { e.preventDefault(); if(!isOutOfStock) addItem(item); }}
+                        disabled={isOutOfStock}
+                        className={`flex-1 py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${
+                            isOutOfStock 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-[#0F1C23] text-white hover:bg-[#D4A373]'
+                        }`}
                     >
-                        Add
+                        {isOutOfStock ? 'Sold Out' : 'Add'}
                     </button>
                 </div>
             </div>

@@ -6,6 +6,7 @@ import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2,
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
+import { notifyLowStock } from '@/app/actions/productStockActions';
 
 export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId, productToEdit }) {
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     name: '',
     price: '',
     stock: '', 
-    isUnlimited: false,
+    isUnlimited: true, // Default to Unlimited
     categoryId: '',
     description: '',
     imageUrl: '', 
@@ -46,8 +47,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
          setFormData({
             name: '',
             price: '',
-            stock: '0', 
-            isUnlimited: false,
+            stock: '', // Empty if unlimited by default
+            isUnlimited: true,
             categoryId: categories?.[0]?.id ? String(categories[0].id) : '',
             description: '',
             imageUrl: '',
@@ -62,6 +63,16 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     const { name, value, type, checked } = e.target;
     if (name === 'stock') {
         if (value.includes('-')) return; 
+        if (type !== 'checkbox') {
+             // If user types in stock, disable Unlimited
+             setFormData(prev => ({ ...prev, stock: value, isUnlimited: false }));
+             return;
+        }
+    }
+    if (name === 'isUnlimited' && checked) {
+        // If checking unlimited, clear stock input visually
+        setFormData(prev => ({ ...prev, isUnlimited: true, stock: '' }));
+        return;
     }
     setFormData(prev => ({ 
         ...prev, 
@@ -151,9 +162,13 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
     try {
       let finalStock = parseInt(formData.stock);
-      if (isNaN(finalStock)) finalStock = -1;
-      if (formData.isUnlimited) finalStock = -1;
-      if (finalStock < 0) finalStock = -1;
+      
+      // If unlimited is checked OR stock input is empty/NaN, treat as -1 (Unlimited)
+      if (formData.isUnlimited || isNaN(finalStock)) {
+          finalStock = -1;
+      }
+      // Ensure positive if finite
+      if (finalStock < 0 && finalStock !== -1) finalStock = 0;
 
       const cleanVariants = formData.variants.filter(v => v.name.trim() !== '' && v.values.trim() !== '');
 
@@ -169,6 +184,8 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         variants: cleanVariants
       };
 
+      let productId = productToEdit ? productToEdit.id : null;
+
       if (productToEdit) {
           const { error } = await supabase
             .from('products')
@@ -178,14 +195,22 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
           if (error) throw new Error(error.message);
 
       } else {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('products')
-            .insert(payload);
+            .insert(payload)
+            .select('id')
+            .single();
 
           if (error) throw new Error(error.message);
+          if (data) productId = data.id;
       }
 
       await syncWebsiteDataClient(websiteId);
+
+      // Trigger Notification if Low Stock via Server Action
+      if (productId && finalStock !== -1 && finalStock <= 5) {
+          await notifyLowStock(productId);
+      }
 
       onProductAdded();
       onClose();
