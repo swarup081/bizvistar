@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { ChevronDown, Users, Globe } from "lucide-react";
+import { ChevronDown, Users, Globe, Loader2 } from "lucide-react";
 import { isAfter, subDays, startOfYear } from "date-fns";
 
 const COLORS = ["#8A63D2", "#F3F4F6"]; // Purple and Light Gray
 
-export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 }) {
+export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0, isLoading = false }) {
   const [timeFilter, setTimeFilter] = useState("week"); // week, month, year
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -24,9 +24,6 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
      else if (timeFilter === "month") startDate = subDays(now, 30);
      else startDate = startOfYear(now);
 
-     // Visitors in period (Unique count from the passed visitors array)
-     // The passed `visitors` array already contains objects { timestamp, visitorId }.
-     // We need to count unique visitorIds within the period.
      const periodVisitorIds = new Set();
      
      visitors.forEach(v => {
@@ -37,14 +34,8 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
      });
 
      const periodCount = periodVisitorIds.size;
-     
-     // Total is totalVisitorsCount (All time)
-     // Chart: Period vs (Total - Period). 
-     // Note: If totalVisitorsCount < periodCount (due to fetch limitations or estimation), clamp it.
      const safeTotal = Math.max(totalVisitorsCount, periodCount);
      const remainingCount = safeTotal - periodCount;
-
-     // Calculate percentage of total traffic that was active in this period
      const percentageOfTotal = safeTotal > 0 ? ((periodCount / safeTotal) * 100).toFixed(1) : 0;
 
      return {
@@ -66,15 +57,15 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm h-full flex flex-col relative">
+    <div className="rounded-2xl bg-white p-3 md:p-6 shadow-sm h-full flex flex-col relative">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
+        <h3 className="text-sm md:text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
         <div className="relative">
             <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1 md:gap-2 rounded-full border border-gray-200 bg-white px-2 py-1 md:px-3 md:py-1.5 text-[10px] md:text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
-            {labels[timeFilter]}
+            <span className="max-w-[50px] md:max-w-none truncate">{labels[timeFilter]}</span>
             <ChevronDown className="h-3 w-3 text-gray-500" />
             </button>
             {isDropdownOpen && (
@@ -94,44 +85,62 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0 
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center relative">
-        <div className="h-[200px] w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-                <Pie
-                data={chartData}
-                cx="50%"
-                cy="70%" 
-                innerRadius={80}
-                outerRadius={100}
-                startAngle={180}
-                endAngle={0}
-                paddingAngle={0}
-                dataKey="value"
-                stroke="none"
-                cornerRadius={10} 
-                >
-                {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-                </Pie>
-            </PieChart>
-            </ResponsiveContainer>
-            
-            {/* Center Text */}
-            <div className="absolute inset-0 top-8 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
-                <span className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-1">Visitors</span>
+        {isLoading ? (
+            <div className="h-[200px] w-full flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-purple-200 animate-spin" />
             </div>
-        </div>
+        ) : (
+        <>
+            <div className="h-[200px] w-full relative hidden md:block">
+                <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="70%" 
+                    innerRadius={80}
+                    outerRadius={100}
+                    startAngle={180}
+                    endAngle={0}
+                    paddingAngle={0}
+                    dataKey="value"
+                    stroke="none"
+                    cornerRadius={10} 
+                    >
+                    {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                    </Pie>
+                </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Center Text */}
+                <div className="absolute inset-0 top-8 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-3xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide mt-1">Visitors</span>
+                </div>
+            </div>
+
+            {/* Mobile View: Simple Stats (No Chart) */}
+            <div className="flex md:hidden flex-col items-center justify-center gap-1 py-4">
+                <span className="text-4xl font-extrabold text-gray-900 tracking-tight">{metrics.periodCount}</span>
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Visitors (Period)</span>
+            </div>
+        </>
+        )}
 
          {/* Total Visitors Section */}
-         <div className="flex items-center gap-4 mt-2 p-3 pr-7 rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
-                <Globe className="h-5 w-5" />
+         <div className="flex items-center gap-2 md:gap-4 mt-2 p-2 md:p-3 pr-4 md:pr-7 rounded-2xl md:rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
+            <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
+                <Globe className="h-4 w-4 md:h-5 md:w-5" />
             </div>
-            <div className="flex flex-row"> 
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total<br/> Visitors</p>
-                <p className="text-lg font-bold pt-1 pl-5 text-gray-900 leading-none">{metrics.totalCount}</p>
+            <div className="flex flex-col md:flex-row md:items-center min-w-0"> 
+                <p className="text-[10px] md:text-xs text-gray-500 font-medium uppercase tracking-wide leading-tight">Total<br className="hidden md:block"/> Visitors</p>
+                {isLoading ? (
+                    <div className="h-5 w-16 bg-gray-100 rounded md:ml-5 animate-pulse"></div>
+                ) : (
+                    <p className="text-sm md:text-lg font-bold text-gray-900 leading-none md:pl-5 truncate">{metrics.totalCount}</p>
+                )}
             </div>
          </div>
       </div>

@@ -24,13 +24,14 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-export default function RecentSalesTable({ orders = [] }) {
+export default function RecentSalesTable({ orders = [], isSearching = false }) {
   const [timeFilter, setTimeFilter] = useState("week"); // week, month, year
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const router = useRouter();
 
   // Filter Logic
-  const filteredOrders = orders.filter(order => {
+  // If searching, ignore time filter to show matching results from history
+  const filteredOrders = isSearching ? orders : orders.filter(order => {
     const date = new Date(order.created_at);
     const now = new Date();
     
@@ -60,12 +61,6 @@ export default function RecentSalesTable({ orders = [] }) {
       }).format(val);
   };
 
-  const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
-          day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit'
-      });
-  };
-
   const handleManage = (orderId) => {
       router.push(`/dashboard/orders?id=${orderId}`);
   };
@@ -73,30 +68,34 @@ export default function RecentSalesTable({ orders = [] }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm h-full flex flex-col">
       <div className="mb-6 flex items-center justify-between shrink-0">
-        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">Recent Orders</h3>
-        <div className="relative">
-             <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 font-sans"
-             >
-                {labels[timeFilter]}
-                <ChevronDown className="h-4 w-4 text-gray-500" />
-             </button>
-             
-             {isDropdownOpen && (
-                 <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
-                     {Object.keys(labels).map(key => (
-                         <button
-                            key={key}
-                            onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
-                         >
-                             {labels[key]}
-                         </button>
-                     ))}
-                 </div>
-             )}
-        </div>
+        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">
+            {isSearching ? "Search Results" : "Recent Orders"}
+        </h3>
+        {!isSearching && (
+            <div className="relative">
+                <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 font-sans"
+                >
+                    {labels[timeFilter]}
+                    <ChevronDown className="h-4 w-4 text-gray-500" />
+                </button>
+                
+                {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-gray-100 z-20 overflow-hidden">
+                        {Object.keys(labels).map(key => (
+                            <button
+                                key={key}
+                                onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                            >
+                                {labels[key]}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+        )}
       </div>
 
       {/* Internal Scrolling Wrapper (Hidden overflow, width auto to fit) */}
@@ -139,7 +138,7 @@ export default function RecentSalesTable({ orders = [] }) {
             )) : (
                 <tr>
                     <td colSpan="7" className="py-8 text-center text-gray-400 text-sm">
-                        No orders found in this period.
+                        {isSearching ? "No orders match your search." : "No orders found in this period."}
                     </td>
                 </tr>
             )}

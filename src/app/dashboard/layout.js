@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/lib/logo/logoOfBizVistar';
-import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
+// import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -72,9 +72,9 @@ export default function DashboardLayout({ children }) {
     <div className={`min-h-screen font-sans text-[#333333] bg-[#F3F4F6]
         ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-0 lg:p-7'} 
     `}>
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <PostPaymentManager />
-      </Suspense>
+      </Suspense> */}
       
       {/* Header */}
       <header 
