@@ -15,7 +15,7 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
   const router = useRouter();
 
   const navLinks = [
-    { label: 'My Sites', href: '#mysites', hasDropdown: false },
+    { label: 'My Sites', href: './dashboard', hasDropdown: false },
     { label: 'Product', href: '#product', hasDropdown: true },
     { label: 'Solutions', href: '#solutions', hasDropdown: true },
     { label: 'Resources', href: '#resources', hasDropdown: true },

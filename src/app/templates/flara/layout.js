@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
@@ -256,14 +256,9 @@ function TemplateStateProvider({ children, serverData, websiteId }) {
 
 export default function FlaraLayout({ children, serverData, websiteId }) {
     return (
-        // 1. First provide Template Context (State)
         <TemplateStateProvider serverData={serverData} websiteId={websiteId}>
-            {/* 2. Then provide Cart Context (depends on Template Context) */}
             <CartProvider>
-                {/* 3. Then render the actual layout content */}
-                <FlaraContent serverData={serverData} websiteId={websiteId}>
-                    {children}
-                </FlaraContent>
+                <FlaraContent>{children}</FlaraContent>
             </CartProvider>
         </TemplateStateProvider>
     );

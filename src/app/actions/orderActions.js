@@ -192,7 +192,8 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
           order_id: order.id,
           product_id: productInfo.id,
           quantity: item.quantity,
-          price: productInfo.price
+          price: productInfo.price,
+          variants: item.selectedVariants || {} // Save selected variants
         };
     });
 
