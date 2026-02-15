@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { User, ChevronDown, Search, X } from 'lucide-react';
+import { User, ChevronDown, Search, X, LogOut, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 
@@ -50,17 +50,29 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
             <div className="h-6 w-px bg-gray-300 mx-1"></div>
         </nav>
 
-        {/* Right: Auth & Globe */}
+        {/* Right: Auth & Contact */}
         <div className="flex items-center ml-6 gap-4">
             
+            {session && (
+               <a
+                 href="https://wa.me/919999999999" // Placeholder - replace with actual number
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+               >
+                 <MessageSquare size={16} />
+                 <span>Contact Us</span>
+               </a>
+            )}
+
             {session ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center gap-2 focus:outline-none transition-transform active:scale-95"
                   >
-                    <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden hover:bg-gray-200 transition-colors">
-                       <User size={18} className="text-gray-600" />
+                    <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden hover:bg-gray-100 transition-colors shadow-sm">
+                       <User size={20} className="text-gray-700" />
                     </div>
                   </button>
 
@@ -71,20 +83,32 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden"
+                        className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden origin-top-right"
                       >
-                        <div className="px-4 py-4 border-b border-gray-50 bg-gray-50/50">
+                        <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
-                           <p className="text-sm font-medium text-gray-900 truncate" title={session.user.email}>
+                           <p className="text-sm font-bold text-gray-900 truncate" title={session.user.email}>
                              {session.user.email}
                            </p>
                         </div>
                         <div className="py-2">
+                           {/* Mobile Contact Link (visible in dropdown on small screens) */}
+                           <a
+                             href="https://wa.me/919999999999"
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="md:hidden w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                           >
+                             <MessageSquare size={18} className="text-gray-500" />
+                             Contact Support
+                           </a>
+
                           <button
                             onClick={handleLogOut}
-                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-2"
+                            className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-3"
                           >
-                             Log Out
+                             <LogOut size={18} />
+                             Sign Out
                           </button>
                         </div>
                       </motion.div>
@@ -500,10 +524,8 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
   return (
     <motion.div
-      className="group max-w-xl cursor-pointer relative" 
+      className={cn("group max-w-xl cursor-pointer relative", isMobile && "mx-auto")}
       whileHover={!isMobile ? "hover" : undefined}
-      whileInView={isMobile ? "hover" : undefined}
-      viewport={isMobile ? { once: false, amount: 0.4 } : undefined}
       initial="initial"
       animate="initial"
     >
@@ -518,9 +540,9 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       {/* Container for the visual part (iframes). */}
        <div className="relative h-[320px]">
 
-        {/* Mobile View - Positioned BEHIND the desktop view */}
+        {/* Mobile View - Positioned BEHIND the desktop view - HIDDEN ON MOBILE/TABLET */}
         <motion.div
-          className="absolute bottom-0 right-[-60px] z-0 w-[140px] h-[260px] transform overflow-hidden rounded-2xl bg-white shadow-lg p-1.5 pt-6"
+          className="hidden lg:block absolute bottom-0 right-[-60px] z-0 w-[140px] h-[260px] transform overflow-hidden rounded-2xl bg-white shadow-lg p-1.5 pt-6"
           style={{ transformOrigin: "bottom right" }}
           variants={{
             initial: {
@@ -529,7 +551,7 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
               boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
             },
             hover: {
-              x: isMobile ? [-25, 10, -55] : [-25, 45, -30],
+              x: [-25, 45, -30],
               zIndex: [0, 0, 20],
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
               transition: {
@@ -576,7 +598,10 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
 
       {/* --- Hover Info Block --- */}
-      <div className="mt-8 min-h-[140px] transform px-2 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+      <div className={cn(
+        "mt-8 min-h-[140px] transform px-2 transition-opacity duration-300 ease-in-out",
+        isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+      )}>
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 text-base leading-relaxed text-gray-600">{description}</p>
         
