@@ -55,7 +55,7 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
             
             {session && (
                <a
-                 href="https://wa.me/919999999999" // Placeholder - replace with actual number
+                 href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
                  target="_blank"
                  rel="noopener noreferrer"
                  className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
@@ -94,7 +94,7 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
                         <div className="py-2">
                            {/* Mobile Contact Link (visible in dropdown on small screens) */}
                            <a
-                             href="https://wa.me/919999999999"
+                             href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
                              target="_blank"
                              rel="noopener noreferrer"
                              className="md:hidden w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
@@ -269,10 +269,28 @@ const SecondaryNav = ({ filter, setFilter }) => {
     return (
         // Sticky at top-0 after PrimaryHeader scrolls past
         <nav className="w-full bg-white border-b border-gray-200 text-gray-700 font-sans sticky top-[0px] z-40">
-            <div className="mx-auto px-12 max-w-screen-2xl h-14 flex items-center justify-between">
+            <div className="mx-auto px-4 md:px-12 max-w-screen-2xl h-14 flex items-center justify-between gap-4">
                 
-                {/* Left Side: Navigation Links (Filters with smoother UI) */}
-                <div className="flex items-center gap-6 text-base font-medium h-full">
+                {/* Mobile Dropdown for Categories (Visible < lg) */}
+                <div className="lg:hidden flex-shrink-0 relative">
+                     <select
+                        onChange={(e) => {
+                           const selected = navItems.find(item => item.label === e.target.value);
+                           if (selected) handleCategoryClick(selected.label, selected.keyword);
+                        }}
+                        value={activeCategory || 'All Templates'}
+                        className="appearance-none bg-gray-100 text-gray-900 font-medium py-2 pl-4 pr-10 rounded-lg border-0 focus:ring-1 focus:ring-gray-300 text-sm"
+                     >
+                         {navItems.map(item => (
+                             <option key={item.label} value={item.label}>{item.label}</option>
+                         ))}
+                     </select>
+                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                </div>
+
+
+                {/* Desktop: Navigation Links (Filters with smoother UI) (Hidden < lg) */}
+                <div className="hidden lg:flex items-center gap-6 text-base font-medium h-full flex-shrink-0">
                     {/* Using motion.button and layoutId for smooth underline transition */}
                     {navItems.map((item) => (
                         <motion.button 
@@ -300,7 +318,7 @@ const SecondaryNav = ({ filter, setFilter }) => {
                 </div>
                 
                 {/* Right Side: Search/Filter (Shorter Dash and Clear Button) */}
-                <div className="relative ml-5 max-w-md w-76" ref={autocompleteRef}> 
+                <div className="relative ml-auto lg:ml-5 w-full max-w-[200px] md:max-w-md lg:w-76" ref={autocompleteRef}>
                     <div className="flex items-end">
                         <div className="relative flex-grow">
                             <Search className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -711,7 +729,7 @@ export default function TemplatesPage() {
 
 
             {/* Template Grid Container */}
-            <div className="mt-12 grid grid-cols-1 justify-items-start gap-x-16 gap-y-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-28 pl-6">
+            <div className="mt-12 grid grid-cols-1 justify-items-center gap-x-16 gap-y-12 lg:justify-items-start lg:gap-y-28 lg:pl-6">
               {filteredTemplates.map((template, index) => (
                 <TemplateCard key={`${template.title}-${index}`} {...template} />
               ))}
