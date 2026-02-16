@@ -7,13 +7,14 @@ import {
   LayoutDashboard,
   Paintbrush,
   Settings,
-  Search,
-  Check,
   Menu,
   ShoppingBag,
+  Search,
+  Check,
   Globe,
   Smartphone,
-  MousePointer2
+  MousePointer2,
+  ChevronDown
 } from 'lucide-react';
 
 const Cursor = ({ x, y, isClicking }) => (
@@ -35,43 +36,34 @@ const Cursor = ({ x, y, isClicking }) => (
 );
 
 export default function MockEditor() {
-  const [businessName, setBusinessName] = useState('My Business');
+  const [heroTitle, setHeroTitle] = useState('Handcrafted Candles');
   const [isHovered, setIsHovered] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 50, y: 50 });
+  const [cursorPos, setCursorPos] = useState({ x: 50, y: 300 });
   const [isClicking, setIsClicking] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
   const [activeTab, setActiveTab] = useState('website');
+  const [isPublished, setIsPublished] = useState(false);
 
-  // Refs for elements to target
   const containerRef = useRef(null);
-  const inputRef = useRef(null);
-  const publishBtnRef = useRef(null);
 
   // Animation Loop
   useEffect(() => {
     if (isHovered) return;
 
     let timeoutId;
+    const wait = (ms) => new Promise(resolve => timeoutId = setTimeout(resolve, ms));
 
     const runAnimation = async () => {
-      // Helper delay
-      const wait = (ms) => new Promise(resolve => timeoutId = setTimeout(resolve, ms));
-
-      // Reset State
-      setBusinessName('My Business');
+      // Reset state
+      setHeroTitle('Handcrafted Candles');
       setIsPublished(false);
-      setCursorPos({ x: 50, y: 300 }); // Start position (approx middle left)
+      setCursorPos({ x: 300, y: 300 }); // Idle position
 
       if (isHovered) return;
 
-      // 1. Move to Input
-      // We need approximate coordinates relative to container.
-      // Assuming container is 800x600 or responsive.
-      // We'll use % or fixed pixels based on the layout structure defined below.
-      // Sidebar width is roughly 250px. Input is inside sidebar.
+      // 1. Move to Sidebar Input (Title)
       await wait(1000);
       if (isHovered) return;
-      setCursorPos({ x: 120, y: 180 }); // Approx input location
+      setCursorPos({ x: 120, y: 160 });
 
       // 2. Click Input
       await wait(800);
@@ -80,238 +72,210 @@ export default function MockEditor() {
       await wait(150);
       setIsClicking(false);
 
-      // 3. Type "My Awesome Shop"
+      // 3. Type "Premium Soy Wax"
       await wait(500);
-      const targetText = "My Awesome Shop";
+      const targetText = "Premium Soy Wax";
       for (let i = 0; i <= targetText.length; i++) {
         if (isHovered) break;
-        setBusinessName(targetText.slice(0, i));
-        await wait(50 + Math.random() * 50); // Typing speed variance
+        setHeroTitle(targetText.slice(0, i));
+        await wait(50 + Math.random() * 50);
       }
 
-      // 4. Move to Publish Button (Top Right)
+      // 4. Move to "Publish" button (Top Right)
       await wait(800);
       if (isHovered) return;
-      // Container width is variable, so we might need to target an element or use high % x
-      // For now, let's assume a standard desktop width mock or use logic relative to container width
-      // If container is 100%, top right is ~90%, 40px
       setCursorPos({ x: 750, y: 40 });
 
       // 5. Click Publish
       await wait(800);
       if (isHovered) return;
       setIsClicking(true);
-      await wait(150);
-      setIsClicking(false);
+
+      // Trigger Confetti & Success State
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        disableForReducedMotion: true
+      });
       setIsPublished(true);
 
-      // Confetti
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          // We can scope confetti to canvas if needed, but default is fine
-        });
-      }
+      await wait(150);
+      setIsClicking(false);
 
-      // 6. Wait and Loop
-      await wait(3000);
-      if (!isHovered) {
-         runAnimation();
-      }
+      // 6. Wait in "Published" state
+      await wait(4000);
+
+      // 7. Reset Loop
+      if (!isHovered) runAnimation();
     };
 
     runAnimation();
-
     return () => clearTimeout(timeoutId);
   }, [isHovered]);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col"
+      className="relative w-full max-w-5xl mx-auto h-[500px] md:h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col font-sans"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* --- Simulated Browser Bar --- */}
-      <div className="h-10 bg-gray-50 border-b border-gray-200 flex items-center px-4 gap-2">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-400"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-          <div className="w-3 h-3 rounded-full bg-green-400"></div>
+      {/* --- Top Navigation (Mock) --- */}
+      <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-20">
+        <div className="flex items-center gap-4">
+           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
+           <div className="h-4 w-px bg-gray-300"></div>
+           <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+              <span>Home</span> <ChevronDown size={14} />
+           </div>
         </div>
-        <div className="flex-1 mx-4 bg-white border border-gray-200 h-6 rounded text-xs flex items-center justify-center text-gray-400 font-mono">
-          bizvistar.com/editor/new-shop
+
+        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg border border-gray-200">
+            <div className="p-1.5 bg-white shadow-sm rounded border border-gray-200 text-gray-800"><Globe size={14}/></div>
+            <div className="p-1.5 text-gray-400"><Smartphone size={14}/></div>
+        </div>
+
+        <div className="flex items-center gap-3">
+           <button className="text-sm font-semibold text-gray-500 hover:text-gray-900">Preview</button>
+           <button className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors">
+              Publish
+           </button>
         </div>
       </div>
 
-      {/* --- Main Editor Area --- */}
       <div className="flex flex-1 overflow-hidden relative">
-
-        {/* --- Animated Cursor (Only show when NOT hovered) --- */}
+        {/* Cursor Layer */}
         <AnimatePresence>
-          {!isHovered && (
-             <Cursor x={cursorPos.x} y={cursorPos.y} isClicking={isClicking} />
+          {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} isClicking={isClicking} />}
+        </AnimatePresence>
+
+        {/* Success Overlay */}
+        <AnimatePresence>
+          {isPublished && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+            >
+              <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
+                  <Check size={32} strokeWidth={3} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Your site is live!</h3>
+                <p className="text-gray-600 mb-6">Congratulations! Your changes have been published successfully.</p>
+                <div className="flex justify-center gap-3">
+                   <button className="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-lg">View Site</button>
+                   <button className="px-5 py-2.5 bg-purple-600 text-white font-semibold rounded-lg">Share</button>
+                </div>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {/* --- Sidebar --- */}
+        {/* --- Sidebar (Editor Controls) --- */}
         <div className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-10">
            {/* Sidebar Tabs */}
            <div className="flex border-b border-gray-100">
-              <button
-                className={`flex-1 py-3 flex justify-center ${activeTab === 'website' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-400'}`}
-                onClick={() => setActiveTab('website')}
-              >
-                 <LayoutDashboard size={20} />
-              </button>
-              <button
-                className={`flex-1 py-3 flex justify-center ${activeTab === 'theme' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-400'}`}
-                onClick={() => setActiveTab('theme')}
-              >
-                 <Paintbrush size={20} />
-              </button>
-              <button
-                className={`flex-1 py-3 flex justify-center ${activeTab === 'settings' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-400'}`}
-                onClick={() => setActiveTab('settings')}
-              >
-                 <Settings size={20} />
-              </button>
+              <button onClick={() => setActiveTab('website')} className={`flex-1 py-3 flex justify-center border-b-2 ${activeTab === 'website' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-400'}`}><LayoutDashboard size={18}/></button>
+              <button onClick={() => setActiveTab('theme')} className={`flex-1 py-3 flex justify-center border-b-2 ${activeTab === 'theme' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-400'}`}><Paintbrush size={18}/></button>
+              <button onClick={() => setActiveTab('settings')} className={`flex-1 py-3 flex justify-center border-b-2 ${activeTab === 'settings' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-400'}`}><Settings size={18}/></button>
            </div>
 
-           {/* Sidebar Content */}
-           <div className="p-4 space-y-6">
+           <div className="p-4 space-y-6 overflow-y-auto">
               <div>
-                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Global Settings</h3>
+                 <h3 className="text-xs font-bold text-gray-400 uppercase mb-3">Hero Section</h3>
                  <div className="space-y-3">
                     <div>
-                       <label className="block text-xs font-medium text-gray-700 mb-1">Business Name</label>
+                       <label className="text-xs font-medium text-gray-700 block mb-1">Headline</label>
                        <input
-                         ref={inputRef}
                          type="text"
-                         value={businessName}
-                         onChange={(e) => setBusinessName(e.target.value)}
-                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                         placeholder="Enter business name"
+                         value={heroTitle}
+                         onChange={(e) => setHeroTitle(e.target.value)}
+                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none"
                        />
                     </div>
                     <div>
-                       <label className="block text-xs font-medium text-gray-700 mb-1">Logo Text</label>
-                       <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-500 truncate">
-                         {businessName || 'Your Logo'}
-                       </div>
+                       <label className="text-xs font-medium text-gray-700 block mb-1">Button Text</label>
+                       <input type="text" defaultValue="Shop Collection" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 outline-none" />
                     </div>
                  </div>
               </div>
 
               <div>
-                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Sections</h3>
+                 <h3 className="text-xs font-bold text-gray-400 uppercase mb-3">Navigation</h3>
                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 text-sm text-gray-600 cursor-pointer">
-                       <ShoppingBag size={16} /> Products
+                    <div className="p-2 border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50">
+                       <Menu size={14}/> Main Menu
                     </div>
-                    <div className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 text-sm text-gray-600 cursor-pointer">
-                       <Menu size={16} /> Navigation
+                    <div className="p-2 border border-gray-200 rounded flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:bg-gray-50">
+                       <ShoppingBag size={14}/> Cart Settings
                     </div>
                  </div>
               </div>
            </div>
         </div>
 
-        {/* --- Preview Area --- */}
+        {/* --- Preview Area (Canvas) --- */}
         <div className="flex-1 bg-gray-100 p-4 md:p-8 flex justify-center overflow-hidden relative">
 
-           {/* Top Bar inside Preview */}
-           <div className="absolute top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20">
-              <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
-                    <div className="p-1.5 bg-white shadow-sm rounded border border-gray-200"><Globe size={14}/></div>
-                    <div className="p-1.5 text-gray-400"><Smartphone size={14}/></div>
-                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                 <div className="text-sm text-gray-500 hidden sm:block">Last saved just now</div>
-                 <button
-                   ref={publishBtnRef}
-                   className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all transform active:scale-95 ${isPublished ? 'bg-green-500 text-white' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
-                   onClick={() => {
-                      setIsPublished(true);
-                      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-                      setTimeout(() => setIsPublished(false), 2000);
-                   }}
-                 >
-                    {isPublished ? (
-                      <span className="flex items-center gap-1"><Check size={16}/> Live</span>
-                    ) : (
-                      "Publish"
-                    )}
-                 </button>
-              </div>
-           </div>
+           {/* Mock "Flara" Template Preview */}
+           <div className="w-full max-w-[1024px] bg-white shadow-xl rounded-lg overflow-hidden flex flex-col origin-top transform scale-[0.8] md:scale-[0.9] lg:scale-100 transition-transform theme-candlea-beige">
 
-           {/* The "Website" Preview */}
-           <div className="w-full max-w-2xl bg-white shadow-xl mt-16 rounded-t-lg overflow-hidden flex flex-col border border-gray-200/60 origin-top transform scale-[0.9] md:scale-100 transition-transform">
-              {/* Fake Website Header */}
-              <header className="h-20 border-b border-gray-100 flex items-center justify-between px-8 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight transition-all duration-300">
-                    {businessName || 'Business Name'}
-                 </h1>
-                 <nav className="hidden sm:flex gap-6 text-sm font-medium text-gray-600">
+              {/* Header */}
+              <header className="h-20 px-8 flex items-center justify-between border-b border-brand-primary/20 bg-brand-bg sticky top-0 z-10">
+                 <div className="text-xl font-bold font-serif text-brand-text tracking-wide">L U M I E R E</div>
+                 <nav className="hidden md:flex gap-8 text-sm font-medium text-brand-text/80">
                     <span>Home</span>
                     <span>Shop</span>
                     <span>About</span>
                     <span>Contact</span>
                  </nav>
+                 <div className="flex items-center gap-4 text-brand-text">
+                    <Search size={18} />
+                    <ShoppingBag size={18} />
+                 </div>
               </header>
 
-              {/* Fake Hero Section */}
-              <div className="flex-1 bg-gradient-to-br from-purple-50 via-white to-pink-50 p-12 flex items-center justify-center text-center relative overflow-hidden">
-                 {/* Decorative blobs */}
-                 <div className="absolute top-10 left-10 w-32 h-32 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                 <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-
-                 <div className="relative z-10 max-w-lg">
-                    <span className="inline-block py-1 px-3 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider mb-4">
-                       New Collection
-                    </span>
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-                       Discover Unique Handcrafted Items
-                    </h2>
-                    <p className="text-lg text-gray-600 mb-8">
-                       Shop our latest arrivals and find something special for yourself or a loved one.
-                    </p>
-                    <button className="px-8 py-3 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-transform hover:-translate-y-1 shadow-lg">
-                       Shop Now
-                    </button>
+              {/* Hero Section */}
+              <div className="relative bg-brand-bg flex-1">
+                 <div className="grid md:grid-cols-2 h-[500px]">
+                    <div className="flex flex-col justify-center px-12 md:px-16 items-start gap-6">
+                       <span className="text-xs font-bold tracking-[0.2em] text-brand-secondary uppercase">New Arrival</span>
+                       <h1 className="text-5xl md:text-6xl font-bold font-serif text-brand-text leading-[1.1]">
+                          {heroTitle}
+                       </h1>
+                       <p className="text-brand-text/70 max-w-sm leading-relaxed">
+                          Discover our new collection of soy wax candles, hand-poured with natural essential oils for a calming ambiance.
+                       </p>
+                       <button className="mt-4 px-8 py-3 bg-brand-secondary text-brand-bg text-sm font-bold tracking-widest uppercase hover:opacity-90 transition-opacity">
+                          Shop Collection
+                       </button>
+                    </div>
+                    <div className="relative h-full bg-brand-primary/30">
+                       <div className="absolute inset-0 bg-gradient-to-tr from-brand-bg to-transparent z-10"></div>
+                       {/* Placeholder for Candle Image - Using a soft gradient/shape */}
+                       <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-64 h-80 bg-[#E8DCC4] rounded-t-full shadow-2xl relative overflow-hidden">
+                             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
+                             {/* Mock Candle Jar */}
+                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-56 bg-white/90 backdrop-blur-sm rounded-t-lg border border-white/50 flex items-center justify-center">
+                                <div className="text-center">
+                                   <div className="text-xs font-serif text-gray-800 tracking-widest mb-1">LUMIERE</div>
+                                   <div className="w-8 h-px bg-gray-400 mx-auto"></div>
+                                   <div className="text-[10px] text-gray-500 mt-1 uppercase">Scented Candle</div>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
                  </div>
               </div>
 
-              {/* Fake Products Grid (Partial) */}
-              <div className="p-8 grid grid-cols-2 gap-6 bg-white">
-                 <div className="aspect-[4/5] bg-gray-100 rounded-lg animate-pulse"></div>
-                 <div className="aspect-[4/5] bg-gray-100 rounded-lg animate-pulse"></div>
-              </div>
            </div>
-
         </div>
       </div>
-
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {isPublished && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 z-50"
-          >
-             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-             <span className="font-medium">Your site is now live!</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -1,158 +1,192 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
-import { templates } from '@/lib/data/templates';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { ExternalLink } from 'lucide-react';
+import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import { templates } from '@/lib/data/templates';
 
 export default function TemplateCarousel() {
-  // Use a ref to track if we're dragging to prevent click on release
-  const isDragging = useRef(false);
+  const [width, setWidth] = useState(0);
   const carouselRef = useRef(null);
-
-  // State for manual navigation (optional if using pure scroll, but user asked for "slides one slide at a time")
   const [currentIndex, setCurrentIndex] = useState(0);
+  const controls = useAnimation();
 
-  const handleNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % templates.length);
-  }, []);
+  // Duplicate templates to ensure seamless loop
+  // We use 3 sets to ensure we have enough buffer before and after
+  const duplicatedTemplates = [...templates, ...templates, ...templates];
 
-  const handlePrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
-  }, []);
+  // Card dimensions + gap
+  // Mobile: 300px + 32px (gap-8) = 332px
+  // Desktop: 400px + 32px (gap-8) = 432px
+  const getStepSize = () => {
+     if (typeof window !== 'undefined') {
+        return window.innerWidth < 768 ? 332 : 432;
+     }
+     return 432;
+  };
 
-  // Auto-slide logic
   useEffect(() => {
+    // Auto-advance
     const interval = setInterval(() => {
-      handleNext();
-    }, 5000); // 5 seconds pause
-    return () => clearInterval(interval);
-  }, [handleNext]);
+      setCurrentIndex((prev) => {
+        // If we reached the end of the first set (original length),
+        // we logically want to go to the next one, but we handle the reset via animation complete usually.
+        // Simplified: Just keep incrementing, and if we go too far, we reset.
+        return prev + 1;
+      });
+    }, 3000);
 
-  // Calculating transform for carousel
-  // We'll show 1 main item centered, or a row.
-  // "standard carousel that slides one slide at a time"
-  // Let's go with a centered active item approach.
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle Animation
+  useEffect(() => {
+    const stepSize = getStepSize();
+    const xOffset = -(currentIndex * stepSize);
+
+    // If we have scrolled past the first set of templates, snap back to 0 (visually identical)
+    // The "first set" ends at index = templates.length
+    if (currentIndex > templates.length) {
+       // Snap instantly to index 1 (since we are visually at index 1 of the 2nd set)
+       // Wait, no.
+       // Visually: Set 1 [A, B, C] | Set 2 [A, B, C]
+       // Index 0: A1
+       // Index 1: B1
+       // Index 2: C1
+       // Index 3: A2 (Visually same as A1)
+
+       // So if currentIndex becomes 3 (templates.length), we animate to it.
+       // Then AFTER animation, we snap to 0.
+       // But useEffect triggers on change.
+
+       // Let's use a standard pattern:
+       // Animate to new index.
+       controls.start({
+          x: xOffset,
+          transition: { duration: 0.8, ease: "easeInOut" }
+       }).then(() => {
+          // Check if we need to reset
+          // Actually simpler: If we are AT the reset point, snap back.
+          // But we just animated TO it.
+          // The visual duplicate is at index `templates.length`.
+       });
+    } else {
+       controls.start({
+          x: xOffset,
+          transition: { duration: 0.8, ease: "easeInOut" }
+       });
+    }
+  }, [currentIndex, controls]);
+
+  // Handling the seamless loop reset
+  // If currentIndex === templates.length, we are showing the first item of the *second* set.
+  // This is visually identical to currentIndex === 0.
+  // So we should animate to it, and then instantly reset to 0.
+  useEffect(() => {
+     if (currentIndex === templates.length) {
+        const timeout = setTimeout(() => {
+           setCurrentIndex(0);
+           const stepSize = getStepSize();
+           controls.set({ x: 0 }); // Instant snap
+        }, 800); // Match transition duration
+        return () => clearTimeout(timeout);
+     }
+  }, [currentIndex, controls]);
+
 
   return (
-    <div className="w-full py-20 bg-gray-50 overflow-hidden relative group">
-      <div className="max-w-7xl mx-auto px-6 relative">
+    <div className="w-full py-24 bg-gray-50 border-t border-gray-100 overflow-hidden">
 
-        {/* Header */}
-        <div className="text-center mb-16">
-           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Stunning Designs for Every Business
-           </h2>
-           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Choose from our professionally designed templates. Fully customizable and optimized for conversion.
-           </p>
-        </div>
+      <div className="text-center mb-16 px-6">
+        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
+           Stunning Templates for <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Every Business</span>
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+           Choose from our professionally designed, high-converting templates.
+           Customizable in seconds.
+        </p>
+      </div>
 
-        {/* Carousel Container */}
-        <div className="relative h-[450px] flex items-center justify-center perspective-1000">
-           <AnimatePresence initial={false} mode="popLayout">
-              {templates.map((template, index) => {
-                 // Logic to determine position relative to current index
-                 // We want to show Previous, Current, Next
-                 const offset = (index - currentIndex + templates.length) % templates.length;
+      {/* Carousel Container */}
+      <div className="relative w-full overflow-hidden" ref={carouselRef}>
+        {/* Gradient Masks */}
+        <div className="absolute top-0 left-0 h-full w-24 md:w-48 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 h-full w-24 md:w-48 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none"></div>
 
-                 // Normalize offset to be -1, 0, 1 for the visible 3 items
-                 // If total is 6, logic needs care.
-                 // Simpler: Just render the active one and neighbor placeholders?
+        <motion.div
+           className="flex gap-8 px-8 md:px-[calc(50vw-200px)]" // Center initial item roughly
+           animate={controls}
+        >
+           {duplicatedTemplates.map((template, index) => (
+              <div
+                key={`${template.title}-${index}`}
+                className="w-[300px] md:w-[400px] flex-shrink-0 group"
+              >
+                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    {/* Browser Bar */}
+                    <div className="h-8 bg-gray-100 border-b border-gray-200 flex items-center px-3 gap-1.5">
+                       <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                       <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                       <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                       <div className="ml-auto text-[10px] text-gray-400 font-mono">
+                          {template.url}
+                       </div>
+                    </div>
 
-                 // Let's use a simple transform logic based on index diff
-                 let position = 0; // 0 = center, -1 = left, 1 = right, others hidden
-                 if (index === currentIndex) position = 0;
-                 else if (index === (currentIndex - 1 + templates.length) % templates.length) position = -1;
-                 else if (index === (currentIndex + 1) % templates.length) position = 1;
-                 else position = 2; // Hidden
-
-                 if (position === 2) return null;
-
-                 return (
-                    <motion.div
-                       key={template.title}
-                       className="absolute top-0 w-[600px] h-[350px] md:h-[400px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden cursor-pointer"
-                       initial={{
-                          opacity: 0,
-                          x: position === 1 ? 800 : -800,
-                          scale: 0.8,
-                          zIndex: 0
-                       }}
-                       animate={{
-                          opacity: position === 0 ? 1 : 0.4,
-                          x: position === 0 ? 0 : (position === -1 ? -450 : 450), // Offset for desktop
-                          scale: position === 0 ? 1 : 0.85,
-                          zIndex: position === 0 ? 10 : 1,
-                          filter: position === 0 ? 'blur(0px)' : 'blur(2px)'
-                       }}
-                       exit={{
-                          opacity: 0,
-                          scale: 0.8,
-                          x: position === -1 ? 800 : -800 // Exit direction?
-                       }}
-                       transition={{ duration: 0.6, ease: "easeInOut" }}
-                       onClick={() => {
-                          if (position === -1) handlePrev();
-                          if (position === 1) handleNext();
-                       }}
-                    >
-                       {/* Browser Bar */}
-                       <div className="h-8 bg-gray-100 border-b border-gray-200 flex items-center px-3 gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                          <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                          <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-                          <div className="ml-auto text-xs text-gray-400 font-medium uppercase tracking-wider">
-                             {template.title}
+                    {/* Preview Area */}
+                    <div className="relative aspect-[16/10] bg-gray-50 overflow-hidden">
+                       <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${getGradient(template.title)}`}>
+                          <div className="text-center p-6 bg-white/90 backdrop-blur-md rounded-lg shadow-sm max-w-[80%]">
+                             <h3 className="text-xl font-bold text-gray-800 capitalize mb-1">{template.title}</h3>
+                             <p className="text-xs text-gray-500 line-clamp-2">{template.description}</p>
                           </div>
                        </div>
 
-                       {/* Iframe Preview */}
-                       <div className="relative w-full h-full bg-white overflow-hidden group-hover:bg-gray-50 transition-colors">
-                          <iframe
-                             src={template.url}
-                             className="w-[1280px] h-[800px] border-0 transform origin-top-left scale-[0.47]" // Scale 600/1280 approx 0.468
-                             title={template.title}
-                             scrolling="no"
-                             loading="lazy"
-                             style={{ pointerEvents: 'none' }} // Disable interaction
-                          />
-
-                          {/* Hover Overlay for Active Item */}
-                          {position === 0 && (
-                             <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                                <Link
-                                   href={template.previewUrl}
-                                   target="_blank"
-                                   className="bg-white text-gray-900 px-6 py-3 rounded-full font-bold shadow-lg transform translate-y-4 hover:translate-y-0 transition-all flex items-center gap-2"
-                                >
-                                   Preview Site <ExternalLink size={18} />
-                                </Link>
-                             </div>
-                          )}
+                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Link
+                             href={template.previewUrl}
+                             target="_blank"
+                             className="bg-white text-gray-900 px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-gray-100 transition-colors"
+                          >
+                             Live Preview <ExternalLink size={14}/>
+                          </Link>
                        </div>
-                    </motion.div>
-                 );
-              })}
-           </AnimatePresence>
-        </div>
+                    </div>
 
-        {/* Navigation Arrows */}
-        <button
-           onClick={handlePrev}
-           className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:scale-105 transition-all z-20"
-        >
-           <ChevronLeft size={24} />
-        </button>
-        <button
-           onClick={handleNext}
-           className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-lg border border-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:scale-105 transition-all z-20"
-        >
-           <ChevronRight size={24} />
-        </button>
-
+                    {/* Footer Info */}
+                    <div className="p-4 bg-white">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="font-bold capitalize text-gray-900">{template.title}</span>
+                          <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                             {template.keywords[0]}
+                          </span>
+                       </div>
+                       <div className="flex gap-2 flex-wrap">
+                          {template.keywords.slice(1, 3).map(k => (
+                             <span key={k} className="text-[10px] text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded">
+                                {k}
+                             </span>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           ))}
+        </motion.div>
       </div>
     </div>
   );
+}
+
+function getGradient(name) {
+   const gradients = {
+      flavornest: 'from-orange-100 to-yellow-100',
+      flara: 'from-pink-100 to-rose-100',
+      avenix: 'from-gray-100 to-gray-300',
+      blissly: 'from-amber-100 to-orange-50',
+      frostify: 'from-blue-100 to-cyan-50',
+      aurora: 'from-emerald-100 to-teal-50',
+   };
+   return gradients[name] || 'from-gray-100 to-gray-200';
 }
