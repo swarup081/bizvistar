@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import NewHeader from '@/components/landing/NewHeader';
-import MockEditor from '@/components/landing/MockEditor';
+import LandingEditorDemo from '@/components/landing/LandingEditorDemo';
 import TemplateCarousel from '@/components/landing/TemplateCarousel';
 import { ArrowRight, Star } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function LandingPage() {
       <main className="flex-grow pt-20">
         {/* --- Hero Section --- */}
         <section className="relative pt-20 pb-32 overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white">
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+           <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 pointer-events-none"></div>
 
            <div className="container mx-auto px-6 max-w-7xl relative z-10 text-center">
 
@@ -53,7 +53,7 @@ export default function LandingPage() {
                  {/* Glow effect behind editor */}
                  <div className="absolute -inset-4 bg-gradient-to-r from-purple-400 to-blue-400 opacity-20 blur-2xl rounded-[3rem] -z-10"></div>
 
-                 <MockEditor />
+                 <LandingEditorDemo />
               </div>
 
            </div>

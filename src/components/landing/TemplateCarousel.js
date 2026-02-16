@@ -2,101 +2,81 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ExternalLink } from 'lucide-react';
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, useAnimation } from 'framer-motion';
 import { templates } from '@/lib/data/templates';
 
 export default function TemplateCarousel() {
-  const [width, setWidth] = useState(0);
-  const carouselRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(templates.length);
+  const [isHovered, setIsHovered] = useState(false);
+  const [stepSize, setStepSize] = useState(432);
   const controls = useAnimation();
 
-  // Duplicate templates to ensure seamless loop
   // We use 3 sets to ensure we have enough buffer before and after
   const duplicatedTemplates = [...templates, ...templates, ...templates];
 
-  // Card dimensions + gap
-  // Mobile: 300px + 32px (gap-8) = 332px
-  // Desktop: 400px + 32px (gap-8) = 432px
-  const getStepSize = () => {
-     if (typeof window !== 'undefined') {
-        return window.innerWidth < 768 ? 332 : 432;
-     }
-     return 432;
-  };
-
   useEffect(() => {
-    // Auto-advance
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        // If we reached the end of the first set (original length),
-        // we logically want to go to the next one, but we handle the reset via animation complete usually.
-        // Simplified: Just keep incrementing, and if we go too far, we reset.
-        return prev + 1;
-      });
-    }, 3000);
+    const handleResize = () => {
+       setStepSize(window.innerWidth < 768 ? 332 : 432);
+    };
 
-    return () => clearInterval(interval);
+    // Set initial
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Handle Animation
+  // Auto-advance
   useEffect(() => {
-    const stepSize = getStepSize();
+    if (isHovered) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => prev + 1);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [isHovered]);
+
+  // Handle Animation & Snapping
+  useEffect(() => {
     const xOffset = -(currentIndex * stepSize);
 
-    // If we have scrolled past the first set of templates, snap back to 0 (visually identical)
-    // The "first set" ends at index = templates.length
-    if (currentIndex > templates.length) {
-       // Snap instantly to index 1 (since we are visually at index 1 of the 2nd set)
-       // Wait, no.
-       // Visually: Set 1 [A, B, C] | Set 2 [A, B, C]
-       // Index 0: A1
-       // Index 1: B1
-       // Index 2: C1
-       // Index 3: A2 (Visually same as A1)
+    controls.start({
+       x: xOffset,
+       transition: { duration: 0.6, ease: "easeInOut" }
+    });
+  }, [currentIndex, stepSize, controls]);
 
-       // So if currentIndex becomes 3 (templates.length), we animate to it.
-       // Then AFTER animation, we snap to 0.
-       // But useEffect triggers on change.
-
-       // Let's use a standard pattern:
-       // Animate to new index.
-       controls.start({
-          x: xOffset,
-          transition: { duration: 0.8, ease: "easeInOut" }
-       }).then(() => {
-          // Check if we need to reset
-          // Actually simpler: If we are AT the reset point, snap back.
-          // But we just animated TO it.
-          // The visual duplicate is at index `templates.length`.
-       });
-    } else {
-       controls.start({
-          x: xOffset,
-          transition: { duration: 0.8, ease: "easeInOut" }
-       });
-    }
-  }, [currentIndex, controls]);
-
-  // Handling the seamless loop reset
-  // If currentIndex === templates.length, we are showing the first item of the *second* set.
-  // This is visually identical to currentIndex === 0.
-  // So we should animate to it, and then instantly reset to 0.
+  // Seamless Loop Logic
   useEffect(() => {
-     if (currentIndex === templates.length) {
+     const len = templates.length;
+     // Forward Snap
+     if (currentIndex >= 2 * len) {
         const timeout = setTimeout(() => {
-           setCurrentIndex(0);
-           const stepSize = getStepSize();
-           controls.set({ x: 0 }); // Instant snap
-        }, 800); // Match transition duration
+           const newIndex = currentIndex - len;
+           controls.set({ x: -(newIndex * stepSize) });
+           setCurrentIndex(newIndex);
+        }, 600);
         return () => clearTimeout(timeout);
      }
-  }, [currentIndex, controls]);
 
+     // Backward Snap (if going below Set 2 start)
+     if (currentIndex < len) {
+        const timeout = setTimeout(() => {
+           const newIndex = currentIndex + len;
+           controls.set({ x: -(newIndex * stepSize) });
+           setCurrentIndex(newIndex);
+        }, 600);
+        return () => clearTimeout(timeout);
+     }
+  }, [currentIndex, stepSize, controls]);
+
+  const handlePrev = () => setCurrentIndex(prev => prev - 1);
+  const handleNext = () => setCurrentIndex(prev => prev + 1);
 
   return (
-    <div className="w-full py-24 bg-gray-50 border-t border-gray-100 overflow-hidden">
+    <div className="w-full py-24 bg-gray-50 border-t border-gray-100 overflow-hidden relative group">
 
       <div className="text-center mb-16 px-6">
         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">
@@ -108,20 +88,43 @@ export default function TemplateCarousel() {
         </p>
       </div>
 
+      {/* Navigation Buttons */}
+      <div className="absolute top-1/2 left-4 md:left-8 z-20 mt-12 md:mt-16 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={handlePrev}
+            className="p-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-gray-800 hover:bg-white hover:scale-110 transition-all focus:outline-none"
+            aria-label="Previous Template"
+          >
+             <ChevronLeft size={24} />
+          </button>
+      </div>
+      <div className="absolute top-1/2 right-4 md:right-8 z-20 mt-12 md:mt-16 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={handleNext}
+            className="p-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-full shadow-lg text-gray-800 hover:bg-white hover:scale-110 transition-all focus:outline-none"
+            aria-label="Next Template"
+          >
+             <ChevronRight size={24} />
+          </button>
+      </div>
+
       {/* Carousel Container */}
-      <div className="relative w-full overflow-hidden" ref={carouselRef}>
-        {/* Gradient Masks */}
+      <div
+        className="relative w-full overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className="absolute top-0 left-0 h-full w-24 md:w-48 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none"></div>
         <div className="absolute top-0 right-0 h-full w-24 md:w-48 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none"></div>
 
         <motion.div
-           className="flex gap-8 px-8 md:px-[calc(50vw-200px)]" // Center initial item roughly
+           className="flex gap-8 px-8 md:px-[calc(50vw-200px)]"
            animate={controls}
         >
            {duplicatedTemplates.map((template, index) => (
               <div
                 key={`${template.title}-${index}`}
-                className="w-[300px] md:w-[400px] flex-shrink-0 group"
+                className="w-[300px] md:w-[400px] flex-shrink-0 group/card"
               >
                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                     {/* Browser Bar */}
@@ -143,7 +146,7 @@ export default function TemplateCarousel() {
                           </div>
                        </div>
 
-                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
                           <Link
                              href={template.previewUrl}
                              target="_blank"
