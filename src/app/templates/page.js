@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { User, ChevronDown, Search, X, LogOut, MessageSquare } from 'lucide-react';
+import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 
@@ -54,15 +54,28 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
         <div className="flex items-center ml-6 gap-4">
             
             {session && (
-               <a
-                 href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-               >
-                 <MessageSquare size={16} />
-                 <span>Contact Us</span>
-               </a>
+               <>
+                 {/* Desktop Contact Button */}
+                 <a
+                   href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                 >
+                   <MessageSquare size={16} />
+                   <span>Contact Us</span>
+                 </a>
+
+                 {/* Mobile Contact Icon Button */}
+                 <a
+                   href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-100 transition-colors"
+                 >
+                    <Phone size={20} />
+                 </a>
+               </>
             )}
 
             {session ? (
@@ -155,6 +168,7 @@ const allBusinessTypes = [
 // --- Secondary Navigation Component (Sticky/Floating with Search) ---
 const SecondaryNav = ({ filter, setFilter }) => {
     const autocompleteRef = useRef(null);
+    const dropdownRef = useRef(null); // Ref for custom mobile dropdown
     const router = useRouter();
     
     // Internal state for the search input value and suggestions
@@ -163,6 +177,9 @@ const SecondaryNav = ({ filter, setFilter }) => {
     // Use 'All Templates' as the default active category
     const [activeCategory, setActiveCategory] = useState('All Templates'); 
     
+    // State for Mobile Dropdown
+    const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
+
     // Sync external filter prop with internal searchValue state and update active category
     useEffect(() => {
         setSearchValue(filter);
@@ -252,18 +269,23 @@ const SecondaryNav = ({ filter, setFilter }) => {
     }, [searchValue, getFilteredSuggestions, suggestions.length]);
 
 
-    // Close suggestions when clicking outside
+    // Close suggestions and dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
+            // Close search suggestions
             if (autocompleteRef.current && !autocompleteRef.current.contains(event.target)) {
                 setSuggestions([]);
+            }
+            // Close mobile dropdown
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsMobileDropdownOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [autocompleteRef]);
+    }, [autocompleteRef, dropdownRef]);
 
 
     return (
@@ -272,20 +294,44 @@ const SecondaryNav = ({ filter, setFilter }) => {
             <div className="mx-auto px-4 md:px-12 max-w-screen-2xl h-14 flex items-center justify-between gap-4">
                 
                 {/* Mobile Dropdown for Categories (Visible < lg) */}
-                <div className="lg:hidden flex-shrink-0 relative">
-                     <select
-                        onChange={(e) => {
-                           const selected = navItems.find(item => item.label === e.target.value);
-                           if (selected) handleCategoryClick(selected.label, selected.keyword);
-                        }}
-                        value={activeCategory || 'All Templates'}
-                        className="appearance-none bg-gray-100 text-gray-900 font-medium py-2 pl-4 pr-10 rounded-lg border-0 focus:ring-1 focus:ring-gray-300 text-sm"
-                     >
-                         {navItems.map(item => (
-                             <option key={item.label} value={item.label}>{item.label}</option>
-                         ))}
-                     </select>
-                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                <div className="lg:hidden flex-shrink-0 relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+                        className="flex items-center justify-between gap-2 bg-white border border-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg shadow-sm text-sm min-w-[140px] hover:bg-gray-50 transition-colors"
+                    >
+                        <span>{activeCategory || 'All Templates'}</span>
+                        <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${isMobileDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {isMobileDropdownOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                            >
+                                <div className="py-1">
+                                    {navItems.map((item) => (
+                                        <button
+                                            key={item.label}
+                                            onClick={() => {
+                                                handleCategoryClick(item.label, item.keyword);
+                                                setIsMobileDropdownOpen(false);
+                                            }}
+                                            className={cn(
+                                                "w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-gray-50",
+                                                activeCategory === item.label ? "text-blue-600 font-semibold bg-blue-50" : "text-gray-700 font-medium"
+                                            )}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
 
@@ -592,8 +638,8 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
         {/* Desktop View - Positioned IN FRONT of the mobile view */}
         <motion.div
-          className="absolute left-0 top-0 z-10 h-[320px] w-[500px] overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-xl p-1 pt-7"
-          style={{ transformOrigin: "bottom left" }}
+          className="absolute left-0 top-0 z-10 h-[320px] w-[500px] overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-xl p-1 pt-7 origin-top-left transform scale-[0.68] md:scale-[0.8] lg:scale-100"
+          style={{ transformOrigin: "top left" }}
           variants={{
             initial: {
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.30)"
