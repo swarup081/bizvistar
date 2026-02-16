@@ -1,10 +1,10 @@
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { Globe, User, ChevronDown, Search, X } from 'lucide-react'; 
+import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react'; 
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 
@@ -16,9 +16,6 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
 
   const navLinks = [
     { label: 'My Sites', href: './dashboard', hasDropdown: false },
-    { label: 'Product', href: '#product', hasDropdown: true },
-    { label: 'Solutions', href: '#solutions', hasDropdown: true },
-    { label: 'Resources', href: '#resources', hasDropdown: true },
     { label: 'Pricing', href: '/pricing', hasDropdown: false },
   ];
 
@@ -53,30 +50,83 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
             <div className="h-6 w-px bg-gray-300 mx-1"></div>
         </nav>
 
-        {/* Right: Auth & Globe */}
+        {/* Right: Auth & Contact */}
         <div className="flex items-center ml-6 gap-4">
-            <Globe className="w-5 h-5 text-gray-700 cursor-pointer" />
             
+            {session && (
+               <>
+                 {/* Desktop Contact Button */}
+                 <a 
+                   href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`} 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                 >
+                   <MessageSquare size={16} />
+                   <span>Contact Us</span>
+                 </a>
+                 
+                 {/* Mobile Contact Icon Button */}
+                 <a
+                   href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 border border-gray-200 text-gray-700 shadow-sm hover:bg-gray-100 transition-colors"
+                 >
+                    <Phone size={20} />
+                 </a>
+               </>
+            )}
+
             {session ? (
                 <div className="relative">
-                  <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                       <User size={18} className="text-gray-500" />
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+                    className="flex items-center gap-2 focus:outline-none transition-transform active:scale-95"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden hover:bg-gray-100 transition-colors shadow-sm">
+                       <User size={20} className="text-gray-700" />
                     </div>
                   </button>
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                      <div className="p-3 text-sm text-gray-700 border-b truncate">
-                         {session.user.email}
-                      </div>
-                      <button 
-                        onClick={handleLogOut}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden origin-top-right"
                       >
-                         Log Out
-                      </button>
-                    </div>
-                  )}
+                        <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
+                           <p className="text-sm font-bold text-gray-900 truncate" title={session.user.email}>
+                             {session.user.email}
+                           </p>
+                        </div>
+                        <div className="py-2">
+                           {/* Mobile Contact Link (visible in dropdown on small screens) */}
+                           <a 
+                             href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US}`}
+                             target="_blank" 
+                             rel="noopener noreferrer"
+                             className="md:hidden w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                           >
+                             <MessageSquare size={18} className="text-gray-500" />
+                             Contact Support
+                           </a>
+
+                          <button 
+                            onClick={handleLogOut}
+                            className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-3"
+                          >
+                             <LogOut size={18} />
+                             Sign Out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
             ) : (
                 <button 
@@ -118,6 +168,7 @@ const allBusinessTypes = [
 // --- Secondary Navigation Component (Sticky/Floating with Search) ---
 const SecondaryNav = ({ filter, setFilter }) => {
     const autocompleteRef = useRef(null);
+    const dropdownRef = useRef(null); // Ref for custom mobile dropdown
     const router = useRouter();
     
     // Internal state for the search input value and suggestions
@@ -125,6 +176,9 @@ const SecondaryNav = ({ filter, setFilter }) => {
     const [suggestions, setSuggestions] = useState([]);
     // Use 'All Templates' as the default active category
     const [activeCategory, setActiveCategory] = useState('All Templates'); 
+    
+    // State for Mobile Dropdown
+    const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
     
     // Sync external filter prop with internal searchValue state and update active category
     useEffect(() => {
@@ -147,12 +201,12 @@ const SecondaryNav = ({ filter, setFilter }) => {
 
     // UPDATED NAV ITEMS - concise labels, added keywords for filtering logic
     const navItems = [
-        { label: 'All Templates', keyword: '', href: '#all-templates' }, 
-        { label: 'Services', keyword: 'Consultant', href: '#services' }, 
-        { label: 'Store', keyword: 'Retail', href: '#store' }, 
-        { label: 'Creative', keyword: 'Portfolio', href: '#creative' }, 
-        { label: 'Community', keyword: 'Event', href: '#community' }, 
-        { label: 'Blog/Media', keyword: 'Blogger', href: '#blog' },
+        { label: 'All Templates', keyword: '', href: '#all-templates' },
+        { label: 'Restaurant', keyword: 'Restaurant', href: '#restaurant' },
+        { label: 'Store', keyword: 'Store', href: '#store' },
+        { label: 'Bakery', keyword: 'Bakery', href: '#bakery' },
+        { label: 'Jewelry', keyword: 'Jewelry', href: '#jewelry' },
+        { label: 'Portfolio', keyword: 'Portfolio', href: '#portfolio' },
     ];
     
     // Function to get filtered suggestions
@@ -215,27 +269,74 @@ const SecondaryNav = ({ filter, setFilter }) => {
     }, [searchValue, getFilteredSuggestions, suggestions.length]);
 
 
-    // Close suggestions when clicking outside
+    // Close suggestions and dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event) {
+            // Close search suggestions
             if (autocompleteRef.current && !autocompleteRef.current.contains(event.target)) {
                 setSuggestions([]);
+            }
+            // Close mobile dropdown
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsMobileDropdownOpen(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [autocompleteRef]);
+    }, [autocompleteRef, dropdownRef]);
 
 
     return (
         // Sticky at top-0 after PrimaryHeader scrolls past
         <nav className="w-full bg-white border-b border-gray-200 text-gray-700 font-sans sticky top-[0px] z-40">
-            <div className="mx-auto px-12 max-w-screen-2xl h-14 flex items-center justify-between">
+            <div className="mx-auto px-4 md:px-12 max-w-screen-2xl h-14 flex items-center justify-between gap-4">
                 
-                {/* Left Side: Navigation Links (Filters with smoother UI) */}
-                <div className="flex items-center gap-6 text-base font-medium h-full">
+                {/* Mobile Dropdown for Categories (Visible < lg) */}
+                <div className="lg:hidden flex-shrink-0 relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+                        className="flex items-center justify-between gap-2 bg-white border border-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg shadow-sm text-sm min-w-[140px] hover:bg-gray-50 transition-colors"
+                    >
+                        <span>{activeCategory || 'All Templates'}</span>
+                        <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${isMobileDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                        {isMobileDropdownOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                transition={{ duration: 0.15 }}
+                                className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                            >
+                                <div className="py-1">
+                                    {navItems.map((item) => (
+                                        <button
+                                            key={item.label}
+                                            onClick={() => {
+                                                handleCategoryClick(item.label, item.keyword);
+                                                setIsMobileDropdownOpen(false);
+                                            }}
+                                            className={cn(
+                                                "w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-gray-50",
+                                                activeCategory === item.label ? "text-blue-600 font-semibold bg-blue-50" : "text-gray-700 font-medium"
+                                            )}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+
+                {/* Desktop: Navigation Links (Filters with smoother UI) (Hidden < lg) */}
+                <div className="hidden lg:flex items-center gap-6 text-base font-medium h-full flex-shrink-0">
                     {/* Using motion.button and layoutId for smooth underline transition */}
                     {navItems.map((item) => (
                         <motion.button 
@@ -263,7 +364,7 @@ const SecondaryNav = ({ filter, setFilter }) => {
                 </div>
                 
                 {/* Right Side: Search/Filter (Shorter Dash and Clear Button) */}
-                <div className="relative ml-5 max-w-md w-76" ref={autocompleteRef}> 
+                <div className="relative ml-auto lg:ml-5 w-full max-w-[200px] md:max-w-md lg:w-76" ref={autocompleteRef}> 
                     <div className="flex items-end">
                         <div className="relative flex-grow">
                             <Search className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -331,7 +432,7 @@ const templates = [
     url: '/templates/flara',
     previewUrl: '/preview/flara',
     editor:'/editor/flara',
-    keywords: ['Retail', 'E-commerce', 'Candles', 'Handmade', 'Clean', 'Online Store', 'Clothing Boutique'],
+    keywords: ['Retail', 'E-commerce', 'Candles', 'Handmade', 'Clean', 'Store', 'Online Store', 'Clothing Boutique'],
     isRecommended: false,
   },
   {
@@ -358,7 +459,7 @@ const templates = [
     url: '/templates/frostify',
     previewUrl: '/preview/frostify',
     editor:'/editor/frostify',
-    keywords: ['Cafe', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community'],
+    keywords: ['Cafe', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community', 'Store', 'Bakery'],
     isRecommended: false,
   },
   {
@@ -367,24 +468,9 @@ const templates = [
     url: '/templates/aurora',
     previewUrl: '/preview/aurora',
     editor:'/editor/aurora',
-    keywords: ['Craft', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community'],
+    keywords: ['Craft', 'Restaurant', 'Events', 'Booking', 'Coffee', 'Community', 'Store', 'Jewelry'],
     isRecommended: false,
   }
-];
-
-// --- Static List of Vibe Pills (from get-started/2) ---
-const businessVibes = [
-    { id: 'handcrafted', label: 'Handmade' },
-    { id: 'elegant', label: 'Trendy' },
-    { id: 'cozy', label: 'Friendly' },
-    { id: 'playful', label: 'Fun' },
-    { id: 'modern', label: 'Stylish' },
-    { id: 'trusted', label: 'Reliable' },
-    { id: 'natural', label: 'Eco-Friendly' },
-    { id: 'minimal', label: 'Clean' },
-    { id: 'vintage', label: 'Modern' },
-    { id: 'luxury', label: 'Premium' },
-    { id: 'fast', label: 'Quick' },
 ];
 
 // --- Reusable Template Card Component with Hover Logic ---
@@ -393,6 +479,14 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
   const pathname = usePathname();
   const [isCreating, setIsCreating] = useState(false);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleStartEditing = async () => {
     setIsCreating(true);
@@ -494,8 +588,8 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
   return (
     <motion.div
-      className="group max-w-xl cursor-pointer relative" 
-      whileHover="hover"
+      className={cn("group max-w-xl cursor-pointer relative", isMobile && "mx-auto")}
+      whileHover={!isMobile ? "hover" : undefined}
       initial="initial"
       animate="initial"
     >
@@ -510,9 +604,9 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       {/* Container for the visual part (iframes). */}
        <div className="relative h-[320px]">
 
-        {/* Mobile View - Positioned BEHIND the desktop view */}
+        {/* Mobile View - Positioned BEHIND the desktop view - HIDDEN ON MOBILE/TABLET */}
         <motion.div
-          className="absolute bottom-0 right-[-60px] z-0 w-[140px] h-[260px] transform overflow-hidden rounded-2xl bg-white shadow-lg p-1.5 pt-6"
+          className="hidden lg:block absolute bottom-0 right-[-60px] z-0 w-[140px] h-[260px] transform overflow-hidden rounded-2xl bg-white shadow-lg p-1.5 pt-6"
           style={{ transformOrigin: "bottom right" }}
           variants={{
             initial: {
@@ -544,8 +638,8 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
         {/* Desktop View - Positioned IN FRONT of the mobile view */}
         <motion.div
-          className="absolute left-0 top-0 z-10 h-[320px] w-[500px] overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-xl p-1 pt-7"
-          style={{ transformOrigin: "bottom left" }}
+          className="absolute left-0 top-0 z-10 h-[320px] w-[500px] overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-xl p-1 pt-7 origin-top-left transform scale-[0.68] md:scale-[0.8] lg:scale-100"
+          style={{ transformOrigin: "top left" }}
           variants={{
             initial: {
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.30)"
@@ -568,7 +662,10 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
 
       {/* --- Hover Info Block --- */}
-      <div className="mt-8 min-h-[140px] transform px-2 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+      <div className={cn(
+        "-mt-13 xl:mt-8 min-h-[140px] transform px-2 transition-opacity duration-300 ease-in-out",
+        isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+      )}>
         <h3 className="text-xl font-bold text-gray-900">{title}</h3>
         <p className="mt-2 text-base leading-relaxed text-gray-600">{description}</p>
         
@@ -600,7 +697,6 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 export default function TemplatesPage() {
   const [storeName, setStoreName] = useState("Your Business");
   const [session, setSession] = useState(null);
-  const [selectedVibes, setSelectedVibes] = useState({});
   const [filter, setFilter] = useState(''); // State for the search/filter input
   const router = useRouter();
   const pathname = usePathname();
@@ -610,15 +706,6 @@ export default function TemplatesPage() {
     const storedStoreName = localStorage.getItem('storeName');
     if (storedStoreName) {
       setStoreName(storedStoreName);
-    }
-    
-    const storedVibes = localStorage.getItem('businessVibes');
-    if (storedVibes) {
-      try {
-        setSelectedVibes(JSON.parse(storedVibes));
-      } catch (e) {
-        console.error("Failed to parse stored businessVibes:", e);
-      }
     }
     
     // Set initial filter to business type
@@ -686,29 +773,9 @@ export default function TemplatesPage() {
                 </div>
             </div>
 
-            <div className="text-center">
-                {/* Business Vibe Filter Pills (Dynamically styled based on previous input) */}
-                <div className="flex flex-wrap justify-center gap-3 mt-12 mb-20">
-                   {businessVibes.map(({ id, label }) => {
-                       const isSelected = !!selectedVibes[id];
-                       return (
-                           <button 
-                               key={id}
-                               className={`px-6 py-3 border rounded-full font-semibold transition-colors duration-200 ${
-                                   isSelected
-                                       ? 'bg-gray-900 text-white border-black' 
-                                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900'
-                               }`}
-                           >
-                               {label}
-                           </button>
-                       );
-                   })}
-                </div>
-            </div>
 
             {/* Template Grid Container */}
-            <div className="mt-12 grid grid-cols-1 justify-items-start gap-x-16 gap-y-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-28 pl-6">
+            <div className="mt-12 grid grid-cols-1 xl:grid-cols-2 justify-items-center gap-x-16 gap-y-12 lg:justify-items-start lg:gap-y-28 lg:pl-6">
               {filteredTemplates.map((template, index) => (
                 <TemplateCard key={`${template.title}-${index}`} {...template} />
               ))}
