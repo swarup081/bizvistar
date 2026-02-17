@@ -1,34 +1,47 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import EditorTopNav from '@/components/editor/EditorTopNav';
 import EditorSidebar from '@/components/editor/EditorSidebar';
 
 // Import template data
-import { businessData as flaraData } from '@/app/templates/flara/data.js';
+import { businessData as auroraData } from '@/app/templates/aurora/data.js';
 
-// --- Cursor Animation Component ---
-const Cursor = ({ x, y, click }) => (
-  <motion.div
-    className="fixed pointer-events-none z-[9999]"
-    animate={{ x, y }}
-    transition={{ type: "spring", stiffness: 500, damping: 28 }}
-  >
-    {/* Mac Cursor SVG */}
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
-        <path d="M5.5 3.5L11.5 20.5L14.5 13.5L21.5 10.5L5.5 3.5Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
-    </svg>
+// --- Cursor Animation Component (Portal to Body) ---
+const Cursor = ({ x, y, click }) => {
+  const [mounted, setMounted] = useState(false);
 
-    {click && (
-       <span className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-blue-500/30 animate-ping" />
-    )}
-  </motion.div>
-);
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!mounted || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <motion.div
+      className="fixed pointer-events-none z-[9999]"
+      animate={{ x, y }}
+      transition={{ type: "spring", stiffness: 500, damping: 28 }}
+    >
+      {/* Mac Cursor SVG */}
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
+          <path d="M5.5 3.5L11.5 20.5L14.5 13.5L21.5 10.5L5.5 3.5Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+      </svg>
+
+      {click && (
+         <span className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-blue-500/30 animate-ping" />
+      )}
+    </motion.div>,
+    document.body
+  );
+};
 
 export default function LandingEditor() {
-  const templateName = 'flara';
-  const mode = 'dashboard'; // Use 'dashboard' mode to match UI exactly
+  const templateName = 'aurora'; // CHANGED TO AURORA
+  const mode = 'dashboard';
   const websiteId = 'demo';
   const siteSlug = 'demo';
 
@@ -84,7 +97,7 @@ export default function LandingEditor() {
   }, [view]);
 
   const defaultData = useMemo(() => {
-    return JSON.parse(JSON.stringify(flaraData || {}));
+    return JSON.parse(JSON.stringify(auroraData || {}));
   }, []);
 
   const [businessData, setBusinessData] = useState(defaultData);
@@ -163,17 +176,33 @@ export default function LandingEditor() {
             }
 
             const w = window.innerWidth;
-            const sidebarCenter = w - 160;
+            // Sidebar is fixed 320px (80 of tailwind w-80).
+            // Wait, w-80 is 20rem = 320px.
+            // If the window is wide, sidebar is on the right?
+            // In LandingEditor: lg:grid-cols-[1fr_auto]. Sidebar is second column.
+            // So sidebar is on the right.
+            const sidebarWidth = 320;
+            const sidebarCenterX = w - (sidebarWidth / 2);
 
             // 1. Move to "Business Name" Input
             if (!isMounted.current) break;
-            setActiveAccordion('global');
+            setActiveAccordion('global'); // Open global accordion
             await wait(500);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Move to approx input Y position (Assuming sidebar is on right)
-            setCursorPos({ x: sidebarCenter, y: 320 });
+            // Move to approx input Y position.
+            // Global Settings is first. Business Name is usually the 3rd or 4th input.
+            // Let's guess Y around 350px relative to viewport top.
+            // The Editor is centered vertically on page? No, it's in Hero.
+            // The cursor position is fixed relative to viewport.
+            // The LandingEditor top position depends on scroll, but the user is likely at top.
+            // Let's assume the user hasn't scrolled much.
+            // Actually, we can use `getBoundingClientRect` of the sidebar container if we wanted perfection,
+            // but fixed values are "good enough" for a demo if we assume standard desktop res.
+            // Let's target the sidebar center X and Y=350.
+
+            setCursorPos({ x: sidebarCenterX, y: 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -205,7 +234,29 @@ export default function LandingEditor() {
 
             // 2. Switch to Theme Tab
             if (!isMounted.current) break;
-            setCursorPos({ x: sidebarCenter, y: 90 }); // Approx tab location
+            // Theme tab is at top. approx Y=90 (since header is 65+50=115? No, Header is 65+50. Tabs are below header in sidebar?
+            // EditorSidebar tabs are at top of sidebar. Sidebar is below top nav?
+            // In LandingEditor layout: Column 1 is Nav + Preview. Column 2 is Sidebar.
+            // Sidebar has height 100%.
+            // Sidebar tabs are at top of sidebar component.
+            // Sidebar starts at top of container.
+            // Container top is... well, below the page header.
+            // Let's assume standard desktop 1920x1080.
+            // The cursor is independent.
+            // Let's try to aim for top of sidebar.
+            // Sidebar tabs: "Website", "Theme", "Settings".
+            // Theme is middle tab.
+            setCursorPos({ x: sidebarCenterX, y: 250 }); // Just a guess, 250 might be too low.
+            // TopNav is inside col 1. Sidebar is col 2.
+            // Sidebar has tabs at the very top.
+            // The container `h-[800px]`.
+            // The page has a header `NewHeader` (h-20 = 80px).
+            // Hero section pt-20.
+            // Editor starts somewhere around Y=180?
+            // Sidebar tabs are at top of sidebar.
+            // So Y ~ 200px.
+            setCursorPos({ x: sidebarCenterX, y: 220 });
+
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -220,12 +271,18 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 3. Select a Palette (Elegant Botanics)
-            setCursorPos({ x: w - 80, y: 250 }); // Approx
+            // Palettes are a grid.
+            // elegant-botanics is index 1 (2nd item).
+            // Grid is col-2. So it's Top Right.
+            // Y position: below "Color Palette" title.
+            // Let's guess Y ~ 350.
+            setCursorPos({ x: sidebarCenterX + 60, y: 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
             setIsClicking(true);
+            // Update logic for Aurora (styleConfig is hardcoded? No, we wired up theme!)
             setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'elegant-botanics' } }));
             await wait(200);
             setIsClicking(false);
@@ -234,8 +291,8 @@ export default function LandingEditor() {
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // 4. Back to Sage Green
-            setCursorPos({ x: w - 240, y: 250 }); // Approx
+            // 4. Back to Sage Green (Index 0, Top Left)
+            setCursorPos({ x: sidebarCenterX - 60, y: 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -250,7 +307,7 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 5. Back to Website Tab
-            setCursorPos({ x: w - 260, y: 90 });
+            setCursorPos({ x: sidebarCenterX - 80, y: 220 }); // Left tab
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -351,6 +408,7 @@ export default function LandingEditor() {
             canUndo={false}
             canRedo={false}
             onRestart={handleRestart}
+            isLandingMode={true} // <-- Enable Landing Mode
           />
         </div>
 
@@ -392,6 +450,7 @@ export default function LandingEditor() {
           activeAccordion={activeAccordion}
           onAccordionToggle={handleAccordionToggle}
           forceDesktop={true}
+          isLandingMode={true} // <-- Enable Landing Mode
         />
       </div>
     </div>

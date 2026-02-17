@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
@@ -8,6 +8,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X } from 'lucide-react';
+import { colorPalettes } from '@/components/editor/EditorSidebar';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
@@ -17,7 +18,7 @@ function CartLayout({ children, serverData, websiteId }) {
         if (serverData) return;
         let parentPath = '';
         try { parentPath = window.parent.location.pathname; } catch (e) {}
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
         
         if (isEditor) {
              const handleMessage = (event) => {
@@ -29,21 +30,41 @@ function CartLayout({ children, serverData, websiteId }) {
         }
     }, [serverData]);
 
+    // Theme Logic
+    const activePalette = useMemo(() => {
+        return colorPalettes.find(p => p.class === businessData?.theme?.colorPalette) || null;
+    }, [businessData?.theme?.colorPalette]);
+
+    const themeStyles = activePalette ? `
+        :root {
+            --color-bg: ${activePalette.colors[0]};
+            --color-bg-alt: ${activePalette.colors[1]};
+            --color-gold: ${activePalette.colors[2]};
+            --color-text-light: ${activePalette.colors[3]};
+            --color-dark: ${activePalette.colors[4]};
+            --color-text: ${activePalette.colors[4]};
+        }
+    ` : `
+        :root {
+            /* --- DEFAULT PALETTE (Champagne/Gold) --- */
+            --color-bg: #F7F4F0;
+            --color-bg-alt: #EBE5DF;
+            --color-dark: #0B1215;
+            --color-gold: #C6A87C;
+            --color-text: #0B1215;
+            --color-text-light: #6B7280;
+        }
+    `;
+
     return (
         <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             <style jsx global>{`
                 /* IMPORT FONTS: Playfair Display (Serif) & DM Sans (Sans) */
                 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
                 
+                ${themeStyles}
+
                 :root {
-                    /* --- PALETTE --- */
-                    --color-bg: #F7F4F0;         /* Champagne Cream */
-                    --color-bg-alt: #EBE5DF;     /* Darker Beige for contrast */
-                    --color-dark: #0B1215;       /* Deep Charcoal/Black */
-                    --color-gold: #C6A87C;       /* Muted Luxury Gold */
-                    --color-text: #0B1215;
-                    --color-text-light: #6B7280;
-                    
                     /* --- FONTS --- */
                     --font-serif: 'Playfair Display', serif;
                     --font-sans: 'DM Sans', sans-serif;
@@ -155,7 +176,7 @@ function AuroraStateProvider({ children, serverData, websiteId }) {
         if (serverData) return;
         let parentPath = '';
         try { parentPath = window.parent.location.pathname; } catch (e) { }
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
         const isPreview = parentPath.startsWith('/preview/');
 
         if (isEditor) {
@@ -195,21 +216,41 @@ function AuroraContent({ children }) {
         removeFromCart 
     } = useCart();
 
+    // Theme Logic (duplicated from CartLayout to ensure it works in both contexts)
+    const activePalette = useMemo(() => {
+        return colorPalettes.find(p => p.class === businessData?.theme?.colorPalette) || null;
+    }, [businessData?.theme?.colorPalette]);
+
+    const themeStyles = activePalette ? `
+        :root {
+            --color-bg: ${activePalette.colors[0]};
+            --color-bg-alt: ${activePalette.colors[1]};
+            --color-gold: ${activePalette.colors[2]};
+            --color-text-light: ${activePalette.colors[3]};
+            --color-dark: ${activePalette.colors[4]};
+            --color-text: ${activePalette.colors[4]};
+        }
+    ` : `
+        :root {
+            /* --- DEFAULT PALETTE (Champagne/Gold) --- */
+            --color-bg: #F7F4F0;
+            --color-bg-alt: #EBE5DF;
+            --color-dark: #0B1215;
+            --color-gold: #C6A87C;
+            --color-text: #0B1215;
+            --color-text-light: #6B7280;
+        }
+    `;
+
     return (
         <div className="antialiased min-h-screen flex flex-col relative">
             <style jsx global>{`
                 /* IMPORT FONTS: Playfair Display (Serif) & DM Sans (Sans) */
                 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
                 
+                ${themeStyles}
+
                 :root {
-                    /* --- PALETTE --- */
-                    --color-bg: #F7F4F0;         /* Champagne Cream */
-                    --color-bg-alt: #EBE5DF;     /* Darker Beige for contrast */
-                    --color-dark: #0B1215;       /* Deep Charcoal/Black */
-                    --color-gold: #C6A87C;       /* Muted Luxury Gold */
-                    --color-text: #0B1215;
-                    --color-text-light: #6B7280;
-                    
                     /* --- FONTS --- */
                     --font-serif: 'Playfair Display', serif;
                     --font-sans: 'DM Sans', sans-serif;

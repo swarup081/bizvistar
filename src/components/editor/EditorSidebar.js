@@ -386,7 +386,7 @@ const fontOptions = [
 ];
 
 // --- NEW: Curated list of 8 color palettes (with 5 colors each) ---
-const colorPalettes = [
+export const colorPalettes = [
   {
     name: 'Sage Green',
     class: 'sage-green',
@@ -438,7 +438,8 @@ export default function EditorSidebar({
   // --- ACCEPT NEW PROPS ---
   activeAccordion,
   onAccordionToggle,
-  forceDesktop = false // --- ADDED ---
+  forceDesktop = false, // --- ADDED ---
+  isLandingMode = false // <-- NEW PROP
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
@@ -2231,12 +2232,14 @@ export default function EditorSidebar({
             isActive={activeTab === 'theme'}
             onClick={() => onTabChange('theme')}
             />
-            <MainTab
-            icon={Settings}
-            label="Settings"
-            isActive={activeTab === 'settings'}
-            onClick={() => onTabChange('settings')}
-            />
+            {!isLandingMode && (
+              <MainTab
+              icon={Settings}
+              label="Settings"
+              isActive={activeTab === 'settings'}
+              onClick={() => onTabChange('settings')}
+              />
+            )}
         </div>
       )}
 

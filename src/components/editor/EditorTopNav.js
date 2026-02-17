@@ -147,7 +147,8 @@ export default function EditorTopNav({
     onRedo,
     canUndo,
     canRedo,
-    onRestart
+    onRestart,
+    isLandingMode = false // <-- NEW PROP
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
@@ -166,11 +167,14 @@ export default function EditorTopNav({
   };
 
   const handleRestartConfirm = () => {
+    if (isLandingMode) return; // Disable in Landing Mode
     onRestart();
     setIsRestartModalOpen(false);
   };
 
   const handlePublish = async () => {
+    if (isLandingMode) return; // Disable in Landing Mode
+
     if (isPublishing) return;
     setIsPublishing(true);
     try {
@@ -213,6 +217,14 @@ export default function EditorTopNav({
     }
   };
 
+  // Helper to intercept clicks in Landing Mode
+  const onLandingDummyClick = (e) => {
+    if (isLandingMode) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
     <header className="w-full bg-white shadow-sm">
       {/* Top-most Bar */}
@@ -236,9 +248,11 @@ export default function EditorTopNav({
               </div>
             </>
           ) : (
-             <span className="text-xl font-bold text-gray-900 hidden lg:inline">
-               Website Editor
-             </span>
+             !isLandingMode && (
+                <span className="text-xl font-bold text-gray-900 hidden lg:inline">
+                   Website Editor
+                </span>
+             )
           )}
         </div>
 
@@ -250,8 +264,8 @@ export default function EditorTopNav({
             description="Reset all theme customizations back to defaults."
           >
             <button 
-              onClick={() => setIsRestartModalOpen(true)}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors"
+              onClick={(e) => isLandingMode ? onLandingDummyClick(e) : setIsRestartModalOpen(true)}
+              className={`flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors ${isLandingMode ? 'cursor-default' : ''}`}
             >
               Reset 
             </button>
@@ -280,33 +294,34 @@ export default function EditorTopNav({
             description="See what your live site will look like to visitors."
           >
             <Link 
-              href={`/preview/site/${siteSlug}`}
-              target="_blank"
+              href={isLandingMode ? '#' : `/preview/site/${siteSlug}`}
+              target={isLandingMode ? undefined : "_blank"}
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
+              onClick={onLandingDummyClick}
+              className={`flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50 ${isLandingMode ? 'cursor-default hover:bg-transparent' : ''}`}
             >
               Preview
             </Link>
           </Tooltip>
           
-          {/* --- UPDATED PUBLISH LINK --- */}
+          {/* --- PUBLISH BUTTON --- */}
           {mode === 'dashboard' ? (
               <button
                 onClick={handlePublish}
-                disabled={isPublishing}
-                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50"
+                disabled={isPublishing} // Don't disable for LandingMode, just make it do nothing to keep look
+                className={`flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50 ${isLandingMode ? 'cursor-default hover:bg-black' : ''}`}
               >
                 {isPublishing ? 'Publishing...' : 'Publish'}
               </button>
           ) : (
               <Link
-                href={`/pricing?site_id=${websiteId}`} // Pass site_id
-                className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors"
+                href={isLandingMode ? '#' : `/pricing?site_id=${websiteId}`}
+                onClick={onLandingDummyClick}
+                className={`flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors ${isLandingMode ? 'cursor-default hover:bg-black' : ''}`}
               >
                 Publish
               </Link>
           )}
-          {/* --- END OF CHANGE --- */}
 
         </div>
       </div>
@@ -319,14 +334,14 @@ export default function EditorTopNav({
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Page:</span>
               <button 
-                onClick={() => setIsPageDropdownOpen(prev => !prev)}
-                className="flex items-center gap-1 font-medium text-gray-900"
+                onClick={() => !isLandingMode && setIsPageDropdownOpen(prev => !prev)}
+                className={`flex items-center gap-1 font-medium text-gray-900 ${isLandingMode ? 'cursor-default' : ''}`}
               >
                 {currentPageName}
                 <ChevronDown size={16} />
               </button>
             </div>
-            {isPageDropdownOpen && (
+            {!isLandingMode && isPageDropdownOpen && (
               <div className="absolute top-full mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                 {pages.map(page => (
                   <button
@@ -367,9 +382,9 @@ export default function EditorTopNav({
             title="Your Site Address"
             description="This is your temporary website URL. Click 'Connect Your Domain' to use a custom address."
           >
-            <div className="bg-gray-50 border border-gray-300 rounded-4xl px-3 py-2 text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer">
+            <div className={`bg-gray-50 border border-gray-300 rounded-4xl px-3 py-2 text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap ${isLandingMode ? 'cursor-default' : 'cursor-pointer'}`}>
               {siteUrl}
-              <span className="text-purple-600 ml-2 font-medium">Connect Your Domain</span>
+              {!isLandingMode && <span className="text-purple-600 ml-2 font-medium">Connect Your Domain</span>}
             </div>
           </Tooltip>
         </div>

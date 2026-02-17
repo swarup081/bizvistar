@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
@@ -8,6 +8,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X, Minus, Plus } from 'lucide-react'; // Added icons
+import { colorPalettes } from '@/components/editor/EditorSidebar';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
@@ -27,7 +28,7 @@ function CartLayout({ children, serverData, websiteId }) {
         if (serverData) return;
         let parentPath = '';
         try { parentPath = window.parent.location.pathname; } catch (e) {}
-        const isEditor = parentPath.startsWith('/editor/');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath === '/';
         
         if (isEditor) {
              const handleMessage = (event) => {
@@ -151,7 +152,7 @@ function FrostifyStateProvider({ children, serverData, websiteId }) {
         if (serverData) return;
         let parentPath = '';
         try { parentPath = window.parent.location.pathname; } catch (e) { }
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
         const isPreview = parentPath.startsWith('/preview/');
 
         if (isEditor) {
@@ -193,16 +194,38 @@ function FrostifyContent({ children }) {
         removeFromCart 
     } = useCart();
 
+    // Theme Logic
+    const activePalette = useMemo(() => {
+        return colorPalettes.find(p => p.class === businessData?.theme?.colorPalette) || null;
+    }, [businessData?.theme?.colorPalette]);
+
+    const themeStyles = activePalette ? `
+        :root {
+            --color-bg: ${activePalette.colors[0]};
+            --color-surface: ${activePalette.colors[1]};
+            --color-accent: ${activePalette.colors[2]};
+            --color-secondary: ${activePalette.colors[3]};
+            --color-primary: ${activePalette.colors[4]};
+        }
+    ` : `
+        :root {
+            /* --- DEFAULT PALETTE --- */
+            --color-bg: #FFFFFF;
+            --color-primary: #592E4F;
+            --color-secondary: #9E5A85;
+            --color-accent: #DFA8B7;
+            --color-surface: #F9F4F6;
+        }
+    `;
+
     return (
         <div className="antialiased min-h-screen flex flex-col relative">
             <style jsx global>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+                ${themeStyles}
+
                 :root {
-                    --color-bg: #FFFFFF;         
-                    --color-primary: #592E4F;    
-                    --color-secondary: #9E5A85;  
-                    --color-accent: #DFA8B7;     
-                    --color-surface: #F9F4F6;    
                     --font-serif: 'DM Serif Display', serif;
                     --font-sans: 'Quicksand', sans-serif;
                 }
