@@ -259,17 +259,28 @@ export default function EditorTopNav({
         {/* Right Side: Actions */}
         <div className="flex items-center gap-3">
           
-          <Tooltip
-            title="Reset "
-            description="Reset all theme customizations back to defaults."
-          >
-            <button 
-              onClick={(e) => isLandingMode ? onLandingDummyClick(e) : setIsRestartModalOpen(true)}
-              className={`flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors ${isLandingMode ? 'cursor-default' : ''}`}
+          {isLandingMode ? (
+            <Tooltip title="Just a demo" description="">
+              <button
+                onClick={onLandingDummyClick}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors cursor-default"
+              >
+                Reset
+              </button>
+            </Tooltip>
+          ) : (
+            <Tooltip
+              title="Reset "
+              description="Reset all theme customizations back to defaults."
             >
-              Reset 
-            </button>
-          </Tooltip>
+              <button
+                onClick={() => setIsRestartModalOpen(true)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors"
+              >
+                Reset
+              </button>
+            </Tooltip>
+          )}
 
           <div className="w-px h-5 bg-gray-300"></div> 
           
@@ -289,38 +300,59 @@ export default function EditorTopNav({
             {saveStatus}
           </div>
 
-          <Tooltip
-            title="Preview"
-            description="See what your live site will look like to visitors."
-          >
-            <Link 
-              href={isLandingMode ? '#' : `/preview/site/${siteSlug}`}
-              target={isLandingMode ? undefined : "_blank"}
-              rel="noopener noreferrer"
-              onClick={onLandingDummyClick}
-              className={`flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50 ${isLandingMode ? 'cursor-default hover:bg-transparent' : ''}`}
-            >
-              Preview
-            </Link>
-          </Tooltip>
-          
-          {/* --- PUBLISH BUTTON --- */}
-          {mode === 'dashboard' ? (
-              <button
-                onClick={handlePublish}
-                disabled={isPublishing} // Don't disable for LandingMode, just make it do nothing to keep look
-                className={`flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors disabled:opacity-50 ${isLandingMode ? 'cursor-default hover:bg-black' : ''}`}
-              >
-                {isPublishing ? 'Publishing...' : 'Publish'}
-              </button>
-          ) : (
+          {isLandingMode ? (
+            <Tooltip title="Just a demo" description="">
               <Link
-                href={isLandingMode ? '#' : `/pricing?site_id=${websiteId}`}
+                href="#"
                 onClick={onLandingDummyClick}
-                className={`flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl  transition-colors ${isLandingMode ? 'cursor-default hover:bg-black' : ''}`}
+                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
               >
-                Publish
+                Preview
               </Link>
+            </Tooltip>
+          ) : (
+            <Tooltip
+              title="Preview"
+              description="See what your live site will look like to visitors."
+            >
+              <Link
+                href={`/preview/site/${siteSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
+              >
+                Preview
+              </Link>
+            </Tooltip>
+          )}
+
+          {/* --- PUBLISH BUTTON --- */}
+          {isLandingMode ? (
+             <Tooltip title="Just a demo" description="">
+                <button
+                  onClick={onLandingDummyClick}
+                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors cursor-default hover:bg-black"
+                >
+                  Publish
+                </button>
+             </Tooltip>
+          ) : (
+            mode === 'dashboard' ? (
+                <button
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors disabled:opacity-50"
+                >
+                  {isPublishing ? 'Publishing...' : 'Publish'}
+                </button>
+            ) : (
+                <Link
+                  href={`/pricing?site_id=${websiteId}`}
+                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors"
+                >
+                  Publish
+                </Link>
+            )
           )}
 
         </div>

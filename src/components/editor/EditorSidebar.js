@@ -693,16 +693,79 @@ export default function EditorSidebar({
         {/* WEBSITE Panel */}
         {activeTab === 'website' && (
           <section>
-            <AccordionItem
-              title="Global Settings"
-              icon={Info}
-              isOpen={activeAccordion === 'global'}
-              onClick={() => toggleAccordion('global')}
-              isMobile={isMobile}
-              onCloseMobile={() => toggleAccordion(null)}
-            >
-              {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
-              {businessData?.infoBar !== undefined && (
+            {!isLandingMode && (
+              <AccordionItem
+                title="Global Settings"
+                icon={Info}
+                isOpen={activeAccordion === 'global'}
+                onClick={() => toggleAccordion('global')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
+              >
+                {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
+                {businessData?.infoBar !== undefined && (
+                  <>
+                    <EditorInput
+                      label="Info Bar Text 1"
+                      value={getSafe(businessData, 'infoBar.0')}
+                      onChange={(e) =>
+                        handleDataChange('infoBar.0', e.target.value)
+                      }
+                      onFocus={() => handleSectionFocus('global')}
+                    />
+                    <EditorInput
+                      label="Info Bar Text 2"
+                      value={getSafe(businessData, 'infoBar.1')}
+                      onChange={(e) =>
+                        handleDataChange('infoBar.1', e.target.value)
+                      }
+                      onFocus={() => handleSectionFocus('global')}
+                    />
+                    <EditorInput
+                      label="Info Bar Text 3"
+                      value={getSafe(businessData, 'infoBar.2')}
+                      onChange={(e) =>
+                        handleDataChange('infoBar.2', e.target.value)
+                      }
+                      onFocus={() => handleSectionFocus('global')}
+                    />
+                  </>
+                )}
+                {/* --- END FLARA INFO BAR --- */}
+                {businessData?.announcementBar !== undefined && (
+                  <EditorInput
+                    label="Announcement Bar"
+                    value={getSafe(businessData, 'announcementBar')}
+                    onChange={(e) =>
+                      handleDataChange('announcementBar', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('global')}
+                  />
+                )}
+                <EditorInput
+                  label="Business Name"
+                  value={getSafe(businessData, 'name')}
+                  onChange={(e) => handleSyncedNameChange(e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                  isRequired={true}
+                />
+                <EditorInput
+                  label="Logo Text"
+                  value={getSafe(businessData, 'logoText')}
+                  onChange={(e) => handleSyncedNameChange(e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                  isRequired={true}
+                />
+                <EditorInput
+                  label="Contact Phone / WhatsApp"
+                  value={getSafe(businessData, 'whatsappNumber')}
+                  onChange={(e) =>
+                    handleDataChange('whatsappNumber', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('global')}
+                />
+              </AccordionItem>
+            )}
                 <>
                   <EditorInput
                     label="Info Bar Text 1"
@@ -872,14 +935,50 @@ export default function EditorSidebar({
 
             {/* --- FLARA ABOUT (feature1) --- */}
             {businessData?.feature1 && (
-              <AccordionItem
-                title="About Section (Feature 1)"
-                icon={Home}
-                isOpen={activeAccordion === 'about'}
-                onClick={() => toggleAccordion('about')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="About Section (Feature 1)"
+                  icon={Home}
+                  isOpen={activeAccordion === 'about'}
+                  onClick={() => toggleAccordion('about')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                    label="Title"
+                    value={getSafe(businessData, 'feature1.title')}
+                    onChange={(e) =>
+                      handleDataChange('feature1.title', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('about')}
+                  />
+                  <EditorTextArea
+                    label="Text"
+                    value={getSafe(businessData, 'feature1.text')}
+                    onChange={(e) =>
+                      handleDataChange('feature1.text', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('about')}
+                  />
+                  <EditorTextArea
+                    label="Sub-text"
+                    value={getSafe(businessData, 'feature1.subtext')}
+                    onChange={(e) =>
+                      handleDataChange('feature1.subtext', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('about')}
+                  />
+                  <EditorImageUpload
+                    label="About Image"
+                    value={getSafe(businessData, 'feature1.image')}
+                    onChange={(e) =>
+                      handleDataChange('feature1.image', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('about')}
+                  />
+                </AccordionItem>
+              </div>
+            )}
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'feature1.title')}
@@ -917,14 +1016,15 @@ export default function EditorSidebar({
             
             {/* --- AVENIX ABOUT --- */}
             {businessData?.about?.subheading && (
-              <AccordionItem
-                title="About Section"
-                icon={Home}
-                isOpen={activeAccordion === 'about'}
-                onClick={() => toggleAccordion('about')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="About Section"
+                  icon={Home}
+                  isOpen={activeAccordion === 'about'}
+                  onClick={() => toggleAccordion('about')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Heading"
                   value={getSafe(businessData, 'about.heading')}
@@ -966,18 +1066,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('about')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- BLISSLY ABOUT --- */}
             {businessData?.about?.features && (
-              <AccordionItem
-                title="About Section"
-                icon={Home}
-                isOpen={activeAccordion === 'about'}
-                onClick={() => toggleAccordion('about')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="About Section"
+                  icon={Home}
+                  isOpen={activeAccordion === 'about'}
+                  onClick={() => toggleAccordion('about')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'about.title')}
@@ -1035,20 +1137,22 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('about')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- FLAVORNEST (SIMPLE) ABOUT --- */}
             {businessData?.about &&
               !businessData?.about?.subheading &&
               !businessData?.about?.features && (
-                <AccordionItem
-                  title="About Section"
-                  icon={Home}
-                  isOpen={activeAccordion === 'about'}
-                  onClick={() => toggleAccordion('about')}
-                  isMobile={isMobile}
-                  onCloseMobile={() => toggleAccordion(null)}
-                >
+                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                  <AccordionItem
+                    title="About Section"
+                    icon={Home}
+                    isOpen={activeAccordion === 'about'}
+                    onClick={() => toggleAccordion('about')}
+                    isMobile={isMobile}
+                    onCloseMobile={() => toggleAccordion(null)}
+                  >
                   <EditorInput
                     label="Title"
                     value={getSafe(businessData, 'about.title')}
@@ -1066,18 +1170,20 @@ export default function EditorSidebar({
                     onFocus={() => handleSectionFocus('about')}
                   />
                 </AccordionItem>
+              </div>
               )}
 
             {/* --- BLISSLY EVENTS --- */}
             {businessData?.events?.items && (
-              <AccordionItem
-                title="Events Section"
-                icon={Calendar}
-                isOpen={activeAccordion === 'events'}
-                onClick={() => toggleAccordion('events')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Events Section"
+                  icon={Calendar}
+                  isOpen={activeAccordion === 'events'}
+                  onClick={() => toggleAccordion('events')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Section Title"
                   value={getSafe(businessData, 'events.title')}
@@ -1115,14 +1221,15 @@ export default function EditorSidebar({
             
             {/* --- BLISSLY MENU SECTION --- */}
             {businessData?.menu && businessData.menu.badge && (
-              <AccordionItem
-                title="Homepage Menu"
-                icon={Menu}
-                isOpen={activeAccordion === 'menu'}
-                onClick={() => toggleAccordion('menu')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Homepage Menu"
+                  icon={Menu}
+                  isOpen={activeAccordion === 'menu'}
+                  onClick={() => toggleAccordion('menu')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Badge Text"
                   value={getSafe(businessData, 'menu.badge')}
@@ -1179,20 +1286,22 @@ export default function EditorSidebar({
                   </div>
                 ))}
               </AccordionItem>
+              </div>
             )}
             {/* --- END BLISSLY MENU SECTION --- */}
 
 
             {/* --- FLARA FEATURE 2 --- */}
             {businessData?.feature2 && (
-              <AccordionItem
-                title="Feature Section 2"
-                icon={Columns}
-                isOpen={activeAccordion === 'feature2'}
-                onClick={() => toggleAccordion('feature2')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Feature Section 2"
+                  icon={Columns}
+                  isOpen={activeAccordion === 'feature2'}
+                  onClick={() => toggleAccordion('feature2')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'feature2.title')}
@@ -1234,18 +1343,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('feature2')}
                 />
               </AccordionItem>
+              </div>
             )}
             
             {/* --- AVENIX CTA SECTION --- */}
             {businessData?.ctaSection && (
-              <AccordionItem
-                title="CTA Section"
-                icon={Megaphone}
-                isOpen={activeAccordion === 'cta'}
-                onClick={() => toggleAccordion('cta')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="CTA Section"
+                  icon={Megaphone}
+                  isOpen={activeAccordion === 'cta'}
+                  onClick={() => toggleAccordion('cta')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'ctaSection.title')}
@@ -1279,18 +1390,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('cta')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- BLISSLY CTA SECTION --- */}
             {businessData?.cta && !businessData?.ctaSection && (
-              <AccordionItem
-                title="CTA Section"
-                icon={Megaphone}
-                isOpen={activeAccordion === 'cta'}
-                onClick={() => toggleAccordion('cta')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="CTA Section"
+                  icon={Megaphone}
+                  isOpen={activeAccordion === 'cta'}
+                  onClick={() => toggleAccordion('cta')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'cta.title')}
@@ -1314,18 +1427,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('cta')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- AVENIX STATS SECTION --- */}
             {businessData?.stats && (
-              <AccordionItem
-                title="Stats Section"
-                icon={TrendingUp}
-                isOpen={activeAccordion === 'stats'}
-                onClick={() => toggleAccordion('stats')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Stats Section"
+                  icon={TrendingUp}
+                  isOpen={activeAccordion === 'stats'}
+                  onClick={() => toggleAccordion('stats')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Title"
                   value={getSafe(businessData, 'stats.title')}
@@ -1375,18 +1490,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('stats')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- BLISSLY TESTIMONIALS --- */}
             {businessData?.testimonials?.items && (
-              <AccordionItem
-                title="Testimonials Section"
-                icon={MessageSquare}
-                isOpen={activeAccordion === 'testimonials'}
-                onClick={() => toggleAccordion('testimonials')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Testimonials Section"
+                  icon={MessageSquare}
+                  isOpen={activeAccordion === 'testimonials'}
+                  onClick={() => toggleAccordion('testimonials')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorTextArea
                   label="Testimonial 1 Quote"
                   value={getSafe(businessData, 'testimonials.items.0.quote')}
@@ -1421,18 +1538,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('testimonials')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- FLAVORNEST REVIEWS --- */}
             {businessData?.reviews?.items && (
-              <AccordionItem
-                title="Reviews Section"
-                icon={MessageSquare}
-                isOpen={activeAccordion === 'reviews'}
-                onClick={() => toggleAccordion('reviews')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Reviews Section"
+                  icon={MessageSquare}
+                  isOpen={activeAccordion === 'reviews'}
+                  onClick={() => toggleAccordion('reviews')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Section Title"
                   value={getSafe(businessData, 'reviews.title')}
@@ -1460,14 +1579,15 @@ export default function EditorSidebar({
               </AccordionItem>
             )}
 
-            <AccordionItem
-              title="Products & Categories"
-              icon={ShoppingBag}
-              isOpen={activeAccordion === 'products'}
-              onClick={() => toggleAccordion('products')}
-              isMobile={isMobile}
-              onCloseMobile={() => toggleAccordion(null)}
-            >
+            <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+              <AccordionItem
+                title="Products & Categories"
+                icon={ShoppingBag}
+                isOpen={activeAccordion === 'products'}
+                onClick={() => toggleAccordion('products')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
+              >
                 {/* --- CATEGORY MANAGER --- */}
                 <h4 className="text-base font-semibold text-gray-800 mb-2">Categories</h4>
                 {allCategories.map((category, index) => (
@@ -1548,17 +1668,19 @@ export default function EditorSidebar({
                     Add New Product
                 </button>
             </AccordionItem>
+            </div>
             
             {/* --- GENERIC HOMEPAGE COLLECTION MANAGER --- */}
             {(homepageProductIDs.length > 0 || businessData?.menu?.itemIDs) && (
-              <AccordionItem
-                title="Home Page Collections"
-                icon={LayoutDashboard}
-                isOpen={activeAccordion === 'collection'}
-                onClick={() => toggleAccordion('collection')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Home Page Collections"
+                  icon={LayoutDashboard}
+                  isOpen={activeAccordion === 'collection'}
+                  onClick={() => toggleAccordion('collection')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <p className="text-xs text-gray-500 mb-3">
                   Select the products to feature on your homepage.
                 </p>
@@ -1757,18 +1879,20 @@ export default function EditorSidebar({
                   </>
                 )}
               </AccordionItem>
+              </div>
             )}
             
             {/* --- THIS IS THE FIX: AVENIX BLOG --- */}
             {businessData?.blog?.heading && businessData?.blog?.items?.[0]?.category && (
-              <AccordionItem
-                title="Blog Section (Avenix)"
-                icon={Pencil}
-                isOpen={activeAccordion === 'blog'}
-                onClick={() => toggleAccordion('blog')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Blog Section (Avenix)"
+                  icon={Pencil}
+                  isOpen={activeAccordion === 'blog'}
+                  onClick={() => toggleAccordion('blog')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Section Heading"
                   value={getSafe(businessData, 'blog.heading')}
@@ -1848,18 +1972,20 @@ export default function EditorSidebar({
                   />
                 </div>
               </AccordionItem>
+              </div>
             )}
             
             {/* --- THIS IS THE FIX: FLARA BLOG --- */}
             {businessData?.blog?.title && businessData?.blog?.items?.[0]?.text && (
-              <AccordionItem
-                title="Blog Section (Flara)"
-                icon={Pencil}
-                isOpen={activeAccordion === 'blog'}
-                onClick={() => toggleAccordion('blog')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Blog Section (Flara)"
+                  icon={Pencil}
+                  isOpen={activeAccordion === 'blog'}
+                  onClick={() => toggleAccordion('blog')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Section Title"
                   value={getSafe(businessData, 'blog.title')}
@@ -1903,20 +2029,22 @@ export default function EditorSidebar({
                   </div>
                 ))}
               </AccordionItem>
+              </div>
             )}
             {/* --- END OF BLOG FIX --- */}
 
 
             {/* --- FLARA FOOTER --- */}
             {businessData?.footer?.links?.about && (
-              <AccordionItem
-                title="Footer"
-                icon={FileText}
-                isOpen={activeAccordion === 'footer'}
-                onClick={() => toggleAccordion('footer')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <h4 className="text-base font-semibold text-gray-800 mb-2">
                   "About" Links
                 </h4>
@@ -1965,18 +2093,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('footer')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- AVENIX FOOTER --- */}
             {businessData?.footer?.description && (
-              <AccordionItem
-                title="Footer"
-                icon={FileText}
-                isOpen={activeAccordion === 'footer'}
-                onClick={() => toggleAccordion('footer')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                   Footer Content
                 </h4>
@@ -2021,18 +2151,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('footer')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- BLISSLY FOOTER --- */}
             {businessData?.footer?.promoTitle && (
-              <AccordionItem
-                title="Footer"
-                icon={FileText}
-                isOpen={activeAccordion === 'footer'}
-                onClick={() => toggleAccordion('footer')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Promo Title"
                   value={getSafe(businessData, 'footer.promoTitle')}
@@ -2107,18 +2239,20 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('footer')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             {/* --- FLAVORNEST FOOTER --- */}
             {businessData?.footer?.madeBy && (
-              <AccordionItem
-                title="Footer"
-                icon={FileText}
-                isOpen={activeAccordion === 'footer'}
-                onClick={() => toggleAccordion('footer')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
                 <EditorInput
                   label="Made By Text"
                   value={getSafe(businessData, 'footer.madeBy')}
@@ -2139,6 +2273,7 @@ export default function EditorSidebar({
                   Copyright is updated automatically with your business name.
                 </p>
               </AccordionItem>
+              </div>
             )}
           </section>
         )}

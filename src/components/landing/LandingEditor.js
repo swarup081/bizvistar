@@ -40,7 +40,7 @@ const Cursor = ({ x, y, click }) => {
 };
 
 export default function LandingEditor() {
-  const templateName = 'aurora'; // CHANGED TO AURORA
+  const templateName = 'aurora';
   const mode = 'dashboard';
   const websiteId = 'demo';
   const siteSlug = 'demo';
@@ -60,38 +60,41 @@ export default function LandingEditor() {
   const isHoveredRef = useRef(false);
 
   // State for dynamic scaling
-  const [desktopScale, setDesktopScale] = useState(1);
-  const [mobileScale, setMobileScale] = useState(1);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [scale, setScale] = useState(1);
   const mainContainerRef = useRef(null);
 
+  // --- UPDATED RESIZE LOGIC ---
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 1024;
-      setIsMobileViewport(isMobile);
-
       const container = mainContainerRef.current;
       if (!container) return;
 
       const containerWidth = container.offsetWidth;
       const containerHeight = container.offsetHeight;
 
-      if (view === 'desktop' && isMobile) {
-        const scale = Math.min(1, (containerWidth - 40) / 1024);
-        setDesktopScale(scale);
-      } else {
-        setDesktopScale(1);
-      }
+      // Base width for desktop view (ensures it looks like a real desktop)
+      const baseDesktopWidth = 1440;
+      // Base dimensions for mobile (iPhone Xish)
+      const baseMobileWidth = 375;
+      const baseMobileHeight = 812;
 
-      if (view === 'mobile') {
-        const availableHeight = containerHeight - 80;
-        const scale = Math.min(1, availableHeight / 812);
-        setMobileScale(scale);
+      if (view === 'desktop') {
+        // Calculate scale to fit the 1440px wide content into the available container width
+        // We add some padding/margin logic if needed, but fitting width is key.
+        // If container > 1440, we might cap it or let it grow.
+        // But for "squished" issue, the container is likely smaller (e.g. 1000px).
+        // So scale = 1000 / 1440 = 0.69
+        const newScale = Math.min(1, containerWidth / baseDesktopWidth);
+        setScale(newScale);
       } else {
-        setMobileScale(1);
+        // Mobile View
+        const availableHeight = containerHeight - 40; // padding
+        const heightScale = availableHeight / baseMobileHeight;
+        setScale(Math.min(1, heightScale));
       }
     };
-    handleResize();
+
+    handleResize(); // Initial call
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [view]);
@@ -176,33 +179,20 @@ export default function LandingEditor() {
             }
 
             const w = window.innerWidth;
-            // Sidebar is fixed 320px (80 of tailwind w-80).
-            // Wait, w-80 is 20rem = 320px.
-            // If the window is wide, sidebar is on the right?
-            // In LandingEditor: lg:grid-cols-[1fr_auto]. Sidebar is second column.
-            // So sidebar is on the right.
             const sidebarWidth = 320;
             const sidebarCenterX = w - (sidebarWidth / 2);
 
-            // 1. Move to "Business Name" Input
+            // 1. Move to "Hero Section" (Updated from Business Name)
+            // Hero is usually the 2nd item if Global is hidden?
+            // If Global is hidden, Hero is 1st.
             if (!isMounted.current) break;
-            setActiveAccordion('global'); // Open global accordion
+            setActiveAccordion('hero');
             await wait(500);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Move to approx input Y position.
-            // Global Settings is first. Business Name is usually the 3rd or 4th input.
-            // Let's guess Y around 350px relative to viewport top.
-            // The Editor is centered vertically on page? No, it's in Hero.
-            // The cursor position is fixed relative to viewport.
-            // The LandingEditor top position depends on scroll, but the user is likely at top.
-            // Let's assume the user hasn't scrolled much.
-            // Actually, we can use `getBoundingClientRect` of the sidebar container if we wanted perfection,
-            // but fixed values are "good enough" for a demo if we assume standard desktop res.
-            // Let's target the sidebar center X and Y=350.
-
-            setCursorPos({ x: sidebarCenterX, y: 350 });
+            // Move to "Hero Title" input (approx Y=300)
+            setCursorPos({ x: sidebarCenterX, y: 300 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -214,16 +204,18 @@ export default function LandingEditor() {
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Type "Storify Demo"
-            const targetName = "Storify Demo";
-            for (let i = 0; i <= targetName.length; i++) {
+            // Type "Timeless Elegance" (Replacing "Desire Meets New Style" logic visually)
+            // Note: We are simulating typing by updating state directly
+            const targetTitle = "Timeless Elegance";
+            for (let i = 0; i <= targetTitle.length; i++) {
                 if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } // Pause typing
+                if (isHoveredRef.current) { await wait(200); i--; continue; }
 
+                // For Aurora Hero Title (It has titleLine1 and titleLine2, but simplified for demo)
+                // Let's just update titleLine1 for visual effect
                 setBusinessData(prev => ({
                     ...prev,
-                    name: targetName.substring(0, i),
-                    logoText: targetName.substring(0, i)
+                    hero: { ...prev.hero, titleLine1: targetTitle.substring(0, i) }
                 }));
                 await wait(80);
             }
@@ -234,27 +226,6 @@ export default function LandingEditor() {
 
             // 2. Switch to Theme Tab
             if (!isMounted.current) break;
-            // Theme tab is at top. approx Y=90 (since header is 65+50=115? No, Header is 65+50. Tabs are below header in sidebar?
-            // EditorSidebar tabs are at top of sidebar. Sidebar is below top nav?
-            // In LandingEditor layout: Column 1 is Nav + Preview. Column 2 is Sidebar.
-            // Sidebar has height 100%.
-            // Sidebar tabs are at top of sidebar component.
-            // Sidebar starts at top of container.
-            // Container top is... well, below the page header.
-            // Let's assume standard desktop 1920x1080.
-            // The cursor is independent.
-            // Let's try to aim for top of sidebar.
-            // Sidebar tabs: "Website", "Theme", "Settings".
-            // Theme is middle tab.
-            setCursorPos({ x: sidebarCenterX, y: 250 }); // Just a guess, 250 might be too low.
-            // TopNav is inside col 1. Sidebar is col 2.
-            // Sidebar has tabs at the very top.
-            // The container `h-[800px]`.
-            // The page has a header `NewHeader` (h-20 = 80px).
-            // Hero section pt-20.
-            // Editor starts somewhere around Y=180?
-            // Sidebar tabs are at top of sidebar.
-            // So Y ~ 200px.
             setCursorPos({ x: sidebarCenterX, y: 220 });
 
             await wait(1000);
@@ -271,18 +242,12 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 3. Select a Palette (Elegant Botanics)
-            // Palettes are a grid.
-            // elegant-botanics is index 1 (2nd item).
-            // Grid is col-2. So it's Top Right.
-            // Y position: below "Color Palette" title.
-            // Let's guess Y ~ 350.
             setCursorPos({ x: sidebarCenterX + 60, y: 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
             setIsClicking(true);
-            // Update logic for Aurora (styleConfig is hardcoded? No, we wired up theme!)
             setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'elegant-botanics' } }));
             await wait(200);
             setIsClicking(false);
@@ -291,7 +256,7 @@ export default function LandingEditor() {
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // 4. Back to Sage Green (Index 0, Top Left)
+            // 4. Back to Sage Green
             setCursorPos({ x: sidebarCenterX - 60, y: 350 });
             await wait(1000);
 
@@ -307,7 +272,7 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 5. Back to Website Tab
-            setCursorPos({ x: sidebarCenterX - 80, y: 220 }); // Left tab
+            setCursorPos({ x: sidebarCenterX - 80, y: 220 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -320,8 +285,7 @@ export default function LandingEditor() {
             // Reset Text
             setBusinessData(prev => ({
                 ...prev,
-                name: defaultData.name,
-                logoText: defaultData.logoText
+                hero: { ...prev.hero, titleLine1: defaultData.hero?.titleLine1 || "Desire Meets" }
             }));
 
             await wait(2000);
@@ -329,7 +293,7 @@ export default function LandingEditor() {
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [defaultData.logoText, defaultData.name]);
+  }, [defaultData.hero?.titleLine1]); // Dependency updated
 
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
@@ -385,7 +349,7 @@ export default function LandingEditor() {
       onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
     >
 
-      {/* --- Cursor Overlay (Only visible when NOT hovered) --- */}
+      {/* --- Cursor Overlay --- */}
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
       {/* Column 1: Main Content (Nav + Preview) */}
@@ -408,32 +372,31 @@ export default function LandingEditor() {
             canUndo={false}
             canRedo={false}
             onRestart={handleRestart}
-            isLandingMode={true} // <-- Enable Landing Mode
+            isLandingMode={true}
           />
         </div>
 
-        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] ${view === 'mobile' && isMobileViewport ? 'p-0' : 'p-4 lg:p-0'}`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
           <div
-            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-center
-              ${view === 'mobile' && !isMobileViewport ? 'rounded-3xl border border-gray-300' : ''}
-              ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
+              ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''}
             `}
             style={{
-              width: view === 'desktop' ? (isMobileViewport ? '1024px' : '100%') : (isMobileViewport ? '100%' : '375px'),
-              height: view === 'desktop' ? '100%' : (isMobileViewport ? '100%' : '812px'),
-              transform: view === 'desktop' ? (isMobileViewport ? `scale(${desktopScale})` : 'none') : (isMobileViewport ? 'none' : `scale(${mobileScale})`),
-              marginTop: '0',
-              marginBottom: view === 'desktop' && isMobileViewport ? '100px' : '0',
+              width: view === 'desktop' ? '1440px' : '375px', // Fixed 1440px width for desktop to prevent squishing
+              height: view === 'desktop' ? '100%' : '812px',
+              transform: `scale(${scale})`, // Use computed scale
+              marginTop: view === 'desktop' ? '0' : '40px',
+              overflow: 'hidden', // Prevent scrollbars
             }}
           >
-            {/* --- THIS IS THE KEY: Use an iframe pointing to the real template route --- */}
-            {/* Since we modified layout.js, this iframe will now listen to postMessages from '/' */}
+            {/* --- Iframe --- */}
             <iframe
               ref={iframeRef}
-              src={`/templates/${templateName}`} // Points to the actual route!
+              src={`/templates/${templateName}`}
               title="Website Preview"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 pointer-events-auto" // Ensure iframe receives events if needed
               key={templateName}
+              style={{ overflow: 'hidden' }}
             />
           </div>
         </main>
@@ -450,7 +413,7 @@ export default function LandingEditor() {
           activeAccordion={activeAccordion}
           onAccordionToggle={handleAccordionToggle}
           forceDesktop={true}
-          isLandingMode={true} // <-- Enable Landing Mode
+          isLandingMode={true}
         />
       </div>
     </div>
