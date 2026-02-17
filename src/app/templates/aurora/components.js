@@ -1,9 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useCart } from './cartContext.js';
 import { useTemplateContext } from './templateContext.js';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Search, ShoppingBag, Heart, Star } from 'lucide-react';
 
 // --- ICONS ---
@@ -21,12 +21,14 @@ export const FeatureIcon = ({ name, size = 32 }) => {
     );
 };
 
-// --- HEADER (Matches Eglanto Layout) ---
-export const Header = () => {
+// --- HEADER CONTENT (Logic with SearchParams) ---
+const HeaderContent = () => {
     const { businessData, basePath } = useTemplateContext();
     const { cartCount, openCart } = useCart();
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const isLanding = searchParams.get('isLanding') === 'true';
 
     const resolveLink = (url) => {
         if (!url) return "#";
@@ -42,6 +44,12 @@ export const Header = () => {
         });
     }
 
+    const DemoTooltip = () => (
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+            Demo Mode
+        </div>
+    );
+
     return (
         <header className={`${scrolled ? "fixed bg-[var(--color-bg)]/90 backdrop-blur-md shadow-sm py-4" : "absolute py-4 md:py-8"} top-0 left-0 w-full z-50 px-6 lg:px-16 transition-all duration-300`}>
             <div className="max-w-[1920px] mx-auto flex justify-between items-center">
@@ -49,19 +57,23 @@ export const Header = () => {
                 {/* LEFT: Navigation Links */}
                 <nav className="hidden lg:flex items-center gap-10">
                     {['Home', 'Shop'].map((item) => (
-                        <a 
-                            key={item} 
-                            href={resolveLink(item === 'Home' ? "" : `/shop`)}
-                            className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors text-[var(--color-text-light)] hover:text-[var(--color-dark)]`}
-                        >
-                            {item}
-                        </a>
+                        <div key={item} className="relative group">
+                            <a
+                                href={resolveLink(item === 'Home' ? "" : `/shop`)}
+                                onClick={(e) => {
+                                    if (isLanding) e.preventDefault();
+                                }}
+                                className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors text-[var(--color-text-light)] hover:text-[var(--color-dark)] ${isLanding ? 'cursor-not-allowed opacity-70' : ''}`}
+                            >
+                                {item}
+                            </a>
+                            {isLanding && <DemoTooltip />}
+                        </div>
                     ))}
                 </nav>
 
                 {/* CENTER: Logo */}
-                <a href={resolveLink("")} className="flex items-center gap-3 absolute left-1/2 -translate-x-1/2">
-                   
+                <a href={resolveLink("")} onClick={isLanding ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 absolute left-1/2 -translate-x-1/2 ${isLanding ? 'cursor-default' : ''}`}>
                     <span className="font-serif text-[6vw] md:text-3xl text-[var(--color-dark)] tracking-tight font-medium">
                         {businessData.name}
                     </span>
@@ -70,17 +82,32 @@ export const Header = () => {
                 {/* RIGHT: Icons */}
                 <div className="flex items-center gap-4 md:gap-8 text-[var(--color-dark)]">
        
-                    <button onClick={openCart} className="hover:scale-110 transition-transform relative">
-                        <ShoppingBag size={22} strokeWidth={1.5} />
-                        {cartCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[var(--color-gold)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                                {cartCount}
-                            </span>
-                        )}
-                    </button>
+                    <div className="relative group">
+                        <button
+                            onClick={isLanding ? (e) => e.preventDefault() : openCart}
+                            className={`hover:scale-110 transition-transform relative ${isLanding ? 'cursor-not-allowed opacity-70' : ''}`}
+                        >
+                            <ShoppingBag size={22} strokeWidth={1.5} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[var(--color-gold)] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                        {isLanding && <DemoTooltip />}
+                    </div>
                 </div>
             </div>
         </header>
+    );
+};
+
+// --- HEADER WRAPPER ---
+export const Header = () => {
+    return (
+        <Suspense fallback={<div className="absolute py-4 md:py-8 top-0 left-0 w-full px-6 lg:px-16" />}>
+            <HeaderContent />
+        </Suspense>
     );
 };
 

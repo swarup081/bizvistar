@@ -14,6 +14,7 @@ const Cursor = ({ x, y, click }) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/avoid-calling-set-state-in-effect
     setMounted(true);
     return () => setMounted(false);
   }, []);
@@ -22,7 +23,8 @@ const Cursor = ({ x, y, click }) => {
 
   return createPortal(
     <motion.div
-      className="fixed pointer-events-none z-[9999]"
+      className="fixed pointer-events-none z-[99999]" // Increased z-index
+      style={{ left: 0, top: 0 }} // Ensure fixed positioning works with x/y transform
       animate={{ x, y }}
       transition={{ type: "spring", stiffness: 500, damping: 28 }}
     >
@@ -48,10 +50,11 @@ export default function LandingEditor() {
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
+  const containerRef = useRef(null); // Ref for the main editor container
   const [activeAccordion, setActiveAccordion] = useState('global');
 
   // Animation State
-  const [cursorPos, setCursorPos] = useState({ x: 1200, y: 300 });
+  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 }); // Start off-screen
   const [isClicking, setIsClicking] = useState(false);
   const isMounted = useRef(true);
 
@@ -176,9 +179,18 @@ export default function LandingEditor() {
                continue;
             }
 
-            const w = window.innerWidth;
-            const sidebarWidth = 320;
-            const sidebarCenterX = w - (sidebarWidth / 2);
+            // Get Editor Container Rect
+            const containerRect = containerRef.current?.getBoundingClientRect();
+            if (!containerRect) { await wait(200); continue; }
+
+            // Sidebar is fixed width 320px inside the container (if lg+)
+            // But layout is grid-cols-[1fr_auto]
+            // We need to target specific points relative to the container
+
+            // Assuming Sidebar is on the right, approx 320px wide
+            // Target X inside sidebar = containerRight - (320 / 2)
+            const sidebarCenterX = containerRect.right - 160;
+            const sidebarTopY = containerRect.top;
 
             // 1. Move to "Hero Section" (Updated from Business Name)
             // Hero is usually the 2nd item if Global is hidden?
@@ -189,8 +201,8 @@ export default function LandingEditor() {
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Move to "Hero Title" input (approx Y=300)
-            setCursorPos({ x: sidebarCenterX, y: 300 });
+            // Move to "Hero Title" input (approx Y relative to containerTop + 300)
+            setCursorPos({ x: sidebarCenterX, y: sidebarTopY + 300 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -224,7 +236,7 @@ export default function LandingEditor() {
 
             // 2. Switch to Theme Tab
             if (!isMounted.current) break;
-            setCursorPos({ x: sidebarCenterX, y: 220 });
+            setCursorPos({ x: sidebarCenterX, y: sidebarTopY + 220 });
 
             await wait(1000);
 
@@ -240,7 +252,7 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 3. Select a Palette (Elegant Botanics)
-            setCursorPos({ x: sidebarCenterX + 60, y: 350 });
+            setCursorPos({ x: sidebarCenterX + 60, y: sidebarTopY + 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -255,7 +267,7 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 4. Back to Sage Green
-            setCursorPos({ x: sidebarCenterX - 60, y: 350 });
+            setCursorPos({ x: sidebarCenterX - 60, y: sidebarTopY + 350 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -270,7 +282,7 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // 5. Back to Website Tab
-            setCursorPos({ x: sidebarCenterX - 80, y: 220 });
+            setCursorPos({ x: sidebarCenterX - 80, y: sidebarTopY + 220 });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -342,12 +354,14 @@ export default function LandingEditor() {
 
   return (
     <div
+      ref={containerRef}
       className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[800px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
       onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
       onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
     >
 
       {/* --- Cursor Overlay --- */}
+      {/* ALWAYS RENDER CURSOR IF NOT HOVERED, USING PORTAL. */}
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
       {/* Column 1: Main Content (Nav + Preview) */}
@@ -390,7 +404,7 @@ export default function LandingEditor() {
             {/* --- Iframe --- */}
             <iframe
               ref={iframeRef}
-              src={`/templates/${templateName}`}
+              src={`/templates/${templateName}?isLanding=true`} // Added param
               title="Website Preview"
               className="w-full h-full border-0 pointer-events-auto" // Ensure iframe receives events if needed
               key={templateName}
