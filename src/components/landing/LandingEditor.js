@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+// Removed createPortal since we want absolute positioning within the relative container
 import { motion } from 'framer-motion';
 import EditorTopNav from '@/components/editor/EditorTopNav';
 import EditorSidebar from '@/components/editor/EditorSidebar';
@@ -9,24 +9,14 @@ import EditorSidebar from '@/components/editor/EditorSidebar';
 // Import template data
 import { businessData as auroraData } from '@/app/templates/aurora/data.js';
 
-// --- Cursor Animation Component (Portal to Body) ---
+// --- Cursor Animation Component (Absolute within Container) ---
 const Cursor = ({ x, y, click }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/avoid-calling-set-state-in-effect
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  if (!mounted || typeof document === 'undefined') return null;
-
-  return createPortal(
+  return (
     <motion.div
-      className="fixed pointer-events-none z-[99999]" // Increased z-index
-      style={{ left: 0, top: 0 }} // Ensure fixed positioning works with x/y transform
+      className="absolute pointer-events-none z-[50]"
+      style={{ left: 0, top: 0 }}
       animate={{ x, y }}
-      transition={{ type: "spring", stiffness: 500, damping: 28 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }} // Slightly softer
     >
       {/* Mac Cursor SVG */}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
@@ -36,8 +26,7 @@ const Cursor = ({ x, y, click }) => {
       {click && (
          <span className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-blue-500/30 animate-ping" />
       )}
-    </motion.div>,
-    document.body
+    </motion.div>
   );
 };
 
@@ -54,7 +43,7 @@ export default function LandingEditor() {
   const [activeAccordion, setActiveAccordion] = useState('global');
 
   // Animation State
-  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 }); // Start off-screen
+  const [cursorPos, setCursorPos] = useState({ x: -50, y: -50 });
   const [isClicking, setIsClicking] = useState(false);
   const isMounted = useRef(true);
 
@@ -64,10 +53,10 @@ export default function LandingEditor() {
 
   // State for dynamic scaling
   const [scale, setScale] = useState(1);
-  const [containerHeight, setContainerHeight] = useState(800); // Default fallback
+  const [containerHeight, setContainerHeight] = useState(800);
   const mainContainerRef = useRef(null);
 
-  // --- UPDATED RESIZE LOGIC ---
+  // --- RESIZE LOGIC ---
   useEffect(() => {
     const handleResize = () => {
       const container = mainContainerRef.current;
@@ -77,25 +66,21 @@ export default function LandingEditor() {
       const cHeight = container.offsetHeight;
       setContainerHeight(cHeight);
 
-      // Base width for desktop view (ensures it looks like a real desktop)
       const baseDesktopWidth = 1440;
-      // Base dimensions for mobile (iPhone Xish)
       const baseMobileWidth = 375;
       const baseMobileHeight = 812;
 
       if (view === 'desktop') {
-        // Calculate scale to fit the 1440px wide content into the available container width
         const newScale = Math.min(1, cWidth / baseDesktopWidth);
         setScale(newScale);
       } else {
-        // Mobile View
-        const availableHeight = cHeight - 40; // padding
+        const availableHeight = cHeight - 40;
         const heightScale = availableHeight / baseMobileHeight;
         setScale(Math.min(1, heightScale));
       }
     };
 
-    handleResize(); // Initial call
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [view]);
@@ -165,86 +150,66 @@ export default function LandingEditor() {
     return () => clearTimeout(handler);
   }, [businessData]);
 
-  // --- Animation Logic ---
+  // --- Animation Logic (Coordinate Recalibration) ---
   useEffect(() => {
     isMounted.current = true;
     const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
     const sequence = async () => {
-        await wait(1500); // Initial Wait
+        await wait(1500);
 
         while (isMounted.current) {
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Get Editor Container Rect for Coordinate Mapping
-            const containerRect = containerRef.current?.getBoundingClientRect();
-            if (!containerRect) { await wait(200); continue; }
+            const container = containerRef.current;
+            if (!container) { await wait(200); continue; }
 
-            // --- Helper to map virtual (1440x800) coordinates to screen ---
-            // The simulation logic works in "virtual desktop" space.
-            // We need to scale X/Y relative to the container's top-left.
-            // BUT: The sidebar is fixed width (320px) on the right in the UI, but in the DOM structure it's a flex/grid item.
-            // The visual representation in LandingEditor matches the grid.
-            // So we can target relative to containerRect.
+            const w = container.offsetWidth;
+            const h = container.offsetHeight;
 
-            // Note: The scale state affects the *preview* (iframe wrapper), not the Sidebar (which is separate div).
-            // However, the Sidebar is rendered inside the container.
-            // Wait, in LandingEditor JSX:
-            // <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] ...">
-            //    <div>...Main (Preview)...</div>
-            //    <div>...Sidebar...</div>
-            // </div>
-            // So Sidebar is NOT scaled. It is standard DOM.
-            // Main content IS scaled.
+            // Coordinates relative to CONTAINER (top-left is 0,0)
+            // Sidebar is fixed width 320px on the RIGHT side.
+            // Wait, looking at JSX below:
+            // `lg:grid-cols-[1fr_auto]` means Preview is Left, Sidebar is Right (Auto).
+            // Sidebar width `lg:w-80` (320px).
 
-            // Coordinate Strategy:
-            // 1. Sidebar Elements: Target relative to container Right Edge.
-            // 2. Preview Elements (Title): Target relative to container Left Edge + Scaled Position.
+            const sidebarWidth = 320;
+            const sidebarLeftX = w - sidebarWidth; // X coordinate where sidebar starts
+            const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
 
-            const containerLeft = containerRect.left;
-            const containerTop = containerRect.top;
-            const containerRight = containerRect.right;
-            // Sidebar is approx 320px from right.
-            const sidebarX = containerRight - 160; // Center of sidebar
+            // --- STEP 1: Click "Hero Section" Accordion ---
+            // Accordion list starts below Tabs. Tabs height ~60px.
+            // "Global Settings" is 1st. "Hero Section" is 2nd.
+            // Accordion Item height ~50px.
+            // Target Y: ~60 + 50 + 25 = 135px.
 
-            // --- STEP 1: Move to Title (Desire Meets New Style) ---
-            // Virtual Pos: x=350, y=350.
-            // Screen Pos: left + (350 * scale), top + (350 * scale).
-            // (Assuming preview is top-left aligned in its cell).
-            // Note: EditorTopNav is above preview. Height approx 60px.
-            const previewTopOffset = 60;
+            const heroAccordionY = 135;
 
-            const titleTargetX = containerLeft + (350 * scale);
-            const titleTargetY = containerTop + previewTopOffset + (300 * scale);
-
-            setCursorPos({ x: titleTargetX, y: titleTargetY });
+            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Click Title
             setIsClicking(true);
-            // Simulate Sidebar Open
-            setActiveAccordion('hero');
+            setActiveAccordion('hero'); // Open Hero
             await wait(200);
             setIsClicking(false);
 
-            await wait(800); // Wait for sidebar transition
-
+            await wait(800); // Wait for open animation
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 2: Move to Title Input in Sidebar ---
-            // Sidebar is not scaled.
-            // Input is near top of sidebar content (below tabs).
-            // Tabs ~60px.
-            const sidebarInputY = containerTop + 180;
+            // --- STEP 2: Click "Title" Input ---
+            // Input is inside accordion.
+            // 1st input is usually Title/Line1.
+            // Y position shifts down. Let's say ~180px.
 
-            setCursorPos({ x: sidebarX, y: sidebarInputY });
+            const titleInputY = 220; // Adjusted down for opened accordion content
+
+            setCursorPos({ x: sidebarCenterX, y: titleInputY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Click Input
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
@@ -260,7 +225,7 @@ export default function LandingEditor() {
                     hero: {
                         ...prev.hero,
                         titleLine1: targetTitle.substring(0, i),
-                        title: targetTitle.substring(0, i) // Update both for compat
+                        title: targetTitle.substring(0, i)
                     }
                 }));
                 await wait(80);
@@ -270,15 +235,14 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 3: Switch to Theme Tab ---
-            const themeTabY = containerTop + 40; // Tabs area
-            // "Theme" is the middle tab. Sidebar width 320.
+            // Tabs are at top of Sidebar.
             // Website | Theme | Settings
-            // 0-106   | 107-213 | 214-320
-            // Center of Theme is ~160px from sidebar left.
-            // Sidebar Left = containerRight - 320.
-            // So SidebarX (center) is correct.
+            // Theme is middle.
 
-            setCursorPos({ x: sidebarX, y: themeTabY });
+            const themeTabY = 30; // Center of tab bar (height 60)
+            const themeTabX = sidebarCenterX;
+
+            setCursorPos({ x: themeTabX, y: themeTabY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -292,15 +256,14 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 4: Select Strawberry Cream Palette ---
-            // Palette Grid starts below "Color Palette" title.
-            // Approx Y relative to containerTop.
-            // Header ~60px + Title ~40px = 100px.
-            // Grid is 4 rows. Strawberry Cream is last (Row 4, Col 2).
-            // Row height ~50px. Y = 100 + (3*50) + 25 = 275.
-            const strawberryY = containerTop + 280;
-            // Col 2 center. Sidebar width 320. Col 2 is right half.
-            // Center ~ containerRight - 80.
-            const strawberryX = containerRight - 80;
+            // Palettes are a grid.
+            // Strawberry Cream is the last one (bottom right).
+            // Grid starts below title.
+            // Y approx 250px.
+            // X approx sidebarRight - 60px.
+
+            const strawberryX = w - 80;
+            const strawberryY = 280;
 
             setCursorPos({ x: strawberryX, y: strawberryY });
             await wait(1000);
@@ -316,27 +279,28 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 5: Change Font to Kalam ---
-            // Font select is below palettes. Y approx 450.
-            const fontSelectY = containerTop + 450;
-            const fontSelectX = sidebarX; // Center
+            // Font dropdowns are below palettes.
+            // Heading Font Select Y approx 450.
+
+            const fontSelectY = 450;
+            const fontSelectX = sidebarCenterX;
 
             setCursorPos({ x: fontSelectX, y: fontSelectY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Open Dropdown
+            // Click to Open Dropdown
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
-            await wait(500); // Wait for dropdown animation
+            await wait(500);
 
-            // Move to "Kalam" (Assuming it's in the list, down a bit)
-            // Dropdown list height ~200px.
-            // Kalam is towards end? Or sorted?
-            // "Kalam" is index 7 in the list of 10.
-            // Item height ~36px. 7 * 36 = 252px down.
+            // Move down to "Kalam" in the list
+            // Dropdown overlay appears.
+            // Y + 200px.
+
             const kalamY = fontSelectY + 200;
 
             setCursorPos({ x: fontSelectX, y: kalamY });
@@ -350,23 +314,42 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            // Close dropdown (click outside or it closes on select)
-            // It closes on select usually.
+            await wait(2000);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 6: Publish (Top Right) ---
+            // Publish button is in EditorTopNav (Top Bar).
+            // Position: Top Right of MAIN PREVIEW area (Column 1).
+            // Column 1 Width = w - 320.
+            // Button is ~100px from right of Col 1.
+            // Y ~ 30px (Center of Nav).
+
+            const publishX = (w - sidebarWidth) - 100;
+            const publishY = 30;
+
+            setCursorPos({ x: publishX, y: publishY });
+            await wait(1000);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            setIsClicking(true);
+            // Flash success?
+            await wait(200);
+            setIsClicking(false);
 
             await wait(2000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- RESET ---
-            // Move back to Website Tab to restart cleanly?
-            // Or just reset state.
 
+            // --- RESET ---
             setActiveTab('website');
+            setActiveAccordion('global'); // Reset accordion
              setBusinessData(prev => ({
                 ...prev,
                 hero: {
                     ...prev.hero,
                     titleLine1: defaultData.hero?.titleLine1 || "Desire Meets",
-                    title: defaultData.hero?.titleLine1 // Reset generic title too
+                    title: defaultData.hero?.titleLine1
                 },
                 theme: defaultData.theme
             }));
@@ -376,7 +359,7 @@ export default function LandingEditor() {
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [defaultData.hero?.titleLine1, scale]); // Added scale dep
+  }, [defaultData.hero?.titleLine1, scale]);
 
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
@@ -405,36 +388,17 @@ export default function LandingEditor() {
   const handleAccordionToggle = (id) => {
     const newActiveId = activeAccordion === id ? null : id;
     setActiveAccordion(newActiveId);
-    if (newActiveId) {
-      if (newActiveId === 'products') {
-        const shopPage = businessData.pages.find(p => p.name.toLowerCase() === 'shop');
-        if (shopPage) handlePageChange(shopPage.path);
-      } else {
-        const sectionIdMap = {
-          hero: 'home', global: 'home', about: 'about', events: 'events', menu: 'menu',
-          testimonials: 'testimonials', collection: 'collection', feature2: 'feature2',
-          footer: 'contact', cta: 'cta', stats: 'stats', blog: 'blog', reviews: 'reviews', specialty: 'specialty',
-        };
-        const sectionId = sectionIdMap[id] || (id !== 'products' ? id : null);
-        if (sectionId) {
-          const homePage = businessData.pages.find(p => p.name.toLowerCase() === 'home');
-          const homePath = homePage?.path || businessData.pages[0]?.path;
-          handlePageChange(sectionId === 'home' ? homePath : `${homePath}#${sectionId}`);
-        }
-      }
-    }
   };
 
   return (
     <div
       ref={containerRef}
-      className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[800px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
+      className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
       onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
       onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
     >
 
-      {/* --- Cursor Overlay --- */}
-      {/* ALWAYS RENDER CURSOR IF NOT HOVERED, USING PORTAL. */}
+      {/* --- Cursor Overlay (ABSOLUTE within this RELATIVE container) --- */}
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
       {/* Column 1: Main Content (Nav + Preview) */}
@@ -467,19 +431,19 @@ export default function LandingEditor() {
               ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''}
             `}
             style={{
-              width: view === 'desktop' ? '1440px' : '375px', // Fixed 1440px width for desktop to prevent squishing
-              height: view === 'desktop' ? `${containerHeight / scale}px` : '812px', // Invert scale for height to fill container
-              transform: `scale(${scale})`, // Use computed scale
+              width: view === 'desktop' ? '1440px' : '375px',
+              height: view === 'desktop' ? `${containerHeight / scale}px` : '812px',
+              transform: `scale(${scale})`,
               marginTop: view === 'desktop' ? '0' : '40px',
-              overflow: 'hidden', // Prevent scrollbars
+              overflow: 'hidden',
             }}
           >
             {/* --- Iframe --- */}
             <iframe
               ref={iframeRef}
-              src={`/templates/${templateName}?isLanding=true`} // Added param
+              src={`/templates/${templateName}?isLanding=true`}
               title="Website Preview"
-              className="w-full h-full border-0 pointer-events-auto" // Ensure iframe receives events if needed
+              className="w-full h-full border-0 pointer-events-auto"
               key={templateName}
               style={{ overflow: 'hidden' }}
             />

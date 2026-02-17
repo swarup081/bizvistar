@@ -158,8 +158,12 @@ function AuroraContent({ children }) {
             `}</style>
 
             <AnalyticsTracker websiteId={websiteId} />
+
+            {/* Nav is ALWAYS visible, even in Landing Mode */}
             <Header />
-            <main className={`flex-grow ${isLanding ? 'pt-24' : ''}`}>{children}</main> {/* Added padding-top for Landing Mode */}
+
+            {/* Added padding-top to prevent nav overlap, specifically for Landing Mode */}
+            <main className={`flex-grow ${isLanding ? 'pt-0' : ''}`}>{children}</main>
 
             {!isLanding && (
                 <Editable focusId="footer"><Footer /></Editable>
