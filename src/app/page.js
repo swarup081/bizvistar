@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import NewHeader from '@/components/landing/NewHeader';
-import RealEditorDemo from '@/components/landing/RealEditorDemo';
+import LandingEditor from '@/components/landing/LandingEditor';
 import TemplateCarousel from '@/components/landing/TemplateCarousel';
 import { ArrowRight, User, Globe } from 'lucide-react';
 
@@ -82,7 +82,7 @@ export default function LandingPage() {
                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-3xl rounded-[3rem] -z-10"></div>
 
                  {/* The Actual Real Editor Demo Component */}
-                 <RealEditorDemo />
+                 <LandingEditor />
               </div>
 
            </div>
