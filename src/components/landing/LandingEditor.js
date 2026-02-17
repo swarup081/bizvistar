@@ -61,6 +61,7 @@ export default function LandingEditor() {
 
   // State for dynamic scaling
   const [scale, setScale] = useState(1);
+  const [containerHeight, setContainerHeight] = useState(800); // Default fallback
   const mainContainerRef = useRef(null);
 
   // --- UPDATED RESIZE LOGIC ---
@@ -69,8 +70,9 @@ export default function LandingEditor() {
       const container = mainContainerRef.current;
       if (!container) return;
 
-      const containerWidth = container.offsetWidth;
-      const containerHeight = container.offsetHeight;
+      const cWidth = container.offsetWidth;
+      const cHeight = container.offsetHeight;
+      setContainerHeight(cHeight);
 
       // Base width for desktop view (ensures it looks like a real desktop)
       const baseDesktopWidth = 1440;
@@ -80,15 +82,11 @@ export default function LandingEditor() {
 
       if (view === 'desktop') {
         // Calculate scale to fit the 1440px wide content into the available container width
-        // We add some padding/margin logic if needed, but fitting width is key.
-        // If container > 1440, we might cap it or let it grow.
-        // But for "squished" issue, the container is likely smaller (e.g. 1000px).
-        // So scale = 1000 / 1440 = 0.69
-        const newScale = Math.min(1, containerWidth / baseDesktopWidth);
+        const newScale = Math.min(1, cWidth / baseDesktopWidth);
         setScale(newScale);
       } else {
         // Mobile View
-        const availableHeight = containerHeight - 40; // padding
+        const availableHeight = cHeight - 40; // padding
         const heightScale = availableHeight / baseMobileHeight;
         setScale(Math.min(1, heightScale));
       }
@@ -383,7 +381,7 @@ export default function LandingEditor() {
             `}
             style={{
               width: view === 'desktop' ? '1440px' : '375px', // Fixed 1440px width for desktop to prevent squishing
-              height: view === 'desktop' ? '100%' : '812px',
+              height: view === 'desktop' ? `${containerHeight / scale}px` : '812px', // Invert scale for height to fill container
               transform: `scale(${scale})`, // Use computed scale
               marginTop: view === 'desktop' ? '0' : '40px',
               overflow: 'hidden', // Prevent scrollbars

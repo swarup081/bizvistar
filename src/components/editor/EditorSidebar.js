@@ -918,40 +918,6 @@ export default function EditorSidebar({
                 </AccordionItem>
               </div>
             )}
-                <EditorInput
-                  label="Title"
-                  value={getSafe(businessData, 'feature1.title')}
-                  onChange={(e) =>
-                    handleDataChange('feature1.title', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('about')}
-                />
-                 <EditorTextArea
-                  label="Text"
-                  value={getSafe(businessData, 'feature1.text')}
-                  onChange={(e) =>
-                    handleDataChange('feature1.text', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('about')}
-                />
-                <EditorTextArea
-                  label="Sub-text"
-                  value={getSafe(businessData, 'feature1.subtext')}
-                  onChange={(e) =>
-                    handleDataChange('feature1.subtext', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('about')}
-                />
-                 <EditorImageUpload
-                  label="About Image"
-                  value={getSafe(businessData, 'feature1.image')}
-                  onChange={(e) =>
-                    handleDataChange('feature1.image', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('about')}
-                />
-              </AccordionItem>
-            )}
             
             {/* --- AVENIX ABOUT --- */}
             {businessData?.about?.subheading && (
@@ -1156,6 +1122,7 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('events')}
                 />
               </AccordionItem>
+              </div>
             )}
             
             {/* --- BLISSLY MENU SECTION --- */}
@@ -1516,6 +1483,7 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('reviews')}
                 />
               </AccordionItem>
+              </div>
             )}
 
             <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
@@ -2341,7 +2309,7 @@ export default function EditorSidebar({
 
            {/* Desktop Content - Render normally */}
            {!isMobile && (
-              <div className="flex-grow overflow-y-auto">
+              <div className="flex-grow overflow-y-auto pb-40">
                  {renderPanelContent()}
               </div>
            )}

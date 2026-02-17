@@ -10,6 +10,19 @@ import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker'
 import { X } from 'lucide-react';
 import { colorPalettes } from '@/components/editor/EditorSidebar';
 
+const fontMap = {
+    'Poppins': { url: 'family=Poppins:wght@300;400;500;600;700', family: "'Poppins', sans-serif" },
+    'Montserrat': { url: 'family=Montserrat:wght@300;400;500;600;700', family: "'Montserrat', sans-serif" },
+    'Lora': { url: 'family=Lora:ital,wght@0,400;0,500;0,600;1,400', family: "'Lora', serif" },
+    'Lato': { url: 'family=Lato:wght@300;400;700', family: "'Lato', sans-serif" },
+    'Playfair_Display': { url: 'family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500', family: "'Playfair Display', serif" },
+    'Cormorant_Garamond': { url: 'family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400', family: "'Cormorant Garamond', serif" },
+    'DM_Sans': { url: 'family=DM+Sans:opsz,wght@9..40,300;400;500;700', family: "'DM Sans', sans-serif" },
+    'Kalam': { url: 'family=Kalam:wght@300;400;700', family: "'Kalam', cursive" },
+    'Roboto': { url: 'family=Roboto:wght@300;400;500;700', family: "'Roboto', sans-serif" },
+    'Inter': { url: 'family=Inter:wght@300;400;500;600;700', family: "'Inter', sans-serif" },
+};
+
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
     const { isCartOpen, closeCart, cartDetails, total, removeFromCart } = useCart();
@@ -56,18 +69,24 @@ function CartLayout({ children, serverData, websiteId }) {
         }
     `;
 
+    // Font Logic
+    const headingFontName = businessData?.theme?.font?.heading || 'Playfair_Display';
+    const bodyFontName = businessData?.theme?.font?.body || 'DM_Sans';
+    const headingFont = fontMap[headingFontName] || fontMap['Playfair_Display'];
+    const bodyFont = fontMap[bodyFontName] || fontMap['DM_Sans'];
+
     return (
         <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
             <style jsx global>{`
-                /* IMPORT FONTS: Playfair Display (Serif) & DM Sans (Sans) */
-                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
-                
+                /* IMPORT FONTS */
+                @import url('https://fonts.googleapis.com/css2?${headingFont.url}&${bodyFont.url}&display=swap');
+
                 ${themeStyles}
 
                 :root {
                     /* --- FONTS --- */
-                    --font-serif: 'Playfair Display', serif;
-                    --font-sans: 'DM Sans', sans-serif;
+                    --font-serif: ${headingFont.family};
+                    --font-sans: ${bodyFont.family};
                 }
 
                 body {
@@ -242,18 +261,24 @@ function AuroraContent({ children }) {
         }
     `;
 
+    // Font Logic
+    const headingFontName = businessData?.theme?.font?.heading || 'Playfair_Display';
+    const bodyFontName = businessData?.theme?.font?.body || 'DM_Sans';
+    const headingFont = fontMap[headingFontName] || fontMap['Playfair_Display'];
+    const bodyFont = fontMap[bodyFontName] || fontMap['DM_Sans'];
+
     return (
         <div className="antialiased min-h-screen flex flex-col relative">
             <style jsx global>{`
-                /* IMPORT FONTS: Playfair Display (Serif) & DM Sans (Sans) */
-                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
-                
+                /* IMPORT FONTS */
+                @import url('https://fonts.googleapis.com/css2?${headingFont.url}&${bodyFont.url}&display=swap');
+
                 ${themeStyles}
 
                 :root {
                     /* --- FONTS --- */
-                    --font-serif: 'Playfair Display', serif;
-                    --font-sans: 'DM Sans', sans-serif;
+                    --font-serif: ${headingFont.family};
+                    --font-sans: ${bodyFont.family};
                 }
 
                 body {
