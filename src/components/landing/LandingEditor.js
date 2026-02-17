@@ -1,28 +1,24 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-// Removed createPortal since we want absolute positioning within the relative container
 import { motion } from 'framer-motion';
 import EditorTopNav from '@/components/editor/EditorTopNav';
 import EditorSidebar from '@/components/editor/EditorSidebar';
 
-// Import template data
 import { businessData as auroraData } from '@/app/templates/aurora/data.js';
 
-// --- Cursor Animation Component (Absolute within Container) ---
+// --- Cursor Animation Component ---
 const Cursor = ({ x, y, click }) => {
   return (
     <motion.div
       className="absolute pointer-events-none z-[50]"
       style={{ left: 0, top: 0 }}
       animate={{ x, y }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }} // Slightly softer
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
     >
-      {/* Mac Cursor SVG */}
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
           <path d="M5.5 3.5L11.5 20.5L14.5 13.5L21.5 10.5L5.5 3.5Z" fill="black" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
       </svg>
-
       {click && (
          <span className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-blue-500/30 animate-ping" />
       )}
@@ -39,7 +35,7 @@ export default function LandingEditor() {
   const [view, setView] = useState('desktop');
   const [activeTab, setActiveTab] = useState('website');
   const iframeRef = useRef(null);
-  const containerRef = useRef(null); // Ref for the main editor container
+  const containerRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
 
   // Animation State
@@ -85,8 +81,15 @@ export default function LandingEditor() {
     return () => window.removeEventListener('resize', handleResize);
   }, [view]);
 
+  // Initial Data
   const defaultData = useMemo(() => {
-    return JSON.parse(JSON.stringify(auroraData || {}));
+    const data = JSON.parse(JSON.stringify(auroraData || {}));
+    // Force Initial State as per requirements
+    if (data.hero) {
+        data.hero.titleLine1 = "Desire Meets";
+        data.hero.titleLine2 = "New Style";
+    }
+    return data;
   }, []);
 
   const [businessData, setBusinessData] = useState(defaultData);
@@ -106,21 +109,8 @@ export default function LandingEditor() {
     });
   };
 
-  const handleUndo = () => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setBusinessData(history[newIndex]);
-    }
-  };
-
-  const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setBusinessData(history[newIndex]);
-    }
-  };
+  const handleUndo = () => {};
+  const handleRedo = () => {};
 
   const handleRestart = () => {
     setBusinessData(defaultData);
@@ -150,7 +140,7 @@ export default function LandingEditor() {
     return () => clearTimeout(handler);
   }, [businessData]);
 
-  // --- Animation Logic (Coordinate Recalibration) ---
+  // --- Animation Logic ---
   useEffect(() => {
     isMounted.current = true;
     const wait = (ms) => new Promise(r => setTimeout(r, ms));
@@ -167,86 +157,119 @@ export default function LandingEditor() {
             const w = container.offsetWidth;
             const h = container.offsetHeight;
 
-            // Coordinates relative to CONTAINER (top-left is 0,0)
-            // Sidebar is fixed width 320px on the RIGHT side.
-            // Wait, looking at JSX below:
-            // `lg:grid-cols-[1fr_auto]` means Preview is Left, Sidebar is Right (Auto).
-            // Sidebar width `lg:w-80` (320px).
-
+            // Sidebar Calcs (Right Aligned, 320px)
             const sidebarWidth = 320;
-            const sidebarLeftX = w - sidebarWidth; // X coordinate where sidebar starts
+            const sidebarLeftX = w - sidebarWidth;
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
 
             // --- STEP 1: Click "Hero Section" Accordion ---
-            // Accordion list starts below Tabs. Tabs height ~60px.
-            // "Global Settings" is 1st. "Hero Section" is 2nd.
-            // Accordion Item height ~50px.
-            // Target Y: ~60 + 50 + 25 = 135px.
+            // Accordion Item 2 (Index 1) approx Y.
+            // Global (50) + Hero (50). Center ~135px.
 
             const heroAccordionY = 135;
-
             setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(1000);
+            await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
-
             setIsClicking(true);
-            setActiveAccordion('hero'); // Open Hero
+            setActiveAccordion('hero');
             await wait(200);
             setIsClicking(false);
 
-            await wait(800); // Wait for open animation
+            await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 2: Click "Title" Input ---
-            // Input is inside accordion.
-            // 1st input is usually Title/Line1.
-            // Y position shifts down. Let's say ~180px.
-
-            const titleInputY = 220; // Adjusted down for opened accordion content
-
-            setCursorPos({ x: sidebarCenterX, y: titleInputY });
-            await wait(1000);
+            // --- STEP 2: Edit Title Line 1 ---
+            // Input 1 ("Title Line 1") is first inside accordion.
+            // Y shifts down to ~220px.
+            const input1Y = 220;
+            setCursorPos({ x: sidebarCenterX, y: input1Y });
+            await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
-
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
             // Type "Timeless Elegance"
-            const targetTitle = "Timeless Elegance";
-            for (let i = 0; i <= targetTitle.length; i++) {
+            const text1 = "Timeless Elegance,"; // Added comma to match prompt style if needed, or just text
+            for (let i = 0; i <= text1.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; }
-
                 setBusinessData(prev => ({
                     ...prev,
-                    hero: {
-                        ...prev.hero,
-                        titleLine1: targetTitle.substring(0, i),
-                        title: targetTitle.substring(0, i)
-                    }
+                    hero: { ...prev.hero, titleLine1: text1.substring(0, i) }
                 }));
-                await wait(80);
+                await wait(60);
+            }
+
+            await wait(500);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 3: Edit Title Line 2 ---
+            // Input 2 is below Input 1. ~70px down.
+            const input2Y = input1Y + 75;
+            setCursorPos({ x: sidebarCenterX, y: input2Y });
+            await wait(800);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+            setIsClicking(true);
+            await wait(200);
+            setIsClicking(false);
+
+            // Type "Crafted for You"
+            const text2 = "Crafted for You";
+            for (let i = 0; i <= text2.length; i++) {
+                if (!isMounted.current) break;
+                if (isHoveredRef.current) { await wait(200); i--; continue; }
+                setBusinessData(prev => ({
+                    ...prev,
+                    hero: { ...prev.hero, titleLine2: text2.substring(0, i) }
+                }));
+                await wait(60);
             }
 
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 3: Switch to Theme Tab ---
-            // Tabs are at top of Sidebar.
-            // Website | Theme | Settings
-            // Theme is middle.
+            // --- STEP 4: Change Floating Image (Floating Bracelet) ---
+            // Need to find this input. It's likely down the list.
+            // Title1 -> Title2 -> Subtitle -> CTA -> Large Image -> Small Image -> Floating Image.
+            // Floating Image will be added as the LAST item in the Hero accordion.
+            // Y position will be significantly lower.
+            // Approx: 220 + 75 + 100 (Subtitle) + 75 (CTA) + 90 (Large Img) + 90 (Small Img) ~ 650px.
+            // Let's scroll sidebar? Or assume height fits?
+            // If sidebar scrolls, we might need to simulate scroll or just target visible.
+            // Ideally, we move the cursor to the bottom area.
 
-            const themeTabY = 30; // Center of tab bar (height 60)
-            const themeTabX = sidebarCenterX;
-
-            setCursorPos({ x: themeTabX, y: themeTabY });
+            const imageInputY = 650; // Deep down
+            setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
+            setIsClicking(true); // Simulate clicking "Upload"
+            // Simulate change instantly
+            setBusinessData(prev => ({
+                ...prev,
+                hero: {
+                    ...prev.hero,
+                    // Change to a placeholder or another image
+                    floatingImage: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500"
+                }
+            }));
+            await wait(200);
+            setIsClicking(false);
 
+            await wait(1000);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 5: Switch to Theme Tab ---
+            const themeTabY = 30;
+            const themeTabX = sidebarCenterX;
+            setCursorPos({ x: themeTabX, y: themeTabY });
+            await wait(800);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
             setActiveTab('theme');
             await wait(200);
@@ -255,112 +278,61 @@ export default function LandingEditor() {
             await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 4: Select Strawberry Cream Palette ---
-            // Palettes are a grid.
-            // Strawberry Cream is the last one (bottom right).
-            // Grid starts below title.
-            // Y approx 250px.
-            // X approx sidebarRight - 60px.
-
-            const strawberryX = w - 80;
-            const strawberryY = 280;
-
-            setCursorPos({ x: strawberryX, y: strawberryY });
-            await wait(1000);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            setIsClicking(true);
-            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'strawberry-cream' } }));
-            await wait(200);
-            setIsClicking(false);
-
-            await wait(1500);
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 5: Change Font to Kalam ---
-            // Font dropdowns are below palettes.
-            // Heading Font Select Y approx 450.
-
+            // --- STEP 6: Font Dropdown (Heading) ---
+            // Y approx 450.
             const fontSelectY = 450;
-            const fontSelectX = sidebarCenterX;
-
-            setCursorPos({ x: fontSelectX, y: fontSelectY });
-            await wait(1000);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // Click to Open Dropdown
-            setIsClicking(true);
-            await wait(200);
-            setIsClicking(false);
-
-            await wait(500);
-
-            // Move down to "Kalam" in the list
-            // Dropdown overlay appears.
-            // Y + 200px.
-
-            const kalamY = fontSelectY + 200;
-
-            setCursorPos({ x: fontSelectX, y: kalamY });
+            setCursorPos({ x: sidebarCenterX, y: fontSelectY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
+            setIsClicking(true); // Open
+            await wait(200);
+            setIsClicking(false);
+            await wait(500);
 
-            // Select Kalam
+            // Move UPWARDS to select "Kalam" (or similar) if logic says open up?
+            // User requested "open dropdown in upward side".
+            // Standard select usually opens down unless near bottom.
+            // If we assume it opens UP, target Y is < fontSelectY.
+            // Let's say -150px.
+
+            const fontOptionY = fontSelectY - 150;
+            setCursorPos({ x: sidebarCenterX, y: fontOptionY });
+            await wait(800);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
             setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, font: { ...prev.theme.font, heading: 'Kalam' } } }));
             await wait(200);
             setIsClicking(false);
 
-            await wait(2000);
+            await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 6: Publish (Top Right) ---
-            // Publish button is in EditorTopNav (Top Bar).
-            // Position: Top Right of MAIN PREVIEW area (Column 1).
-            // Column 1 Width = w - 320.
-            // Button is ~100px from right of Col 1.
-            // Y ~ 30px (Center of Nav).
-
+            // --- STEP 7: Publish ---
+            // Top Right.
             const publishX = (w - sidebarWidth) - 100;
             const publishY = 30;
-
             setCursorPos({ x: publishX, y: publishY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
-
             setIsClicking(true);
-            // Flash success?
             await wait(200);
             setIsClicking(false);
 
             await wait(2000);
-            if (isHoveredRef.current) { await wait(200); continue; }
-
 
             // --- RESET ---
             setActiveTab('website');
-            setActiveAccordion('global'); // Reset accordion
-             setBusinessData(prev => ({
-                ...prev,
-                hero: {
-                    ...prev.hero,
-                    titleLine1: defaultData.hero?.titleLine1 || "Desire Meets",
-                    title: defaultData.hero?.titleLine1
-                },
-                theme: defaultData.theme
-            }));
-
+            setActiveAccordion('global');
+            setBusinessData(defaultData); // Resets to Desire Meets
             await wait(1000);
         }
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [defaultData.hero?.titleLine1, scale]);
-
+  }, [scale]); // Removed defaultData dep to prevent loop reset
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
   const [previewUrl, setPreviewUrl] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
@@ -397,13 +369,9 @@ export default function LandingEditor() {
       onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
       onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
     >
-
-      {/* --- Cursor Overlay (ABSOLUTE within this RELATIVE container) --- */}
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
-      {/* Column 1: Main Content (Nav + Preview) */}
       <div className="flex flex-col overflow-hidden relative h-full">
-
         <div className={`flex-shrink-0 z-20 relative ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
           <EditorTopNav
             mode={mode}
@@ -425,6 +393,7 @@ export default function LandingEditor() {
           />
         </div>
 
+        {/* Removed extra padding/margins to fix "extra empty space" */}
         <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
@@ -438,7 +407,6 @@ export default function LandingEditor() {
               overflow: 'hidden',
             }}
           >
-            {/* --- Iframe --- */}
             <iframe
               ref={iframeRef}
               src={`/templates/${templateName}?isLanding=true`}
@@ -451,7 +419,6 @@ export default function LandingEditor() {
         </main>
       </div>
 
-      {/* Column 2: Sidebar */}
       <div className={`bg-white border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 fixed bottom-0 left-0 w-full z-40 lg:z-auto ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <EditorSidebar
           activeTab={activeTab}

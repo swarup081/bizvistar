@@ -71,7 +71,11 @@ function AuroraContent() {
                                             {businessData.hero?.titleLine2 || "New Style"}
                                             {/* Floating Bracelet Image Graphic */}
                                             <div className="absolute -left-[10vw] lg:-left-28 top-1/2 -translate-y-1/2 w-[8vw] h-[6vw] lg:w-24 lg:h-16 hidden lg:block rotate-12 opacity-80">
-                                                <img src="/aurora/diamondsimageforaurora.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                <img
+                                                    src={businessData.hero?.floatingImage || "/aurora/diamondsimageforaurora.png"}
+                                                    alt="Decoration"
+                                                    className="w-full h-full object-contain mix-blend-multiply"
+                                                />
                                             </div>
                                         </span>
                                     </h1>
