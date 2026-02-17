@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import NewHeader from '@/components/landing/NewHeader';
-import LandingEditorDemo from '@/components/landing/LandingEditorDemo';
+import RealEditorDemo from '@/components/landing/RealEditorDemo';
 import TemplateCarousel from '@/components/landing/TemplateCarousel';
 import { ArrowRight, User, Globe } from 'lucide-react';
 
@@ -43,8 +43,8 @@ export default function LandingPage() {
                  </Link>
               </div>
 
-              {/* --- Mock Editor Demo --- */}
-              <div className="relative mx-auto max-w-[1200px] perspective-1000">
+              {/* --- Real Editor Demo (Interactive) --- */}
+              <div className="relative mx-auto max-w-[1400px] perspective-1000">
 
                  {/* Floating Card 1 (Left) */}
                  <motion.div
@@ -81,7 +81,8 @@ export default function LandingPage() {
                  {/* Glow effect behind editor */}
                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-3xl rounded-[3rem] -z-10"></div>
 
-                 <LandingEditorDemo />
+                 {/* The Actual Real Editor Demo Component */}
+                 <RealEditorDemo />
               </div>
 
            </div>

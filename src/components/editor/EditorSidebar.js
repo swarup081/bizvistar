@@ -437,11 +437,13 @@ export default function EditorSidebar({
   onPageChange,
   // --- ACCEPT NEW PROPS ---
   activeAccordion,
-  onAccordionToggle
+  onAccordionToggle,
+  forceDesktop = false // --- ADDED ---
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
-  const isMobile = useIsMobile();
+  const isMobileHook = useIsMobile();
+  const isMobile = forceDesktop ? false : isMobileHook;
 
   // Watch for external accordion changes (e.g. from iframe click) to auto-expand sheet on mobile
   // ONLY if it is a NEW interaction (activeAccordion changes to something not null)
