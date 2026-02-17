@@ -36,7 +36,12 @@ export default function AuroraPage() {
 
     if (!businessData) return <div>Loading...</div>;
 
-    const featuredProducts = getProductsByIds(businessData.allProducts, businessData.collections.itemIDs);
+    // --- FIX: Safely access collections.itemIDs using optional chaining ---
+    // If businessData.collections is undefined, we fallback to an empty array for IDs.
+    const featuredProducts = getProductsByIds(
+        businessData.allProducts,
+        businessData.collections?.itemIDs || []
+    );
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -68,7 +73,7 @@ export default function AuroraPage() {
                                 </div>
                                 
                                 <p className="text-gray-500 text-[3vw] md:text-lg mt-4 md:mt-8 mb-4 md:mb-10 max-w-md font-light leading-relaxed">
-                                    {businessData.hero.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
+                                    {businessData.hero?.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
                                 </p>
                             </div>
 
@@ -77,7 +82,7 @@ export default function AuroraPage() {
                                 {/* Main Image (Hands) */}
                                 <div className="absolute left-0 lg:left-0 top-0 w-[60%] h-[85%] z-20">
                                     <img 
-                                        src={businessData.hero.imageArch1} 
+                                        src={businessData.hero?.imageArch1}
                                         alt="Jewelry Model" 
                                         className="w-full h-full object-cover shadow-2xl" 
                                     />
@@ -86,7 +91,7 @@ export default function AuroraPage() {
                                 {/* Secondary Image (Arch on Right) */}
                                 <div className="absolute right-0 top-[10%] lg:top-30 w-[35%] h-[40%] z-10 rounded-t-full lg:rounded-t-[200px] overflow-hidden">
                                     <img 
-                                        src={businessData.hero.imageSmallArch} 
+                                        src={businessData.hero?.imageSmallArch}
                                         alt="Detail" 
                                         className="w-full h-full object-cover" 
                                     />
@@ -157,7 +162,7 @@ export default function AuroraPage() {
                                 {/* 1. Dark Image Box (Left) */}
                                 <div className="w-[30%] lg:w-[280px] h-[20vw] lg:h-[220px] bg-[#0A1F25] relative flex items-center justify-center overflow-hidden">
                                      <img 
-                                        src={businessData.hero.imageArch1_b} 
+                                        src={businessData.hero?.imageArch1_b}
                                         alt="Necklace Feature" 
                                         className="w-[80%] h-[80%] object-contain drop-shadow-xl"
                                      />
@@ -234,9 +239,9 @@ export default function AuroraPage() {
                     <div className="container mx-auto px-6 lg:px-16 grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-20 items-center">
                         <div className="order-2 lg:order-1">
                             <span className="text-[2.5vw] md:text-xs font-bold tracking-[0.3em] text-[#D4A373] uppercase mb-2 md:mb-4 block">Our Heritage</span>
-                            <h2 className="text-[7vw] md:text-5xl font-serif mb-4 md:mb-8 text-[#0F1C23] leading-tight">{businessData.about.title}</h2>
+                            <h2 className="text-[7vw] md:text-5xl font-serif mb-4 md:mb-8 text-[#0F1C23] leading-tight">{businessData.about?.title}</h2>
                             <p className="text-gray-600 text-[3vw] md:text-lg leading-relaxed md:leading-loose mb-4 md:mb-10 font-light line-clamp-4 md:line-clamp-none">
-                                {businessData.about.text}
+                                {businessData.about?.text}
                             </p>
                             <div className="flex items-center gap-8">
                                     <Link 
@@ -251,7 +256,7 @@ export default function AuroraPage() {
                          <div className="h-[50vw] md:h-[650px] w-full relative order-1 lg:order-2">
                              <div className="absolute inset-0 rounded-t-full lg:rounded-t-[300px] overflow-hidden shadow-2xl">
                                 <img 
-                                    src={businessData.about.image} 
+                                    src={businessData.about?.image}
                                     alt="Our Story" 
                                     className="w-full h-full object-cover transition-transform duration-[3s] hover:scale-105" 
                                 />
@@ -267,8 +272,8 @@ export default function AuroraPage() {
                     <div className="container mx-auto px-6 lg:px-16">
                         <div className="flex flex-col lg:flex-row justify-between items-end mb-8 md:mb-16 gap-4 md:gap-6">
                              <div>
-                                <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.collections.title}</h2>
-                                <p className="text-gray-500 text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections.subtitle}</p>
+                                <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.collections?.title}</h2>
+                                <p className="text-gray-500 text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections?.subtitle}</p>
                              </div>
                              <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[#0F1C23] hover:text-[#0F1C23] text-gray-500 transition-all">
                                 View Collection
@@ -302,11 +307,11 @@ export default function AuroraPage() {
                 <section className="py-12 md:py-32 bg-white">
                     <div className="container mx-auto px-6 lg:px-16 max-w-6xl">
                         <div className="text-center mb-8 md:mb-16">
-                            <h2 className="text-[7vw] md:text-4xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.faq.title}</h2>
-                            <p className="text-gray-500 text-[3vw] md:text-base">{businessData.faq.subtitle}</p>
+                            <h2 className="text-[7vw] md:text-4xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.faq?.title}</h2>
+                            <p className="text-gray-500 text-[3vw] md:text-base">{businessData.faq?.subtitle}</p>
                         </div>
                         <div className="divide-y divide-gray-100 border-t border-gray-100">
-                            {businessData.faq.questions.map((q, i) => (
+                            {(businessData.faq?.questions || []).map((q, i) => (
                                 <FAQAccordion key={i} question={q.q} answer={q.a} />
                             ))}
                         </div>
