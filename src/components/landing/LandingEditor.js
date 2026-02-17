@@ -174,70 +174,111 @@ export default function LandingEditor() {
         await wait(1500); // Initial Wait
 
         while (isMounted.current) {
-            if (isHoveredRef.current) {
-               await wait(200);
-               continue;
-            }
+            if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Get Editor Container Rect
+            // Get Editor Container Rect for Coordinate Mapping
             const containerRect = containerRef.current?.getBoundingClientRect();
             if (!containerRect) { await wait(200); continue; }
 
-            // Sidebar is fixed width 320px inside the container (if lg+)
-            // But layout is grid-cols-[1fr_auto]
-            // We need to target specific points relative to the container
+            // --- Helper to map virtual (1440x800) coordinates to screen ---
+            // The simulation logic works in "virtual desktop" space.
+            // We need to scale X/Y relative to the container's top-left.
+            // BUT: The sidebar is fixed width (320px) on the right in the UI, but in the DOM structure it's a flex/grid item.
+            // The visual representation in LandingEditor matches the grid.
+            // So we can target relative to containerRect.
 
-            // Assuming Sidebar is on the right, approx 320px wide
-            // Target X inside sidebar = containerRight - (320 / 2)
-            const sidebarCenterX = containerRect.right - 160;
-            const sidebarTopY = containerRect.top;
+            // Note: The scale state affects the *preview* (iframe wrapper), not the Sidebar (which is separate div).
+            // However, the Sidebar is rendered inside the container.
+            // Wait, in LandingEditor JSX:
+            // <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] ...">
+            //    <div>...Main (Preview)...</div>
+            //    <div>...Sidebar...</div>
+            // </div>
+            // So Sidebar is NOT scaled. It is standard DOM.
+            // Main content IS scaled.
 
-            // 1. Move to "Hero Section" (Updated from Business Name)
-            // Hero is usually the 2nd item if Global is hidden?
-            // If Global is hidden, Hero is 1st.
-            if (!isMounted.current) break;
-            setActiveAccordion('hero');
-            await wait(500);
+            // Coordinate Strategy:
+            // 1. Sidebar Elements: Target relative to container Right Edge.
+            // 2. Preview Elements (Title): Target relative to container Left Edge + Scaled Position.
 
-            if (isHoveredRef.current) { await wait(200); continue; }
+            const containerLeft = containerRect.left;
+            const containerTop = containerRect.top;
+            const containerRight = containerRect.right;
+            // Sidebar is approx 320px from right.
+            const sidebarX = containerRight - 160; // Center of sidebar
 
-            // Move to "Hero Title" input (approx Y relative to containerTop + 300)
-            setCursorPos({ x: sidebarCenterX, y: sidebarTopY + 300 });
+            // --- STEP 1: Move to Title (Desire Meets New Style) ---
+            // Virtual Pos: x=350, y=350.
+            // Screen Pos: left + (350 * scale), top + (350 * scale).
+            // (Assuming preview is top-left aligned in its cell).
+            // Note: EditorTopNav is above preview. Height approx 60px.
+            const previewTopOffset = 60;
+
+            const titleTargetX = containerLeft + (350 * scale);
+            const titleTargetY = containerTop + previewTopOffset + (300 * scale);
+
+            setCursorPos({ x: titleTargetX, y: titleTargetY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // Click
+            // Click Title
+            setIsClicking(true);
+            // Simulate Sidebar Open
+            setActiveAccordion('hero');
+            await wait(200);
+            setIsClicking(false);
+
+            await wait(800); // Wait for sidebar transition
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 2: Move to Title Input in Sidebar ---
+            // Sidebar is not scaled.
+            // Input is near top of sidebar content (below tabs).
+            // Tabs ~60px.
+            const sidebarInputY = containerTop + 180;
+
+            setCursorPos({ x: sidebarX, y: sidebarInputY });
+            await wait(1000);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // Click Input
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // Type "Timeless Elegance" (Replacing "Desire Meets New Style" logic visually)
-            // Note: We are simulating typing by updating state directly
+            // Type "Timeless Elegance"
             const targetTitle = "Timeless Elegance";
             for (let i = 0; i <= targetTitle.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; }
 
-                // For Aurora Hero Title (It has titleLine1 and titleLine2, but simplified for demo)
-                // Let's just update titleLine1 for visual effect
                 setBusinessData(prev => ({
                     ...prev,
-                    hero: { ...prev.hero, titleLine1: targetTitle.substring(0, i) }
+                    hero: {
+                        ...prev.hero,
+                        titleLine1: targetTitle.substring(0, i),
+                        title: targetTitle.substring(0, i) // Update both for compat
+                    }
                 }));
                 await wait(80);
             }
 
-            await wait(1500);
-
+            await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // 2. Switch to Theme Tab
-            if (!isMounted.current) break;
-            setCursorPos({ x: sidebarCenterX, y: sidebarTopY + 220 });
+            // --- STEP 3: Switch to Theme Tab ---
+            const themeTabY = containerTop + 40; // Tabs area
+            // "Theme" is the middle tab. Sidebar width 320.
+            // Website | Theme | Settings
+            // 0-106   | 107-213 | 214-320
+            // Center of Theme is ~160px from sidebar left.
+            // Sidebar Left = containerRight - 320.
+            // So SidebarX (center) is correct.
 
+            setCursorPos({ x: sidebarX, y: themeTabY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -247,63 +288,95 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            await wait(1000);
-
+            await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // 3. Select a Palette (Elegant Botanics)
-            setCursorPos({ x: sidebarCenterX + 60, y: sidebarTopY + 350 });
-            await wait(1000);
+            // --- STEP 4: Select Strawberry Cream Palette ---
+            // Palette Grid starts below "Color Palette" title.
+            // Approx Y relative to containerTop.
+            // Header ~60px + Title ~40px = 100px.
+            // Grid is 4 rows. Strawberry Cream is last (Row 4, Col 2).
+            // Row height ~50px. Y = 100 + (3*50) + 25 = 275.
+            const strawberryY = containerTop + 280;
+            // Col 2 center. Sidebar width 320. Col 2 is right half.
+            // Center ~ containerRight - 80.
+            const strawberryX = containerRight - 80;
 
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            setIsClicking(true);
-            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'elegant-botanics' } }));
-            await wait(200);
-            setIsClicking(false);
-
-            await wait(2500);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // 4. Back to Sage Green
-            setCursorPos({ x: sidebarCenterX - 60, y: sidebarTopY + 350 });
+            setCursorPos({ x: strawberryX, y: strawberryY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
             setIsClicking(true);
-            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'sage-green' } }));
+            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'strawberry-cream' } }));
             await wait(200);
             setIsClicking(false);
 
+            await wait(1500);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 5: Change Font to Kalam ---
+            // Font select is below palettes. Y approx 450.
+            const fontSelectY = containerTop + 450;
+            const fontSelectX = sidebarX; // Center
+
+            setCursorPos({ x: fontSelectX, y: fontSelectY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // 5. Back to Website Tab
-            setCursorPos({ x: sidebarCenterX - 80, y: sidebarTopY + 220 });
-            await wait(1000);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-
+            // Open Dropdown
             setIsClicking(true);
-            setActiveTab('website');
             await wait(200);
             setIsClicking(false);
 
-            // Reset Text
-            setBusinessData(prev => ({
-                ...prev,
-                hero: { ...prev.hero, titleLine1: defaultData.hero?.titleLine1 || "Desire Meets" }
-            }));
+            await wait(500); // Wait for dropdown animation
+
+            // Move to "Kalam" (Assuming it's in the list, down a bit)
+            // Dropdown list height ~200px.
+            // Kalam is towards end? Or sorted?
+            // "Kalam" is index 7 in the list of 10.
+            // Item height ~36px. 7 * 36 = 252px down.
+            const kalamY = fontSelectY + 200;
+
+            setCursorPos({ x: fontSelectX, y: kalamY });
+            await wait(800);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // Select Kalam
+            setIsClicking(true);
+            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, font: { ...prev.theme.font, heading: 'Kalam' } } }));
+            await wait(200);
+            setIsClicking(false);
+
+            // Close dropdown (click outside or it closes on select)
+            // It closes on select usually.
 
             await wait(2000);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- RESET ---
+            // Move back to Website Tab to restart cleanly?
+            // Or just reset state.
+
+            setActiveTab('website');
+             setBusinessData(prev => ({
+                ...prev,
+                hero: {
+                    ...prev.hero,
+                    titleLine1: defaultData.hero?.titleLine1 || "Desire Meets",
+                    title: defaultData.hero?.titleLine1 // Reset generic title too
+                },
+                theme: defaultData.theme
+            }));
+
+            await wait(1000);
         }
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [defaultData.hero?.titleLine1]); // Dependency updated
+  }, [defaultData.hero?.titleLine1, scale]); // Added scale dep
 
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);

@@ -767,7 +767,7 @@ export default function EditorSidebar({
               </AccordionItem>
             )}
 
-            {/* --- GENERIC HERO (for flara, blissly, flavornest) --- */}
+            {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora) --- */}
             {businessData?.hero && (
               <AccordionItem
                 title="Hero Section"
@@ -777,13 +777,35 @@ export default function EditorSidebar({
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
               >
-                <EditorInput
-                  label="Title"
-                  value={getSafe(businessData, 'hero.title')}
-                  onChange={(e) => handleDataChange('hero.title', e.target.value)}
-                  onFocus={() => handleSectionFocus('hero')}
-                  isRequired={true}
-                />
+                {/* Aurora Specific Fields */}
+                {businessData.hero.titleLine1 !== undefined && (
+                   <>
+                      <EditorInput
+                        label="Title Line 1"
+                        value={getSafe(businessData, 'hero.titleLine1')}
+                        onChange={(e) => handleDataChange('hero.titleLine1', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                       <EditorInput
+                        label="Title Line 2"
+                        value={getSafe(businessData, 'hero.titleLine2')}
+                        onChange={(e) => handleDataChange('hero.titleLine2', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                   </>
+                )}
+
+                {/* Generic Title (if not Aurora) */}
+                {businessData.hero.title !== undefined && (
+                  <EditorInput
+                    label="Title"
+                    value={getSafe(businessData, 'hero.title')}
+                    onChange={(e) => handleDataChange('hero.title', e.target.value)}
+                    onFocus={() => handleSectionFocus('hero')}
+                    isRequired={true}
+                  />
+                )}
+
                 <EditorTextArea
                   label="Subtitle"
                   value={getSafe(businessData, 'hero.subtitle')}

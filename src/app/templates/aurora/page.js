@@ -52,7 +52,7 @@ function AuroraContent() {
             
            {/* --- HERO SECTION --- */}
            <Editable focusId="hero">
-                <section className="relative w-full pt-4 md:pt-20 pb-0" style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
+                <section className={`relative w-full pb-0 ${isLanding ? 'pt-32 md:pt-40' : 'pt-4 md:pt-20'}`} style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
                     
                     {/* Background Split: The right beige block */}
                     <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[var(--color-bg-alt)] -z-10 rounded-bl-[100px] hidden lg:block"></div>

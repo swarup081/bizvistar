@@ -45,8 +45,8 @@ const HeaderContent = () => {
     }
 
     const DemoTooltip = () => (
-        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-            Demo Mode
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-medium tracking-wide shadow-lg">
+            Unlock full potential in the editor
         </div>
     );
 
