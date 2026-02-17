@@ -766,67 +766,6 @@ export default function EditorSidebar({
                 />
               </AccordionItem>
             )}
-                <>
-                  <EditorInput
-                    label="Info Bar Text 1"
-                    value={getSafe(businessData, 'infoBar.0')}
-                    onChange={(e) =>
-                      handleDataChange('infoBar.0', e.target.value)
-                    }
-                    onFocus={() => handleSectionFocus('global')}
-                  />
-                  <EditorInput
-                    label="Info Bar Text 2"
-                    value={getSafe(businessData, 'infoBar.1')}
-                    onChange={(e) =>
-                      handleDataChange('infoBar.1', e.target.value)
-                    }
-                    onFocus={() => handleSectionFocus('global')}
-                  />
-                  <EditorInput
-                    label="Info Bar Text 3"
-                    value={getSafe(businessData, 'infoBar.2')}
-                    onChange={(e) =>
-                      handleDataChange('infoBar.2', e.target.value)
-                    }
-                    onFocus={() => handleSectionFocus('global')}
-                  />
-                </>
-              )}
-              {/* --- END FLARA INFO BAR --- */}
-              {businessData?.announcementBar !== undefined && (
-                <EditorInput
-                  label="Announcement Bar"
-                  value={getSafe(businessData, 'announcementBar')}
-                  onChange={(e) =>
-                    handleDataChange('announcementBar', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('global')}
-                />
-              )}
-              <EditorInput
-                label="Business Name"
-                value={getSafe(businessData, 'name')}
-                onChange={(e) => handleSyncedNameChange(e.target.value)}
-                onFocus={() => handleSectionFocus('global')}
-                isRequired={true}
-              />
-              <EditorInput
-                label="Logo Text"
-                value={getSafe(businessData, 'logoText')}
-                onChange={(e) => handleSyncedNameChange(e.target.value)}
-                onFocus={() => handleSectionFocus('global')}
-                isRequired={true}
-              />
-              <EditorInput
-                label="Contact Phone / WhatsApp"
-                value={getSafe(businessData, 'whatsappNumber')}
-                onChange={(e) =>
-                  handleDataChange('whatsappNumber', e.target.value)
-                }
-                onFocus={() => handleSectionFocus('global')}
-              />
-            </AccordionItem>
 
             {/* --- GENERIC HERO (for flara, blissly, flavornest) --- */}
             {businessData?.hero && (
