@@ -89,6 +89,9 @@ export default function LandingEditor() {
         data.hero.titleLine1 = "Desire Meets";
         data.hero.titleLine2 = "New Style";
     }
+    // Ensure nested objects exist to prevent crashes
+    if (!data.theme) data.theme = {};
+    if (!data.theme.font) data.theme.font = {};
     return data;
   }, []);
 
@@ -192,7 +195,7 @@ export default function LandingEditor() {
             setIsClicking(false);
 
             // Type "Timeless Elegance"
-            const text1 = "Timeless Elegance,"; // Added comma to match prompt style if needed, or just text
+            const text1 = "Timeless Elegance,";
             for (let i = 0; i <= text1.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; }
@@ -208,7 +211,7 @@ export default function LandingEditor() {
 
             // --- STEP 3: Edit Title Line 2 ---
             // Input 2 is below Input 1. ~70px down.
-            const input2Y = input1Y + 75;
+            const input2Y = 300; // Adjusted based on feedback
             setCursorPos({ x: sidebarCenterX, y: input2Y });
             await wait(800);
 
@@ -232,17 +235,12 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 4: Change Floating Image (Floating Bracelet) ---
-            // Need to find this input. It's likely down the list.
-            // Title1 -> Title2 -> Subtitle -> CTA -> Large Image -> Small Image -> Floating Image.
-            // Floating Image will be added as the LAST item in the Hero accordion.
-            // Y position will be significantly lower.
-            // Approx: 220 + 75 + 100 (Subtitle) + 75 (CTA) + 90 (Large Img) + 90 (Small Img) ~ 650px.
-            // Let's scroll sidebar? Or assume height fits?
-            // If sidebar scrolls, we might need to simulate scroll or just target visible.
-            // Ideally, we move the cursor to the bottom area.
+            // --- STEP 4: Change Feature Image (Stats Box) ---
+            // Targeting imageArch1_b (Stats box image)
+            // It is further down in the list (after Title1, Title2, Subtitle, CTA, Large Img, Small Img)
+            // Estimated Y ~600px.
 
-            const imageInputY = 650; // Deep down
+            const imageInputY = 600;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
@@ -253,8 +251,8 @@ export default function LandingEditor() {
                 ...prev,
                 hero: {
                     ...prev.hero,
-                    // Change to a placeholder or another image
-                    floatingImage: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500"
+                    // Change to a placeholder (e.g. a different jewelry piece)
+                    imageArch1_b: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500"
                 }
             }));
             await wait(200);
@@ -290,19 +288,27 @@ export default function LandingEditor() {
             setIsClicking(false);
             await wait(500);
 
-            // Move UPWARDS to select "Kalam" (or similar) if logic says open up?
-            // User requested "open dropdown in upward side".
-            // Standard select usually opens down unless near bottom.
-            // If we assume it opens UP, target Y is < fontSelectY.
-            // Let's say -150px.
-
+            // Move UPWARDS to select "Kalam"
             const fontOptionY = fontSelectY - 150;
             setCursorPos({ x: sidebarCenterX, y: fontOptionY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
-            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, font: { ...prev.theme.font, heading: 'Kalam' } } }));
+
+            // --- FIX FOR RUNTIME ERROR ---
+            setBusinessData(prev => ({
+                ...prev,
+                theme: {
+                    ...(prev.theme || {}),
+                    font: {
+                        ...(prev.theme?.font || {}),
+                        heading: 'Kalam'
+                    }
+                }
+            }));
+            // -----------------------------
+
             await wait(200);
             setIsClicking(false);
 
@@ -326,7 +332,7 @@ export default function LandingEditor() {
             // --- RESET ---
             setActiveTab('website');
             setActiveAccordion('global');
-            setBusinessData(defaultData); // Resets to Desire Meets
+            setBusinessData(defaultData);
             await wait(1000);
         }
     };

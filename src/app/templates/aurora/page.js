@@ -52,7 +52,7 @@ function AuroraContent() {
             
            {/* --- HERO SECTION --- */}
            <Editable focusId="hero">
-                <section className={`relative w-full pb-0 ${isLanding ? 'pt-24 md:pt-28' : 'pt-4 md:pt-20'}`} style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
+                <section className={`relative w-full pb-0 ${isLanding ? 'pt-32 md:pt-40' : 'pt-4 md:pt-20'}`} style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
                     
                     {/* Background Split: The right beige block */}
                     <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[var(--color-bg-alt)] -z-10 rounded-bl-[100px] hidden lg:block"></div>
@@ -65,17 +65,12 @@ function AuroraContent() {
                             <div className="lg:col-span-6 flex flex-col justify-center lg:pr-12 z-10 pt-4 md:pt-0">
                                 <div className="relative">
                                     <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[var(--color-dark)] tracking-tight">
-                                        {/* Dynamic Title for Aurora Simulation */}
                                         {businessData.hero?.titleLine1 || "Desire Meets"} <br/>
                                         <span className="relative inline-block">
                                             {businessData.hero?.titleLine2 || "New Style"}
                                             {/* Floating Bracelet Image Graphic */}
                                             <div className="absolute -left-[10vw] lg:-left-28 top-1/2 -translate-y-1/2 w-[8vw] h-[6vw] lg:w-24 lg:h-16 hidden lg:block rotate-12 opacity-80">
-                                                <img
-                                                    src={businessData.hero?.floatingImage || "/aurora/diamondsimageforaurora.png"}
-                                                    alt="Decoration"
-                                                    className="w-full h-full object-contain mix-blend-multiply"
-                                                />
+                                                <img src="/aurora/diamondsimageforaurora.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
                                             </div>
                                         </span>
                                     </h1>
