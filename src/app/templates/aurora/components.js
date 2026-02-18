@@ -75,7 +75,7 @@ const HeaderContent = () => {
 
                 {/* CENTER: Logo */}
                 <a href={resolveLink("")} onClick={isLanding ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 absolute left-1/2 -translate-x-1/2 ${isLanding ? 'cursor-default' : ''}`}>
-                    <Editable focusId="about">
+                    <Editable focusId="hero">
                         <span className="font-serif text-[6vw] md:text-3xl text-[var(--color-dark)] tracking-tight font-medium">
                             {businessData.name}
                         </span>

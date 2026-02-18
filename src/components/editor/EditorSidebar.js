@@ -841,6 +841,13 @@ export default function EditorSidebar({
                 {templateName === 'aurora' && (
                    <>
                       <EditorInput
+                          label="Logo Text"
+                          value={getSafe(businessData, 'logoText') || getSafe(businessData, 'name')}
+                          onChange={(e) => handleSyncedNameChange(e.target.value)}
+                          onFocus={() => handleSectionFocus('hero')}
+                          isRequired={true}
+                      />
+                      <EditorInput
                         label="Title"
                         value={getSafe(businessData, 'hero.title')}
                         onChange={(e) => handleDataChange('hero.title', e.target.value)}
@@ -1338,15 +1345,6 @@ export default function EditorSidebar({
                     isMobile={isMobile}
                     onCloseMobile={() => toggleAccordion(null)}
                   >
-                  {templateName === 'aurora' && (
-                     <EditorInput
-                        label="Logo Text"
-                        value={getSafe(businessData, 'logoText') || getSafe(businessData, 'name')}
-                        onChange={(e) => handleSyncedNameChange(e.target.value)}
-                        onFocus={() => handleSectionFocus('about')}
-                        isRequired={true}
-                     />
-                  )}
                   <EditorInput
                     label="Title"
                     value={getSafe(businessData, 'about.title')}
