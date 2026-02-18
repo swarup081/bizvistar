@@ -87,8 +87,7 @@ export default function LandingEditor() {
     // Force Initial State as per requirements
     data.name = "Avenix"; // Start as Avenix
     if (data.hero) {
-        data.hero.titleLine1 = "Desire Meets";
-        data.hero.titleLine2 = "New Style";
+        data.hero.title = "Desire Meets New Style";
     }
     // Ensure nested objects exist to prevent crashes
     if (!data.theme) data.theme = {};
@@ -166,23 +165,23 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
-            // --- STEP 1: Click "Global Settings" (Start with Avenix -> Kohira) ---
+            // --- STEP 1: Click "Hero Section" (Now first since Global is hidden) ---
             // Accordion Item 1. Y ~ 85px.
-            const globalAccordionY = 85;
-            setCursorPos({ x: sidebarCenterX, y: globalAccordionY });
+            const heroAccordionY = 85;
+            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
-            setActiveAccordion('global'); 
+            setActiveAccordion('hero');
             await wait(200);
             setIsClicking(false);
             
             await wait(800); 
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 2: Edit Business Name (Avenix -> Kohira) ---
-            // Business Name Input Y ~ 180px.
+            // --- STEP 2: Edit Logo Text (Avenix -> Kohira) ---
+            // First Input in Hero. Y ~ 180px.
             const nameInputY = 180;
             setCursorPos({ x: sidebarCenterX, y: nameInputY });
             await wait(800);
@@ -197,32 +196,17 @@ export default function LandingEditor() {
             for (let i = 0; i <= nameText.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; } 
-                setBusinessData(prev => ({ ...prev, name: nameText.substring(0, i) }));
+                setBusinessData(prev => ({ ...prev, name: nameText.substring(0, i), logoText: nameText.substring(0, i) }));
                 await wait(80);
             }
 
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 3: Click "Hero Section" Accordion ---
-            // Accordion Item 2. Center ~135px.
-            const heroAccordionY = 135;
-            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(800);
-            
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            setActiveAccordion('hero'); 
-            await wait(200);
-            setIsClicking(false);
-            
-            await wait(800); 
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 4: Edit Title Line 1 ---
-            // Input 1 ("Title Line 1"). Y ~220px.
-            const input1Y = 220;
-            setCursorPos({ x: sidebarCenterX, y: input1Y });
+            // --- STEP 3: Edit Title ---
+            // Second Input ("Title"). Y ~ 260px.
+            const titleInputY = 260;
+            setCursorPos({ x: sidebarCenterX, y: titleInputY });
             await wait(800);
             
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -230,41 +214,14 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            // Type "Timeless Elegance,"
-            const text1 = "Timeless Elegance,"; 
-            for (let i = 0; i <= text1.length; i++) {
+            // Type "Timeless Elegance, New Style"
+            const newTitle = "Timeless Elegance, New Style";
+            for (let i = 0; i <= newTitle.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; } 
                 setBusinessData(prev => ({
                     ...prev,
-                    hero: { ...prev.hero, titleLine1: text1.substring(0, i) }
-                }));
-                await wait(60);
-            }
-            
-            await wait(500);
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 5: Edit Title Line 2 ---
-            // Input 2 ("Title Line 2"). Y ~300px.
-            const input2Y = 300; 
-            setCursorPos({ x: sidebarCenterX, y: input2Y });
-            await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            await wait(200);
-            setIsClicking(false);
-
-            // Type "New Style" (User prompt: "New Style from the crafting ...")
-            // Wait, previous prompt said "Timeless Elegance, New Style"
-            const text2 = "New Style";
-            for (let i = 0; i <= text2.length; i++) {
-                if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } 
-                setBusinessData(prev => ({
-                    ...prev,
-                    hero: { ...prev.hero, titleLine2: text2.substring(0, i) }
+                    hero: { ...prev.hero, title: newTitle.substring(0, i) }
                 }));
                 await wait(60);
             }
@@ -272,9 +229,9 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 6: Change Feature Image (Stats Box) ---
-            // Y ~620px.
-            const imageInputY = 620; 
+            // --- STEP 4: Change Feature Image (Stats Box) ---
+            // Y ~ 580px (Moved up slightly due to removal of extra title inputs).
+            const imageInputY = 580;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
@@ -294,7 +251,7 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 7: Switch to Theme Tab ---
+            // --- STEP 5: Switch to Theme Tab ---
             const themeTabY = 30; 
             const themeTabX = sidebarCenterX; 
             setCursorPos({ x: themeTabX, y: themeTabY });
@@ -309,7 +266,7 @@ export default function LandingEditor() {
             await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 8: Palette (Strawberry Cream) ---
+            // --- STEP 6: Palette (Strawberry Cream) ---
             // Bottom Right Palette. Y ~280.
             const strawberryX = w - 80;
             const strawberryY = 280;
@@ -325,7 +282,7 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 9: Publish ---
+            // --- STEP 7: Publish ---
             const publishX = (w - sidebarWidth) - 100;
             const publishY = 30;
             setCursorPos({ x: publishX, y: publishY });
@@ -340,7 +297,7 @@ export default function LandingEditor() {
             
             // --- RESET ---
             setActiveTab('website');
-            setActiveAccordion('global'); 
+            setActiveAccordion('hero');
             setBusinessData(defaultData); 
             await wait(1000);
         }
@@ -445,6 +402,7 @@ export default function LandingEditor() {
           onAccordionToggle={handleAccordionToggle} 
           forceDesktop={true}
           isLandingMode={true}
+          templateName={templateName}
         />
       </div>
     </div>
