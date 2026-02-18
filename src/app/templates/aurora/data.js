@@ -111,15 +111,19 @@ export const businessData = {
     },
 
     hero: {
-        titleLine1: "Timeless Beauty,",
-        titleLine2: "Crafted for You",
+        title: "Desire Meets New Style",
         subtitle: "Welcome to a realm of timeless beauty and unparalleled craftsmanship. At Aurora, we invite you to adorn yourself in the finest expressions of luxury.",
         cta: "EXPLORE COLLECTIONS",
         // Large Arch Slideshow Images
         imageArch1: "/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
-        imageArch1_b: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&q=80&w=1000", 
+        imageArch1_b: "/aurora/photo-1573408301185-9146fe634ad0.avif", 
         // Small Arch Image (Detail Shot)
-        imageSmallArch: "/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg"
+        imageSmallArch: "/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg",
+        stats: [
+            { value: "12", label: "All over World" },
+            { value: "150+", label: "Product Available" },
+            { value: "1K+", label: "Product Reviews" }
+        ]
     },
 
     features: [

@@ -4,13 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-
-const Logo = () => (
-  <div className="flex items-center gap-2 font-bold text-2xl tracking-tight text-gray-900">
-    <div className="w-8 h-8 bg-[#8A63D2] rounded-lg flex items-center justify-center text-white">S</div>
-    <span>Storify</span>
-  </div>
-);
+import Logo from '@/lib/logo/logoOfBizVistar';
 
 export default function NewHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,8 +29,8 @@ export default function NewHeader() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Logo />
+          <Link href="/" className="flex font- items-center gap-2 hover:opacity-80 transition-opacity">
+          <Logo className="text-2xl lg:text-3xl" />
           </Link>
 
           {/* Desktop Nav */}
@@ -63,7 +57,7 @@ export default function NewHeader() {
              </Link>
              <Link 
                href="/get-started" 
-               className="bg-[#008060] text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-[#004c3f] transition-all hover:scale-105 shadow-md active:scale-95"
+               className="bg-[#000] text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-[#000] transition-all hover:scale-105 shadow-md active:scale-95"
              >
                 Start free trial
              </Link>
@@ -110,7 +104,7 @@ export default function NewHeader() {
                       </Link>
                       <Link 
                         href="/get-started"
-                        className="w-full text-center py-3 bg-[#008060] text-white rounded-lg font-bold hover:bg-[#004c3f] transition-colors shadow-sm"
+                        className="w-full text-center py-3 bg-[#00000] text-white rounded-lg font-bold hover:bg-[#000] transition-colors shadow-sm"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                          Start free trial

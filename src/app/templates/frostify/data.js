@@ -142,16 +142,10 @@ export const businessData = {
         ]
     },
     
-    // Updated Gallery to include full product details from allProducts
     gallery: {
         title: "Fresh from the Oven",
-        // These now reference the 'allProducts' list IDs basically, but we define them here for the homepage specifically
-        items: [
-            allProducts[4], // Berry Tart
-            allProducts[5], // Velvet Cake
-            allProducts[6], // Sourdough
-            allProducts[7]  // Croissant
-        ]
+        // Store IDs here, mirroring how Aurora/Flara work for consistency in EditorSidebar
+        items: [5, 6, 4, 1] 
     },
 
     faq: {

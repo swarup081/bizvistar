@@ -286,6 +286,52 @@ const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
   );
 };
 
+// Generic List Editor
+const EditorList = ({ 
+  label, 
+  items = [], 
+  onUpdate, 
+  renderItem, 
+  onAdd, 
+  addButtonLabel = "Add Item" 
+}) => {
+  const handleItemChange = (index, newItem) => {
+    const newItems = [...items];
+    newItems[index] = newItem;
+    onUpdate(newItems);
+  };
+
+  const handleRemove = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    onUpdate(newItems);
+  };
+
+  return (
+    <div className="mb-6">
+      {label && <h4 className="text-base font-semibold text-gray-800 mb-2">{label}</h4>}
+      <div className="space-y-3">
+        {items.map((item, index) => (
+            <div key={index} className="p-3 border rounded-md bg-white relative group">
+                <button 
+                    onClick={() => handleRemove(index)}
+                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500 z-10"
+                >
+                    <Trash size={16} />
+                </button>
+                {renderItem(item, index, (newItem) => handleItemChange(index, newItem))}
+            </div>
+        ))}
+      </div>
+      <button
+        onClick={() => onUpdate([...items, onAdd()])}
+        className="w-full mt-3 px-3 py-2 bg-[#8A63D2]/10 text-[#8A63D2] text-sm font-medium rounded-md hover:bg-[#8A63D2]/20 flex items-center justify-center gap-2"
+      >
+        <Plus size={16} /> {addButtonLabel}
+      </button>
+    </div>
+  );
+};
+
 // Accordion UI
 const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile, onCloseMobile }) => {
   const displayIcon = <Icon size={18} className="text-gray-500" />;
@@ -439,7 +485,8 @@ export default function EditorSidebar({
   activeAccordion,
   onAccordionToggle,
   forceDesktop = false, // --- ADDED ---
-  isLandingMode = false // <-- NEW PROP
+  isLandingMode = false, // <-- NEW PROP
+  templateName // --- ADDED ---
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
@@ -447,15 +494,16 @@ export default function EditorSidebar({
   const isMobile = forceDesktop ? false : isMobileHook;
 
   // Watch for external accordion changes (e.g. from iframe click) to auto-expand sheet on mobile
-  // ONLY if it is a NEW interaction (activeAccordion changes to something not null)
-  // We don't want it to open just because we resized to mobile.
+  // AND force website tab on Desktop too if needed (for Landing demo)
   useEffect(() => {
-    if (activeAccordion && isMobile) {
-      setIsMobileExpanded(true);
-      // We assume if a section is focused, we want the 'website' tab
-      onTabChange('website');
+    if (activeAccordion) {
+        if (isMobile) {
+            setIsMobileExpanded(true);
+        }
+        // If an accordion is activated via click-to-edit, ensure we are on the website tab
+        onTabChange('website');
     }
-  }, [activeAccordion]); // Removed isMobile from deps to prevent auto-opening on resize
+  }, [activeAccordion]); 
 
   const handleMobileTabChange = (tab) => {
     if (activeTab === tab && isMobileExpanded) {
@@ -666,6 +714,7 @@ export default function EditorSidebar({
   }));
 
   const collectionIDs = getSafe(businessData, 'collection.itemIDs', []);
+  const collectionsIDs = getSafe(businessData, 'collections.itemIDs', []); // Aurora plural
   const bestSellerIDs = getSafe(businessData, 'bestSellers.itemIDs', []);
   const newArrivalsIDs = getSafe(businessData, 'newArrivals.itemIDs', []);
   const featuredIDs = getSafe(businessData, 'featured.itemIDs', []);
@@ -675,6 +724,7 @@ export default function EditorSidebar({
   // Create a combined list of all product IDs used on the homepage
   const homepageProductIDs = [
     ...collectionIDs,
+    ...collectionsIDs,
     ...bestSellerIDs,
     ...newArrivalsIDs,
     ...featuredIDs,
@@ -693,7 +743,7 @@ export default function EditorSidebar({
         {/* WEBSITE Panel */}
         {activeTab === 'website' && (
           <section>
-            {!isLandingMode && (
+            {templateName !== 'aurora' && (
               <AccordionItem
                 title="Global Settings"
                 icon={Info}
@@ -767,7 +817,7 @@ export default function EditorSidebar({
               </AccordionItem>
             )}
 
-            {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora) --- */}
+            {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora, frostify) --- */}
             {businessData?.hero && (
               <AccordionItem
                 title="Hero Section"
@@ -777,9 +827,28 @@ export default function EditorSidebar({
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
               >
+                {/* Frostify Specific Fields */}
+                {businessData.hero.badge !== undefined && (
+                  <EditorInput
+                    label="Badge"
+                    value={getSafe(businessData, 'hero.badge')}
+                    onChange={(e) => handleDataChange('hero.badge', e.target.value)}
+                    onFocus={() => handleSectionFocus('hero')}
+                  />
+                )}
+
                 {/* Aurora Specific Fields */}
                 {businessData.hero.titleLine1 !== undefined && (
                    <>
+                      {templateName === 'aurora' && (
+                        <EditorInput
+                          label="Business Name"
+                          value={getSafe(businessData, 'name')}
+                          onChange={(e) => handleSyncedNameChange(e.target.value)}
+                          onFocus={() => handleSectionFocus('hero')}
+                          isRequired={true}
+                        />
+                      )}
                       <EditorInput
                         label="Title Line 1"
                         value={getSafe(businessData, 'hero.titleLine1')}
@@ -790,6 +859,68 @@ export default function EditorSidebar({
                         label="Title Line 2"
                         value={getSafe(businessData, 'hero.titleLine2')}
                         onChange={(e) => handleDataChange('hero.titleLine2', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      {/* Aurora Images */}
+                      <EditorImageUpload
+                        label="Main Image"
+                        value={getSafe(businessData, 'hero.imageArch1')}
+                        onChange={(e) => handleDataChange('hero.imageArch1', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorImageUpload
+                        label="Secondary Image (Stats)"
+                        value={getSafe(businessData, 'hero.imageArch1_b')}
+                        onChange={(e) => handleDataChange('hero.imageArch1_b', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorImageUpload
+                        label="Detail Image (Arch)"
+                        value={getSafe(businessData, 'hero.imageSmallArch')}
+                        onChange={(e) => handleDataChange('hero.imageSmallArch', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Stats</h4>
+                      {/* Stat 1 */}
+                      <EditorInput
+                        label="Stat 1 Value"
+                        value={getSafe(businessData, 'hero.stats.0.value')}
+                        onChange={(e) => handleDataChange('hero.stats.0.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 1 Label"
+                        value={getSafe(businessData, 'hero.stats.0.label')}
+                        onChange={(e) => handleDataChange('hero.stats.0.label', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      
+                      {/* Stat 2 */}
+                      <EditorInput
+                        label="Stat 2 Value"
+                        value={getSafe(businessData, 'hero.stats.1.value')}
+                        onChange={(e) => handleDataChange('hero.stats.1.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 2 Label"
+                        value={getSafe(businessData, 'hero.stats.1.label')}
+                        onChange={(e) => handleDataChange('hero.stats.1.label', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+
+                      {/* Stat 3 */}
+                      <EditorInput
+                        label="Stat 3 Value"
+                        value={getSafe(businessData, 'hero.stats.2.value')}
+                        onChange={(e) => handleDataChange('hero.stats.2.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 3 Label"
+                        value={getSafe(businessData, 'hero.stats.2.label')}
+                        onChange={(e) => handleDataChange('hero.stats.2.label', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                    </>
@@ -820,12 +951,24 @@ export default function EditorSidebar({
                   onChange={(e) => handleDataChange('hero.cta', e.target.value)}
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                {businessData?.hero?.image !== undefined && (
+                {/* Generic Image (Primary) - Frostify uses image1, others use image */}
+                {(businessData.hero.image !== undefined || businessData.hero.image1 !== undefined) && (
                   <EditorImageUpload
-                    label="Hero Image"
-                    value={getSafe(businessData, 'hero.image')}
+                    label="Hero Image 1"
+                    value={getSafe(businessData, businessData.hero.image ? 'hero.image' : 'hero.image1')}
                     onChange={(e) =>
-                      handleDataChange('hero.image', e.target.value)
+                      handleDataChange(businessData.hero.image ? 'hero.image' : 'hero.image1', e.target.value)
+                    }
+                    onFocus={() => handleSectionFocus('hero')}
+                  />
+                )}
+                {/* Frostify Image 2 */}
+                {businessData.hero.image2 !== undefined && (
+                  <EditorImageUpload
+                    label="Hero Image 2"
+                    value={getSafe(businessData, 'hero.image2')}
+                    onChange={(e) =>
+                      handleDataChange('hero.image2', e.target.value)
                     }
                     onFocus={() => handleSectionFocus('hero')}
                   />
@@ -940,6 +1083,135 @@ export default function EditorSidebar({
                 </AccordionItem>
               </div>
             )}
+
+            {/* --- FROSTIFY SPECIALTIES --- */}
+            {businessData?.specialties?.items && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Specialties"
+                  icon={CheckCircle}
+                  isOpen={activeAccordion === 'specialties'}
+                  onClick={() => toggleAccordion('specialties')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Title"
+                      value={getSafe(businessData, 'specialties.title')}
+                      onChange={(e) => handleDataChange('specialties.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('specialties')}
+                  />
+                  <EditorList
+                    items={businessData.specialties.items}
+                    onUpdate={(newItems) => handleDataChange('specialties.items', newItems)}
+                    onAdd={() => ({ title: 'New Specialty', icon: 'cake' })}
+                    addButtonLabel="Add Specialty"
+                    renderItem={(item, index, onChange) => (
+                      <>
+                        <EditorInput
+                          label="Title"
+                          value={item.title}
+                          onChange={(e) => onChange({ ...item, title: e.target.value })}
+                          onFocus={() => handleSectionFocus('specialties')}
+                        />
+                        <EditorInput
+                          label="Icon Name"
+                          value={item.icon}
+                          onChange={(e) => onChange({ ...item, icon: e.target.value })}
+                          onFocus={() => handleSectionFocus('specialties')}
+                        />
+                      </>
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- FROSTIFY GALLERY --- */}
+            {businessData?.gallery && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Gallery"
+                  icon={ImageIcon}
+                  isOpen={activeAccordion === 'gallery'}
+                  onClick={() => toggleAccordion('gallery')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Title"
+                      value={getSafe(businessData, 'gallery.title')}
+                      onChange={(e) => handleDataChange('gallery.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('gallery')}
+                  />
+                   <EditorList
+                    items={businessData.gallery.items || []} 
+                    onUpdate={(newItems) => handleDataChange('gallery.items', newItems)}
+                    onAdd={() => allProducts[0]?.id || 1}
+                    addButtonLabel="Add Product to Gallery"
+                    renderItem={(item, index, onChange) => (
+                        <EditorSelect
+                          label={`Product ${index + 1}`}
+                          value={typeof item === 'object' ? item.id : item} 
+                          onChange={(e) => onChange(Number(e.target.value))}
+                          options={productOptions}
+                          placeholder="Select a product"
+                          onFocus={() => handleSectionFocus('gallery')}
+                      />
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- FROSTIFY TESTIMONIALS --- */}
+            {businessData?.testimonials?.items && businessData.testimonials.items[0]?.image && (
+               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Testimonials"
+                  icon={MessageSquare}
+                  isOpen={activeAccordion === 'testimonials'}
+                  onClick={() => toggleAccordion('testimonials')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Section Title"
+                      value={getSafe(businessData, 'testimonials.title')}
+                      onChange={(e) => handleDataChange('testimonials.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('testimonials')}
+                  />
+                  <EditorList
+                    items={businessData.testimonials.items}
+                    onUpdate={(newItems) => handleDataChange('testimonials.items', newItems)}
+                    onAdd={() => ({ text: 'Delicious!', author: 'Happy Customer', image: 'https://placehold.co/100x100' })}
+                    addButtonLabel="Add Testimonial"
+                    renderItem={(item, index, onChange) => (
+                      <>
+                        <EditorTextArea
+                          label="Text"
+                          value={item.text}
+                          onChange={(e) => onChange({ ...item, text: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                        <EditorInput
+                          label="Author"
+                          value={item.author}
+                          onChange={(e) => onChange({ ...item, author: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                        <EditorImageUpload
+                          label="Author Image"
+                          value={item.image}
+                          onChange={(e) => onChange({ ...item, image: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                      </>
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+             )}
             
             {/* --- AVENIX ABOUT --- */}
             {businessData?.about?.subheading && (
@@ -1096,9 +1368,289 @@ export default function EditorSidebar({
                     }
                     onFocus={() => handleSectionFocus('about')}
                   />
+                  {businessData.about.image !== undefined && (
+                      <EditorImageUpload
+                        label="Image"
+                        value={getSafe(businessData, 'about.image')}
+                        onChange={(e) =>
+                          handleDataChange('about.image', e.target.value)
+                        }
+                        onFocus={() => handleSectionFocus('about')}
+                      />
+                  )}
+                   {businessData.about.subtext !== undefined && (
+                      <EditorTextArea
+                        label="Subtext"
+                        value={getSafe(businessData, 'about.subtext')}
+                        onChange={(e) =>
+                          handleDataChange('about.subtext', e.target.value)
+                        }
+                        onFocus={() => handleSectionFocus('about')}
+                      />
+                  )}
                 </AccordionItem>
               </div>
               )}
+
+            {/* --- AURORA FEATURES --- */}
+            {businessData?.features && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Features"
+                  icon={CheckCircle}
+                  isOpen={activeAccordion === 'features'}
+                  onClick={() => toggleAccordion('features')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorList
+                    items={businessData.features}
+                    onUpdate={(newItems) => handleDataChange('features', newItems)}
+                    onAdd={() => ({ title: 'New Feature', text: 'Description', icon: 'star' })}
+                    addButtonLabel="Add Feature"
+                    renderItem={(item, index, onChange) => (
+                      <>
+                        <EditorInput
+                          label="Title"
+                          value={item.title}
+                          onChange={(e) => onChange({ ...item, title: e.target.value })}
+                          onFocus={() => handleSectionFocus('features')}
+                        />
+                        <EditorTextArea
+                          label="Text"
+                          value={item.text}
+                          onChange={(e) => onChange({ ...item, text: e.target.value })}
+                          onFocus={() => handleSectionFocus('features')}
+                        />
+                        <EditorInput
+                          label="Icon Name"
+                          value={item.icon}
+                          onChange={(e) => onChange({ ...item, icon: e.target.value })}
+                          onFocus={() => handleSectionFocus('features')}
+                        />
+                      </>
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- AURORA COLLECTIONS (Plural) --- */}
+            {businessData?.collections && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Collections"
+                  icon={LayoutDashboard}
+                  isOpen={activeAccordion === 'collection'}
+                  onClick={() => toggleAccordion('collection')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                    label="Title"
+                    value={getSafe(businessData, 'collections.title')}
+                    onChange={(e) => handleDataChange('collections.title', e.target.value)}
+                    onFocus={() => handleSectionFocus('collection')}
+                  />
+                  <EditorTextArea
+                    label="Subtitle"
+                    value={getSafe(businessData, 'collections.subtitle')}
+                    onChange={(e) => handleDataChange('collections.subtitle', e.target.value)}
+                    onFocus={() => handleSectionFocus('collection')}
+                  />
+                  {(collectionsIDs || []).map((id, index) => (
+                      <EditorSelect
+                          key={`col-${index}`}
+                          label={`Collection Slot ${index + 1}`}
+                          value={id}
+                          onChange={(e) => handleDataChange(`collections.itemIDs.${index}`, Number(e.target.value))}
+                          options={[
+                            ...productOptions.filter(p => p.value === id), 
+                            ...homepageProductOptions
+                          ]}
+                          placeholder="Select a product"
+                          onFocus={() => handleSectionFocus('collection')}
+                      />
+                  ))}
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- AURORA TESTIMONIALS --- */}
+            {businessData?.testimonials?.items && businessData.testimonials.items[0]?.location && (
+               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Testimonials"
+                  icon={MessageSquare}
+                  isOpen={activeAccordion === 'testimonials'}
+                  onClick={() => toggleAccordion('testimonials')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Section Title"
+                      value={getSafe(businessData, 'testimonials.title')}
+                      onChange={(e) => handleDataChange('testimonials.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('testimonials')}
+                  />
+                  <EditorList
+                    items={businessData.testimonials.items}
+                    onUpdate={(newItems) => handleDataChange('testimonials.items', newItems)}
+                    onAdd={() => ({ quote: 'Great service!', author: 'Happy Customer', location: 'City, Country' })}
+                    addButtonLabel="Add Testimonial"
+                    renderItem={(item, index, onChange) => (
+                      <>
+                        <EditorTextArea
+                          label="Quote"
+                          value={item.quote}
+                          onChange={(e) => onChange({ ...item, quote: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                        <EditorInput
+                          label="Author"
+                          value={item.author}
+                          onChange={(e) => onChange({ ...item, author: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                        <EditorInput
+                          label="Location"
+                          value={item.location}
+                          onChange={(e) => onChange({ ...item, location: e.target.value })}
+                          onFocus={() => handleSectionFocus('testimonials')}
+                        />
+                      </>
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+             )}
+
+            {/* --- AURORA FAQ --- */}
+            {businessData?.faq?.questions && (
+               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="FAQ"
+                  icon={MessageCircle}
+                  isOpen={activeAccordion === 'faq'}
+                  onClick={() => toggleAccordion('faq')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Title"
+                      value={getSafe(businessData, 'faq.title')}
+                      onChange={(e) => handleDataChange('faq.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('faq')}
+                  />
+                  {businessData.faq.subtitle !== undefined && (
+                      <EditorTextArea
+                          label="Subtitle"
+                          value={getSafe(businessData, 'faq.subtitle')}
+                          onChange={(e) => handleDataChange('faq.subtitle', e.target.value)}
+                          onFocus={() => handleSectionFocus('faq')}
+                      />
+                  )}
+                  <EditorList
+                    items={businessData.faq.questions}
+                    onUpdate={(newItems) => handleDataChange('faq.questions', newItems)}
+                    onAdd={() => ({ q: 'New Question?', a: 'Answer here.' })}
+                    addButtonLabel="Add Question"
+                    renderItem={(item, index, onChange) => (
+                      <>
+                        <EditorInput
+                          label="Question"
+                          value={item.q}
+                          onChange={(e) => onChange({ ...item, q: e.target.value })}
+                          onFocus={() => handleSectionFocus('faq')}
+                        />
+                        <EditorTextArea
+                          label="Answer"
+                          value={item.a}
+                          onChange={(e) => onChange({ ...item, a: e.target.value })}
+                          onFocus={() => handleSectionFocus('faq')}
+                        />
+                      </>
+                    )}
+                  />
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- AURORA NEWSLETTER CTA --- */}
+            {businessData?.newsletterCta && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Newsletter"
+                  icon={Megaphone}
+                  isOpen={activeAccordion === 'cta'}
+                  onClick={() => toggleAccordion('cta')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Title"
+                      value={getSafe(businessData, 'newsletterCta.title')}
+                      onChange={(e) => handleDataChange('newsletterCta.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('cta')}
+                  />
+                  <EditorTextArea
+                      label="Text"
+                      value={getSafe(businessData, 'newsletterCta.text')}
+                      onChange={(e) => handleDataChange('newsletterCta.text', e.target.value)}
+                      onFocus={() => handleSectionFocus('cta')}
+                  />
+                  <EditorInput
+                      label="Placeholder"
+                      value={getSafe(businessData, 'newsletterCta.placeholder')}
+                      onChange={(e) => handleDataChange('newsletterCta.placeholder', e.target.value)}
+                      onFocus={() => handleSectionFocus('cta')}
+                  />
+                  <EditorInput
+                      label="Button Text"
+                      value={getSafe(businessData, 'newsletterCta.buttonText')}
+                      onChange={(e) => handleDataChange('newsletterCta.buttonText', e.target.value)}
+                      onFocus={() => handleSectionFocus('cta')}
+                  />
+                </AccordionItem>
+              </div>
+            )}
+
+            {/* --- AURORA INSTAGRAM --- */}
+            {businessData?.instagram && (
+               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Instagram Feed"
+                  icon={ImageIcon}
+                  isOpen={activeAccordion === 'instagram'}
+                  onClick={() => toggleAccordion('instagram')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <EditorInput
+                      label="Title"
+                      value={getSafe(businessData, 'instagram.title')}
+                      onChange={(e) => handleDataChange('instagram.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('instagram')}
+                  />
+                  <EditorInput
+                      label="Handle"
+                      value={getSafe(businessData, 'instagram.handle')}
+                      onChange={(e) => handleDataChange('instagram.handle', e.target.value)}
+                      onFocus={() => handleSectionFocus('instagram')}
+                  />
+                  <h4 className="text-sm font-medium text-gray-700 mt-4 mb-2">Images</h4>
+                  {(businessData.instagram.images || []).map((img, index) => (
+                      <EditorImageUpload
+                          key={index}
+                          label={`Image ${index + 1}`}
+                          value={img}
+                          onChange={(e) => handleDataChange(`instagram.images.${index}`, e.target.value)}
+                          onFocus={() => handleSectionFocus('instagram')}
+                      />
+                  ))}
+                </AccordionItem>
+              </div>
+            )}
 
             {/* --- BLISSLY EVENTS --- */}
             {businessData?.events?.items && (
@@ -2331,7 +2883,7 @@ export default function EditorSidebar({
 
            {/* Desktop Content - Render normally */}
            {!isMobile && (
-              <div className="flex-grow overflow-y-auto pb-40">
+              <div className="flex-grow overflow-y-auto pb-20">
                  {renderPanelContent()}
               </div>
            )}
