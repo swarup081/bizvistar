@@ -183,8 +183,8 @@ export default function LandingEditor() {
             // --- STEP 1: Click "Business Name" in Preview (Triggers Hero Section) ---
             // Move cursor to Center Top of Iframe (approx logo position)
             // Container width / 2, and some top offset (e.g. 100px relative to container)
-            const logoX = w / 2;
-            const logoY = 100; // Approx header height in preview
+            const logoX = (w - sidebarWidth) / 2; // Center of preview area
+            const logoY = 80; // Approx header height in preview
             setCursorPos({ x: logoX, y: logoY });
             await wait(1000);
 
@@ -199,8 +199,9 @@ export default function LandingEditor() {
 
             // --- STEP 2: Edit Logo Text (Avenix -> Kohira) ---
             // First Input in Hero. Y ~ 180px.
+            const nameInputX = sidebarCenterX - 20; // Shift left a bit as requested
             const nameInputY = 180;
-            setCursorPos({ x: sidebarCenterX, y: nameInputY });
+            setCursorPos({ x: nameInputX, y: nameInputY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
@@ -265,7 +266,8 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            await wait(1000);
+            // Wait longer after image upload as requested
+            await wait(2000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 5: Switch to Theme Tab ---
@@ -310,7 +312,7 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            await wait(2000);
+            await wait(5000); // 5 sec pause as requested
             
             // --- RESET ---
             setActiveTab('website');
@@ -359,7 +361,7 @@ export default function LandingEditor() {
       onMouseLeave={() => {
           isHoveredRef.current = false;
           setIsHovered(false);
-          // Reset UI state on leave
+
           setActiveTab('website');
           setActiveAccordion('global');
           setBusinessData(defaultData);

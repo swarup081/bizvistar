@@ -2824,7 +2824,7 @@ export default function EditorSidebar({
   );
 
   return (
-    <div className={`flex flex-col h-full bg-white ${isMobile ? 'w-full' : 'w-80'}`}>
+    <div className={`flex flex-col h-full bg-white ${isMobile ? 'w-full' : 'w-80'} overflow-x-hidden`}>
       
       {/* Desktop Tabs (Top) */}
       {!isMobile && (
