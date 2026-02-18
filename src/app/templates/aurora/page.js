@@ -13,8 +13,8 @@ const getProductsByIds = (allProducts, ids) => {
 };
 
 // "Explore All" Rotating Button
-const ExploreCircle = () => (
-   <Link href="/templates/aurora/shop">
+const ExploreCircle = ({ isLanding }) => {
+    const content = (
       <div  className="relative w-[25vw] h-[25vw] md:w-32 md:h-32 flex items-center justify-center cursor-pointer group">
         <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
             <svg viewBox="0 0 100 100" width="100%" height="100%">
@@ -30,8 +30,21 @@ const ExploreCircle = () => (
             <ArrowDown size={20} className="w-[5vw] h-[5vw] md:w-5 md:h-5" />
         </div>
     </div>
-    </Link>
-);
+    );
+
+    if (isLanding) {
+        return (
+            <div className="relative group/tooltip" onClick={(e) => e.preventDefault()}>
+                {content}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                    Unlock full potential in editor (Demo)
+                </div>
+            </div>
+        );
+    }
+
+    return <Link href="/templates/aurora/shop">{content}</Link>;
+};
 
 function AuroraContent() {
     const { businessData } = useTemplateContext();
@@ -65,9 +78,8 @@ function AuroraContent() {
                             <div className="lg:col-span-6 flex flex-col justify-center lg:pr-12 z-10 pt-4 md:pt-0">
                                 <div className="relative">
                                     <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[var(--color-dark)] tracking-tight">
-                                        {businessData.hero?.titleLine1 || "Desire Meets"} <br/>
                                         <span className="relative inline-block">
-                                            {businessData.hero?.titleLine2 || "New Style"}
+                                            {businessData.hero?.title || "Desire Meets New Style"}
                                             {/* Floating Bracelet Image Graphic */}
                                             <div className="absolute -left-[10vw] lg:-left-28 top-1/2 -translate-y-1/2 w-[8vw] h-[6vw] lg:w-24 lg:h-16 hidden lg:block rotate-12 opacity-80">
                                                 <img src="/aurora/diamondsimageforaurora.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
@@ -175,24 +187,24 @@ function AuroraContent() {
                                 {/* 2. Beige Stats Box (Middle) - Scaled Text */}
                                 <div className="bg-[var(--color-bg-alt)] flex-1 h-[15vw] lg:h-[160px] flex items-center justify-around px-2 lg:px-20">
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">12</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">All over World</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">{businessData.hero?.stats?.[0]?.value || "12"}</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">{businessData.hero?.stats?.[0]?.label || "All over World"}</span>
                                     </div>
                                     <div className="w-px h-[8vw] lg:h-12 bg-[var(--color-gold)] opacity-30"></div>
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">150+</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">Product Available</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">{businessData.hero?.stats?.[1]?.value || "150+"}</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">{businessData.hero?.stats?.[1]?.label || "Product Available"}</span>
                                     </div>
                                     <div className="w-px h-[8vw] lg:h-12 bg-[var(--color-gold)] opacity-30"></div>
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">1K+</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">Product Reviews</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">{businessData.hero?.stats?.[2]?.value || "1K+"}</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">{businessData.hero?.stats?.[2]?.label || "Product Reviews"}</span>
                                     </div>
                                 </div>
 
                                 {/* 3. Circle Button (Right) - Overlapping */}
                                 <div className="block ml-2 md:ml-10 mb-4 md:mb-10">
-                                    <ExploreCircle />
+                                    <ExploreCircle isLanding={isLanding} />
                                 </div>
 
                             </div>

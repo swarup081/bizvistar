@@ -88,8 +88,7 @@ export default function LandingEditor() {
     // Force Initial State as per requirements
     data.name = "Avenix"; // Start as Avenix
     if (data.hero) {
-        data.hero.titleLine1 = "Desire Meets";
-        data.hero.titleLine2 = "New Style";
+        data.hero.title = "Desire Meets New Style";
     }
     // Ensure nested objects exist to prevent crashes
     if (!data.theme) data.theme = {};
@@ -167,26 +166,33 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
-            // --- STEP 1: Click "Hero Section" (Start with Avenix -> Kohira) ---
-            // Accordion Item 1 (Since Global is hidden). Y ~ 85px.
-            const heroAccordionY = 85;
-            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(800);
+            // --- STEP 1: Click "Business Name" to open Hero Section (User requirement: click business name from template first) ---
+            // Simulating a click on the preview iframe to trigger focus.
+            // But we can't easily click inside the iframe via cursor coordinates in this simplified demo.
+            // Instead, we'll simulate the EFFECT of clicking it: opening the Hero accordion.
+            // We'll move the cursor to the "Business Name" area in the iframe first.
+
+            // Assuming "Avenix" text is roughly top-left.
+            const businessNameX = 200 * scale;
+            const businessNameY = 100 * scale;
+            setCursorPos({ x: businessNameX, y: businessNameY });
+            await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
+            // "Clicking" the template triggers the sidebar update.
             setActiveAccordion('hero');
             await wait(200);
             setIsClicking(false);
             
-            await wait(800); 
+            await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 2: Edit Business Name (Avenix -> Kohira) ---
+            // --- STEP 2: Move to Sidebar -> Edit Business Name (Avenix -> Kohira) ---
             // Business Name Input (Inside Hero). Y ~ 160px.
             const nameInputY = 160;
             setCursorPos({ x: sidebarCenterX, y: nameInputY });
-            await wait(800);
+            await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
@@ -195,6 +201,10 @@ export default function LandingEditor() {
 
             // Type "Kohira"
             const nameText = "Kohira";
+            // Check if we need to resume typing or start over.
+            // businessData is restored on hover leave, but our loop is dumb.
+            // We'll just type it out. If the user changed it, the restore logic (onMouseLeave)
+            // resets businessData to `snapshot`. So businessData.name is likely "Avenix" again.
             for (let i = 0; i <= nameText.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; } 
@@ -205,8 +215,8 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 3: Edit Title Line 1 ---
-            // Input 2 ("Title Line 1"). Y ~240px.
+            // --- STEP 3: Edit Title (Merged) ---
+            // Input 2 ("Title"). Y ~240px.
             const input1Y = 240;
             setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
@@ -216,43 +226,16 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            // Type "Timeless Elegance,"
-            const text1 = "Timeless Elegance,"; 
-            for (let i = 0; i <= text1.length; i++) {
+            // Type "Timeless Elegance, New Style"
+            const fullTitle = "Timeless Elegance, New Style";
+            for (let i = 0; i <= fullTitle.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; } 
                 setBusinessData(prev => ({
                     ...prev,
-                    hero: { ...prev.hero, titleLine1: text1.substring(0, i) }
+                    hero: { ...prev.hero, title: fullTitle.substring(0, i) }
                 }));
-                await wait(60);
-            }
-            
-            await wait(500);
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 4: Edit Title Line 2 ---
-            // Input 3 ("Title Line 2"). Y ~320px.
-            const input2Y = 320;
-            setCursorPos({ x: sidebarCenterX, y: input2Y });
-            await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            await wait(200);
-            setIsClicking(false);
-
-            // Type "New Style" (User prompt: "New Style from the crafting ...")
-            // Wait, previous prompt said "Timeless Elegance, New Style"
-            const text2 = "New Style";
-            for (let i = 0; i <= text2.length; i++) {
-                if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } 
-                setBusinessData(prev => ({
-                    ...prev,
-                    hero: { ...prev.hero, titleLine2: text2.substring(0, i) }
-                }));
-                await wait(60);
+                await wait(50);
             }
 
             await wait(1000);

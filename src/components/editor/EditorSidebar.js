@@ -494,15 +494,16 @@ export default function EditorSidebar({
   const isMobile = forceDesktop ? false : isMobileHook;
 
   // Watch for external accordion changes (e.g. from iframe click) to auto-expand sheet on mobile
-  // ONLY if it is a NEW interaction (activeAccordion changes to something not null)
-  // We don't want it to open just because we resized to mobile.
+  // AND force website tab on Desktop too if needed (for Landing demo)
   useEffect(() => {
-    if (activeAccordion && isMobile) {
-      setIsMobileExpanded(true);
-      // We assume if a section is focused, we want the 'website' tab
-      onTabChange('website');
+    if (activeAccordion) {
+        if (isMobile) {
+            setIsMobileExpanded(true);
+        }
+        // If an accordion is activated via click-to-edit, ensure we are on the website tab
+        onTabChange('website');
     }
-  }, [activeAccordion]); // Removed isMobile from deps to prevent auto-opening on resize
+  }, [activeAccordion]);
 
   const handleMobileTabChange = (tab) => {
     if (activeTab === tab && isMobileExpanded) {
@@ -877,6 +878,49 @@ export default function EditorSidebar({
                         label="Detail Image (Arch)"
                         value={getSafe(businessData, 'hero.imageSmallArch')}
                         onChange={(e) => handleDataChange('hero.imageSmallArch', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+
+                      <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Stats</h4>
+                      {/* Stat 1 */}
+                      <EditorInput
+                        label="Stat 1 Value"
+                        value={getSafe(businessData, 'hero.stats.0.value')}
+                        onChange={(e) => handleDataChange('hero.stats.0.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 1 Label"
+                        value={getSafe(businessData, 'hero.stats.0.label')}
+                        onChange={(e) => handleDataChange('hero.stats.0.label', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+
+                      {/* Stat 2 */}
+                      <EditorInput
+                        label="Stat 2 Value"
+                        value={getSafe(businessData, 'hero.stats.1.value')}
+                        onChange={(e) => handleDataChange('hero.stats.1.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 2 Label"
+                        value={getSafe(businessData, 'hero.stats.1.label')}
+                        onChange={(e) => handleDataChange('hero.stats.1.label', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+
+                      {/* Stat 3 */}
+                      <EditorInput
+                        label="Stat 3 Value"
+                        value={getSafe(businessData, 'hero.stats.2.value')}
+                        onChange={(e) => handleDataChange('hero.stats.2.value', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Stat 3 Label"
+                        value={getSafe(businessData, 'hero.stats.2.label')}
+                        onChange={(e) => handleDataChange('hero.stats.2.label', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                    </>
