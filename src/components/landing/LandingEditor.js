@@ -82,6 +82,21 @@ export default function LandingEditor() {
     return () => window.removeEventListener('resize', handleResize);
   }, [view]);
 
+  // --- CLICK TO EDIT LISTENER ---
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data && event.data.type === 'FOCUS_SECTION') {
+        const { sectionId } = event.data;
+        if (sectionId) {
+            setActiveAccordion(sectionId);
+            setActiveTab('website');
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   // Initial Data
   const defaultData = useMemo(() => {
     const data = JSON.parse(JSON.stringify(auroraData || {}));
@@ -172,9 +187,9 @@ export default function LandingEditor() {
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
             // --- STEP 1: Click "Business Name" to open Hero Section ---
-            // Assuming "Avenix" text is roughly top-left.
-            const businessNameX = 200 * scale;
-            const businessNameY = 100 * scale;
+            // Logo is top-left in Aurora.
+            const businessNameX = 150 * scale;
+            const businessNameY = 80 * scale;
             setCursorPos({ x: businessNameX, y: businessNameY });
             await wait(1000);
 
@@ -190,12 +205,12 @@ export default function LandingEditor() {
 
             // --- STEP 2: Move to Sidebar -> Edit Business Name (Avenix -> Kohira) ---
             // Global is hidden for Aurora. Hero is first.
-            // Accordion Header (56px) + Business Name Input (Start at ~70px relative to list)
-            // Header: ~74px (Main Tabs).
-            // Hero Header: 74 + 56 = 130px (Bottom of header).
-            // Input 1 (Name) Center: 130 + 16 (margin) + 20 (label) + 20 (half input) = ~186px.
-            // Let's approximate Y = 190.
-            const nameInputY = 190;
+            // Accordion Header (~60px) + Business Name Input (Start at ~10px padding)
+            // Sidebar Header (~70px) + Tabs (~60px) is roughly 130px.
+            // Hero Accordion Header (First item): Y ~160 (center).
+            // But we want the INPUT inside.
+            // Input 1 (Name) Center: ~220px.
+            const nameInputY = 220;
             setCursorPos({ x: sidebarCenterX, y: nameInputY });
             await wait(1000);
 
@@ -222,8 +237,8 @@ export default function LandingEditor() {
 
             // --- STEP 3: Edit Title (Merged) ---
             // Input 1 (Name) takes ~80px space.
-            // Input 2 (Title) Center: 190 + 80 = 270px.
-            const input1Y = 270;
+            // Input 2 (Title) Center: 220 + 80 = 300px.
+            const input1Y = 300;
             setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
             
@@ -248,10 +263,9 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 5: Change Feature Image (Stats Box) ---
-            // Inputs so far: Name (1), Title (2), TitleLine2 (removed), Subtitle (TextArea ~100px), CTA (Input).
-            // Name (190) -> Title (270) -> Subtitle (360) -> CTA (450) -> Image1 (530) -> Image2 (610) -> SmallArch (690).
-            // Let's aim for Image2 (Secondary/Stats): Y ~610.
-            const imageInputY = 610;
+            // Inputs so far: Name (1), Title (2), Subtitle (TextArea ~120px), CTA (Input ~80px).
+            // Name (220) -> Title (300) -> Subtitle (400) -> CTA (500) -> Image1 (580) -> Image2 (660).
+            const imageInputY = 660;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
