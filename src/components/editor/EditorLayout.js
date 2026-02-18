@@ -428,6 +428,7 @@ useEffect(() => {
           
           activeAccordion={activeAccordion}
           onAccordionToggle={handleAccordionToggle} 
+          templateName={templateName}
         />
       </div>
     </div>

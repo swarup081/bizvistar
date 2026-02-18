@@ -46,6 +46,7 @@ export default function LandingEditor() {
   // Interaction State
   const [isHovered, setIsHovered] = useState(false);
   const isHoveredRef = useRef(false);
+  const hasInteractedRef = useRef(false); 
 
   // State for dynamic scaling
   const [scale, setScale] = useState(1);
@@ -84,13 +85,10 @@ export default function LandingEditor() {
   // Initial Data
   const defaultData = useMemo(() => {
     const data = JSON.parse(JSON.stringify(auroraData || {}));
-    // Force Initial State as per requirements
-    data.name = "Avenix"; // Start as Avenix
+    data.name = "Avenix"; 
     if (data.hero) {
-        data.hero.titleLine1 = "Desire Meets";
-        data.hero.titleLine2 = "New Style";
+        data.hero.title = "Desire Meets New Style";
     }
-    // Ensure nested objects exist to prevent crashes
     if (!data.theme) data.theme = {};
     if (!data.theme.font) data.theme.font = {};
     return data;
@@ -135,13 +133,28 @@ export default function LandingEditor() {
   };
 
   useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === 'IFRAME_READY') {
+        sendDataToIframe(businessData);
+      }
+      
+      if (event.data.type === 'FOCUS_SECTION') {
+        setActiveTab('website');
+        setActiveAccordion(event.data.payload.accordionId);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     if (iframeRef.current && iframeRef.current.contentWindow) {
         sendDataToIframe(businessData);
     }
     const handler = setTimeout(() => {
       sendDataToIframe(businessData);
     }, 250); 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+      window.removeEventListener('message', handleMessage);
+    };
   }, [businessData]); 
 
   // --- Animation Logic ---
@@ -150,137 +163,133 @@ export default function LandingEditor() {
     const wait = (ms) => new Promise(r => setTimeout(r, ms));
 
     const sequence = async () => {
+        // Initial start delay
         await wait(1500); 
 
         while (isMounted.current) {
-            if (isHoveredRef.current) { await wait(200); continue; }
+            
+            // --- 1. Global Interaction Check ---
+            if (isHoveredRef.current) {
+                hasInteractedRef.current = true;
+                await wait(200);
+                continue; 
+            }
 
+            // --- 2. Post-Interaction Reset Logic (The 30s Law) ---
+            if (hasInteractedRef.current) {
+                let interrupted = false;
+                for (let i = 0; i < 30; i++) {
+                    if (isHoveredRef.current) { interrupted = true; break; }
+                    await wait(1000);
+                }
+
+                if (interrupted) {
+                    continue; 
+                }
+
+                // RESET EVERYTHING
+                hasInteractedRef.current = false;
+                setActiveTab('website');
+                setActiveAccordion('global');
+                setBusinessData(defaultData);
+                setCursorPos({ x: -50, y: -50 }); 
+                
+                await wait(1000); 
+                // Restart loop from step 1
+            }
+
+            // --- 3. Animation Steps ---
             const container = containerRef.current;
             if (!container) { await wait(200); continue; }
 
             const w = container.offsetWidth;
-            const h = container.offsetHeight;
-
-            // Sidebar Calcs (Right Aligned, 320px)
             const sidebarWidth = 320;
             const sidebarLeftX = w - sidebarWidth; 
+            const sidebarInputX = sidebarLeftX + 100; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
+
+            // Helper to break execution if user hovers
+            const checkInterrupt = () => {
+                if (isHoveredRef.current) {
+                    hasInteractedRef.current = true;
+                    return true;
+                }
+                return false;
+            };
+
+            // STEP 1: Click "Business Name" in Preview
+            if (checkInterrupt()) continue;
             
-            // --- STEP 1: Click "Global Settings" (Start with Avenix -> Kohira) ---
-            // Accordion Item 1. Y ~ 85px.
-            const globalAccordionY = 85;
-            setCursorPos({ x: sidebarCenterX, y: globalAccordionY });
-            await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            setActiveAccordion('global'); 
-            await wait(200);
-            setIsClicking(false);
+            const logoX = w / 2 - 180; // adjust 60–100 if needed
+            const logoY = 100 + 20; 
+            setCursorPos({ x: logoX, y: logoY });
             
-            await wait(800); 
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 2: Edit Business Name (Avenix -> Kohira) ---
-            // Business Name Input Y ~ 180px.
-            const nameInputY = 180;
-            setCursorPos({ x: sidebarCenterX, y: nameInputY });
-            await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            await wait(200);
-            setIsClicking(false);
-
-            // Type "Kohira"
-            const nameText = "Kohira";
-            for (let i = 0; i <= nameText.length; i++) {
-                if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } 
-                setBusinessData(prev => ({ ...prev, name: nameText.substring(0, i) }));
-                await wait(80);
-            }
-
             await wait(1000);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
 
-            // --- STEP 3: Click "Hero Section" Accordion ---
-            // Accordion Item 2. Center ~135px.
-            const heroAccordionY = 135;
-            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(800);
-            
-            if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
             setActiveAccordion('hero'); 
             await wait(200);
             setIsClicking(false);
-            
-            await wait(800); 
-            if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 4: Edit Title Line 1 ---
-            // Input 1 ("Title Line 1"). Y ~220px.
-            const input1Y = 220;
-            setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
-            
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
+
+            // STEP 2: Edit Logo Text
+            const nameInputY = 180;
+            setCursorPos({ x: sidebarInputX, y: nameInputY });
+            await wait(800);
+
+            if (checkInterrupt()) continue;
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
-            // Type "Timeless Elegance,"
-            const text1 = "Timeless Elegance,"; 
-            for (let i = 0; i <= text1.length; i++) {
+            const nameText = "Kohira";
+            for (let i = 0; i <= nameText.length; i++) {
                 if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } 
-                setBusinessData(prev => ({
-                    ...prev,
-                    hero: { ...prev.hero, titleLine1: text1.substring(0, i) }
-                }));
-                await wait(60);
+                if (checkInterrupt()) { i = nameText.length + 1; break; } 
+                setBusinessData(prev => ({ ...prev, name: nameText.substring(0, i), logoText: nameText.substring(0, i) }));
+                await wait(80);
             }
-            
-            await wait(500);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
 
-            // --- STEP 5: Edit Title Line 2 ---
-            // Input 2 ("Title Line 2"). Y ~300px.
-            const input2Y = 300; 
-            setCursorPos({ x: sidebarCenterX, y: input2Y });
+            await wait(1000);
+            if (checkInterrupt()) continue;
+
+            // STEP 3: Edit Title (FIXED: Moved further left)
+            const titleInputY = 260;
+            // Subtracting 60 from sidebarInputX makes it click much further left
+            setCursorPos({ x: sidebarInputX - 60, y: titleInputY });
             await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
+            
+            if (checkInterrupt()) continue;
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
-            // Type "New Style" (User prompt: "New Style from the crafting ...")
-            // Wait, previous prompt said "Timeless Elegance, New Style"
-            const text2 = "New Style";
-            for (let i = 0; i <= text2.length; i++) {
+            const newTitle = "Timeless Elegance, New Style"; 
+            for (let i = 0; i <= newTitle.length; i++) {
                 if (!isMounted.current) break;
-                if (isHoveredRef.current) { await wait(200); i--; continue; } 
+                if (checkInterrupt()) { i = newTitle.length + 1; break; }
                 setBusinessData(prev => ({
                     ...prev,
-                    hero: { ...prev.hero, titleLine2: text2.substring(0, i) }
+                    hero: { ...prev.hero, title: newTitle.substring(0, i) }
                 }));
                 await wait(60);
             }
+            if (checkInterrupt()) continue;
 
             await wait(1000);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
 
-            // --- STEP 6: Change Feature Image (Stats Box) ---
-            // Y ~620px.
-            const imageInputY = 620; 
-            setCursorPos({ x: sidebarCenterX, y: imageInputY });
+            // STEP 4: Change Feature Image
+            const imageInputY = 420; 
+            setCursorPos({ x: sidebarInputX, y: imageInputY });
             await wait(1000);
 
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
             setIsClicking(true); 
-            // Update imageArch1_b
             setBusinessData(prev => ({
                 ...prev,
                 hero: { 
@@ -291,54 +300,55 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            await wait(1000);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            await wait(2500); 
+            if (checkInterrupt()) continue;
 
-            // --- STEP 7: Switch to Theme Tab ---
+            // STEP 5: Switch to Theme Tab
             const themeTabY = 30; 
             const themeTabX = sidebarCenterX; 
             setCursorPos({ x: themeTabX, y: themeTabY });
             await wait(800);
 
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
             setIsClicking(true);
             setActiveTab('theme');
             await wait(200);
             setIsClicking(false);
             
             await wait(800);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
 
-            // --- STEP 8: Palette (Strawberry Cream) ---
-            // Bottom Right Palette. Y ~280.
+            // STEP 6: Palette
             const strawberryX = w - 80;
             const strawberryY = 280;
             setCursorPos({ x: strawberryX, y: strawberryY }); 
             await wait(800);
 
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
             setIsClicking(true);
             setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'strawberry-cream' } }));
             await wait(200);
             setIsClicking(false);
 
             await wait(1000);
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
 
-            // --- STEP 9: Publish ---
+            // STEP 7: Publish
             const publishX = (w - sidebarWidth) - 100;
             const publishY = 30;
             setCursorPos({ x: publishX, y: publishY });
             await wait(1000);
             
-            if (isHoveredRef.current) { await wait(200); continue; }
+            if (checkInterrupt()) continue;
             setIsClicking(true);
             await wait(200);
             setIsClicking(false);
 
             await wait(2000);
             
-            // --- RESET ---
+            // End of Sequence - Soft Reset
+            if (checkInterrupt()) continue;
+            
             setActiveTab('website');
             setActiveAccordion('global'); 
             setBusinessData(defaultData); 
@@ -381,8 +391,14 @@ export default function LandingEditor() {
     <div 
       ref={containerRef}
       className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
-      onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
-      onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
+      onMouseEnter={() => { 
+        isHoveredRef.current = true; 
+        setIsHovered(true); 
+      }}
+      onMouseLeave={() => { 
+          isHoveredRef.current = false; 
+          setIsHovered(false);
+      }}
     >
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
@@ -408,8 +424,7 @@ export default function LandingEditor() {
           />
         </div>
 
-        {/* Restore 420px Margin as requested */}
-        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] px-4 pb-10`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
               ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''} 
@@ -418,7 +433,7 @@ export default function LandingEditor() {
               width: view === 'desktop' ? '1440px' : '375px', 
               height: view === 'desktop' ? `${containerHeight / scale}px` : '812px', 
               transform: `scale(${scale})`, 
-              marginTop: view === 'desktop' ? '425px' : '40px', 
+              marginTop: view === 'desktop' ? '465px' : '40px', 
               overflow: 'hidden', 
             }}
           >
@@ -445,6 +460,7 @@ export default function LandingEditor() {
           onAccordionToggle={handleAccordionToggle} 
           forceDesktop={true}
           isLandingMode={true}
+          templateName={templateName}
         />
       </div>
     </div>

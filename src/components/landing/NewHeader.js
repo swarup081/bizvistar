@@ -21,8 +21,8 @@ export default function NewHeader() {
     <>
       {/* Top Banner */}
       <div className="bg-[#1a1a1a] text-white text-xs md:text-sm py-2.5 text-center px-4 font-medium">
-         Start a free trial and enjoy 3 months of Storify for $1/month on select plans. 
-         <Link href="/get-started" className="underline ml-1 hover:text-gray-300">Sign up now</Link>
+         Start a free trial and enjoy 1 months of BizVistar for ₹0/month on select plans. 
+         <Link href="/sign-in" className="underline ml-1 hover:text-gray-300">Sign up now</Link>
       </div>
 
       <header className="sticky top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">

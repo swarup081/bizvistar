@@ -86,8 +86,8 @@ export default function LandingPage() {
       <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
          <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0 flex items-center gap-2">
-               <span className="text-2xl font-bold tracking-tight">Storify</span>
-               <p className="text-gray-400 text-sm ml-4 border-l border-gray-700 pl-4">© {new Date().getFullYear()} Storify Inc.</p>
+               <span className="text-2xl font-bold tracking-tight">BizVistar</span>
+               <p className="text-gray-400 text-sm ml-4 border-l border-gray-700 pl-4">© {new Date().getFullYear()} BizVistar Inc.</p>
             </div>
             <div className="flex gap-8 text-sm text-gray-400 font-medium">
                <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>

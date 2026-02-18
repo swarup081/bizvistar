@@ -449,6 +449,11 @@ export const colorPalettes = [
     colors: ['#F8F7F5', '#FFFFFF', '#D81B60', '#1A1A1A', '#000000'],
   },
   {
+    name: 'Strawberry Cream',
+    class: 'strawberry-cream',
+    colors: ['#FFF7F9', '#FDE8EF', '#ec4899', '#D81B60', '#502D39'],
+  },
+  {
     name: 'Brewhaven Cream',
     class: 'brewhaven-cream',
     colors: ['#FBF9F3', '#F5EFE6', '#F5A623', '#8A6E63', '#4B4832'],
@@ -467,11 +472,6 @@ export const colorPalettes = [
     name: 'Sky Blue',
     class: 'sky-blue',
     colors: ['#F0F9FF', '#E0F2FE', '#38bdf8', '#0284C7', '#075985'],
-  },
-  {
-    name: 'Strawberry Cream',
-    class: 'strawberry-cream',
-    colors: ['#FFF7F9', '#FDE8EF', '#ec4899', '#D81B60', '#502D39'],
   },
 ];
 
@@ -838,28 +838,21 @@ export default function EditorSidebar({
                 )}
 
                 {/* Aurora Specific Fields */}
-                {businessData.hero.titleLine1 !== undefined && (
+                {templateName === 'aurora' && (
                    <>
-                      {templateName === 'aurora' && (
-                        <EditorInput
-                          label="Business Name"
-                          value={getSafe(businessData, 'name')}
+                      <EditorInput
+                          label="Logo Text"
+                          value={getSafe(businessData, 'logoText') || getSafe(businessData, 'name')}
                           onChange={(e) => handleSyncedNameChange(e.target.value)}
                           onFocus={() => handleSectionFocus('hero')}
                           isRequired={true}
-                        />
-                      )}
-                      <EditorInput
-                        label="Title Line 1"
-                        value={getSafe(businessData, 'hero.titleLine1')}
-                        onChange={(e) => handleDataChange('hero.titleLine1', e.target.value)}
-                        onFocus={() => handleSectionFocus('hero')}
                       />
-                       <EditorInput
-                        label="Title Line 2"
-                        value={getSafe(businessData, 'hero.titleLine2')}
-                        onChange={(e) => handleDataChange('hero.titleLine2', e.target.value)}
+                      <EditorInput
+                        label="Title"
+                        value={getSafe(businessData, 'hero.title')}
+                        onChange={(e) => handleDataChange('hero.title', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
+                        isRequired={true}
                       />
                       {/* Aurora Images */}
                       <EditorImageUpload
@@ -927,7 +920,7 @@ export default function EditorSidebar({
                 )}
                 
                 {/* Generic Title (if not Aurora) */}
-                {businessData.hero.title !== undefined && (
+                {businessData.hero.title !== undefined && templateName !== 'aurora' && (
                   <EditorInput
                     label="Title"
                     value={getSafe(businessData, 'hero.title')}
