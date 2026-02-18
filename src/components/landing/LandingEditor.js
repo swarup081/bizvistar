@@ -273,18 +273,22 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 6: Change Feature Image (Stats Box) ---
-            // Y ~620px.
-            const imageInputY = 620;
+            // Targeting imageArch1_b (Stats box image)
+            // It is further down in the list (after Title1, Title2, Subtitle, CTA, Large Img, Small Img)
+            // Estimated Y ~550px (Refined).
+
+            const imageInputY = 550;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            // Update imageArch1_b
+            setIsClicking(true); // Simulate clicking "Upload"
+            // Simulate change instantly
             setBusinessData(prev => ({
                 ...prev,
                 hero: {
                     ...prev.hero,
+                    // Change to a placeholder (e.g. a different jewelry piece)
                     imageArch1_b: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500"
                 }
             }));
@@ -408,7 +412,7 @@ export default function LandingEditor() {
           />
         </div>
 
-        {/* Restore 420px Margin as requested */}
+        {/* Fixed Top Margin Bug */}
         <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
@@ -418,7 +422,7 @@ export default function LandingEditor() {
               width: view === 'desktop' ? '1440px' : '375px',
               height: view === 'desktop' ? `${containerHeight / scale}px` : '812px',
               transform: `scale(${scale})`,
-              marginTop: view === 'desktop' ? '420px' : '40px', // Restored 420px margin
+              marginTop: view === 'desktop' ? '420px' : '40px', // Corrected margin
               overflow: 'hidden',
             }}
           >
