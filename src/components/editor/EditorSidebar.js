@@ -485,7 +485,8 @@ export default function EditorSidebar({
   activeAccordion,
   onAccordionToggle,
   forceDesktop = false, // --- ADDED ---
-  isLandingMode = false // <-- NEW PROP
+  isLandingMode = false, // <-- NEW PROP
+  templateName // --- ADDED ---
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
@@ -741,14 +742,15 @@ export default function EditorSidebar({
         {/* WEBSITE Panel */}
         {activeTab === 'website' && (
           <section>
-            <AccordionItem
-              title="Global Settings"
-              icon={Info}
-              isOpen={activeAccordion === 'global'}
-              onClick={() => toggleAccordion('global')}
-              isMobile={isMobile}
-              onCloseMobile={() => toggleAccordion(null)}
-            >
+            {templateName !== 'aurora' && (
+              <AccordionItem
+                title="Global Settings"
+                icon={Info}
+                isOpen={activeAccordion === 'global'}
+                onClick={() => toggleAccordion('global')}
+                isMobile={isMobile}
+                onCloseMobile={() => toggleAccordion(null)}
+              >
                 {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
                 {businessData?.infoBar !== undefined && (
                   <>
@@ -812,6 +814,7 @@ export default function EditorSidebar({
                   onFocus={() => handleSectionFocus('global')}
                 />
               </AccordionItem>
+            )}
 
             {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora, frostify) --- */}
             {businessData?.hero && (
@@ -836,6 +839,15 @@ export default function EditorSidebar({
                 {/* Aurora Specific Fields */}
                 {businessData.hero.titleLine1 !== undefined && (
                    <>
+                      {templateName === 'aurora' && (
+                        <EditorInput
+                          label="Business Name"
+                          value={getSafe(businessData, 'name')}
+                          onChange={(e) => handleSyncedNameChange(e.target.value)}
+                          onFocus={() => handleSectionFocus('hero')}
+                          isRequired={true}
+                        />
+                      )}
                       <EditorInput
                         label="Title Line 1"
                         value={getSafe(businessData, 'hero.titleLine1')}

@@ -46,6 +46,7 @@ export default function LandingEditor() {
   // Interaction State
   const [isHovered, setIsHovered] = useState(false);
   const isHoveredRef = useRef(false);
+  const [snapshot, setSnapshot] = useState(null); // Store state before hover
 
   // State for dynamic scaling
   const [scale, setScale] = useState(1);
@@ -166,15 +167,15 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
-            // --- STEP 1: Click "Global Settings" (Start with Avenix -> Kohira) ---
-            // Accordion Item 1. Y ~ 85px.
-            const globalAccordionY = 85;
-            setCursorPos({ x: sidebarCenterX, y: globalAccordionY });
+            // --- STEP 1: Click "Hero Section" (Start with Avenix -> Kohira) ---
+            // Accordion Item 1 (Since Global is hidden). Y ~ 85px.
+            const heroAccordionY = 85;
+            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
-            setActiveAccordion('global'); 
+            setActiveAccordion('hero');
             await wait(200);
             setIsClicking(false);
             
@@ -182,8 +183,8 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 2: Edit Business Name (Avenix -> Kohira) ---
-            // Business Name Input Y ~ 180px.
-            const nameInputY = 180;
+            // Business Name Input (Inside Hero). Y ~ 160px.
+            const nameInputY = 160;
             setCursorPos({ x: sidebarCenterX, y: nameInputY });
             await wait(800);
 
@@ -204,24 +205,9 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 3: Click "Hero Section" Accordion ---
-            // Accordion Item 2. Center ~135px.
-            const heroAccordionY = 135;
-            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(800);
-            
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true);
-            setActiveAccordion('hero'); 
-            await wait(200);
-            setIsClicking(false);
-            
-            await wait(800); 
-            if (isHoveredRef.current) { await wait(200); continue; }
-
-            // --- STEP 4: Edit Title Line 1 ---
-            // Input 1 ("Title Line 1"). Y ~220px.
-            const input1Y = 220;
+            // --- STEP 3: Edit Title Line 1 ---
+            // Input 2 ("Title Line 1"). Y ~240px.
+            const input1Y = 240;
             setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
             
@@ -245,9 +231,9 @@ export default function LandingEditor() {
             await wait(500);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 5: Edit Title Line 2 ---
-            // Input 2 ("Title Line 2"). Y ~300px.
-            const input2Y = 300; 
+            // --- STEP 4: Edit Title Line 2 ---
+            // Input 3 ("Title Line 2"). Y ~320px.
+            const input2Y = 320;
             setCursorPos({ x: sidebarCenterX, y: input2Y });
             await wait(800);
 
@@ -272,9 +258,9 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 6: Change Feature Image (Stats Box) ---
-            // Y ~500px (Adjusted for new layout).
-            const imageInputY = 500;
+            // --- STEP 5: Change Feature Image (Stats Box) ---
+            // Y ~580px (Adjusted for new layout with Name input).
+            const imageInputY = 580;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
@@ -294,7 +280,7 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 7: Switch to Theme Tab ---
+            // --- STEP 6: Switch to Theme Tab ---
             const themeTabY = 30; 
             const themeTabX = sidebarCenterX; 
             setCursorPos({ x: themeTabX, y: themeTabY });
@@ -309,7 +295,7 @@ export default function LandingEditor() {
             await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 8: Palette (Strawberry Cream) ---
+            // --- STEP 7: Palette (Strawberry Cream) ---
             // Bottom Right Palette. Y ~280.
             const strawberryX = w - 80;
             const strawberryY = 280;
@@ -325,7 +311,7 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 9: Publish ---
+            // --- STEP 8: Publish ---
             const publishX = (w - sidebarWidth) - 100;
             const publishY = 30;
             setCursorPos({ x: publishX, y: publishY });
@@ -381,8 +367,16 @@ export default function LandingEditor() {
     <div 
       ref={containerRef}
       className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
-      onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
-      onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
+      onMouseEnter={() => {
+        isHoveredRef.current = true;
+        setIsHovered(true);
+        setSnapshot(businessData); // Save state
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false;
+        setIsHovered(false);
+        if (snapshot) setBusinessData(snapshot); // Restore state
+      }}
     >
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
@@ -445,6 +439,7 @@ export default function LandingEditor() {
           onAccordionToggle={handleAccordionToggle} 
           forceDesktop={true}
           isLandingMode={true}
+          templateName={templateName}
         />
       </div>
     </div>
