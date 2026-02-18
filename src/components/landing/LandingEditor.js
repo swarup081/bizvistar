@@ -85,6 +85,7 @@ export default function LandingEditor() {
   const defaultData = useMemo(() => {
     const data = JSON.parse(JSON.stringify(auroraData || {}));
     // Force Initial State as per requirements
+    data.name = "Avenix"; // Start as Avenix
     if (data.hero) {
         data.hero.titleLine1 = "Desire Meets";
         data.hero.titleLine2 = "New Style";
@@ -165,10 +166,46 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth;
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
 
-            // --- STEP 1: Click "Hero Section" Accordion ---
-            // Accordion Item 2 (Index 1) approx Y.
-            // Global (50) + Hero (50). Center ~135px.
+            // --- STEP 1: Click "Global Settings" (Start with Avenix -> Kohira) ---
+            // Accordion Item 1. Y ~ 85px.
+            const globalAccordionY = 85;
+            setCursorPos({ x: sidebarCenterX, y: globalAccordionY });
+            await wait(800);
 
+            if (isHoveredRef.current) { await wait(200); continue; }
+            setIsClicking(true);
+            setActiveAccordion('global');
+            await wait(200);
+            setIsClicking(false);
+
+            await wait(800);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 2: Edit Business Name (Avenix -> Kohira) ---
+            // Business Name Input Y ~ 180px.
+            const nameInputY = 180;
+            setCursorPos({ x: sidebarCenterX, y: nameInputY });
+            await wait(800);
+
+            if (isHoveredRef.current) { await wait(200); continue; }
+            setIsClicking(true);
+            await wait(200);
+            setIsClicking(false);
+
+            // Type "Kohira"
+            const nameText = "Kohira";
+            for (let i = 0; i <= nameText.length; i++) {
+                if (!isMounted.current) break;
+                if (isHoveredRef.current) { await wait(200); i--; continue; }
+                setBusinessData(prev => ({ ...prev, name: nameText.substring(0, i) }));
+                await wait(80);
+            }
+
+            await wait(1000);
+            if (isHoveredRef.current) { await wait(200); continue; }
+
+            // --- STEP 3: Click "Hero Section" Accordion ---
+            // Accordion Item 2. Center ~135px.
             const heroAccordionY = 135;
             setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
             await wait(800);
@@ -182,9 +219,8 @@ export default function LandingEditor() {
             await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 2: Edit Title Line 1 ---
-            // Input 1 ("Title Line 1") is first inside accordion.
-            // Y shifts down to ~220px.
+            // --- STEP 4: Edit Title Line 1 ---
+            // Input 1 ("Title Line 1"). Y ~220px.
             const input1Y = 220;
             setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
@@ -194,7 +230,7 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            // Type "Timeless Elegance"
+            // Type "Timeless Elegance,"
             const text1 = "Timeless Elegance,";
             for (let i = 0; i <= text1.length; i++) {
                 if (!isMounted.current) break;
@@ -209,9 +245,9 @@ export default function LandingEditor() {
             await wait(500);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 3: Edit Title Line 2 ---
-            // Input 2 is below Input 1. ~70px down.
-            const input2Y = 300; // Adjusted based on feedback
+            // --- STEP 5: Edit Title Line 2 ---
+            // Input 2 ("Title Line 2"). Y ~300px.
+            const input2Y = 300;
             setCursorPos({ x: sidebarCenterX, y: input2Y });
             await wait(800);
 
@@ -220,8 +256,9 @@ export default function LandingEditor() {
             await wait(200);
             setIsClicking(false);
 
-            // Type "Crafted for You"
-            const text2 = "Crafted for You";
+            // Type "New Style" (User prompt: "New Style from the crafting ...")
+            // Wait, previous prompt said "Timeless Elegance, New Style"
+            const text2 = "New Style";
             for (let i = 0; i <= text2.length; i++) {
                 if (!isMounted.current) break;
                 if (isHoveredRef.current) { await wait(200); i--; continue; }
@@ -235,23 +272,19 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 4: Change Feature Image (Stats Box) ---
-            // Targeting imageArch1_b (Stats box image)
-            // It is further down in the list (after Title1, Title2, Subtitle, CTA, Large Img, Small Img)
-            // Estimated Y ~600px.
-
-            const imageInputY = 600;
+            // --- STEP 6: Change Feature Image (Stats Box) ---
+            // Y ~620px.
+            const imageInputY = 620;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true); // Simulate clicking "Upload"
-            // Simulate change instantly
+            setIsClicking(true);
+            // Update imageArch1_b
             setBusinessData(prev => ({
                 ...prev,
                 hero: {
                     ...prev.hero,
-                    // Change to a placeholder (e.g. a different jewelry piece)
                     imageArch1_b: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500"
                 }
             }));
@@ -261,7 +294,7 @@ export default function LandingEditor() {
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 5: Switch to Theme Tab ---
+            // --- STEP 7: Switch to Theme Tab ---
             const themeTabY = 30;
             const themeTabX = sidebarCenterX;
             setCursorPos({ x: themeTabX, y: themeTabY });
@@ -276,47 +309,23 @@ export default function LandingEditor() {
             await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 6: Font Dropdown (Heading) ---
-            // Y approx 450.
-            const fontSelectY = 450;
-            setCursorPos({ x: sidebarCenterX, y: fontSelectY });
-            await wait(800);
-
-            if (isHoveredRef.current) { await wait(200); continue; }
-            setIsClicking(true); // Open
-            await wait(200);
-            setIsClicking(false);
-            await wait(500);
-
-            // Move UPWARDS to select "Kalam"
-            const fontOptionY = fontSelectY - 150;
-            setCursorPos({ x: sidebarCenterX, y: fontOptionY });
+            // --- STEP 8: Palette (Strawberry Cream) ---
+            // Bottom Right Palette. Y ~280.
+            const strawberryX = w - 80;
+            const strawberryY = 280;
+            setCursorPos({ x: strawberryX, y: strawberryY });
             await wait(800);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
-
-            // --- FIX FOR RUNTIME ERROR ---
-            setBusinessData(prev => ({
-                ...prev,
-                theme: {
-                    ...(prev.theme || {}),
-                    font: {
-                        ...(prev.theme?.font || {}),
-                        heading: 'Kalam'
-                    }
-                }
-            }));
-            // -----------------------------
-
+            setBusinessData(prev => ({ ...prev, theme: { ...prev.theme, colorPalette: 'strawberry-cream' } }));
             await wait(200);
             setIsClicking(false);
 
             await wait(1000);
             if (isHoveredRef.current) { await wait(200); continue; }
 
-            // --- STEP 7: Publish ---
-            // Top Right.
+            // --- STEP 9: Publish ---
             const publishX = (w - sidebarWidth) - 100;
             const publishY = 30;
             setCursorPos({ x: publishX, y: publishY });
@@ -338,7 +347,7 @@ export default function LandingEditor() {
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [scale]); // Removed defaultData dep to prevent loop reset
+  }, [scale]);
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
   const [previewUrl, setPreviewUrl] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
@@ -399,7 +408,7 @@ export default function LandingEditor() {
           />
         </div>
 
-        {/* Removed extra padding/margins to fix "extra empty space" */}
+        {/* Fixed Top Margin Bug */}
         <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
@@ -409,7 +418,7 @@ export default function LandingEditor() {
               width: view === 'desktop' ? '1440px' : '375px',
               height: view === 'desktop' ? `${containerHeight / scale}px` : '812px',
               transform: `scale(${scale})`,
-              marginTop: view === 'desktop' ? '0' : '40px',
+              marginTop: view === 'desktop' ? '0' : '40px', // Corrected margin
               overflow: 'hidden',
             }}
           >
