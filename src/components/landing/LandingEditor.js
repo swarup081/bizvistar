@@ -134,13 +134,28 @@ export default function LandingEditor() {
   };
 
   useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === 'IFRAME_READY') {
+        sendDataToIframe(businessData);
+      }
+
+      if (event.data.type === 'FOCUS_SECTION') {
+        setActiveTab('website');
+        setActiveAccordion(event.data.payload.accordionId);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     if (iframeRef.current && iframeRef.current.contentWindow) {
         sendDataToIframe(businessData);
     }
     const handler = setTimeout(() => {
       sendDataToIframe(businessData);
     }, 250); 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+      window.removeEventListener('message', handleMessage);
+    };
   }, [businessData]); 
 
   // --- Animation Logic ---
@@ -165,19 +180,21 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
-            // --- STEP 1: Click "Hero Section" (Now first since Global is hidden) ---
-            // Accordion Item 1. Y ~ 85px.
-            const heroAccordionY = 85;
-            setCursorPos({ x: sidebarCenterX, y: heroAccordionY });
-            await wait(800);
+            // --- STEP 1: Click "Business Name" in Preview (Triggers Hero Section) ---
+            // Move cursor to Center Top of Iframe (approx logo position)
+            // Container width / 2, and some top offset (e.g. 100px relative to container)
+            const logoX = w / 2;
+            const logoY = 100; // Approx header height in preview
+            setCursorPos({ x: logoX, y: logoY });
+            await wait(1000);
 
             if (isHoveredRef.current) { await wait(200); continue; }
             setIsClicking(true);
-            setActiveAccordion('hero');
+            setActiveAccordion('hero'); // Simulate the effect of clicking the editable logo
             await wait(200);
             setIsClicking(false);
-            
-            await wait(800); 
+
+            await wait(800);
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 2: Edit Logo Text (Avenix -> Kohira) ---
@@ -230,8 +247,8 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 4: Change Feature Image (Stats Box) ---
-            // Y ~ 580px (Moved up slightly due to removal of extra title inputs).
-            const imageInputY = 580;
+            // Y ~ 420px (Adjusted per visual estimation).
+            const imageInputY = 420;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
@@ -297,7 +314,7 @@ export default function LandingEditor() {
             
             // --- RESET ---
             setActiveTab('website');
-            setActiveAccordion('hero');
+            setActiveAccordion('global'); // Reset to initial state
             setBusinessData(defaultData); 
             await wait(1000);
         }
@@ -339,7 +356,14 @@ export default function LandingEditor() {
       ref={containerRef}
       className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
       onMouseEnter={() => { isHoveredRef.current = true; setIsHovered(true); }}
-      onMouseLeave={() => { isHoveredRef.current = false; setIsHovered(false); }}
+      onMouseLeave={() => {
+          isHoveredRef.current = false;
+          setIsHovered(false);
+          // Reset UI state on leave
+          setActiveTab('website');
+          setActiveAccordion('global');
+          setBusinessData(defaultData);
+      }}
     >
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
 
