@@ -838,28 +838,14 @@ export default function EditorSidebar({
                 )}
 
                 {/* Aurora Specific Fields */}
-                {businessData.hero.titleLine1 !== undefined && (
+                {templateName === 'aurora' && (
                    <>
-                      {templateName === 'aurora' && (
-                        <EditorInput
-                          label="Business Name"
-                          value={getSafe(businessData, 'name')}
-                          onChange={(e) => handleSyncedNameChange(e.target.value)}
-                          onFocus={() => handleSectionFocus('hero')}
-                          isRequired={true}
-                        />
-                      )}
                       <EditorInput
-                        label="Title Line 1"
-                        value={getSafe(businessData, 'hero.titleLine1')}
-                        onChange={(e) => handleDataChange('hero.titleLine1', e.target.value)}
+                        label="Title"
+                        value={getSafe(businessData, 'hero.title')}
+                        onChange={(e) => handleDataChange('hero.title', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
-                      />
-                       <EditorInput
-                        label="Title Line 2"
-                        value={getSafe(businessData, 'hero.titleLine2')}
-                        onChange={(e) => handleDataChange('hero.titleLine2', e.target.value)}
-                        onFocus={() => handleSectionFocus('hero')}
+                        isRequired={true}
                       />
                       {/* Aurora Images */}
                       <EditorImageUpload
@@ -927,7 +913,7 @@ export default function EditorSidebar({
                 )}
                 
                 {/* Generic Title (if not Aurora) */}
-                {businessData.hero.title !== undefined && (
+                {businessData.hero.title !== undefined && templateName !== 'aurora' && (
                   <EditorInput
                     label="Title"
                     value={getSafe(businessData, 'hero.title')}
@@ -1352,6 +1338,15 @@ export default function EditorSidebar({
                     isMobile={isMobile}
                     onCloseMobile={() => toggleAccordion(null)}
                   >
+                  {templateName === 'aurora' && (
+                     <EditorInput
+                        label="Logo Text"
+                        value={getSafe(businessData, 'logoText') || getSafe(businessData, 'name')}
+                        onChange={(e) => handleSyncedNameChange(e.target.value)}
+                        onFocus={() => handleSectionFocus('about')}
+                        isRequired={true}
+                     />
+                  )}
                   <EditorInput
                     label="Title"
                     value={getSafe(businessData, 'about.title')}

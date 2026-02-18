@@ -251,7 +251,7 @@ function AuroraContent() {
                 </Editable>
 
                 {/* --- STORY SECTION --- */}
-                <Editable focusId="story">
+                <Editable focusId="about">
                     <section className="py-12 md:py-32 bg-[var(--color-bg-alt)]">
                         <div className="container mx-auto px-6 lg:px-16 grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-20 items-center">
                             <div className="order-2 lg:order-1">
