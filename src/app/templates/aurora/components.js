@@ -3,6 +3,7 @@ import { useState, Suspense } from 'react';
 import { useCart } from './cartContext.js';
 import { useTemplateContext } from './templateContext.js';
 import Link from 'next/link';
+import { Editable } from '@/components/editor/Editable';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Search, ShoppingBag, Heart, Star } from 'lucide-react';
 
@@ -63,7 +64,7 @@ const HeaderContent = () => {
                                 onClick={(e) => {
                                     if (isLanding) e.preventDefault();
                                 }}
-                                className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors text-[var(--color-text-light)] hover:text-[var(--color-dark)] ${isLanding ? 'cursor-not-allowed opacity-70' : ''}`}
+                                className={`text-xs font-bold tracking-[0.2em] uppercase transition-colors text-[var(--color-text-light)] hover:text-[var(--color-dark)] relative after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-[-4px] after:left-0 after:bg-[var(--color-gold)] after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left ${isLanding ? 'cursor-not-allowed opacity-70' : ''}`}
                             >
                                 {item}
                             </a>
@@ -74,9 +75,11 @@ const HeaderContent = () => {
 
                 {/* CENTER: Logo */}
                 <a href={resolveLink("")} onClick={isLanding ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 absolute left-1/2 -translate-x-1/2 ${isLanding ? 'cursor-default' : ''}`}>
-                    <span className="font-serif text-[6vw] md:text-3xl text-[var(--color-dark)] tracking-tight font-medium">
-                        {businessData.name}
-                    </span>
+                    <Editable focusId="about">
+                        <span className="font-serif text-[6vw] md:text-3xl text-[var(--color-dark)] tracking-tight font-medium">
+                            {businessData.name}
+                        </span>
+                    </Editable>
                 </a>
 
                 {/* RIGHT: Icons */}
