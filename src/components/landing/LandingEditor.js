@@ -408,7 +408,7 @@ export default function LandingEditor() {
           />
         </div>
 
-        {/* Fixed Top Margin Bug */}
+        {/* Restore 420px Margin as requested */}
         <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
@@ -418,7 +418,7 @@ export default function LandingEditor() {
               width: view === 'desktop' ? '1440px' : '375px',
               height: view === 'desktop' ? `${containerHeight / scale}px` : '812px',
               transform: `scale(${scale})`,
-              marginTop: view === 'desktop' ? '0' : '40px', // Corrected margin
+              marginTop: view === 'desktop' ? '420px' : '40px', // Restored 420px margin
               overflow: 'hidden',
             }}
           >
