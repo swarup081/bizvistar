@@ -53,7 +53,7 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
             parentPath = window.parent.location.pathname;
         } catch (e) { }
 
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
+        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
         const isPreview = parentPath.startsWith('/preview/');
 
         if (isEditor) {

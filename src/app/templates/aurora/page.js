@@ -4,6 +4,8 @@ import { ProductCard, FAQAccordion, InstagramFeed, TestimonialSlider, FeatureIco
 import Link from 'next/link';
 import { Editable } from '@/components/editor/Editable';
 import { Play, ArrowRight, ArrowDown } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
 const getProductsByIds = (allProducts, ids) => {
     if (!allProducts || !ids) return [];
@@ -31,34 +33,41 @@ const ExploreCircle = () => (
     </Link>
 );
 
-export default function AuroraPage() {
+function AuroraContent() {
     const { businessData } = useTemplateContext();
+    const searchParams = useSearchParams();
+    const isLanding = searchParams.get('isLanding') === 'true';
 
     if (!businessData) return <div>Loading...</div>;
 
-    const featuredProducts = getProductsByIds(businessData.allProducts, businessData.collections.itemIDs);
+    // --- FIX: Safely access collections.itemIDs using optional chaining ---
+    // If businessData.collections is undefined, we fallback to an empty array for IDs.
+    const featuredProducts = getProductsByIds(
+        businessData.allProducts, 
+        businessData.collections?.itemIDs || []
+    );
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden">
             
            {/* --- HERO SECTION --- */}
            <Editable focusId="hero">
-                <section className="relative w-full pt-4 md:pt-20 pb-0">
+                <section className={`relative w-full pb-0 ${isLanding ? 'pt-32 md:pt-40' : 'pt-4 md:pt-20'}`} style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
                     
                     {/* Background Split: The right beige block */}
-                    <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[#F3EBE6] -z-10 rounded-bl-[100px] hidden lg:block"></div>
+                    <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[var(--color-bg-alt)] -z-10 rounded-bl-[100px] hidden lg:block"></div>
 
-                    <div className="container mx-auto px-6 lg:px-16 relative">
+                    <div className="container mx-auto px-6 lg:px-16 relative h-full flex flex-col justify-center">
                         {/* Mobile: Grid Cols 2 (Shrink) | Desktop: Grid Cols 12 */}
-                        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-12">
+                        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-12 items-center">
                             
                             {/* LEFT COLUMN: Text */}
                             <div className="lg:col-span-6 flex flex-col justify-center lg:pr-12 z-10 pt-4 md:pt-0">
                                 <div className="relative">
-                                    <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[#0F1C23] tracking-tight">
-                                        Desire Meets <br/>
+                                    <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[var(--color-dark)] tracking-tight">
+                                        {businessData.hero?.titleLine1 || "Desire Meets"} <br/>
                                         <span className="relative inline-block">
-                                            New Style
+                                            {businessData.hero?.titleLine2 || "New Style"}
                                             {/* Floating Bracelet Image Graphic */}
                                             <div className="absolute -left-[10vw] lg:-left-28 top-1/2 -translate-y-1/2 w-[8vw] h-[6vw] lg:w-24 lg:h-16 hidden lg:block rotate-12 opacity-80">
                                                 <img src="/aurora/diamondsimageforaurora.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
@@ -67,8 +76,8 @@ export default function AuroraPage() {
                                     </h1>
                                 </div>
                                 
-                                <p className="text-gray-500 text-[3vw] md:text-lg mt-4 md:mt-8 mb-4 md:mb-10 max-w-md font-light leading-relaxed">
-                                    {businessData.hero.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
+                                <p className="text-[var(--color-text-light)] text-[3vw] md:text-lg mt-4 md:mt-8 mb-4 md:mb-10 max-w-md font-light leading-relaxed">
+                                    {businessData.hero?.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
                                 </p>
                             </div>
 
@@ -77,7 +86,7 @@ export default function AuroraPage() {
                                 {/* Main Image (Hands) */}
                                 <div className="absolute left-0 lg:left-0 top-0 w-[60%] h-[85%] z-20">
                                     <img 
-                                        src={businessData.hero.imageArch1} 
+                                        src={businessData.hero?.imageArch1} 
                                         alt="Jewelry Model" 
                                         className="w-full h-full object-cover shadow-2xl" 
                                     />
@@ -86,7 +95,7 @@ export default function AuroraPage() {
                                 {/* Secondary Image (Arch on Right) */}
                                 <div className="absolute right-0 top-[10%] lg:top-30 w-[35%] h-[40%] z-10 rounded-t-full lg:rounded-t-[200px] overflow-hidden">
                                     <img 
-                                        src={businessData.hero.imageSmallArch} 
+                                        src={businessData.hero?.imageSmallArch} 
                                         alt="Detail" 
                                         className="w-full h-full object-cover" 
                                     />
@@ -101,11 +110,11 @@ export default function AuroraPage() {
                                 >
                                     <defs>
                                         <linearGradient id="arcGrad" x1="0" x2="1" y1="0" y2="0">
-                                            <stop offset="0%" stopColor="#D4A373" stopOpacity="0" />
-                                            <stop offset="20%" stopColor="#D4A373" stopOpacity="0.6" />
-                                            <stop offset="50%" stopColor="#D4A373" stopOpacity="1" />
-                                            <stop offset="80%" stopColor="#D4A373" stopOpacity="0.6" />
-                                            <stop offset="100%" stopColor="#D4A373" stopOpacity="0" />
+                                            <stop offset="0%" stopColor="var(--color-gold)" stopOpacity="0" />
+                                            <stop offset="20%" stopColor="var(--color-gold)" stopOpacity="0.6" />
+                                            <stop offset="50%" stopColor="var(--color-gold)" stopOpacity="1" />
+                                            <stop offset="80%" stopColor="var(--color-gold)" stopOpacity="0.6" />
+                                            <stop offset="100%" stopColor="var(--color-gold)" stopOpacity="0" />
                                         </linearGradient>
 
                                         <linearGradient id="edgeFade" x1="0" x2="1" y1="0" y2="0">
@@ -155,29 +164,29 @@ export default function AuroraPage() {
                             <div className="flex flex-row items-end"> {/* Forced Row on Mobile */}
                                 
                                 {/* 1. Dark Image Box (Left) */}
-                                <div className="w-[30%] lg:w-[280px] h-[20vw] lg:h-[220px] bg-[#0A1F25] relative flex items-center justify-center overflow-hidden">
+                                <div className="w-[30%] lg:w-[280px] h-[20vw] lg:h-[220px] bg-[var(--color-dark)] relative flex items-center justify-center overflow-hidden">
                                      <img 
-                                        src={businessData.hero.imageArch1_b} 
+                                        src={businessData.hero?.imageArch1_b} 
                                         alt="Necklace Feature" 
                                         className="w-[80%] h-[80%] object-contain drop-shadow-xl"
                                      />
                                 </div>
 
                                 {/* 2. Beige Stats Box (Middle) - Scaled Text */}
-                                <div className="bg-[#FAEFE5] flex-1 h-[15vw] lg:h-[160px] flex items-center justify-around px-2 lg:px-20">
+                                <div className="bg-[var(--color-bg-alt)] flex-1 h-[15vw] lg:h-[160px] flex items-center justify-around px-2 lg:px-20">
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[#0F1C23] mb-0.5 lg:mb-1">12</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-gray-500">All over World</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">12</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">All over World</span>
                                     </div>
-                                    <div className="w-px h-[8vw] lg:h-12 bg-[#D4A373] opacity-30"></div>
+                                    <div className="w-px h-[8vw] lg:h-12 bg-[var(--color-gold)] opacity-30"></div>
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[#0F1C23] mb-0.5 lg:mb-1">150+</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-gray-500">Product Available</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">150+</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">Product Available</span>
                                     </div>
-                                    <div className="w-px h-[8vw] lg:h-12 bg-[#D4A373] opacity-30"></div>
+                                    <div className="w-px h-[8vw] lg:h-12 bg-[var(--color-gold)] opacity-30"></div>
                                     <div className="text-center">
-                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[#0F1C23] mb-0.5 lg:mb-1">1K+</span>
-                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-gray-500">Product Reviews</span>
+                                        <span className="block font-serif text-[4vw] lg:text-4xl text-[var(--color-dark)] mb-0.5 lg:mb-1">1K+</span>
+                                        <span className="text-[1.5vw] lg:text-xs uppercase tracking-widest text-[var(--color-text-light)]">Product Reviews</span>
                                     </div>
                                 </div>
 
@@ -192,140 +201,151 @@ export default function AuroraPage() {
                 </section>
             </Editable>
 
-
-            {/* --- FEATURES MARQUEE SECTION (UPDATED) --- */}
-            <Editable focusId="features">
-                <section className="py-8 md:py-16 bg-white border-b border-gray-100 mt-6 lg:mt-24 overflow-hidden">
-                  <div className="relative">
-                    <div className="flex whitespace-nowrap">
-                      <div className="flex marquee items-center">
-                        {(businessData.features || []).map((feature, i) => (
-                          <div key={i} className="flex items-center justify-center gap-2 md:gap-4 mx-3 md:mx-6">
-                            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[#FAEFE5] flex items-center justify-center text-[#0F1C23]">
-                              <FeatureIcon name={feature.icon} size={16} /> {/* Scaled Icon */}
-                            </div>
-                            <div className="text-left">
-                              <h3 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">{feature.title}</h3>
-                              <p className="text-gray-500 text-[2vw] md:text-[10px] uppercase tracking-wider mt-0.5 md:mt-1">{feature.text}</p>
-                            </div>
-                          </div>
-                        ))}
-                         {/* Duplicate for Marquee */}
-                        {(businessData.features || []).map((feature, i) => (
-                          <div key={`dup-${i}`} className="flex items-center justify-center gap-2 md:gap-4 mx-3 md:mx-6" aria-hidden="true">
-                            <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[#FAEFE5] flex items-center justify-center text-[#0F1C23]">
-                              <FeatureIcon name={feature.icon} size={16} />
-                            </div>
-                            <div className="text-left">
-                              <h3 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em] text-[#0F1C23]">{feature.title}</h3>
-                              <p className="text-gray-500 text-[2vw] md:text-[10px] uppercase tracking-wider mt-0.5 md:mt-1">{feature.text}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </section>
-            </Editable>
-
-            {/* --- STORY SECTION --- */}
-            <Editable focusId="story">
-                <section className="py-12 md:py-32 bg-[#F3EBE6]">
-                    <div className="container mx-auto px-6 lg:px-16 grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-20 items-center">
-                        <div className="order-2 lg:order-1">
-                            <span className="text-[2.5vw] md:text-xs font-bold tracking-[0.3em] text-[#D4A373] uppercase mb-2 md:mb-4 block">Our Heritage</span>
-                            <h2 className="text-[7vw] md:text-5xl font-serif mb-4 md:mb-8 text-[#0F1C23] leading-tight">{businessData.about.title}</h2>
-                            <p className="text-gray-600 text-[3vw] md:text-lg leading-relaxed md:leading-loose mb-4 md:mb-10 font-light line-clamp-4 md:line-clamp-none">
-                                {businessData.about.text}
-                            </p>
-                            <div className="flex items-center gap-8">
-                                    <Link 
-                                        href="/templates/aurora/shop" 
-                                        className="bg-[#0F1C23] text-white px-4 py-2 md:px-8 md:py-4 rounded-[4px] font-medium text-[2.5vw] md:text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
-                                    >
-                                       Shop Now <ArrowRight size={14} className="md:w-4 md:h-4" />
-                                    </Link>
-                                   
+            {!isLanding && (
+            <>
+                {/* --- FEATURES MARQUEE SECTION (UPDATED) --- */}
+                <Editable focusId="features">
+                    <section className="py-8 md:py-16 bg-white border-b border-gray-100 mt-6 lg:mt-24 overflow-hidden">
+                    <div className="relative">
+                        <div className="flex whitespace-nowrap">
+                        <div className="flex marquee items-center">
+                            {(businessData.features || []).map((feature, i) => (
+                            <div key={i} className="flex items-center justify-center gap-2 md:gap-4 mx-3 md:mx-6">
+                                <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[var(--color-bg-alt)] flex items-center justify-center text-[var(--color-dark)]">
+                                <FeatureIcon name={feature.icon} size={16} /> {/* Scaled Icon */}
                                 </div>
-                        </div>
-                         <div className="h-[50vw] md:h-[650px] w-full relative order-1 lg:order-2">
-                             <div className="absolute inset-0 rounded-t-full lg:rounded-t-[300px] overflow-hidden shadow-2xl">
-                                <img 
-                                    src={businessData.about.image} 
-                                    alt="Our Story" 
-                                    className="w-full h-full object-cover transition-transform duration-[3s] hover:scale-105" 
-                                />
-                             </div>
-                        </div>
-                    </div>
-                </section>
-            </Editable>
-
-            {/* --- COLLECTIONS --- */}
-            <Editable focusId="collection">
-                <section className="py-12 md:py-32 bg-white">
-                    <div className="container mx-auto px-6 lg:px-16">
-                        <div className="flex flex-col lg:flex-row justify-between items-end mb-8 md:mb-16 gap-4 md:gap-6">
-                             <div>
-                                <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.collections.title}</h2>
-                                <p className="text-gray-500 text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections.subtitle}</p>
-                             </div>
-                             <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[#0F1C23] hover:text-[#0F1C23] text-gray-500 transition-all">
-                                View Collection
-                             </Link>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-10">
-                            {featuredProducts.map(product => (
-                                <ProductCard key={product.id} item={product} />
+                                <div className="text-left">
+                                <h3 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-dark)]">{feature.title}</h3>
+                                <p className="text-[var(--color-text-light)] text-[2vw] md:text-[10px] uppercase tracking-wider mt-0.5 md:mt-1">{feature.text}</p>
+                                </div>
+                            </div>
+                            ))}
+                            {/* Duplicate for Marquee */}
+                            {(businessData.features || []).map((feature, i) => (
+                            <div key={`dup-${i}`} className="flex items-center justify-center gap-2 md:gap-4 mx-3 md:mx-6" aria-hidden="true">
+                                <div className="w-8 h-8 md:w-12 md:h-12 rounded-full bg-[var(--color-bg-alt)] flex items-center justify-center text-[var(--color-dark)]">
+                                <FeatureIcon name={feature.icon} size={16} />
+                                </div>
+                                <div className="text-left">
+                                <h3 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-dark)]">{feature.title}</h3>
+                                <p className="text-[var(--color-text-light)] text-[2vw] md:text-[10px] uppercase tracking-wider mt-0.5 md:mt-1">{feature.text}</p>
+                                </div>
+                            </div>
                             ))}
                         </div>
-                        {/* Mobile Only View Collection Button */}
-                        <div className="mt-8 text-center block lg:hidden">
-                            <Link href="/templates/aurora/shop" className="inline-block bg-[#0F1C23] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[#D4A373] transition-colors">
-                                View Collection
-                            </Link>
                         </div>
                     </div>
-                </section>
-            </Editable>
+                    </section>
+                </Editable>
 
-            {/* --- REVIEWS (IMPROVED) --- */}
-            <Editable focusId="testimonials">
-                <section className="py-12 md:py-24 bg-[#F7F4F0] border-t border-[#EBE5DF]">
-                     <TestimonialSlider data={businessData.testimonials} />
-                </section>
-            </Editable>
-
-            {/* --- FAQ SECTION --- */}
-            <Editable focusId="faq">
-                <section className="py-12 md:py-32 bg-white">
-                    <div className="container mx-auto px-6 lg:px-16 max-w-6xl">
-                        <div className="text-center mb-8 md:mb-16">
-                            <h2 className="text-[7vw] md:text-4xl font-serif mb-2 md:mb-4 text-[#0F1C23]">{businessData.faq.title}</h2>
-                            <p className="text-gray-500 text-[3vw] md:text-base">{businessData.faq.subtitle}</p>
+                {/* --- STORY SECTION --- */}
+                <Editable focusId="story">
+                    <section className="py-12 md:py-32 bg-[var(--color-bg-alt)]">
+                        <div className="container mx-auto px-6 lg:px-16 grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-20 items-center">
+                            <div className="order-2 lg:order-1">
+                                <span className="text-[2.5vw] md:text-xs font-bold tracking-[0.3em] text-[var(--color-gold)] uppercase mb-2 md:mb-4 block">Our Heritage</span>
+                                <h2 className="text-[7vw] md:text-5xl font-serif mb-4 md:mb-8 text-[var(--color-dark)] leading-tight">{businessData.about?.title}</h2>
+                                <p className="text-[var(--color-text-light)] text-[3vw] md:text-lg leading-relaxed md:leading-loose mb-4 md:mb-10 font-light line-clamp-4 md:line-clamp-none">
+                                    {businessData.about?.text}
+                                </p>
+                                <div className="flex items-center gap-8">
+                                        <Link 
+                                            href="/templates/aurora/shop" 
+                                            className="bg-[var(--color-dark)] text-white px-4 py-2 md:px-8 md:py-4 rounded-[4px] font-medium text-[2.5vw] md:text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
+                                        >
+                                        Shop Now <ArrowRight size={14} className="md:w-4 md:h-4" />
+                                        </Link>
+                                    
+                                    </div>
+                            </div>
+                            <div className="h-[50vw] md:h-[650px] w-full relative order-1 lg:order-2">
+                                <div className="absolute inset-0 rounded-t-full lg:rounded-t-[300px] overflow-hidden shadow-2xl">
+                                    <img 
+                                        src={businessData.about?.image} 
+                                        alt="Our Story" 
+                                        className="w-full h-full object-cover transition-transform duration-[3s] hover:scale-105" 
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className="divide-y divide-gray-100 border-t border-gray-100">
-                            {businessData.faq.questions.map((q, i) => (
-                                <FAQAccordion key={i} question={q.q} answer={q.a} />
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            </Editable>
-            
-            {/* --- AN INVITATION (NEW & IMPROVED) --- */}
-            <Editable focusId="cta">
-                <NewsletterCTA data={businessData.newsletterCta} />
-            </Editable>
+                    </section>
+                </Editable>
 
-            <Editable focusId="instagram">
-                <section className="py-12 md:py-24 bg-white">
-                    <div className="container mx-auto px-6 lg:px-16">
-                        <InstagramFeed data={businessData.instagram} />
-                    </div>
-                </section>
-            </Editable>
+                {/* --- COLLECTIONS --- */}
+                <Editable focusId="collection">
+                    <section className="py-12 md:py-32 bg-white">
+                        <div className="container mx-auto px-6 lg:px-16">
+                            <div className="flex flex-col lg:flex-row justify-between items-end mb-8 md:mb-16 gap-4 md:gap-6">
+                                <div>
+                                    <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[var(--color-dark)]">{businessData.collections?.title}</h2>
+                                    <p className="text-[var(--color-text-light)] text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections?.subtitle}</p>
+                                </div>
+                                <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[var(--color-dark)] hover:text-[var(--color-dark)] text-[var(--color-text-light)] transition-all">
+                                    View Collection
+                                </Link>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-10">
+                                {featuredProducts.map(product => (
+                                    <ProductCard key={product.id} item={product} />
+                                ))}
+                            </div>
+                            {/* Mobile Only View Collection Button */}
+                            <div className="mt-8 text-center block lg:hidden">
+                                <Link href="/templates/aurora/shop" className="inline-block bg-[var(--color-dark)] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[var(--color-gold)] transition-colors">
+                                    View Collection
+                                </Link>
+                            </div>
+                        </div>
+                    </section>
+                </Editable>
+
+                {/* --- REVIEWS (IMPROVED) --- */}
+                <Editable focusId="testimonials">
+                    <section className="py-12 md:py-24 bg-[var(--color-bg)] border-t border-[var(--color-bg-alt)]">
+                        <TestimonialSlider data={businessData.testimonials} />
+                    </section>
+                </Editable>
+
+                {/* --- FAQ SECTION --- */}
+                <Editable focusId="faq">
+                    <section className="py-12 md:py-32 bg-white">
+                        <div className="container mx-auto px-6 lg:px-16 max-w-6xl">
+                            <div className="text-center mb-8 md:mb-16">
+                                <h2 className="text-[7vw] md:text-4xl font-serif mb-2 md:mb-4 text-[var(--color-dark)]">{businessData.faq?.title}</h2>
+                                <p className="text-[var(--color-text-light)] text-[3vw] md:text-base">{businessData.faq?.subtitle}</p>
+                            </div>
+                            <div className="divide-y divide-gray-100 border-t border-gray-100">
+                                {(businessData.faq?.questions || []).map((q, i) => (
+                                    <FAQAccordion key={i} question={q.q} answer={q.a} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                </Editable>
+                
+                {/* --- AN INVITATION (NEW & IMPROVED) --- */}
+                <Editable focusId="cta">
+                    <NewsletterCTA data={businessData.newsletterCta} />
+                </Editable>
+
+                <Editable focusId="instagram">
+                    <section className="py-12 md:py-24 bg-white">
+                        <div className="container mx-auto px-6 lg:px-16">
+                            <InstagramFeed data={businessData.instagram} />
+                        </div>
+                    </section>
+                </Editable>
+            </>
+            )}
         </div>
+    );
+}
+
+export default function AuroraPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AuroraContent />
+        </Suspense>
     );
 }
