@@ -2883,7 +2883,7 @@ export default function EditorSidebar({
 
            {/* Desktop Content - Render normally */}
            {!isMobile && (
-              <div className="flex-grow overflow-y-auto pb-40">
+              <div className="flex-grow overflow-y-auto pb-20">
                  {renderPanelContent()}
               </div>
            )}

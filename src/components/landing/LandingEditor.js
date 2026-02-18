@@ -158,6 +158,11 @@ export default function LandingEditor() {
             const container = containerRef.current;
             if (!container) { await wait(200); continue; }
 
+            // --- RESET STATE for consistency (Fix for user interaction desync) ---
+            setActiveTab('website');
+            // Wait briefly for render
+            await wait(100);
+
             const w = container.offsetWidth;
             const h = container.offsetHeight;
 
@@ -166,12 +171,7 @@ export default function LandingEditor() {
             const sidebarLeftX = w - sidebarWidth; 
             const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
             
-            // --- STEP 1: Click "Business Name" to open Hero Section (User requirement: click business name from template first) ---
-            // Simulating a click on the preview iframe to trigger focus.
-            // But we can't easily click inside the iframe via cursor coordinates in this simplified demo.
-            // Instead, we'll simulate the EFFECT of clicking it: opening the Hero accordion.
-            // We'll move the cursor to the "Business Name" area in the iframe first.
-
+            // --- STEP 1: Click "Business Name" to open Hero Section ---
             // Assuming "Avenix" text is roughly top-left.
             const businessNameX = 200 * scale;
             const businessNameY = 100 * scale;
@@ -189,8 +189,13 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 2: Move to Sidebar -> Edit Business Name (Avenix -> Kohira) ---
-            // Business Name Input (Inside Hero). Y ~ 160px.
-            const nameInputY = 160;
+            // Global is hidden for Aurora. Hero is first.
+            // Accordion Header (56px) + Business Name Input (Start at ~70px relative to list)
+            // Header: ~74px (Main Tabs).
+            // Hero Header: 74 + 56 = 130px (Bottom of header).
+            // Input 1 (Name) Center: 130 + 16 (margin) + 20 (label) + 20 (half input) = ~186px.
+            // Let's approximate Y = 190.
+            const nameInputY = 190;
             setCursorPos({ x: sidebarCenterX, y: nameInputY });
             await wait(1000);
 
@@ -216,8 +221,9 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 3: Edit Title (Merged) ---
-            // Input 2 ("Title"). Y ~240px.
-            const input1Y = 240;
+            // Input 1 (Name) takes ~80px space.
+            // Input 2 (Title) Center: 190 + 80 = 270px.
+            const input1Y = 270;
             setCursorPos({ x: sidebarCenterX, y: input1Y });
             await wait(800);
             
@@ -242,8 +248,10 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 5: Change Feature Image (Stats Box) ---
-            // Y ~580px (Adjusted for new layout with Name input).
-            const imageInputY = 580;
+            // Inputs so far: Name (1), Title (2), TitleLine2 (removed), Subtitle (TextArea ~100px), CTA (Input).
+            // Name (190) -> Title (270) -> Subtitle (360) -> CTA (450) -> Image1 (530) -> Image2 (610) -> SmallArch (690).
+            // Let's aim for Image2 (Secondary/Stats): Y ~610.
+            const imageInputY = 610;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
