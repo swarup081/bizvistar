@@ -6,6 +6,14 @@ import { Editable } from '@/components/editor/Editable';
 import { ArrowRight, Star } from 'lucide-react';
 import { useState, useEffect } from 'react'; // Added import for slider logic
 
+const getProductsByIds = (allProducts, ids) => {
+    if (!allProducts || !ids) return [];
+    return ids.map(id => {
+        if (typeof id === 'object') return id; // Already an object
+        return allProducts.find(p => p.id === id);
+    }).filter(Boolean);
+};
+
 export default function FrostifyPage() {
     const { businessData } = useTemplateContext();
     const [currentReview, setCurrentReview] = useState(0);
@@ -86,10 +94,18 @@ export default function FrostifyPage() {
                     <div className="container mx-auto px-6">
                         <h2 className="text-[6vw] md:text-4xl font-serif text-center mb-8 md:mb-16 text-white">{businessData.specialties.title}</h2>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-6xl mx-auto">
-                          <SpecialtyCard title="Custom Cakes" shapeClass="rounded-r-full rounded-tl-full" />
-                          <SpecialtyCard title="Baked Pastries" shapeClass="rounded-t-full " />
-                          <SpecialtyCard title="Homemade Cookies" shapeClass="rounded-br-[100px]" />
-                          <SpecialtyCard title="Artisan Breads" shapeClass="rounded-l-full" />
+                          {(businessData.specialties.items || []).map((item, index) => {
+                              const shapes = [
+                                  "rounded-r-full rounded-tl-full",
+                                  "rounded-t-full",
+                                  "rounded-br-[100px]",
+                                  "rounded-l-full"
+                              ];
+                              const shapeClass = shapes[index % shapes.length];
+                              return (
+                                  <SpecialtyCard key={index} title={item.title} icon={item.icon} shapeClass={shapeClass} />
+                              );
+                          })}
                         </div>
                     </div>
                     <div className="absolute bottom-0 left-0 w-full translate-y-[99%] text-[var(--color-primary)]">
@@ -106,7 +122,7 @@ export default function FrostifyPage() {
                         
                         {/* Grid of Cards */}
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                            {(businessData.gallery.items || []).map((item) => (
+                            {getProductsByIds(businessData.allProducts, businessData.gallery.items).map((item) => (
                                 <ProductCard key={item.id} item={item} />
                             ))}
                         </div>

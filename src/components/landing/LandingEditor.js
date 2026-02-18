@@ -273,8 +273,8 @@ export default function LandingEditor() {
             if (isHoveredRef.current) { await wait(200); continue; }
 
             // --- STEP 6: Change Feature Image (Stats Box) ---
-            // Y ~620px.
-            const imageInputY = 620; 
+            // Y ~500px (Adjusted for new layout).
+            const imageInputY = 500;
             setCursorPos({ x: sidebarCenterX, y: imageInputY });
             await wait(1000);
 
