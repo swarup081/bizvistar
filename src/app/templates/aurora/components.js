@@ -332,13 +332,13 @@ export const Footer = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-20">
                     <div className="col-span-2 md:col-span-1">
                         <h3 className="text-2xl font-serif font-bold mb-4 md:mb-6 text-[var(--color-dark)]">{businessData.name}</h3>
-                        <p className="text-[3vw] md:text-sm text-[var(--color-text-light)] leading-relaxed mb-4 md:mb-6 max-w-xs">{businessData.footer.description}</p>
+                        <p className="text-[3vw] md:text-sm text-[var(--color-text-light)] leading-relaxed mb-4 md:mb-6 max-w-xs">{businessData.footer?.description}</p>
                     </div>
                     
                     <div className="col-span-1">
                         <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[var(--color-dark)]">Explore</h4>
                         <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-[var(--color-text-light)] uppercase">
-                            {businessData.footer.links.main.map(link => (
+                            {businessData.footer?.links?.main?.map(link => (
                                 <li key={link.name}><a href={resolveLink(link.url)} className="hover:text-[var(--color-dark)] transition-colors">{link.name}</a></li>
                             ))}
                         </ul>
@@ -347,7 +347,7 @@ export const Footer = () => {
                      <div className="col-span-1">
                         <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[var(--color-dark)]">Legal</h4>
                         <ul className="space-y-3 md:space-y-4 text-[2.5vw] md:text-xs font-medium tracking-wide text-[var(--color-text-light)] uppercase">
-                             {businessData.footer.links.utility.map(link => (
+                             {businessData.footer?.links?.utility?.map(link => (
                                 <li key={link.name}><a href={resolveLink(link.url)} className="hover:text-[var(--color-dark)] transition-colors">{link.name}</a></li>
                             ))}
                         </ul>
@@ -355,16 +355,16 @@ export const Footer = () => {
 
                     <div className="col-span-2 md:col-span-1">
                          <h4 className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-4 md:mb-6 text-[var(--color-dark)]">Stay Updated</h4>
-                         <p className="text-[3vw] md:text-xs text-[var(--color-text-light)] mb-4">{businessData.footer.subscribe.title}</p>
+                         <p className="text-[3vw] md:text-xs text-[var(--color-text-light)] mb-4">{businessData.footer?.subscribe?.title}</p>
                          <div className="flex border-b border-gray-400 pb-2">
                              <input type="email" placeholder="Email Address" className="bg-transparent flex-grow text-[3vw] md:text-xs outline-none placeholder-[var(--color-text-light)] text-[var(--color-dark)]" />
-                             <button className="text-[2.5vw] md:text-[10px] font-bold uppercase tracking-widest hover:text-[var(--color-gold)] transition-colors text-[var(--color-dark)]">{businessData.footer.subscribe.cta}</button>
+                             <button className="text-[2.5vw] md:text-[10px] font-bold uppercase tracking-widest hover:text-[var(--color-gold)] transition-colors text-[var(--color-dark)]">{businessData.footer?.subscribe?.cta}</button>
                          </div>
                     </div>
                 </div>
                 
                 <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-300 text-[2.5vw] md:text-[10px] text-[var(--color-text-light)] uppercase tracking-[0.2em] font-bold">
-                    <p>{businessData.footer.copyright}</p>
+                    <p>{businessData.footer?.copyright}</p>
                     <p>Designed by BizVistar</p>
                 </div>
             </div>
