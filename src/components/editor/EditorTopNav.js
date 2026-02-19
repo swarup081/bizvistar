@@ -260,7 +260,7 @@ export default function EditorTopNav({
         <div className="flex items-center gap-3">
           
           {isLandingMode ? (
-            <Tooltip title="Just a demo" description="">
+            <Tooltip title="Just a demo" description=" Unlock full potential in the editor">
               <button 
                 onClick={onLandingDummyClick}
                 className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors cursor-default"
@@ -301,7 +301,7 @@ export default function EditorTopNav({
           </div>
 
           {isLandingMode ? (
-            <Tooltip title="Just a demo" description="">
+            <Tooltip title="Just a demo" description="Unlock full potential in the editor">
               <Link 
                 href="#"
                 onClick={onLandingDummyClick}
@@ -328,7 +328,7 @@ export default function EditorTopNav({
           
           {/* --- PUBLISH BUTTON --- */}
           {isLandingMode ? (
-             <Tooltip title="Just a demo" description="">
+             <Tooltip title="Just a demo" description="Unlock full potential in the editor">
                 <button
                   onClick={onLandingDummyClick}
                   className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors cursor-default hover:bg-black"

@@ -140,7 +140,7 @@ export default function PricingPage() {
         cta: 'Get Started',
         isRecommended: false,
         features: [
-          'AI-Generated Professional Website',
+          'Professional Website',
           'Easy-to-Use Editor',
           'Secure Hosting & Subdomain',
           '1 Business Tool ',
@@ -191,7 +191,7 @@ export default function PricingPage() {
         cta: 'Get Started',
         isRecommended: false,
         features: [
-          'AI-Generated Professional Website',
+          'Professional Website',
           'Easy-to-Use Editor',
           'Secure Hosting & Subdomain',
           '1 Business Tool ',
@@ -402,13 +402,13 @@ const PlanCard = ({ plan, isYearly, className }) => (
     className={cn(
       'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
       plan.isRecommended 
-        ? 'border-[3px] border-purple-600 shadow-2xl relative' // Highlighted Pro Plan
+        ? 'border-[3px] border-[#8A63D2] shadow-2xl relative' // Highlighted Pro Plan
         : 'border border-gray-200 shadow-lg hover:shadow-xl',
       className
     )}
   >
     {plan.isRecommended && (
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white px-6 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#8A63D2] text-white px-6 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">
         Recommended
       </div>
     )}

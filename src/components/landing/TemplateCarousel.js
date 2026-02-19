@@ -88,7 +88,8 @@ export default function TemplateCarousel() {
                  return (
                     <motion.div
                        key={template.title}
-                       className="absolute top-0 w-[680px] cursor-pointer"
+                       // ADDED: Added 'group' to detect hover on the entire active card
+                       className="absolute top-0 w-[680px] cursor-pointer group"
                        initial={{ 
                           opacity: 0, 
                           x: position === 1 ? 900 : -900,
@@ -111,7 +112,9 @@ export default function TemplateCarousel() {
                        transition={{ duration: 0.6, ease: "easeInOut" }}
                        onClick={() => {
                           if (position === -1) handlePrev();
-                          if (position === 1) handleNext();
+                          else if (position === 1) handleNext();
+                          // ADDED: Redirect when the active template is clicked
+                          else if (position === 0) window.open(template.previewUrl, '_blank'); 
                        }}
                     >
                        {/* DEVICE FRAME */}
@@ -132,7 +135,7 @@ export default function TemplateCarousel() {
                                </div>
 
                                {/* Iframe Preview */}
-                               <div className="w-full h-full bg-gray-50 pt-8">
+                               <div className="w-full h-full bg-gray-50 pt-8 relative">
                                   <div className="absolute inset-0 z-10" /> 
                                   
                                   <iframe 
@@ -145,14 +148,13 @@ export default function TemplateCarousel() {
                                   
                                   {/* Hover Button */}
                                   {isActive && (
-                                     <div className="absolute inset-0 z-20 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                                        <Link 
-                                           href={template.previewUrl} 
-                                           target="_blank"
-                                           className="bg-white text-gray-900 px-8 py-3 font-bold shadow-lg transform translate-y-4 hover:translate-y-0 transition-all flex items-center gap-2 uppercase tracking-wider text-sm"
+                                     // ADDED: pointer-events-none so it doesn't block the click action, and updated animations to respond to 'group-hover'
+                                     <div className="absolute inset-0 z-20 mb-7 mr-4 pointer-events-none flex items-end justify-end overflow-hidden">
+                                        <div 
+                                           className="bg-white border-2 border-black text-gray-900 px-6 py-2 font-bold shadow-lg transform translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out flex items-center gap-2 uppercase tracking-wider text-sm"
                                         >
-                                           Preview Site <ExternalLink size={16} />
-                                        </Link>
+                                           View 
+                                        </div>
                                      </div>
                                   )}
                                </div>
@@ -164,13 +166,12 @@ export default function TemplateCarousel() {
                             
                             {/* Left Side: URL & Category */}
                             <div className="text-left">
-                                <Link href={template.previewUrl} target="_blank" className="block group">
-                                    {/* CHANGED: Reverted to standard sans-serif font */}
-                                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-gray-600 transition-colors">
+                                {/* CHANGED: Replaced Link with a div to avoid double-firing events since the parent handles the click */}
+                                <div className="block group/text">
+                                    <h3 className="text-xl font-bold text-gray-900 group-hover/text:text-gray-600 transition-colors">
                                         www.{template.title.toLowerCase().replace(/[^a-z0-9]/g, '')}.com
                                     </h3>
-                                </Link>
-                                {/* CHANGED: Reverted to standard case/tracking */}
+                                </div>
                                 <p className="text-sm font-medium text-gray-500 mt-1">
                                     Category: <span className="text-gray-900 font-bold">{details.category}</span>
                                 </p>
