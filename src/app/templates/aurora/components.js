@@ -172,7 +172,7 @@ export const ProductCard = ({ item }) => {
 };
 
 // --- NEWSLETTER CTA (Exact "An Invitation" Design) ---
-export const NewsletterCTA = ({ data }) => {
+export const NewsletterCTA = ({ data = {} }) => {
     return (
         <section className="py-20 md:py-32 bg-[var(--color-dark)] relative overflow-hidden text-white flex items-center justify-center">
             
@@ -189,12 +189,12 @@ export const NewsletterCTA = ({ data }) => {
                      
                      {/* Main Heading */}
                      <h2 className="text-[8vw] md:text-7xl font-serif text-white mb-4 md:mb-8 tracking-tight">
-                        {data.title || "Unlock Exclusive Access"}
+                        {data?.title || "Unlock Exclusive Access"}
                      </h2>
                      
                      {/* Description Text */}
                      <p className="text-[var(--color-text-light)] text-[3vw] md:text-xl font-light leading-relaxed max-w-2xl mx-auto mb-8 md:mb-16">
-                        {data.text || "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewelry heirloom."}
+                        {data?.text || "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewelry heirloom."}
                      </p>
                 </div>
 
@@ -202,11 +202,11 @@ export const NewsletterCTA = ({ data }) => {
                 <div className="max-w-md mx-auto relative flex flex-col items-center gap-4 md:gap-8 w-full">
                     <input 
                         type="email" 
-                        placeholder={data.placeholder || "Enter your email address"}
+                        placeholder={data?.placeholder || "Enter your email address"}
                         className="w-full bg-transparent border-b border-[var(--color-gold)]/30 py-3 md:py-4 px-2 text-center text-white placeholder-[var(--color-text-light)] focus:border-[var(--color-gold)] focus:outline-none transition-colors text-[3vw] md:text-sm font-light tracking-wide"
                     />
                     <button className="text-[2.5vw] md:text-[11px] font-bold uppercase tracking-[0.3em] text-[var(--color-gold)] hover:text-white transition-colors border border-[var(--color-gold)] px-8 md:px-12 py-3 md:py-4 hover:bg-[var(--color-gold)]/10 mt-2 md:mt-4">
-                        {data.buttonText || "Join the List"}
+                        {data?.buttonText || "Join the List"}
                     </button>
                 </div>
             </div>
@@ -269,20 +269,20 @@ export const TestimonialSlider = ({ data }) => {
 };
 
 // --- INSTAGRAM FEED ---
-export const InstagramFeed = ({ data }) => {
+export const InstagramFeed = ({ data = {} }) => {
     return (
         <div className="w-full">
             <div className="flex justify-between items-end mb-8 md:mb-12 px-4">
                 <div>
                     <span className="text-[var(--color-gold)] text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-2 block">Social Media</span>
-                    <h2 className="text-[6vw] md:text-4xl font-serif text-[var(--color-dark)]">{data.title}</h2>
+                    <h2 className="text-[6vw] md:text-4xl font-serif text-[var(--color-dark)]">{data?.title}</h2>
                 </div>
                 <a href="#" className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest border-b border-[var(--color-dark)] pb-1 hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] transition-colors text-[var(--color-dark)]">
-                    {data.handle}
+                    {data?.handle}
                 </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-6 gap-0">
-                {data.images.map((img, i) => (
+                {data?.images?.map((img, i) => (
                     <div key={i} className="aspect-square relative group overflow-hidden cursor-pointer">
                         <img src={img} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
