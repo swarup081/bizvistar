@@ -25,20 +25,29 @@ These scripts are used to populate the database with required plan data and sync
 
 ## 1. Schema Migration
 
-Before running the seed script, you must add the `product_limit` column to the `public.plans` table. Run the following SQL in your Supabase SQL Editor:
+Before running the seed script, you must add the `product_limit` and `mode` columns to the `public.plans` table. Run the following SQL snippets in your Supabase SQL Editor:
 
+**Add Product Limit:**
 ```sql
 -- scripts/add_product_limit.sql
-
 ALTER TABLE public.plans
 ADD COLUMN IF NOT EXISTS product_limit integer DEFAULT -1;
 
 COMMENT ON COLUMN public.plans.product_limit IS 'Limit on number of products a user can create. -1 indicates unlimited.';
 ```
 
+**Add Plan Mode:**
+```sql
+-- scripts/add_plan_mode.sql
+ALTER TABLE public.plans
+ADD COLUMN IF NOT EXISTS mode text CHECK (mode IN ('live', 'test'));
+
+COMMENT ON COLUMN public.plans.mode IS 'Indicates whether the plan is a Live or Test plan.';
+```
+
 ## 2. Seed Plans
 
-This script populates the `public.plans` table with all Live and Test plans, including the new `product_limit` field.
+This script populates the `public.plans` table with all Live and Test plans, including `product_limit` and `mode`.
 
 **If using `.env`:**
 ```bash
@@ -66,6 +75,6 @@ node -r dotenv/config scripts/sync_subs.js dotenv_config_path=.env.local
 
 ## Troubleshooting
 
-*   If `seed_plans.js` fails with "column product_limit does not exist", ensure you ran the SQL migration in Step 1.
+*   If `seed_plans.js` fails with "column ... does not exist", ensure you ran the SQL migrations in Step 1.
 *   If `seed_plans.js` fails, ensure your Supabase URL and Service Role Key are correct.
 *   If `sync_subs.js` skips subscriptions with "Plan ID not found", ensure you have run `seed_plans.js` first.
