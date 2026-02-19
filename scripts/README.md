@@ -1,6 +1,6 @@
 # Database Population Scripts
 
-These scripts are used to populate the database with required plan data and sync existing subscriptions from Razorpay.
+These scripts are used to populate the database with required plan data, templates, and sync existing subscriptions from Razorpay.
 
 ## Prerequisites
 
@@ -59,7 +59,21 @@ node scripts/seed_plans.js
 node -r dotenv/config scripts/seed_plans.js dotenv_config_path=.env.local
 ```
 
-## 3. Sync Subscriptions
+## 3. Seed Templates
+
+This script populates the `public.templates` table with all available templates (e.g., `aurora`, `frostify`, etc.). This is important for new websites to link correctly.
+
+**If using `.env`:**
+```bash
+node scripts/seed_templates.js
+```
+
+**If using `.env.local`:**
+```bash
+node -r dotenv/config scripts/seed_templates.js dotenv_config_path=.env.local
+```
+
+## 4. Sync Subscriptions
 
 This script fetches all subscriptions from Razorpay (both Test and Live modes) and upserts them into the `public.subscriptions` table.
 
