@@ -202,7 +202,7 @@ const HeelsHero = ({ heroData }) => {
                             </div>
                             </h2>
                             <a 
-                            href="/templates/avenix/shop" // UPDATED LINK
+                            href={`${basePath}/shop`} // UPDATED LINK
                             // UPDATED: Uses the buttonColor prop
                             style={{ backgroundColor: heroData.buttonColor }}
                             className="inline-flex items-center gap-2 md:gap-3 text-brand-bg px-4 py-2 md:px-8 md:py-4 font-sans font-medium text-[2.5vw] md:text-base uppercase tracking-wider rounded-full mt-4 md:mt-10 hover:opacity-80 transition-all"
@@ -235,7 +235,7 @@ const HeelsHero = ({ heroData }) => {
 export default function AvenixPage() {
     
     // Get businessData from the context
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
 
     // Guard against undefined properties during initial render or data mismatch
     if (!businessData || !businessData.heelsHero) {
@@ -244,11 +244,12 @@ export default function AvenixPage() {
 
     // --- NEW: Dynamic Content using Logic ---
     // Avenix "Collection" (Featured) takes 2 items (besides the large image)
-    const featuredItems = getLandingItems(businessData, 2);
+    // Now passing featured.itemIDs as manual override
+    const featuredItems = getLandingItems(businessData, 2, businessData.featured?.itemIDs);
     
-    // New Arrivals can still be manual or just latest products. 
-    // Keeping it as originally intended (New Arrivals = latest), 
-    // or we could apply logic here too. User said "landing page in collection", so I focus on Collection.
+    // New Arrivals: Use getLandingItems to benefit from better sorting/filtering, or stick to manual?
+    // Current behavior: manual only via getProductsByIds.
+    // Let's keep it manual but robust.
     const newArrivalsProducts = getProductsByIds(businessData.allProducts, businessData.newArrivals.itemIDs);
 
     return (
@@ -343,8 +344,8 @@ export default function AvenixPage() {
                             {featuredItems.map((item, i) => {
                                 const isCategory = item.type === 'category';
                                 const href = isCategory 
-                                    ? `/templates/avenix/shop?category=${item.id}` 
-                                    : `/templates/avenix/product/${item.id}`;
+                                    ? `${basePath}/shop?category=${item.id}`
+                                    : `${basePath}/product/${item.id}`;
                                 const btnText = isCategory ? 'View Collection' : 'Shop Now';
                                 
                                 return (
@@ -357,7 +358,7 @@ export default function AvenixPage() {
                                             />
                                             {item.isOOS && (
                                                 <div className="absolute top-2 right-2 bg-red-100 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase">
-                                                    Out of Stock
+                                                    {businessData.productCard?.outOfStock || "Out of Stock"}
                                                 </div>
                                             )}
                                             
@@ -365,7 +366,7 @@ export default function AvenixPage() {
                                             
                                             {!isCategory && (
                                                 <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-1">
-                                                    ${item.price.toFixed(2)} USD
+                                                    ${item.price.toFixed(2)}
                                                 </p>
                                             )}
                                             
@@ -375,7 +376,7 @@ export default function AvenixPage() {
                                                 </Link>
                                                 {!isCategory && (
                                                     <Link href={href} className="hidden md:block w-full btn-secondary bg-white text-brand-secondary border border-brand-text/20 px-6 py-3 font-sans font-medium text-sm uppercase tracking-wider rounded-3xl text-center hover:bg-gray-50">
-                                                        Learn More
+                                                        {businessData.featured?.ctaSecondary || "Learn More"}
                                                     </Link>
                                                 )}
                                             </div>

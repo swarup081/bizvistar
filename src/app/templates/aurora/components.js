@@ -34,9 +34,12 @@ const HeaderContent = () => {
     const resolveLink = (url) => {
         if (!url) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        const path = url.replace('/templates/aurora', '');
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        // If basePath is provided, construct the path directly
+        if (basePath && basePath !== '.') {
+             // If url starts with /, append it
+             return url.startsWith('/') ? `${basePath}${url}` : url;
+        }
+        return url;
     };
 
     if (typeof window !== "undefined") {
@@ -47,7 +50,7 @@ const HeaderContent = () => {
 
     const DemoTooltip = () => (
         <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-3 py-1.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 font-medium tracking-wide shadow-lg">
-            Unlock full potential in the editor
+            {businessData.editorTooltip || "Unlock full potential in the editor"}
         </div>
     );
 
@@ -60,7 +63,7 @@ const HeaderContent = () => {
                     {['Home', 'Shop'].map((item) => (
                         <div key={item} className="relative group">
                             <a 
-                                href={resolveLink(item === 'Home' ? "" : `/shop`)}
+                                href={item === 'Home' ? (basePath || "/") : `${basePath}/shop`}
                                 onClick={(e) => {
                                     if (isLanding) e.preventDefault();
                                 }}
@@ -74,7 +77,7 @@ const HeaderContent = () => {
                 </nav>
 
                 {/* CENTER: Logo */}
-                <a href={resolveLink("")} onClick={isLanding ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 absolute left-1/2 -translate-x-1/2 ${isLanding ? 'cursor-default' : ''}`}>
+                <a href={basePath || "/"} onClick={isLanding ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 absolute left-1/2 -translate-x-1/2 ${isLanding ? 'cursor-default' : ''}`}>
                     <Editable focusId="hero">
                         <span className="font-serif text-[6vw] md:text-3xl text-[var(--color-dark)] tracking-tight font-medium">
                             {businessData.name}
@@ -117,12 +120,17 @@ export const Header = () => {
 // --- PRODUCT CARD ---
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
-    const { basePath } = useTemplateContext();
+    const { basePath, businessData } = useTemplateContext();
     
     // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
     const isOutOfStock = item.stock !== -1 && item.stock <= 0;
 
-    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
+    const productUrl = `${basePath}/product/${item.id}`;
+
+    const txtOOS = businessData?.productCard?.outOfStock || "Out of Stock";
+    const txtSoldOut = businessData?.productCard?.soldOut || "Sold Out";
+    const txtAdd = businessData?.productCard?.add || "Add";
+    const txtView = businessData?.productCard?.view || "View";
 
     return (
         <div className={`group cursor-pointer flex flex-col gap-3 md:gap-5 h-full ${isOutOfStock ? 'opacity-75' : ''}`}>
@@ -135,7 +143,7 @@ export const ProductCard = ({ item }) => {
                 {isOutOfStock && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <span className="bg-red-600 text-[var(--color-dark)] px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-lg">
-                            Out of Stock
+                            {txtOOS}
                         </span>
                     </div>
                 )}
@@ -152,7 +160,7 @@ export const ProductCard = ({ item }) => {
                         href={productUrl}
                         className="flex-1 border border-[var(--color-dark)]/20 py-2 md:py-3 text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--color-dark)] hover:border-[var(--color-dark)] transition-colors flex items-center justify-center"
                     >
-                        View
+                        {txtView}
                     </a>
                     <button 
                         onClick={(e) => { e.preventDefault(); if(!isOutOfStock) addItem(item); }}
@@ -163,7 +171,7 @@ export const ProductCard = ({ item }) => {
                             : 'bg-[var(--color-dark)] text-white hover:bg-[var(--color-gold)]'
                         }`}
                     >
-                        {isOutOfStock ? 'Sold Out' : 'Add'}
+                        {isOutOfStock ? txtSoldOut : txtAdd}
                     </button>
                 </div>
             </div>
@@ -189,7 +197,7 @@ export const NewsletterCTA = ({ data = {} }) => {
                 <div className="flex flex-col items-center">
                      {/* Top Tag */}
                      <span className="text-[var(--color-gold)] text-[2.5vw] md:text-[10px] font-bold uppercase tracking-[0.4em] mb-4 md:mb-8">
-                        An Invitation
+                        {data?.badge || "An Invitation"}
                      </span>
                      
                      {/* Main Heading */}
@@ -280,6 +288,7 @@ export const TestimonialSlider = ({ data = {} }) => {
 // --- INSTAGRAM FEED ---
 export const InstagramFeed = ({ data = {} }) => {
     const title = data?.title || "Follow Us";
+    const badge = data?.badge || "Social Media";
     const handle = data?.handle || "@yourbrand";
     // Fallback images if none provided
     const images = data?.images?.length ? data.images : [
@@ -295,7 +304,7 @@ export const InstagramFeed = ({ data = {} }) => {
         <div className="w-full">
             <div className="flex justify-between items-end mb-8 md:mb-12 px-4">
                 <div>
-                    <span className="text-[var(--color-gold)] text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-2 block">Social Media</span>
+                    <span className="text-[var(--color-gold)] text-[2.5vw] md:text-xs font-bold uppercase tracking-widest mb-2 block">{badge}</span>
                     <h2 className="text-[6vw] md:text-4xl font-serif text-[var(--color-dark)]">{title}</h2>
                 </div>
                 <a href="#" className="text-[2.5vw] md:text-xs font-bold uppercase tracking-widest border-b border-[var(--color-dark)] pb-1 hover:text-[var(--color-gold)] hover:border-[var(--color-gold)] transition-colors text-[var(--color-dark)]">
@@ -339,12 +348,15 @@ export const FAQAccordion = ({ question, answer }) => {
 export const Footer = () => {
     const { businessData, basePath } = useTemplateContext();
 
+    // Use basePath directly for simplicity if links are relative,
+    // but legacy links might have /templates/aurora.
     const resolveLink = (url) => {
         if (!url) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        const path = url.replace('/templates/aurora', '');
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        if (url.includes('/templates/aurora')) {
+             return url.replace('/templates/aurora', basePath);
+        }
+        return url.startsWith('/') ? `${basePath}${url}` : `${basePath}/${url}`;
     };
 
     return (

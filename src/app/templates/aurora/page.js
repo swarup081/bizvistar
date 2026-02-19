@@ -6,14 +6,13 @@ import { Editable } from '@/components/editor/Editable';
 import { Play, ArrowRight, ArrowDown } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-
-const getProductsByIds = (allProducts, ids) => {
-    if (!allProducts || !ids) return [];
-    return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
-};
+import { getLandingItems } from '@/lib/templates/templateLogic';
 
 // "Explore All" Rotating Button
-const ExploreCircle = ({ isLanding }) => {
+const ExploreCircle = ({ isLanding, basePath, businessData }) => {
+    const exploreText = businessData?.hero?.exploreText || "Explore NOW";
+    const textPathContent = `•  ${exploreText} • • ${exploreText} • `;
+
     const content = (
       <div  className="relative w-[25vw] h-[25vw] md:w-32 md:h-32 flex items-center justify-center cursor-pointer group">
         <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
@@ -21,7 +20,7 @@ const ExploreCircle = ({ isLanding }) => {
                 <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
                 <text className="font-sans text-[10px] uppercase tracking-[0.2em] fill-[var(--color-dark)] font-bold">
                     <textPath href="#circlePath" startOffset="0%">
-                        •  Explore NOW • • Explore NOW • 
+                        {textPathContent}
                     </textPath>
                 </text>
             </svg>
@@ -37,28 +36,24 @@ const ExploreCircle = ({ isLanding }) => {
             <div className="relative group/tooltip" onClick={(e) => e.preventDefault()}>
                 {content}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
-                    Unlock full potential in editor (Demo)
+                    {businessData?.editorTooltip || "Unlock full potential in editor (Demo)"}
                 </div>
             </div>
         );
     }
 
-    return <Link href="/templates/aurora/shop">{content}</Link>;
+    return <Link href={`${basePath}/shop`}>{content}</Link>;
 };
 
 function AuroraContent() {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     const searchParams = useSearchParams();
     const isLanding = searchParams.get('isLanding') === 'true';
 
     if (!businessData) return <div>Loading...</div>;
 
-    // --- FIX: Safely access collections.itemIDs using optional chaining ---
-    // If businessData.collections is undefined, we fallback to an empty array for IDs.
-    const featuredProducts = getProductsByIds(
-        businessData.allProducts, 
-        businessData.collections?.itemIDs || []
-    );
+    // Use shared logic for featured products, prioritizing manual selection from collections.itemIDs
+    const featuredProducts = getLandingItems(businessData, 3, businessData.collections?.itemIDs);
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -204,7 +199,7 @@ function AuroraContent() {
 
                                 {/* 3. Circle Button (Right) - Overlapping */}
                                 <div className="block ml-2 md:ml-10 mb-4 md:mb-10">
-                                    <ExploreCircle isLanding={isLanding} />
+                                    <ExploreCircle isLanding={isLanding} basePath={basePath} businessData={businessData} />
                                 </div>
 
                             </div>
@@ -255,17 +250,17 @@ function AuroraContent() {
                     <section className="py-12 md:py-32 bg-[var(--color-bg-alt)]">
                         <div className="container mx-auto px-6 lg:px-16 grid grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-20 items-center">
                             <div className="order-2 lg:order-1">
-                                <span className="text-[2.5vw] md:text-xs font-bold tracking-[0.3em] text-[var(--color-gold)] uppercase mb-2 md:mb-4 block">Our Heritage</span>
+                                <span className="text-[2.5vw] md:text-xs font-bold tracking-[0.3em] text-[var(--color-gold)] uppercase mb-2 md:mb-4 block">{businessData.about?.badge || "Our Heritage"}</span>
                                 <h2 className="text-[7vw] md:text-5xl font-serif mb-4 md:mb-8 text-[var(--color-dark)] leading-tight">{businessData.about?.title}</h2>
                                 <p className="text-[var(--color-text-light)] text-[3vw] md:text-lg leading-relaxed md:leading-loose mb-4 md:mb-10 font-light line-clamp-4 md:line-clamp-none">
                                     {businessData.about?.text}
                                 </p>
                                 <div className="flex items-center gap-8">
                                         <Link 
-                                            href="/templates/aurora/shop" 
+                                            href={`${basePath}/shop`}
                                             className="bg-[var(--color-dark)] text-white px-4 py-2 md:px-8 md:py-4 rounded-[4px] font-medium text-[2.5vw] md:text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
                                         >
-                                        Shop Now <ArrowRight size={14} className="md:w-4 md:h-4" />
+                                        {businessData.about?.cta || "Shop Now"} <ArrowRight size={14} className="md:w-4 md:h-4" />
                                         </Link>
                                     
                                     </div>
@@ -292,8 +287,8 @@ function AuroraContent() {
                                     <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[var(--color-dark)]">{businessData.collections?.title}</h2>
                                     <p className="text-[var(--color-text-light)] text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections?.subtitle}</p>
                                 </div>
-                                <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[var(--color-dark)] hover:text-[var(--color-dark)] text-[var(--color-text-light)] transition-all">
-                                    View Collection
+                                <Link href={`${basePath}/shop`} className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[var(--color-dark)] hover:text-[var(--color-dark)] text-[var(--color-text-light)] transition-all">
+                                    {businessData.collections?.cta || "View Collection"}
                                 </Link>
                             </div>
                             
@@ -304,8 +299,8 @@ function AuroraContent() {
                             </div>
                             {/* Mobile Only View Collection Button */}
                             <div className="mt-8 text-center block lg:hidden">
-                                <Link href="/templates/aurora/shop" className="inline-block bg-[var(--color-dark)] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[var(--color-gold)] transition-colors">
-                                    View Collection
+                                <Link href={`${basePath}/shop`} className="inline-block bg-[var(--color-dark)] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[var(--color-gold)] transition-colors">
+                                    {businessData.collections?.cta || "View Collection"}
                                 </Link>
                             </div>
                         </div>
