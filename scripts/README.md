@@ -9,9 +9,13 @@ These scripts are used to populate the database with required plan data and sync
     ```bash
     npm install
     ```
-    (Note: `package.json` includes `@supabase/supabase-js` and `razorpay`)
+    (Note: `package.json` includes `@supabase/supabase-js`, `razorpay`, and `dotenv`)
 
-3.  Set the following environment variables (either in your shell or a `.env` file):
+3.  Set your environment variables.
+    *   If you have a `.env` file, the scripts will load it automatically.
+    *   If you have a `.env.local` file (common in Next.js), see the execution commands below.
+
+    Required variables:
     *   `NEXT_PUBLIC_SUPABASE_URL`
     *   `SUPABASE_SERVICE_ROLE_KEY`
     *   `NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID` (or `RAZORPAY_TEST_KEY_ID`)
@@ -34,18 +38,30 @@ COMMENT ON COLUMN public.plans.product_limit IS 'Limit on number of products a u
 
 ## 2. Seed Plans
 
-This script populates the `public.plans` table with all Live and Test plans, including the new `product_limit` field. This is required because the `subscriptions` table has a foreign key constraint on `plan_id`.
+This script populates the `public.plans` table with all Live and Test plans, including the new `product_limit` field.
 
+**If using `.env`:**
 ```bash
 node scripts/seed_plans.js
 ```
 
+**If using `.env.local`:**
+```bash
+node -r dotenv/config scripts/seed_plans.js dotenv_config_path=.env.local
+```
+
 ## 3. Sync Subscriptions
 
-This script fetches all subscriptions from Razorpay (both Test and Live modes) and upserts them into the `public.subscriptions` table, resolving the correct `plan_id`.
+This script fetches all subscriptions from Razorpay (both Test and Live modes) and upserts them into the `public.subscriptions` table.
 
+**If using `.env`:**
 ```bash
 node scripts/sync_subs.js
+```
+
+**If using `.env.local`:**
+```bash
+node -r dotenv/config scripts/sync_subs.js dotenv_config_path=.env.local
 ```
 
 ## Troubleshooting

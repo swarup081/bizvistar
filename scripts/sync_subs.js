@@ -1,3 +1,4 @@
+require('dotenv').config(); // Load variables from .env by default
 const { createClient } = require('@supabase/supabase-js');
 const Razorpay = require('razorpay');
 
@@ -14,6 +15,7 @@ const LIVE_KEY_SECRET = process.env.RAZORPAY_LIVE_KEY_SECRET;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error('Error: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.');
+  console.error('Tip: If using .env.local, run: node -r dotenv/config scripts/sync_subs.js dotenv_config_path=.env.local');
   process.exit(1);
 }
 
