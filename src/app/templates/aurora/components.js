@@ -217,7 +217,11 @@ export const NewsletterCTA = ({ data }) => {
 // --- TESTIMONIAL SLIDER ---
 export const TestimonialSlider = ({ data }) => {
     const [index, setIndex] = useState(0);
+
+    if (!data?.items?.length) return null;
+
     const item = data.items[index];
+    if (!item) return null;
 
     return (
         <div className="max-w-5xl mx-auto px-6 text-center">
