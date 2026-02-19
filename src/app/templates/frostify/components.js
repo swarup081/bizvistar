@@ -58,9 +58,10 @@ export const Header = () => {
     const resolveLink = (url) => {
         if (!url) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        const path = url.replace('/templates/frostify', '');
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        if (basePath && basePath !== '.') {
+             return url.startsWith('/') ? `${basePath}${url}` : url;
+        }
+        return url;
     };
 
     return (
@@ -74,7 +75,7 @@ export const Header = () => {
                 {/* Left: SHOP Button (Prominent UI) */}
                 <div className="flex gap-2">
                     <a // Changed from Link to a to support resolved dynamic link
-                        href={resolveLink("/shop")} 
+                        href={`${basePath}/shop`}
                         className="flex items-center gap-2 bg-[var(--color-secondary)] text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-md transform hover:scale-105"
                     >
                         <Store size={14} className="w-3 h-3 md:w-[14px] md:h-[14px]" />
@@ -116,7 +117,7 @@ export const SpecialtyCard = ({ title, shapeClass = "rounded-t-[30px]" }) => {
 // --- PRODUCT CARD (Reusable) ---
 export const ProductCard = ({ item }) => {
     const { addItem } = useCart();
-    const { basePath } = useTemplateContext();
+    const { basePath, businessData } = useTemplateContext();
     
     // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
     const isOutOfStock = item.stock !== -1 && item.stock <= 0;
@@ -129,7 +130,12 @@ export const ProductCard = ({ item }) => {
         }
     };
 
-    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
+    const productUrl = `${basePath}/product/${item.id}`;
+
+    const txtOOS = businessData?.productCard?.outOfStock || "Out of Stock";
+    const txtSoldOut = businessData?.productCard?.soldOut || "Sold Out";
+    const txtAdd = businessData?.productCard?.add || "Add";
+    const txtView = businessData?.productCard?.view || "View";
 
     return (
         <div className={`group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white border border-pink-50 h-full flex flex-col ${isOutOfStock ? 'opacity-75' : ''}`}>
@@ -143,7 +149,7 @@ export const ProductCard = ({ item }) => {
                     {isOutOfStock && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <span className="bg-red-400 text-[var(--color-primary)] px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full shadow-lg">
-                                Out of Stock
+                                {txtOOS}
                             </span>
                         </div>
                     )}
@@ -161,7 +167,7 @@ export const ProductCard = ({ item }) => {
                         href={productUrl}
                         className="flex-1 bg-[var(--color-primary)]/10 text-[var(--color-primary)] py-2 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] hover:text-white transition-colors flex items-center justify-center"
                     >
-                        View
+                        {txtView}
                     </a>
                     <button
                         onClick={handleAddToCart}
@@ -172,7 +178,7 @@ export const ProductCard = ({ item }) => {
                             : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-secondary)]'
                         }`}
                     >
-                         {isOutOfStock ? 'Sold Out' : <><ShoppingBag size={14} className="hidden md:inline" /> Add</>}
+                         {isOutOfStock ? txtSoldOut : <><ShoppingBag size={14} className="hidden md:inline" /> {txtAdd}</>}
                     </button>
                 </div>
             </div>

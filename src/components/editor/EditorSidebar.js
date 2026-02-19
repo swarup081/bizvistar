@@ -792,6 +792,33 @@ export default function EditorSidebar({
                     onFocus={() => handleSectionFocus('global')}
                   />
                 )}
+                {/* --- GENERIC PRODUCT CARD SETTINGS --- */}
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Product Card Labels</h4>
+                <EditorInput
+                  label="Out of Stock Label"
+                  value={getSafe(businessData, 'productCard.outOfStock')}
+                  onChange={(e) => handleDataChange('productCard.outOfStock', e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                />
+                <EditorInput
+                  label="Sold Out Label"
+                  value={getSafe(businessData, 'productCard.soldOut')}
+                  onChange={(e) => handleDataChange('productCard.soldOut', e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                />
+                <EditorInput
+                  label="Add to Cart Label"
+                  value={getSafe(businessData, 'productCard.add')}
+                  onChange={(e) => handleDataChange('productCard.add', e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                />
+                <EditorInput
+                  label="View Label"
+                  value={getSafe(businessData, 'productCard.view')}
+                  onChange={(e) => handleDataChange('productCard.view', e.target.value)}
+                  onFocus={() => handleSectionFocus('global')}
+                />
+
                 <EditorInput
                   label="Business Name"
                   value={getSafe(businessData, 'name')}
@@ -853,6 +880,18 @@ export default function EditorSidebar({
                         onChange={(e) => handleDataChange('hero.title', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                         isRequired={true}
+                      />
+                      <EditorInput
+                        label="Explore Text (Circle)"
+                        value={getSafe(businessData, 'hero.exploreText')}
+                        onChange={(e) => handleDataChange('hero.exploreText', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
+                      />
+                      <EditorInput
+                        label="Editor Tooltip"
+                        value={getSafe(businessData, 'editorTooltip')}
+                        onChange={(e) => handleDataChange('editorTooltip', e.target.value)}
+                        onFocus={() => handleSectionFocus('hero')}
                       />
                       {/* Aurora Images */}
                       <EditorImageUpload
@@ -1137,6 +1176,12 @@ export default function EditorSidebar({
                       onChange={(e) => handleDataChange('gallery.title', e.target.value)}
                       onFocus={() => handleSectionFocus('gallery')}
                   />
+                  <EditorInput
+                      label="Button Text"
+                      value={getSafe(businessData, 'gallery.cta')}
+                      onChange={(e) => handleDataChange('gallery.cta', e.target.value)}
+                      onFocus={() => handleSectionFocus('gallery')}
+                  />
                    <EditorList
                     items={businessData.gallery.items || []} 
                     onUpdate={(newItems) => handleDataChange('gallery.items', newItems)}
@@ -1169,9 +1214,21 @@ export default function EditorSidebar({
                   onCloseMobile={() => toggleAccordion(null)}
                 >
                   <EditorInput
+                      label="Badge"
+                      value={getSafe(businessData, 'testimonials.badge')}
+                      onChange={(e) => handleDataChange('testimonials.badge', e.target.value)}
+                      onFocus={() => handleSectionFocus('testimonials')}
+                  />
+                  <EditorInput
                       label="Section Title"
                       value={getSafe(businessData, 'testimonials.title')}
                       onChange={(e) => handleDataChange('testimonials.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('testimonials')}
+                  />
+                  <EditorInput
+                      label="Default Role (e.g. Happy Customer)"
+                      value={getSafe(businessData, 'testimonials.defaultRole')}
+                      onChange={(e) => handleDataChange('testimonials.defaultRole', e.target.value)}
                       onFocus={() => handleSectionFocus('testimonials')}
                   />
                   <EditorList
@@ -1371,6 +1428,18 @@ export default function EditorSidebar({
                         onFocus={() => handleSectionFocus('about')}
                       />
                   )}
+                  <EditorInput
+                    label="Badge (Aurora)"
+                    value={getSafe(businessData, 'about.badge')}
+                    onChange={(e) => handleDataChange('about.badge', e.target.value)}
+                    onFocus={() => handleSectionFocus('about')}
+                  />
+                  <EditorInput
+                    label="Button Text (Aurora)"
+                    value={getSafe(businessData, 'about.cta')}
+                    onChange={(e) => handleDataChange('about.cta', e.target.value)}
+                    onFocus={() => handleSectionFocus('about')}
+                  />
                    {businessData.about.subtext !== undefined && (
                       <EditorTextArea
                         label="Subtext"
@@ -1449,6 +1518,12 @@ export default function EditorSidebar({
                     label="Subtitle"
                     value={getSafe(businessData, 'collections.subtitle')}
                     onChange={(e) => handleDataChange('collections.subtitle', e.target.value)}
+                    onFocus={() => handleSectionFocus('collection')}
+                  />
+                  <EditorInput
+                    label="Button Text"
+                    value={getSafe(businessData, 'collections.cta')}
+                    onChange={(e) => handleDataChange('collections.cta', e.target.value)}
                     onFocus={() => handleSectionFocus('collection')}
                   />
                   {(collectionsIDs || []).map((id, index) => (
@@ -2256,6 +2331,12 @@ export default function EditorSidebar({
                       label="Section Title"
                       value={getSafe(businessData, 'featured.title')}
                       onChange={(e) => handleDataChange('featured.title', e.target.value)}
+                      onFocus={() => handleSectionFocus('collection')}
+                    />
+                    <EditorInput
+                      label="Secondary Button (e.g. Learn More)"
+                      value={getSafe(businessData, 'featured.ctaSecondary')}
+                      onChange={(e) => handleDataChange('featured.ctaSecondary', e.target.value)}
                       onFocus={() => handleSectionFocus('collection')}
                     />
                     <EditorImageUpload

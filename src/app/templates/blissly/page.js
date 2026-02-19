@@ -10,22 +10,17 @@ import {
     ChevronLeftIcon, 
     ChevronRightIcon 
 } from './components.js'; // Import new ProductCard and icons
-
-// Helper: Get product details from the master list by their IDs
-const getProductsByIds = (allProducts, ids) => {
-    if (!allProducts || !ids) return [];
-    return ids.map(id => allProducts.find(p => p.id === id)).filter(Boolean);
-};
+import { getLandingItems } from '@/lib/templates/templateLogic';
 
 // --- Main Page Component ---
 export default function BrewhavenPage() {
     
     // --- GET DATA FROM CONTEXT ---
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     if (!businessData) return <div>Loading...</div>; // Guard
     
     // Get product objects for the specialty section
-    const specialtyProducts = getProductsByIds(businessData.allProducts, businessData.specialty.itemIDs);
+    const specialtyProducts = getLandingItems(businessData, 4, businessData.specialty.itemIDs);
     
     // --- Testimonial Slider Logic ---
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -162,7 +157,7 @@ export default function BrewhavenPage() {
                             ))}
                         </div>
                         <div className="text-center mt-6 md:mt-12">
-                            <a href="/templates/blissly/shop" className="font-semibold text-brand-secondary text-[3vw] md:text-lg hover:text-brand-text transition-colors flex items-center justify-center">
+                            <a href={`${basePath}/shop`} className="font-semibold text-brand-secondary text-[3vw] md:text-lg hover:text-brand-text transition-colors flex items-center justify-center">
                                 {businessData.menu.cta} <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
                             </a>
                         </div>

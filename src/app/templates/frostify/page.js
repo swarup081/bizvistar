@@ -5,17 +5,10 @@ import Link from 'next/link';
 import { Editable } from '@/components/editor/Editable';
 import { ArrowRight, Star } from 'lucide-react';
 import { useState, useEffect } from 'react'; // Added import for slider logic
-
-const getProductsByIds = (allProducts, ids) => {
-    if (!allProducts || !ids) return [];
-    return ids.map(id => {
-        if (typeof id === 'object') return id; // Already an object
-        return allProducts.find(p => p.id === id);
-    }).filter(Boolean);
-};
+import { getLandingItems } from '@/lib/templates/templateLogic';
 
 export default function FrostifyPage() {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     const [currentReview, setCurrentReview] = useState(0);
 
     // --- Slider Logic ---
@@ -27,6 +20,9 @@ export default function FrostifyPage() {
     }, [businessData.testimonials.items.length]);
 
     if (!businessData) return <div>Loading...</div>;
+
+    // Use shared logic for gallery items, prioritizing manual selection from gallery.items
+    const galleryItems = getLandingItems(businessData, 4, businessData.gallery?.items);
 
     return (
         <div className="bg-white w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -56,7 +52,7 @@ export default function FrostifyPage() {
                                 <p className="text-[2vw] md:text-sm font-medium text-gray-600 mb-3 md:mb-8 leading-relaxed">
                                     {businessData.hero?.subtitle}
                                 </p>
-                                <Link href="/templates/frostify/shop" className="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 md:px-8 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors whitespace-nowrap">
+                                <Link href={`${basePath}/shop`} className="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 md:px-8 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors whitespace-nowrap">
                                     {businessData.hero?.cta}
                                 </Link>
                             </div>
@@ -122,7 +118,7 @@ export default function FrostifyPage() {
                         
                         {/* Grid of Cards */}
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                            {getProductsByIds(businessData.allProducts, businessData.gallery?.items || []).map((item) => (
+                            {galleryItems.map((item) => (
                                 <ProductCard key={item.id} item={item} />
                             ))}
                         </div>
@@ -130,10 +126,10 @@ export default function FrostifyPage() {
                         {/* Explore Full Collection Button */}
                         <div className="mt-8 md:mt-16 text-center">
                             <Link 
-                                href="/templates/frostify/shop"
+                                href={`${basePath}/shop`}
                                 className="inline-block bg-[var(--color-secondary)] text-white px-6 py-3 md:px-10 md:py-4 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-lg transform hover:scale-105"
                             >
-                                 Explore Full Collection  
+                                 {businessData.gallery?.cta || "Explore Full Collection"}
                             </Link>
                         </div>
                     </div>
@@ -145,7 +141,7 @@ export default function FrostifyPage() {
                 <section className="py-12 md:py-24 bg-[#F9F4F6] border-t border-white">
                     <div className="container mx-auto px-6 max-w-6xl">
                         <div className="text-center mb-8 md:mb-16">
-                            <span className="text-[var(--color-secondary)] text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em]">What People Are Saying</span>
+                            <span className="text-[var(--color-secondary)] text-[2.5vw] md:text-xs font-bold uppercase tracking-[0.2em]">{businessData.testimonials?.badge || "What People Are Saying"}</span>
                             <h2 className="text-[6vw] md:text-4xl font-serif text-[var(--color-primary)] mt-2 md:mt-3">{businessData.testimonials?.title}</h2>
                         </div>
 
@@ -177,7 +173,7 @@ export default function FrostifyPage() {
                                             />
                                             <div className="overflow-hidden">
                                                 <h4 className="font-bold text-[3vw] text-[var(--color-primary)] uppercase tracking-wider truncate">{testimonial.author}</h4>
-                                                <span className="text-[2.5vw] text-gray-400">Happy Customer</span>
+                                                <span className="text-[2.5vw] text-gray-400">{businessData.testimonials?.defaultRole || "Happy Customer"}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -209,7 +205,7 @@ export default function FrostifyPage() {
                                         />
                                         <div>
                                             <h4 className="font-bold text-sm text-[var(--color-primary)] uppercase tracking-wider">{testimonial.author}</h4>
-                                            <span className="text-xs text-gray-400">Happy Customer</span>
+                                            <span className="text-xs text-gray-400">{businessData.testimonials?.defaultRole || "Happy Customer"}</span>
                                         </div>
                                     </div>
                                 </div>

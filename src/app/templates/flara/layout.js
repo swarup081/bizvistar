@@ -1,30 +1,15 @@
 'use client';
-import { useState, useEffect, useContext } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useContext } from 'react';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
+import { TemplateStateProvider } from '@/lib/templates/TemplateStateProvider';
 
 function FlaraContent({ children, serverData, websiteId }) { // Renamed from CartLayout to avoid confusion
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter(); 
-    const pathname = usePathname();
-    
-    // Base Path Logic
-    let basePath = '/templates/flara';
-    if (serverData) {
-        if (pathname && pathname.startsWith('/site/')) {
-            const parts = pathname.split('/');
-            if (parts.length >= 3) {
-                 basePath = `/${parts[1]}/${parts[2]}`;
-            }
-        } else {
-             basePath = '.';
-        }
-    }
+    const { businessData, basePath } = useContext(TemplateContext);
     
     const { 
         cartCount, 
@@ -38,52 +23,6 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
         showToast
     } = useCart();
 
-    useEffect(() => {
-        document.body.classList.forEach(className => {
-            if (className.startsWith('theme-')) {
-                document.body.classList.remove(className);
-            }
-        });
-        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
-
-        if (serverData) return;
-
-        let parentPath = '';
-        try {
-            parentPath = window.parent.location.pathname;
-        } catch (e) { }
-
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
-        const isPreview = parentPath.startsWith('/preview/');
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') setBusinessData(event.data.payload);
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (event.data.type === 'CHANGE_PAGE') router.push(event.data.payload.path);
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        
-        } else if (isPreview) {
-            const editorDataKey = `editorData_flara`; 
-            const savedData = localStorage.getItem(editorDataKey);
-            if (savedData) {
-                try {
-                    setBusinessData(JSON.parse(savedData));
-                } catch (e) { console.error("Error parsing preview data", e); }
-            }
-        }
-
-        return () => {
-            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
-        };
-    }, [businessData.theme.colorPalette, router, serverData]);
-
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
         return `var(--font-${fontName.toLowerCase().replace(/[\s_]+/g, '-')})`;
@@ -95,14 +34,6 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
     };
 
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
-    
-    // --- IMPORTANT: WE NEED TO PASS CONTEXT HERE IF CartProvider was OUTSIDE ---
-    // But wait, the issue is CartProvider USES the context.
-    // So TemplateContext.Provider MUST wrap CartProvider.
-    // BUT TemplateContext.Provider needs `businessData` state which is defined HERE.
-    //
-    // REFACTOR: We need a Wrapper component that holds state and provides context, 
-    // AND wraps the CartProvider.
     
     return (
         <div 
@@ -197,66 +128,14 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
     );
 }
 
-// --- NEW WRAPPER COMPONENT ---
-// This component manages the state and Provides the TemplateContext.
-// CartProvider is INSIDE this provider.
-function TemplateStateProvider({ children, serverData, websiteId }) {
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
-    const pathname = usePathname();
-
-    let basePath = '/templates/flara';
-    if (serverData) {
-        if (pathname && pathname.startsWith('/site/')) {
-            const parts = pathname.split('/');
-            if (parts.length >= 3) {
-                 basePath = `/${parts[1]}/${parts[2]}`;
-            }
-        } else {
-             basePath = '.';
-        }
-    }
-
-    // Logic to listen to iframe messages etc. (MOVED HERE)
-    useEffect(() => {
-        if (serverData) return;
-        let parentPath = '';
-        try { parentPath = window.parent.location.pathname; } catch (e) { }
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
-        const isPreview = parentPath.startsWith('/preview/');
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') setBusinessData(event.data.payload);
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (event.data.type === 'CHANGE_PAGE') router.push(event.data.payload.path);
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        } else if (isPreview) {
-            const savedData = localStorage.getItem(`editorData_flara`);
-            if (savedData) {
-                try { setBusinessData(JSON.parse(savedData)); } catch (e) {}
-            }
-        }
-    }, [router, serverData]);
-
-    const value = { businessData, setBusinessData, basePath, websiteId };
-
-    return (
-        <TemplateContext.Provider value={value}>
-            {children}
-        </TemplateContext.Provider>
-    );
-}
-
 export default function FlaraLayout({ children, serverData, websiteId }) {
     return (
-        <TemplateStateProvider serverData={serverData} websiteId={websiteId}>
+        <TemplateStateProvider
+            serverData={serverData}
+            websiteId={websiteId}
+            initialBusinessData={initialBusinessData}
+            templateName="flara"
+        >
             <CartProvider>
                 <FlaraContent>{children}</FlaraContent>
             </CartProvider>

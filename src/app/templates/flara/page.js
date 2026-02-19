@@ -17,8 +17,8 @@ export default function CandleaPage() {
     const allProducts = businessData?.allProducts || [];
     
     // --- NEW: Use Shared Logic ---
-    const collectionItems = getLandingItems(businessData, 3);
-    const bestSellerItems = getBestSellerItems(businessData, 4);
+    const collectionItems = getLandingItems(businessData, 3, businessData.collection?.itemIDs);
+    const bestSellerItems = getBestSellerItems(businessData, 4, businessData.bestSellers?.itemIDs);
 
     if (!businessData || !businessData.hero) {
         return <div>Loading preview...</div>; 
@@ -112,7 +112,7 @@ export default function CandleaPage() {
                         <div className="flex justify-between items-center mb-12">
                             <h2 className="text-4xl font-bold text-brand-text font-serif">{businessData.collection.title}</h2>
                             <Link href={`${basePath}/shop`} className="inline-flex items-center gap-2 font-semibold text-brand-bg bg-brand-secondary border border-brand-text hover:opacity-90 transition-all duration-300 px-4 py-2 ">
-                                <span>See All</span>
+                                <span>{businessData.collection?.cta || "See All"}</span>
                                 <ArrowRightIcon />
                             </Link>
                         </div>
@@ -135,7 +135,7 @@ export default function CandleaPage() {
                                             />
                                             {item.isOOS && (
                                                 <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold uppercase z-10">
-                                                    Out of Stock
+                                                    {businessData.productCard?.outOfStock || "Out of Stock"}
                                                 </div>
                                             )}
                                             
@@ -176,7 +176,7 @@ export default function CandleaPage() {
                             href={`${basePath}/shop`}
                             className="mt-16 inline-flex items-center gap-2 font-semibold text-brand-text hover:text-brand-bg border border-brand-text hover:bg-brand-secondary transition-all duration-300 px-6 py-3 "
                         >
-                            <span>Shop Now</span>
+                            <span>{businessData.bestSellers?.cta || "Shop Now"}</span>
                             <ArrowRightIcon />
                         </Link>
                     </div>

@@ -3,25 +3,16 @@
 import { useTemplateContext } from './templateContext.js'; // Import context
 import { ProductCard } from './components.js';
 import { Editable } from '@/components/editor/Editable'; // --- IMPORT EDITABLE ---
-
-
-// Helper function to get full product details from the master list
-const getProductsByIds = (allProducts, ids) => {
-    if (!allProducts || !ids) return [];
-    return ids.map(id => 
-        allProducts.find(p => p.id === id)
-    ).filter(Boolean); // Filter out any that might not be in allProducts
-};
-
+import { getLandingItems } from '@/lib/templates/templateLogic';
 
 export default function FlavorNestPage() {
     
     // --- GET DATA FROM CONTEXT ---
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     if (!businessData) return <div>Loading...</div>; // Guard
     
     // Get the specific products listed in data.js
-    const signatureProducts = getProductsByIds(businessData.allProducts, businessData.menu.itemIDs);
+    const signatureProducts = getLandingItems(businessData, 6, businessData.menu.itemIDs);
 
     return (
         <main>
@@ -64,8 +55,8 @@ export default function FlavorNestPage() {
                             ))}
                         </div>
                         <div className="text-center mt-12">
-                            <a href="/templates/flavornest/shop" className="mt-8 inline-block btn btn-primary px-8 py-3 rounded-full text-lg">
-                                View All Products
+                            <a href={`${basePath}/shop`} className="mt-8 inline-block btn btn-primary px-8 py-3 rounded-full text-lg">
+                                {businessData.menu?.cta || "View All Products"}
                             </a>
                         </div>
                     </div>

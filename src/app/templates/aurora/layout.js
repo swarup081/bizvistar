@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect, useContext, useMemo, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useContext, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
+import { TemplateStateProvider } from '@/lib/templates/TemplateStateProvider';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X } from 'lucide-react';
@@ -31,56 +32,22 @@ function CartLayout({ children, serverData, websiteId }) {
 export default function AuroraLayout({ children, serverData, websiteId }) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <AuroraStateProvider serverData={serverData} websiteId={websiteId}>
+            <TemplateStateProvider
+                serverData={serverData}
+                websiteId={websiteId}
+                initialBusinessData={initialBusinessData}
+                templateName="aurora"
+            >
                 <CartProvider>
                     <AuroraContent>{children}</AuroraContent>
                 </CartProvider>
-            </AuroraStateProvider>
+            </TemplateStateProvider>
         </Suspense>
     );
 }
 
-// Wrapper to Provide State & Context
-function AuroraStateProvider({ children, serverData, websiteId }) {
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
-
-    useEffect(() => {
-        if (serverData) return;
-        let parentPath = '';
-        try { parentPath = window.parent.location.pathname; } catch (e) { }
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
-        const isPreview = parentPath.startsWith('/preview/');
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') setBusinessData(event.data.payload);
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (event.data.type === 'CHANGE_PAGE') router.push(event.data.payload.path);
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        } else if (isPreview) {
-            const savedData = localStorage.getItem(`editorData_aurora`);
-            if (savedData) {
-                try { setBusinessData(JSON.parse(savedData)); } catch (e) {}
-            }
-        }
-    }, [router, serverData]);
-
-    return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
-            {children}
-        </TemplateContext.Provider>
-    );
-}
-
 function AuroraContent({ children }) {
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId, basePath } = useContext(TemplateContext);
     const { 
         isCartOpen, 
         closeCart, 
@@ -220,7 +187,7 @@ function AuroraContent({ children }) {
                                     <span>Total</span>
                                     <span>${total.toFixed(2)}</span>
                                 </div>
-                                <a href="/templates/aurora/checkout" className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
+                                <a href={`${basePath}/checkout`} className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
                                     Checkout
                                 </a>
                             </div>

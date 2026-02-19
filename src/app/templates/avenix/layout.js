@@ -1,6 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -9,8 +8,7 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 
 function AvenixContent({ children, serverData, websiteId }) { 
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
+    const { businessData, basePath } = useContext(TemplateContext);
     
     const { 
         cartCount, 
@@ -26,73 +24,6 @@ function AvenixContent({ children, serverData, websiteId }) {
         removeFromCart,
         showToast
     } = useCart();
-
-    useEffect(() => {
-        document.body.classList.forEach(className => {
-            if (className.startsWith('theme-')) {
-                document.body.classList.remove(className);
-            }
-        });
-        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
-
-        if (serverData) return;
-
-        let parentPath = '';
-        try {
-            parentPath = window.parent.location.pathname;
-        } catch (e) { }
-
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
-        const isPreview = parentPath.startsWith('/preview/');
-        const isLiveSite = !isEditor && !isPreview;
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') {
-                    setBusinessData(event.data.payload);
-                }
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
-                if (event.data.type === 'CHANGE_PAGE') {
-                    router.push(event.data.payload.path);
-                }
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        
-        } else if (isPreview) {
-            const editorDataKey = `editorData_avenix`;
-            const savedData = localStorage.getItem(editorDataKey);
-            if (savedData) {
-                try {
-                    setBusinessData(JSON.parse(savedData));
-                } catch (e) { }
-            }
-        
-        } else if (isLiveSite) {
-            const storedStoreName = localStorage.getItem('storeName');
-            if (storedStoreName) {
-                setBusinessData(prevData => ({
-                    ...prevData,
-                    name: storedStoreName,
-                    logoText: storedStoreName,
-                    footer: {
-                        ...prevData.footer,
-                        copyright: `© ${new Date().getFullYear()} ${storedStoreName},`
-                    }
-                }));
-            }
-        }
-
-        return () => {
-            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
-        };
-    }, [businessData.theme.colorPalette, router, serverData]);
 
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
@@ -138,7 +69,7 @@ function AvenixContent({ children, serverData, websiteId }) {
                             <div className="flex-grow flex flex-col items-center justify-center">
                                 <p className="text-brand-text/70 text-center py-8">Your cart is empty.</p>
                                 <a 
-                                    href="/templates/avenix/shop"
+                                        href={`${basePath}/shop`}
                                     onClick={closeCart}
                                     className="w-full text-center inline-block bg-brand-primary border border-brand-text/10 text-brand-text px-6 py-3 font-medium uppercase tracking-wider rounded-3xl"
                                 >
@@ -150,11 +81,11 @@ function AvenixContent({ children, serverData, websiteId }) {
                                 <div className="flex-grow py-6 space-y-6 overflow-y-auto">
                                     {cartDetails.map(item => (
                                         <div key={item.id} className="flex items-center gap-4">
-                                            <a href={`/templates/avenix/product/${item.id}`} className="block w-20 h-24 bg-brand-primary rounded-lg overflow-hidden">
+                                            <a href={`${basePath}/product/${item.id}`} className="block w-20 h-24 bg-brand-primary rounded-lg overflow-hidden">
                                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                             </a>
                                             <div className="flex-grow">
-                                                <a href={`/templates/avenix/product/${item.id}`} className="font-sans font-medium tracking-wider uppercase text-brand-text hover:opacity-70">{item.name}</a>
+                                                <a href={`${basePath}/product/${item.id}`} className="font-sans font-medium tracking-wider uppercase text-brand-text hover:opacity-70">{item.name}</a>
                                                 <p className="text-sm text-brand-text/60 mt-1">${item.price.toFixed(2)}</p>
                                                 <div className="flex items-center border border-brand-text/20 w-fit mt-2 rounded-full">
                                                     <button onClick={() => decreaseQuantity(item.id)} className="w-8 h-8 text-lg text-brand-text/70 hover:bg-brand-primary rounded-l-full">-</button>
@@ -183,7 +114,7 @@ function AvenixContent({ children, serverData, websiteId }) {
                                         <span>${total.toFixed(2)}</span>
                                     </div>
                                     <a 
-                                        href="/templates/avenix/checkout"
+                                        href={`${basePath}/checkout`}
                                         onClick={closeCart}
                                         className="mt-4 w-full text-center inline-block bg-brand-secondary text-brand-bg px-6 py-4 font-medium uppercase tracking-wider rounded-3xl"
                                     >
@@ -203,53 +134,19 @@ function AvenixContent({ children, serverData, websiteId }) {
     );
 }
 
-// Wrapper to Provide State & Context
-function AvenixStateProvider({ children, serverData, websiteId }) {
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
-
-    useEffect(() => {
-        if (serverData) return;
-        let parentPath = '';
-        try { parentPath = window.parent.location.pathname; } catch (e) { }
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
-        const isPreview = parentPath.startsWith('/preview/');
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') setBusinessData(event.data.payload);
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (event.data.type === 'CHANGE_PAGE') router.push(event.data.payload.path);
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        } else if (isPreview) {
-            const savedData = localStorage.getItem(`editorData_avenix`);
-            if (savedData) {
-                try { setBusinessData(JSON.parse(savedData)); } catch (e) {}
-            }
-        }
-    }, [router, serverData]);
-
-    return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
-            {children}
-        </TemplateContext.Provider>
-    );
-}
-
 export default function AvenixLayout({ children, serverData, websiteId }) {
     return (
-        <AvenixStateProvider serverData={serverData} websiteId={websiteId}>
+        <TemplateStateProvider
+            serverData={serverData}
+            websiteId={websiteId}
+            initialBusinessData={initialBusinessData}
+            templateName="avenix"
+        >
             <CartProvider>
                 <AvenixContent serverData={serverData} websiteId={websiteId}>
                     {children}
                 </AvenixContent>
             </CartProvider>
-        </AvenixStateProvider>
+        </TemplateStateProvider>
     );
 }

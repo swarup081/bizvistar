@@ -3,7 +3,7 @@
 /**
  * Shared logic for selecting "Landing Page" items (Collection/Featured).
  */
-export const getLandingItems = (businessData, requiredCount = 3) => {
+export const getLandingItems = (businessData, requiredCount = 3, manualIds = null) => {
     if (!businessData) return [];
 
     const settings = businessData.landing_settings || { mode: 'auto', manualItems: [], prioritizedProducts: [] };
@@ -11,7 +11,23 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
     const allCategories = businessData.categories || [];
     const totalItems = allProducts.length + allCategories.length;
 
-    // 0. SMALL CATALOG CHECK
+    // 0. MANUAL OVERRIDE (From Editor Sidebar Specific Fields)
+    // If manualIds are provided (e.g., from 'collection.itemIDs'), prioritize them.
+    if (manualIds && Array.isArray(manualIds) && manualIds.length > 0) {
+        return manualIds.slice(0, requiredCount).map(id => {
+            // Check if it's a product
+            const p = allProducts.find(x => String(x.id) === String(id));
+            if (p) return { ...p, type: 'product', image: p.image || p.image_url };
+
+            // Check if it's a category
+            const c = allCategories.find(x => String(x.id) === String(id));
+            if (c) return { ...c, type: 'category', image: c.image || null };
+
+            return null;
+        }).filter(Boolean);
+    }
+
+    // 0.1 SMALL CATALOG CHECK (Only if not manual)
     if (totalItems <= requiredCount) {
          let everything = [];
          allCategories.forEach(c => everything.push({ ...c, type: 'category', image: c.image || null }));
@@ -19,7 +35,7 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
          return everything.slice(0, requiredCount);
     }
 
-    // MANUAL MODE
+    // MANUAL MODE (From Global Settings)
     if (settings.mode === 'manual') {
         return (settings.manualItems || []).slice(0, requiredCount).map(item => {
             if (item.type === 'product') {
@@ -189,11 +205,20 @@ export const getLandingItems = (businessData, requiredCount = 3) => {
     return finalItems.slice(0, requiredCount);
 };
 
-export const getBestSellerItems = (businessData, requiredCount = 4) => {
+export const getBestSellerItems = (businessData, requiredCount = 4, manualIds = null) => {
     if (!businessData) return [];
     
     const settings = businessData.landing_settings || { prioritizedProducts: [] };
     const allProducts = businessData.allProducts || [];
+
+    // MANUAL OVERRIDE
+    if (manualIds && Array.isArray(manualIds) && manualIds.length > 0) {
+        return manualIds.slice(0, requiredCount).map(id => {
+            const p = allProducts.find(x => String(x.id) === String(id));
+            return p ? { ...p, isOOS: (p.stock !== -1 && p.stock <= 0), image: p.image || p.image_url } : null;
+        }).filter(Boolean);
+    }
+
     const prioritizedIds = (settings.prioritizedProducts || []).map(String);
     let finalItems = [];
     const usedIds = new Set();
