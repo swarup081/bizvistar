@@ -67,7 +67,7 @@ export const Header = () => {
         <header className="fixed top-0 w-full z-50 bg-white overflow-hidden shadow-sm">
             {/* Top Banner */}
             <div className="bg-[var(--color-primary)] text-white text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.2em] text-center py-2">
-                • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} •
+                • {businessData.hero?.badge || "Made with Love"} • {businessData.hero?.badge || "Made with Love"} • {businessData.hero?.badge || "Made with Love"} •
             </div>
             
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
