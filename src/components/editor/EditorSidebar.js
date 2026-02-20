@@ -1212,7 +1212,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- FROSTIFY TESTIMONIALS --- */}
-            {(businessData?.testimonials?.items && businessData.testimonials.items[0]?.image) || templateName === 'frostify' ? (
+            {((businessData?.testimonials?.items && businessData.testimonials.items[0]?.image) || templateName === 'frostify') && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Testimonials"
