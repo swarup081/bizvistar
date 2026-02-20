@@ -4,6 +4,7 @@ import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer, CartIcon } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
+import { TemplateStateProvider } from '@/lib/templates/TemplateStateProvider';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 

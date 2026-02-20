@@ -318,7 +318,7 @@ useEffect(() => {
 
     if (newActiveId) {
       if (newActiveId === 'products') {
-        const shopPage = businessData.pages.find(
+        const shopPage = businessData?.pages?.find(
           (p) => p.name.toLowerCase() === 'shop'
         );
         if (shopPage) {
@@ -344,8 +344,8 @@ useEffect(() => {
         const sectionId = sectionIdMap[id] || (id !== 'products' ? id : null);
         
         if (sectionId) {
-          const homePage = businessData.pages.find(p => p.name.toLowerCase() === 'home');
-          const homePath = homePage?.path || businessData.pages[0]?.path;
+          const homePage = businessData?.pages?.find(p => p.name.toLowerCase() === 'home');
+          const homePath = homePage?.path || businessData?.pages?.[0]?.path;
           
           handlePageChange(sectionId === 'home' ? homePath : `${homePath}#${sectionId}`);
         }

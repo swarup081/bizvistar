@@ -793,31 +793,40 @@ export default function EditorSidebar({
                   />
                 )}
                 {/* --- GENERIC PRODUCT CARD SETTINGS --- */}
-                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Product Card Labels</h4>
-                <EditorInput
-                  label="Out of Stock Label"
-                  value={getSafe(businessData, 'productCard.outOfStock')}
-                  onChange={(e) => handleDataChange('productCard.outOfStock', e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                />
-                <EditorInput
-                  label="Sold Out Label"
-                  value={getSafe(businessData, 'productCard.soldOut')}
-                  onChange={(e) => handleDataChange('productCard.soldOut', e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                />
-                <EditorInput
-                  label="Add to Cart Label"
-                  value={getSafe(businessData, 'productCard.add')}
-                  onChange={(e) => handleDataChange('productCard.add', e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                />
-                <EditorInput
-                  label="View Label"
-                  value={getSafe(businessData, 'productCard.view')}
-                  onChange={(e) => handleDataChange('productCard.view', e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                />
+                <AccordionItem
+                  title="Product Display Settings"
+                  icon={Tag}
+                  isOpen={activeAccordion === 'productSettings'}
+                  onClick={() => toggleAccordion('productSettings')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                  <h4 className="text-base font-semibold text-gray-800 mb-2">Labels</h4>
+                  <EditorInput
+                    label="Out of Stock Label"
+                    value={getSafe(businessData, 'productCard.outOfStock')}
+                    onChange={(e) => handleDataChange('productCard.outOfStock', e.target.value)}
+                    onFocus={() => handleSectionFocus('global')}
+                  />
+                  <EditorInput
+                    label="Sold Out Label"
+                    value={getSafe(businessData, 'productCard.soldOut')}
+                    onChange={(e) => handleDataChange('productCard.soldOut', e.target.value)}
+                    onFocus={() => handleSectionFocus('global')}
+                  />
+                  <EditorInput
+                    label="Add to Cart Label"
+                    value={getSafe(businessData, 'productCard.add')}
+                    onChange={(e) => handleDataChange('productCard.add', e.target.value)}
+                    onFocus={() => handleSectionFocus('global')}
+                  />
+                  <EditorInput
+                    label="View Label"
+                    value={getSafe(businessData, 'productCard.view')}
+                    onChange={(e) => handleDataChange('productCard.view', e.target.value)}
+                    onFocus={() => handleSectionFocus('global')}
+                  />
+                </AccordionItem>
 
                 <EditorInput
                   label="Business Name"
@@ -1117,7 +1126,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- FROSTIFY SPECIALTIES --- */}
-            {businessData?.specialties?.items && (
+            {(businessData?.specialties?.items || templateName === 'frostify') && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Specialties"
@@ -1160,7 +1169,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- FROSTIFY GALLERY --- */}
-            {businessData?.gallery && (
+            {(businessData?.gallery || templateName === 'frostify') && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Gallery"
@@ -1203,7 +1212,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- FROSTIFY TESTIMONIALS --- */}
-            {businessData?.testimonials?.items && businessData.testimonials.items[0]?.image && (
+            {(businessData?.testimonials?.items && businessData.testimonials.items[0]?.image) || templateName === 'frostify' ? (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Testimonials"
@@ -1455,7 +1464,7 @@ export default function EditorSidebar({
               )}
 
             {/* --- AURORA FEATURES --- */}
-            {businessData?.features && (
+            {(businessData?.features || templateName === 'aurora') && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Features"
@@ -1498,7 +1507,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- AURORA COLLECTIONS (Plural) --- */}
-            {businessData?.collections && (
+            {(businessData?.collections || templateName === 'aurora') && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Collections"
@@ -1545,7 +1554,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- AURORA TESTIMONIALS --- */}
-            {businessData?.testimonials?.items && businessData.testimonials.items[0]?.location && (
+            {((businessData?.testimonials?.items && businessData.testimonials.items[0]?.location) || templateName === 'aurora') && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Testimonials"
@@ -1594,7 +1603,7 @@ export default function EditorSidebar({
              )}
 
             {/* --- AURORA FAQ --- */}
-            {businessData?.faq?.questions && (
+            {(businessData?.faq?.questions || templateName === 'aurora') && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="FAQ"
@@ -1645,7 +1654,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- AURORA NEWSLETTER CTA --- */}
-            {businessData?.newsletterCta && (
+            {(businessData?.newsletterCta || templateName === 'aurora') && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Newsletter"
@@ -1684,7 +1693,7 @@ export default function EditorSidebar({
             )}
 
             {/* --- AURORA INSTAGRAM --- */}
-            {businessData?.instagram && (
+            {(businessData?.instagram || templateName === 'aurora') && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
                 <AccordionItem
                   title="Instagram Feed"
