@@ -1143,7 +1143,7 @@ export default function EditorSidebar({
                       onFocus={() => handleSectionFocus('specialties')}
                   />
                   <EditorList
-                    items={businessData.specialties.items}
+                    items={getSafe(businessData, 'specialties.items', [])}
                     onUpdate={(newItems) => handleDataChange('specialties.items', newItems)}
                     onAdd={() => ({ title: 'New Specialty', icon: 'cake' })}
                     addButtonLabel="Add Specialty"
@@ -1192,7 +1192,7 @@ export default function EditorSidebar({
                       onFocus={() => handleSectionFocus('gallery')}
                   />
                    <EditorList
-                    items={businessData.gallery.items || []} 
+                    items={getSafe(businessData, 'gallery.items', [])}
                     onUpdate={(newItems) => handleDataChange('gallery.items', newItems)}
                     onAdd={() => allProducts[0]?.id || 1}
                     addButtonLabel="Add Product to Gallery"
@@ -1241,7 +1241,7 @@ export default function EditorSidebar({
                       onFocus={() => handleSectionFocus('testimonials')}
                   />
                   <EditorList
-                    items={businessData.testimonials.items}
+                    items={getSafe(businessData, 'testimonials.items', [])}
                     onUpdate={(newItems) => handleDataChange('testimonials.items', newItems)}
                     onAdd={() => ({ text: 'Delicious!', author: 'Happy Customer', image: 'https://placehold.co/100x100' })}
                     addButtonLabel="Add Testimonial"
@@ -1475,7 +1475,7 @@ export default function EditorSidebar({
                   onCloseMobile={() => toggleAccordion(null)}
                 >
                   <EditorList
-                    items={businessData.features}
+                    items={getSafe(businessData, 'features', [])}
                     onUpdate={(newItems) => handleDataChange('features', newItems)}
                     onAdd={() => ({ title: 'New Feature', text: 'Description', icon: 'star' })}
                     addButtonLabel="Add Feature"
@@ -1571,7 +1571,7 @@ export default function EditorSidebar({
                       onFocus={() => handleSectionFocus('testimonials')}
                   />
                   <EditorList
-                    items={businessData.testimonials.items}
+                    items={getSafe(businessData, 'testimonials.items', [])}
                     onUpdate={(newItems) => handleDataChange('testimonials.items', newItems)}
                     onAdd={() => ({ quote: 'Great service!', author: 'Happy Customer', location: 'City, Country' })}
                     addButtonLabel="Add Testimonial"
@@ -1628,7 +1628,7 @@ export default function EditorSidebar({
                       />
                   )}
                   <EditorList
-                    items={businessData.faq.questions}
+                    items={getSafe(businessData, 'faq.questions', [])}
                     onUpdate={(newItems) => handleDataChange('faq.questions', newItems)}
                     onAdd={() => ({ q: 'New Question?', a: 'Answer here.' })}
                     addButtonLabel="Add Question"

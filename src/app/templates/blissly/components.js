@@ -118,7 +118,7 @@ export const ProductCard = ({ item, templateName }) => {
     };
     
     const category = businessData.categories.find(c => c.id === item.category);
-    const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
+    const productUrl = `${basePath}/product/${item.id}`;
 
     return (
         <div className={`group h-full flex flex-col border border-brand-primary/50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-md ${isOutOfStock ? 'opacity-75' : ''}`}>
@@ -134,7 +134,7 @@ export const ProductCard = ({ item, templateName }) => {
                 {isOutOfStock && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                         <span className="bg-red-400 text-brand-text px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-lg">
-                            Out of Stock
+                            {businessData.productCard?.outOfStock || "Out of Stock"}
                         </span>
                     </div>
                 )}
@@ -158,7 +158,7 @@ export const ProductCard = ({ item, templateName }) => {
                         href={productUrl}
                         className="flex-1 bg-brand-primary text-brand-text px-2 py-2 md:px-4 md:py-2.5 font-semibold text-[2vw] md:text-sm rounded-md hover:bg-brand-secondary/20 transition-colors text-center flex items-center justify-center"
                     >
-                        View
+                        {businessData.productCard?.view || "View"}
                     </a>
                     <button 
                         onClick={handleAddToCart}
@@ -169,7 +169,7 @@ export const ProductCard = ({ item, templateName }) => {
                             : 'bg-brand-secondary text-brand-bg hover:opacity-90'
                         }`}
                     >
-                        {isOutOfStock ? 'Sold Out' : 'Add'}
+                        {isOutOfStock ? (businessData.productCard?.soldOut || "Sold Out") : (businessData.productCard?.add || "Add")}
                     </button>
                 </div>
             </div>

@@ -38,18 +38,29 @@ export const Header = ({ business, cartCount, onCartClick }) => {
 // --- Product Card Component (CORRECTED & REDESIGNED) ---
 export const ProductCard = ({ item }) => {
     const { cartItems, increaseQuantity, decreaseQuantity } = useCart();
+    const { businessData } = useTemplateContext();
     
     // --- THIS IS THE FIX ---
     // It now correctly reads the array-based cart
     const cartQuantity = cartItems.find(i => i.id === item.id)?.quantity || 0;
     // --- END OF FIX ---
 
+    // Check stock: If stock is NOT -1 (unlimited) AND <= 0, it's out of stock.
+    const isOutOfStock = item.stock !== -1 && item.stock <= 0;
+
     return (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full border border-brand-primary/50">
+        <div className={`bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full border border-brand-primary/50 ${isOutOfStock ? 'opacity-75' : ''}`}>
             
             {/* Image (No longer a link) */}
-            <div className="block aspect-h-1 aspect-w-1 h-48">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+            <div className="block aspect-h-1 aspect-w-1 h-48 relative">
+                <img src={item.image} alt={item.name} className={`w-full h-full object-cover ${isOutOfStock ? 'grayscale' : ''}`} />
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="bg-red-400 text-white px-3 py-1 text-xs font-bold uppercase rounded shadow-lg">
+                            {businessData.productCard?.outOfStock || "Out of Stock"}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="p-4 flex flex-col flex-grow">
@@ -65,7 +76,11 @@ export const ProductCard = ({ item }) => {
                     <p className="text-sm text-gray-500">{item.unit}</p>
                 </div>
                 <div className="mt-4 w-full">
-                    {cartQuantity > 0 ? (
+                    {isOutOfStock ? (
+                        <button disabled className="w-full btn bg-gray-300 text-gray-600 py-2 rounded-lg text-sm cursor-not-allowed">
+                            {businessData.productCard?.soldOut || "Sold Out"}
+                        </button>
+                    ) : cartQuantity > 0 ? (
                         <div className="flex items-center justify-center">
                             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                                 <button onClick={() => decreaseQuantity(item.id)} className="px-4 py-2 text-brand-secondary hover:bg-brand-primary transition-colors font-bold">-</button>
@@ -74,7 +89,9 @@ export const ProductCard = ({ item }) => {
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => increaseQuantity(item.id)} className="w-full btn btn-primary py-2 rounded-lg text-sm">Add to Cart</button>
+                        <button onClick={() => increaseQuantity(item.id)} className="w-full btn btn-primary py-2 rounded-lg text-sm">
+                            {businessData.productCard?.add || "Add to Cart"}
+                        </button>
                     )}
                 </div>
             </div>
