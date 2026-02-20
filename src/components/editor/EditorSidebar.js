@@ -2749,6 +2749,84 @@ export default function EditorSidebar({
               </AccordionItem>
               </div>
             )}
+
+            {/* --- AURORA FOOTER --- */}
+            {businessData?.footer?.subscribe?.title && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                <EditorTextArea
+                  label="Description"
+                  value={getSafe(businessData, 'footer.description')}
+                  onChange={(e) =>
+                    handleDataChange('footer.description', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Subscribe Title"
+                  value={getSafe(businessData, 'footer.subscribe.title')}
+                  onChange={(e) =>
+                    handleDataChange('footer.subscribe.title', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Subscribe Button Text"
+                  value={getSafe(businessData, 'footer.subscribe.cta')}
+                  onChange={(e) =>
+                    handleDataChange('footer.subscribe.cta', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Copyright Text"
+                  value={getSafe(businessData, 'footer.copyright')}
+                  onChange={(e) =>
+                    handleDataChange('footer.copyright', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+              </AccordionItem>
+              </div>
+            )}
+
+            {/* --- FROSTIFY FOOTER --- */}
+            {businessData?.footer?.contactTitle && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                <EditorInput
+                  label="Contact Title"
+                  value={getSafe(businessData, 'footer.contactTitle')}
+                  onChange={(e) =>
+                    handleDataChange('footer.contactTitle', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Copyright Text"
+                  value={getSafe(businessData, 'footer.copyright')}
+                  onChange={(e) =>
+                    handleDataChange('footer.copyright', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+              </AccordionItem>
+              </div>
+            )}
           </section>
         )}
 

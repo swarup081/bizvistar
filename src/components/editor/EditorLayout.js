@@ -11,12 +11,16 @@ import { businessData as flaraData } from '@/app/templates/flara/data.js';
 import { businessData as avenixData } from '@/app/templates/avenix/data.js';
 import { businessData as blisslyData } from '@/app/templates/blissly/data.js';
 import { businessData as flavornestData } from '@/app/templates/flavornest/data.js';
+import { businessData as auroraData } from '@/app/templates/aurora/data.js';
+import { businessData as frostifyData } from '@/app/templates/frostify/data.js';
 
 const templateDataMap = {
   flara: flaraData,
   avenix: avenixData,
   blissly: blisslyData,
   flavornest: flavornestData,
+  aurora: auroraData,
+  frostify: frostifyData,
   // Add other templates here as they are created
 };
 
