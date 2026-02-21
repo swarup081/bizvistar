@@ -27,6 +27,11 @@ import {
   Columns,
   Paintbrush, // Changed from Palette
   Check,
+  CreditCard, // Added
+  User, // Added
+  Instagram, // Added
+  Facebook, // Added
+  Smartphone, // Added
   TrendingUp, // Added for Stats
   Megaphone, // Added for CTA
   MessageSquare, // Added for Reviews/Testimonials
@@ -486,7 +491,8 @@ export default function EditorSidebar({
   onAccordionToggle,
   forceDesktop = false, // --- ADDED ---
   isLandingMode = false, // <-- NEW PROP
-  templateName // --- ADDED ---
+  templateName, // --- ADDED ---
+  websiteId // --- ADDED ---
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
@@ -561,6 +567,40 @@ export default function EditorSidebar({
       }
       return newData;
     });
+  };
+
+  // --- NEW: Payment Mode Handler ---
+  const handlePaymentModeChange = (mode) => {
+      setBusinessData((prev) => {
+          const newData = JSON.parse(JSON.stringify(prev));
+
+          // Initialize structure if missing
+          if (!newData.payment) newData.payment = {};
+          if (!newData.footer) newData.footer = {};
+
+          newData.payment.mode = mode;
+          if (mode === 'COD') {
+              newData.payment.upiId = ''; // Clear UPI ID if COD
+              newData.footer.paymentDisclaimer = "Note: Since we cannot redirect users to a payment gateway, you are responsible for collecting payment upon delivery. Please ensure you have a process in place to settle these transactions.";
+          } else {
+              newData.footer.paymentDisclaimer = "Please note: Payments are processed directly between you and your customer. We do not facilitate transactions or charge commissions. You are responsible for verifying all payments received.";
+          }
+
+          // Append disclaimer to footer description if needed or handle separately
+          // For now, assume template handles paymentDisclaimer or we append it
+          if (newData.footer.description && !newData.footer.description.includes(newData.footer.paymentDisclaimer)) {
+               // Remove old disclaimer first? Complicated. Just set the property.
+               // Most templates won't render 'paymentDisclaimer' unless updated.
+               // Let's assume templates use 'footer.description' mostly.
+               // So we append it.
+               const oldDesc = prev.footer?.description || '';
+               // Simple heuristic: if it contains "Note: Since..." or "Please note:...", replace it.
+               const baseDesc = oldDesc.split(/Note: Since|Please note: Payments/)[0].trim();
+               newData.footer.description = `${baseDesc}\n\n${newData.footer.paymentDisclaimer}`;
+          }
+
+          return newData;
+      });
   };
   // --- END: Sync handler ---
 
@@ -2938,13 +2978,117 @@ export default function EditorSidebar({
         {activeTab === 'settings' && (
           <div className="p-4">
             <section>
-              <SectionTitle label="Site Settings" />
-              <p className="text-gray-600 text-sm">
-                SEO, Domain, and other settings will go here.
+              <SectionTitle label="Business Profile" />
+              <div className="mb-4 flex justify-center">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-200 relative group">
+                      {getSafe(businessData, 'logo') ? (
+                          <Image src={getSafe(businessData, 'logo')} alt="Logo" fill className="object-cover" />
+                      ) : (
+                          <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400">
+                              <ImageIcon size={24} />
+                          </div>
+                      )}
+                      <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                          <span className="text-white text-xs font-medium">Change</span>
+                          <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => handleDataChange('logo', reader.result);
+                                      reader.readAsDataURL(file);
+                                  }
+                              }}
+                          />
+                      </label>
+                  </div>
+              </div>
+              <EditorInput
+                  label="Business Name"
+                  value={getSafe(businessData, 'name')}
+                  onChange={(e) => handleSyncedNameChange(e.target.value)}
+              />
+              <EditorInput
+                  label="Owner Name"
+                  value={getSafe(businessData, 'owner')}
+                  onChange={(e) => handleDataChange('owner', e.target.value)}
+              />
+              <EditorInput
+                  label="Contact Phone / WhatsApp"
+                  value={getSafe(businessData, 'whatsappNumber')}
+                  onChange={(e) => handleDataChange('whatsappNumber', e.target.value)}
+              />
+
+              <h4 className="text-xs font-semibold text-gray-500 uppercase mt-4 mb-2">Social Media</h4>
+              <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                      <Instagram size={18} className="text-pink-600" />
+                      <input
+                          placeholder="Instagram URL"
+                          value={getSafe(businessData, 'footer.socials.0.url')}
+                          onChange={(e) => {
+                              // Ensure structure exists
+                              if (!businessData.footer?.socials) handleDataChange('footer.socials', []);
+                              handleDataChange('footer.socials.0.platform', 'Instagram');
+                              handleDataChange('footer.socials.0.url', e.target.value);
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8A63D2]"
+                      />
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <Facebook size={18} className="text-blue-600" />
+                      <input
+                          placeholder="Facebook URL"
+                          value={getSafe(businessData, 'footer.socials.1.url')}
+                          onChange={(e) => {
+                              if (!businessData.footer?.socials) handleDataChange('footer.socials', []);
+                              handleDataChange('footer.socials.1.platform', 'Facebook');
+                              handleDataChange('footer.socials.1.url', e.target.value);
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#8A63D2]"
+                      />
+                  </div>
+              </div>
+            </section>
+
+            <section className="mt-6 pt-6 border-t border-gray-100">
+              <SectionTitle label="Payment & Delivery" />
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                  <button
+                      onClick={() => handlePaymentModeChange('UPI')}
+                      className={`p-3 border rounded-lg flex flex-col items-center gap-1 transition-colors ${getSafe(businessData, 'payment.mode') === 'UPI' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                      <Smartphone size={20} />
+                      <span className="text-xs font-medium">UPI</span>
+                  </button>
+                  <button
+                      onClick={() => handlePaymentModeChange('COD')}
+                      className={`p-3 border rounded-lg flex flex-col items-center gap-1 transition-colors ${getSafe(businessData, 'payment.mode') === 'COD' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                      <CreditCard size={20} />
+                      <span className="text-xs font-medium">COD Only</span>
+                  </button>
+              </div>
+
+              {getSafe(businessData, 'payment.mode') === 'UPI' && (
+                  <EditorInput
+                      label="UPI ID"
+                      value={getSafe(businessData, 'payment.upiId')}
+                      onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
+                      placeholder="username@upi"
+                  />
+              )}
+
+              <p className="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded">
+                  {getSafe(businessData, 'footer.paymentDisclaimer') || "Select a mode to see disclaimer."}
               </p>
             </section>
             
-            <section>
+            <section className="mt-6 pt-6 border-t border-gray-100">
               <SectionTitle label="Store Management" />
               <div className="space-y-1">
                 <SidebarLink icon={Store} label="Manage Store" onClick={() => {}} />

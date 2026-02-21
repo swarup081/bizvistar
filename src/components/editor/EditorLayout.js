@@ -4,7 +4,9 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
+import WizardModal from './WizardModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
+import { getOnboardingStatus } from '@/app/actions/onboardingActions';
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -33,6 +35,10 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const iframeRef = useRef(null);
   const [activeAccordion, setActiveAccordion] = useState('global');
 
+  // Wizard State
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardInitialData, setWizardInitialData] = useState(null);
+
   // Detect default view on mount
   useEffect(() => {
     if (window.innerWidth < 1024) {
@@ -43,6 +49,20 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   // Get websiteId from URL query or prop
   const searchParams = useSearchParams();
   const websiteId = propWebsiteId || searchParams.get('site_id');
+
+  // Check Onboarding Status
+  useEffect(() => {
+    if (websiteId && mode !== 'dashboard') { // Don't show in dashboard preview mode if applicable
+        const checkStatus = async () => {
+            const { success, isCompleted, data, websiteData } = await getOnboardingStatus();
+            if (success && !isCompleted) {
+                setWizardInitialData({ data, websiteData });
+                setShowWizard(true);
+            }
+        };
+        checkStatus();
+    }
+  }, [websiteId, mode]);
   
   const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
   const debounceTimer = useRef(null); // For debouncing save
@@ -433,8 +453,20 @@ useEffect(() => {
           activeAccordion={activeAccordion}
           onAccordionToggle={handleAccordionToggle} 
           templateName={templateName}
+          websiteId={websiteId} // Pass websiteId for uploads in settings
         />
       </div>
+
+      {/* Onboarding Wizard */}
+      {showWizard && (
+          <WizardModal
+              isOpen={showWizard}
+              onClose={() => setShowWizard(false)}
+              websiteId={websiteId}
+              initialData={wizardInitialData}
+              setBusinessData={handleDataUpdate}
+          />
+      )}
     </div>
   );
 }
