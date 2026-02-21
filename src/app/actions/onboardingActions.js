@@ -4,14 +4,24 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+function getAdminClient() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined');
+  }
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not defined');
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // --- HELPER: Verify Website Ownership ---
 async function verifyWebsiteOwnership(websiteId) {
@@ -41,6 +51,7 @@ async function verifyWebsiteOwnership(websiteId) {
     throw new Error('Unauthorized: Please sign in.');
   }
 
+  const supabaseAdmin = getAdminClient();
   // Verify ownership
   const { data: website, error } = await supabaseAdmin
     .from('websites')
@@ -58,6 +69,7 @@ async function verifyWebsiteOwnership(websiteId) {
 export async function getOnboardingStatus(websiteId) {
   try {
     await verifyWebsiteOwnership(websiteId);
+    const supabaseAdmin = getAdminClient();
 
     // Get onboarding data
     const { data: onboarding, error } = await supabaseAdmin
@@ -102,6 +114,7 @@ export async function getOnboardingStatus(websiteId) {
 export async function saveOnboardingStep1(websiteId, data) {
   try {
     await verifyWebsiteOwnership(websiteId);
+    const supabaseAdmin = getAdminClient();
     const { businessName, ownerName, socialInstagram, socialFacebook, logoUrl } = data;
 
     // 1. Update Onboarding Table
@@ -168,6 +181,7 @@ export async function saveOnboardingStep1(websiteId, data) {
 export async function saveOnboardingStep2Product(websiteId, productData) {
   try {
     await verifyWebsiteOwnership(websiteId);
+    const supabaseAdmin = getAdminClient();
 
     // Check limit
     const { count, error: countError } = await supabaseAdmin
@@ -252,6 +266,7 @@ export async function saveOnboardingStep2Product(websiteId, productData) {
 export async function deleteOnboardingProduct(websiteId, productId) {
     try {
         await verifyWebsiteOwnership(websiteId);
+        const supabaseAdmin = getAdminClient();
 
         const { error } = await supabaseAdmin
             .from('products')
@@ -300,6 +315,7 @@ export async function deleteOnboardingProduct(websiteId, productId) {
 export async function saveOnboardingStep3(websiteId, data) {
     try {
         await verifyWebsiteOwnership(websiteId);
+        const supabaseAdmin = getAdminClient();
         const { upiId, isCodOnly } = data;
 
         const { error } = await supabaseAdmin
@@ -339,6 +355,8 @@ export async function saveOnboardingStep3(websiteId, data) {
 export async function generateAIContent(websiteId, description) {
     try {
         await verifyWebsiteOwnership(websiteId);
+        const supabaseAdmin = getAdminClient();
+        const openai = getOpenAIClient();
 
         // 1. Get current data to know structure
         const { data: currentSite } = await supabaseAdmin
@@ -429,6 +447,7 @@ export async function generateAIContent(websiteId, description) {
 export async function completeOnboarding(websiteId) {
     try {
         await verifyWebsiteOwnership(websiteId);
+        const supabaseAdmin = getAdminClient();
 
         await supabaseAdmin
             .from('onboarding_data')

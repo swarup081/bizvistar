@@ -2984,7 +2984,7 @@ export default function EditorSidebar({
             {!isLandingMode && (
               <MainTab
               icon={Briefcase}
-              label="Business Info"
+              label="Business"
               isActive={activeTab === 'settings'}
               onClick={() => onTabChange('settings')}
               />

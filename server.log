@@ -1,0 +1,66 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1246ms
+ ○ Compiling /templates/aurora ...
+ GET /templates/aurora?site_id=test 200 in 5.7s (compile: 5.2s, render: 459ms)
+ GET /aurora/diamondsimageforaurora.png 404 in 1419ms (compile: 1151ms, render: 268ms)
+ GET /aurora/photo-1573408301185-9146fe634ad0.avif 404 in 1402ms (compile: 1106ms, render: 296ms)
+ GET /aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg 404 in 1407ms (compile: 1268ms, render: 139ms)
+ GET /aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg 404 in 1410ms (compile: 1251ms, render: 159ms)
+ GET /aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg 404 in 1401ms (compile: 1222ms, render: 180ms)
+ GET /aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg 404 in 1400ms (compile: 1200ms, render: 200ms)
+ GET /aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg 404 in 154ms (compile: 13ms, render: 141ms)
+ GET /aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg 404 in 161ms (compile: 48ms, render: 113ms)
+ GET /aurora/tina-park-4_1qfH3ds4M-unsplash.jpg 404 in 119ms (compile: 55ms, render: 64ms)
+ POST /templates/aurora?site_id=test 200 in 31ms (compile: 9ms, render: 22ms)
+ GET /sign-in?redirect=%2Feditor%2Faurora 200 in 989ms (compile: 859ms, render: 129ms)
+ POST /sign-in?redirect=%2Feditor%2Faurora 200 in 13ms (compile: 4ms, render: 9ms)
+ ✓ Compiled in 133ms
+ GET /editor/aurora?site_id=test 200 in 3.5s (compile: 2.9s, proxy.ts: 26ms, render: 530ms)
+ GET /templates/aurora 200 in 161ms (compile: 11ms, render: 150ms)
+ GET /aurora/diamondsimageforaurora.png 404 in 252ms (compile: 18ms, render: 234ms)
+ GET /aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg 404 in 253ms (compile: 55ms, render: 198ms)
+ GET /aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg 404 in 137ms (compile: 11ms, render: 126ms)
+ GET /aurora/photo-1573408301185-9146fe634ad0.avif 404 in 111ms (compile: 23ms, render: 88ms)
+ GET /aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg 404 in 94ms (compile: 13ms, render: 81ms)
+ GET /aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg 404 in 96ms (compile: 44ms, render: 52ms)
+ GET /aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg 404 in 96ms (compile: 10ms, render: 86ms)
+ GET /aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg 404 in 114ms (compile: 13ms, render: 101ms)
+ GET /aurora/tina-park-4_1qfH3ds4M-unsplash.jpg 404 in 113ms (compile: 17ms, render: 97ms)
+ POST /templates/aurora 200 in 12ms (compile: 5ms, render: 7ms)
+ ⨯ Error: supabaseKey is required.
+    at module evaluation (src/app/actions/onboardingActions.js:7:35)
+    at module evaluation (.next-internal/server/app/editor/[templateName]/page/actions.js (server actions loader):2:1)
+    at module evaluation (.next/dev/server/chunks/ssr/_f9577af4._.js:455:538)
+   5 | import OpenAI from 'openai';
+   6 |
+>  7 | const supabaseAdmin = createClient(
+     |                                   ^
+   8 |   process.env.NEXT_PUBLIC_SUPABASE_URL,
+   9 |   process.env.SUPABASE_SERVICE_ROLE_KEY
+  10 | ); {
+  digest: '1267145744'
+}
+ POST /editor/aurora?site_id=test 500 in 1121ms (compile: 47ms, proxy.ts: 32ms, render: 1042ms)
+ GET /aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg 404 in 347ms (compile: 112ms, render: 235ms)
+ GET /aurora/diamondsimageforaurora.png 404 in 349ms (compile: 85ms, render: 264ms)
+ GET /aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg 404 in 345ms (compile: 33ms, render: 312ms)
+ GET /aurora/photo-1573408301185-9146fe634ad0.avif 404 in 331ms (compile: 258ms, render: 73ms)
+ GET /aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg 404 in 219ms (compile: 18ms, render: 202ms)
+ GET /aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg 404 in 223ms (compile: 60ms, render: 162ms)
+ GET /aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg 404 in 258ms (compile: 95ms, render: 163ms)
+ GET /aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg 404 in 216ms (compile: 108ms, render: 108ms)
+ GET /aurora/tina-park-4_1qfH3ds4M-unsplash.jpg 404 in 83ms (compile: 19ms, render: 64ms)
+ ✓ Compiled in 91ms
+ ✓ Compiled in 89ms
+ ✓ Compiled in 88ms
+ ✓ Compiled in 99ms

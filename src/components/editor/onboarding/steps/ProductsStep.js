@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Edit2, X, AlertCircle, Package, UploadCloud, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, AlertCircle, Package, UploadCloud, Loader2, Check, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { saveOnboardingStep2Product, deleteOnboardingProduct } from '@/app/actions/onboardingActions';
 
-export default function ProductsStep({ websiteId, onNext, loading: parentLoading }) {
+export default function ProductsStep({ websiteId, onNext, loading: parentLoading, onDataUpdate }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null); // Product object or 'new'
@@ -57,6 +57,7 @@ export default function ProductsStep({ websiteId, onNext, loading: parentLoading
       const res = await deleteOnboardingProduct(websiteId, id);
       if (res.success) {
           fetchProducts();
+          if (onDataUpdate) onDataUpdate(res.businessData);
       } else {
           alert(res.error);
       }
@@ -80,6 +81,7 @@ export default function ProductsStep({ websiteId, onNext, loading: parentLoading
       if (res.success) {
           setEditingProduct(null);
           fetchProducts();
+          if (onDataUpdate) onDataUpdate(res.businessData);
       } else {
           setError(res.error);
       }
@@ -99,20 +101,20 @@ export default function ProductsStep({ websiteId, onNext, loading: parentLoading
 
   const isLimitReached = products.length >= 10;
 
-  // Render Overlay Form
+  // Render Overlay Form (Styled like AddProductDialog content)
   if (editingProduct) {
       return (
           <div className="flex flex-col h-full animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                   <h3 className="font-bold text-lg text-gray-900">{editingProduct === 'new' ? 'Add Product' : 'Edit Product'}</h3>
                   <button onClick={() => setEditingProduct(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                       <X size={20} />
                   </button>
               </div>
 
-              <form onSubmit={handleSave} className="flex-grow space-y-5 overflow-y-auto px-1">
+              <form onSubmit={handleSave} className="flex-grow space-y-6 overflow-y-auto px-1 custom-scrollbar">
                   {error && (
-                      <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg flex items-center gap-2">
+                      <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg flex items-center gap-2 border border-red-100">
                           <AlertCircle size={14} /> {error}
                       </div>
                   )}
@@ -134,47 +136,54 @@ export default function ProductsStep({ websiteId, onNext, loading: parentLoading
 
                   {/* Fields */}
                   <div className="space-y-4">
-                      <div>
-                          <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Product Name</label>
+                      <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-gray-500 uppercase">Product Name</label>
                           <input
                             value={form.name}
                             onChange={e => setForm({...form, name: e.target.value})}
                             required
                             placeholder="e.g. Classic Watch"
-                            className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:border-[#8A63D2] outline-none focus:ring-1 focus:ring-[#8A63D2] transition-all"
+                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                           />
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Price (₹)</label>
+                          <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 uppercase">Price (₹)</label>
                               <input
                                 type="number"
                                 value={form.price}
                                 onChange={e => setForm({...form, price: e.target.value})}
                                 required
                                 placeholder="0.00"
-                                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:border-[#8A63D2] outline-none focus:ring-1 focus:ring-[#8A63D2] transition-all"
+                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                               />
                           </div>
-                          <div>
-                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Stock</label>
+                          <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 uppercase">Stock</label>
                               <input
                                 type="number"
                                 placeholder="Unlimited"
                                 value={form.stock}
                                 onChange={e => setForm({...form, stock: e.target.value})}
-                                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:border-[#8A63D2] outline-none focus:ring-1 focus:ring-[#8A63D2] transition-all"
+                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
                               />
                           </div>
                       </div>
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-auto">
+                      <button
+                        type="button"
+                        onClick={() => setEditingProduct(null)}
+                        className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
                       <button
                         type="submit"
                         disabled={saving}
-                        className="w-full py-3 bg-[#8A63D2] text-white font-bold rounded-xl hover:bg-[#7854bc] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl hover:bg-[#7854bc] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-200"
                       >
                           {saving ? <Loader2 size={18} className="animate-spin" /> : (editingProduct === 'new' ? 'Add Product' : 'Save Changes')}
                       </button>
@@ -250,13 +259,13 @@ export default function ProductsStep({ websiteId, onNext, loading: parentLoading
           )}
       </div>
 
-      <div className="pt-4 border-t border-gray-100 shrink-0">
+      <div className="pt-4 border-t border-gray-100 shrink-0 flex justify-end">
           <button
             onClick={() => onNext()}
             disabled={parentLoading || loading}
-            className="w-full py-3 bg-[#8A63D2] text-white font-bold rounded-xl hover:bg-[#7854bc] transition-all disabled:opacity-50 shadow-lg shadow-purple-200"
+            className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl hover:bg-[#7854bc] transition-all disabled:opacity-50 shadow-lg shadow-purple-200 flex items-center gap-2"
           >
-            Continue {products.length > 0 ? `(${products.length} Products)` : ''}
+            Continue {products.length > 0 ? `(${products.length})` : ''} <ChevronRight size={18} />
           </button>
       </div>
     </div>
