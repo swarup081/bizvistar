@@ -2566,6 +2566,64 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
+                
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Opening Hours</h4>
+                <EditorInput
+                  label="Mon-Fri"
+                  value={getSafe(businessData, 'footer.openingHours.monFri')}
+                  onChange={(e) =>
+                    handleDataChange('footer.openingHours.monFri', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Saturday"
+                  value={getSafe(businessData, 'footer.openingHours.sat')}
+                  onChange={(e) =>
+                    handleDataChange('footer.openingHours.sat', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Sunday"
+                  value={getSafe(businessData, 'footer.openingHours.sun')}
+                  onChange={(e) =>
+                    handleDataChange('footer.openingHours.sun', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Contact Info</h4>
+                <EditorInput
+                  label="Phone"
+                  value={getSafe(businessData, 'footer.contact.phone')}
+                  onChange={(e) =>
+                    handleDataChange('footer.contact.phone', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Email"
+                  value={getSafe(businessData, 'footer.contact.email')}
+                  onChange={(e) =>
+                    handleDataChange('footer.contact.email', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+
+                <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Social Links</h4>
+                {/* Loop over first 3 socials or provide specific inputs */}
+                {(businessData.footer.socials || []).map((social, idx) => (
+                    <EditorInput
+                        key={idx}
+                        label={`${social.platform} URL`}
+                        value={social.url}
+                        onChange={(e) =>
+                            handleDataChange(`footer.socials.${idx}.url`, e.target.value)
+                        }
+                        onFocus={() => handleSectionFocus('footer')}
+                    />
+                ))}
               </AccordionItem>
               </div>
             )}
@@ -2746,6 +2804,84 @@ export default function EditorSidebar({
                 <p className="text-xs text-gray-500 mt-4">
                   Copyright is updated automatically with your business name.
                 </p>
+              </AccordionItem>
+              </div>
+            )}
+
+            {/* --- AURORA FOOTER --- */}
+            {businessData?.footer?.subscribe?.title && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                <EditorTextArea
+                  label="Description"
+                  value={getSafe(businessData, 'footer.description')}
+                  onChange={(e) =>
+                    handleDataChange('footer.description', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Subscribe Title"
+                  value={getSafe(businessData, 'footer.subscribe.title')}
+                  onChange={(e) =>
+                    handleDataChange('footer.subscribe.title', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Subscribe Button Text"
+                  value={getSafe(businessData, 'footer.subscribe.cta')}
+                  onChange={(e) =>
+                    handleDataChange('footer.subscribe.cta', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Copyright Text"
+                  value={getSafe(businessData, 'footer.copyright')}
+                  onChange={(e) =>
+                    handleDataChange('footer.copyright', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+              </AccordionItem>
+              </div>
+            )}
+
+            {/* --- FROSTIFY FOOTER --- */}
+            {businessData?.footer?.contactTitle && (
+              <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
+                <AccordionItem
+                  title="Footer"
+                  icon={FileText}
+                  isOpen={activeAccordion === 'footer'}
+                  onClick={() => toggleAccordion('footer')}
+                  isMobile={isMobile}
+                  onCloseMobile={() => toggleAccordion(null)}
+                >
+                <EditorInput
+                  label="Contact Title"
+                  value={getSafe(businessData, 'footer.contactTitle')}
+                  onChange={(e) =>
+                    handleDataChange('footer.contactTitle', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
+                <EditorInput
+                  label="Copyright Text"
+                  value={getSafe(businessData, 'footer.copyright')}
+                  onChange={(e) =>
+                    handleDataChange('footer.copyright', e.target.value)
+                  }
+                  onFocus={() => handleSectionFocus('footer')}
+                />
               </AccordionItem>
               </div>
             )}

@@ -67,7 +67,7 @@ export const Header = () => {
         <header className="fixed top-0 w-full z-50 bg-white overflow-hidden shadow-sm">
             {/* Top Banner */}
             <div className="bg-[var(--color-primary)] text-white text-[2vw] md:text-[10px] font-bold uppercase tracking-[0.2em] text-center py-2">
-                • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} • {businessData.hero.badge || "Made with Love"} •
+                • {businessData.hero?.badge || "Made with Love"} • {businessData.hero?.badge || "Made with Love"} • {businessData.hero?.badge || "Made with Love"} •
             </div>
             
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -212,32 +212,41 @@ export const Footer = () => {
             </div>
 
             <div className="container mx-auto px-6 pt-10 pb-10 text-center relative z-10">
-                <h2 className="text-[6vw] md:text-4xl font-serif mb-2">Contact us</h2>
+                <h2 className="text-[6vw] md:text-4xl font-serif mb-2">{businessData.footer?.contactTitle || "Contact us"}</h2>
                 
                 <div className="mt-16 text-left max-w-lg mx-auto grid grid-cols-2 md:grid-cols-2 gap-8 text-[2.5vw] md:text-sm font-medium opacity-80">
                     <div>
                         <p className="font-bold uppercase tracking-widest mb-2 opacity-100">Opening Hours:</p>
-                        <p>Monday – Friday: 8:00 AM – 6:00 PM</p>
-                        <p>Saturday: 9:00 AM – 4:00 PM</p>
-                        <p>Sunday: Closed</p>
+                        <p>{businessData.footer?.openingHours?.monFri || "Monday – Friday: 8:00 AM – 6:00 PM"}</p>
+                        <p>{businessData.footer?.openingHours?.sat || "Saturday: 9:00 AM – 4:00 PM"}</p>
+                        <p>{businessData.footer?.openingHours?.sun || "Sunday: Closed"}</p>
                     </div>
                     <div>
                         <p className="font-bold uppercase tracking-widest mb-2 opacity-100">Contact:</p>
-                        <p>Phone: +1 (123) 456-7890</p>
-                        <p>Email: bakery@example.com</p>
+                        <p>Phone: {businessData.footer?.contact?.phone || "+1 (123) 456-7890"}</p>
+                        <p>Email: {businessData.footer?.contact?.email || "bakery@example.com"}</p>
                     </div>
                 </div>
 
                 <div className="mt-12 flex justify-center gap-4 text-[10px] opacity-60">
-                    <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center">
-                        <Instagram className="w-3 h-3" />
-                    </div>
-                    <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center">
-                        <Facebook className="w-3 h-3" />
-                    </div>
-                    <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center">
-                        <Twitter className="w-3 h-3" />
-                    </div>
+                    {/* Render Socials from Data Array */}
+                    {(businessData.footer?.socials || []).map((social, idx) => {
+                        let Icon = Instagram;
+                        if (social.platform === 'FB') Icon = Facebook;
+                        if (social.platform === 'TK') Icon = Twitter; // Mapping TK (TikTok usually) to Twitter icon for now as per previous code, or just generic. Keeping consistent.
+                        
+                        return (
+                            <a 
+                                key={idx}
+                                href={social.url || '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-6 h-6 rounded-full border border-white flex items-center justify-center hover:bg-white hover:text-[var(--color-primary)] transition-colors"
+                            >
+                                <Icon className="w-3 h-3" />
+                            </a>
+                        );
+                    })}
                 </div>
                 
                 <p className="text-[10px] mt-4 opacity-50">{businessData.footer.copyright}</p>

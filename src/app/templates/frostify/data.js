@@ -183,6 +183,19 @@ export const businessData = {
     footer: {
         contactTitle: "Contact us",
         copyright: "© 2026 by Sweet Delight. Built on BizVistar.",
-        socials: [ "IG", "FB", "TK" ]
+        socials: [ 
+            { platform: "IG", url: "#" }, 
+            { platform: "FB", url: "#" }, 
+            { platform: "TK", url: "#" } 
+        ],
+        openingHours: {
+            monFri: "Monday – Friday: 8:00 AM – 6:00 PM",
+            sat: "Saturday: 9:00 AM – 4:00 PM",
+            sun: "Sunday: Closed"
+        },
+        contact: {
+            phone: "+1 (123) 456-7890",
+            email: "bakery@example.com"
+        }
     }
 };
