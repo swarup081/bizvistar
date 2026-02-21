@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
+import WizardModal from './onboarding/WizardModal';
+import { getOnboardingStatus } from '@/app/actions/onboardingActions';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 
 // Import all template data
@@ -44,6 +46,26 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const searchParams = useSearchParams();
   const websiteId = propWebsiteId || searchParams.get('site_id');
   
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [onboardingInitialData, setOnboardingInitialData] = useState({});
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+        if (!websiteId) return;
+        const status = await getOnboardingStatus(websiteId);
+        if (status && !status.isCompleted && !status.error) {
+            setIsOnboardingOpen(true);
+            setOnboardingInitialData({
+                ...status.data,
+                websiteData: status.websiteData // Pass current website data too
+            });
+        }
+    };
+    // Delay slightly to ensure UI is ready? Not strictly needed but good for UX
+    const timer = setTimeout(checkOnboarding, 500);
+    return () => clearTimeout(timer);
+  }, [websiteId]);
+
   const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
   const debounceTimer = useRef(null); // For debouncing save
 
@@ -435,6 +457,16 @@ useEffect(() => {
           templateName={templateName}
         />
       </div>
+
+      {isOnboardingOpen && (
+          <WizardModal
+              isOpen={isOnboardingOpen}
+              onClose={() => setIsOnboardingOpen(false)}
+              initialData={onboardingInitialData}
+              websiteId={websiteId}
+              onDataUpdate={handleDataUpdate}
+          />
+      )}
     </div>
   );
 }

@@ -31,6 +31,7 @@ import {
   Megaphone, // Added for CTA
   MessageSquare, // Added for Reviews/Testimonials
   Menu, // Added Menu Icon
+  Briefcase, // Added for Business Info
 } from 'lucide-react';
 
 // Hook to detect mobile view
@@ -743,80 +744,6 @@ export default function EditorSidebar({
         {/* WEBSITE Panel */}
         {activeTab === 'website' && (
           <section>
-            {templateName !== 'aurora' && (
-              <AccordionItem
-                title="Global Settings"
-                icon={Info}
-                isOpen={activeAccordion === 'global'}
-                onClick={() => toggleAccordion('global')}
-                isMobile={isMobile}
-                onCloseMobile={() => toggleAccordion(null)}
-              >
-                {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
-                {businessData?.infoBar !== undefined && (
-                  <>
-                    <EditorInput
-                      label="Info Bar Text 1"
-                      value={getSafe(businessData, 'infoBar.0')}
-                      onChange={(e) =>
-                        handleDataChange('infoBar.0', e.target.value)
-                      }
-                      onFocus={() => handleSectionFocus('global')}
-                    />
-                    <EditorInput
-                      label="Info Bar Text 2"
-                      value={getSafe(businessData, 'infoBar.1')}
-                      onChange={(e) =>
-                        handleDataChange('infoBar.1', e.target.value)
-                      }
-                      onFocus={() => handleSectionFocus('global')}
-                    />
-                    <EditorInput
-                      label="Info Bar Text 3"
-                      value={getSafe(businessData, 'infoBar.2')}
-                      onChange={(e) =>
-                        handleDataChange('infoBar.2', e.target.value)
-                      }
-                      onFocus={() => handleSectionFocus('global')}
-                    />
-                  </>
-                )}
-                {/* --- END FLARA INFO BAR --- */}
-                {businessData?.announcementBar !== undefined && (
-                  <EditorInput
-                    label="Announcement Bar"
-                    value={getSafe(businessData, 'announcementBar')}
-                    onChange={(e) =>
-                      handleDataChange('announcementBar', e.target.value)
-                    }
-                    onFocus={() => handleSectionFocus('global')}
-                  />
-                )}
-                <EditorInput
-                  label="Business Name"
-                  value={getSafe(businessData, 'name')}
-                  onChange={(e) => handleSyncedNameChange(e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                  isRequired={true}
-                />
-                <EditorInput
-                  label="Logo Text"
-                  value={getSafe(businessData, 'logoText')}
-                  onChange={(e) => handleSyncedNameChange(e.target.value)}
-                  onFocus={() => handleSectionFocus('global')}
-                  isRequired={true}
-                />
-                <EditorInput
-                  label="Contact Phone / WhatsApp"
-                  value={getSafe(businessData, 'whatsappNumber')}
-                  onChange={(e) =>
-                    handleDataChange('whatsappNumber', e.target.value)
-                  }
-                  onFocus={() => handleSectionFocus('global')}
-                />
-              </AccordionItem>
-            )}
-
             {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora, frostify) --- */}
             {businessData?.hero && (
               <AccordionItem
@@ -2934,26 +2861,103 @@ export default function EditorSidebar({
         )}
         {/* --- END OF THEME Panel --- */}
 
-        {/* SETTINGS Panel (With Refactored Shortcuts) */}
+        {/* BUSINESS INFO Panel (Replaces Settings) */}
         {activeTab === 'settings' && (
           <div className="p-4">
-            <section>
-              <SectionTitle label="Site Settings" />
-              <p className="text-gray-600 text-sm">
-                SEO, Domain, and other settings will go here.
-              </p>
-            </section>
+            <SectionTitle label="Business Details" />
+
+            {businessData?.infoBar !== undefined && (
+              <>
+                <EditorInput
+                  label="Info Bar Text 1"
+                  value={getSafe(businessData, 'infoBar.0')}
+                  onChange={(e) => handleDataChange('infoBar.0', e.target.value)}
+                />
+                <EditorInput
+                  label="Info Bar Text 2"
+                  value={getSafe(businessData, 'infoBar.1')}
+                  onChange={(e) => handleDataChange('infoBar.1', e.target.value)}
+                />
+                <EditorInput
+                  label="Info Bar Text 3"
+                  value={getSafe(businessData, 'infoBar.2')}
+                  onChange={(e) => handleDataChange('infoBar.2', e.target.value)}
+                />
+              </>
+            )}
+
+            {businessData?.announcementBar !== undefined && (
+              <EditorInput
+                label="Announcement Bar"
+                value={getSafe(businessData, 'announcementBar')}
+                onChange={(e) => handleDataChange('announcementBar', e.target.value)}
+              />
+            )}
+
+            <EditorInput
+              label="Business Name"
+              value={getSafe(businessData, 'name')}
+              onChange={(e) => handleSyncedNameChange(e.target.value)}
+              isRequired={true}
+            />
+            <EditorInput
+              label="Logo Text"
+              value={getSafe(businessData, 'logoText')}
+              onChange={(e) => handleSyncedNameChange(e.target.value)}
+              isRequired={true}
+            />
+            <EditorImageUpload
+              label="Business Logo"
+              value={getSafe(businessData, 'logoImage')}
+              onChange={(e) => handleDataChange('logoImage', e.target.value)}
+            />
+            <EditorInput
+              label="Owner Name"
+              value={getSafe(businessData, 'ownerName')}
+              onChange={(e) => handleDataChange('ownerName', e.target.value)}
+            />
+            <EditorInput
+              label="Contact Phone / WhatsApp"
+              value={getSafe(businessData, 'whatsappNumber')}
+              onChange={(e) => handleDataChange('whatsappNumber', e.target.value)}
+            />
+
+            <SectionTitle label="Social Media" />
+            <p className="text-xs text-gray-500 mb-3">Links to your social profiles.</p>
+            {(businessData?.footer?.socials || []).map((social, idx) => (
+                <EditorInput
+                    key={idx}
+                    label={`${social.platform} URL`}
+                    value={social.url}
+                    onChange={(e) => handleDataChange(`footer.socials.${idx}.url`, e.target.value)}
+                />
+            ))}
             
-            <section>
-              <SectionTitle label="Store Management" />
-              <div className="space-y-1">
+            <SectionTitle label="Payment Info" />
+            <EditorInput
+                label="UPI ID"
+                value={getSafe(businessData, 'payment.upiId')}
+                onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
+            />
+            <div className="flex items-center gap-2 mb-6 ml-1">
+                <input
+                    type="checkbox"
+                    id="cod-check"
+                    checked={getSafe(businessData, 'payment.isCodOnly') === true}
+                    onChange={(e) => handleDataChange('payment.isCodOnly', e.target.checked)}
+                    className="w-4 h-4 text-[#8A63D2] rounded border-gray-300 focus:ring-[#8A63D2]"
+                />
+                <label htmlFor="cod-check" className="text-sm font-medium text-gray-700">Cash On Delivery Only</label>
+            </div>
+
+            <SectionTitle label="Store Management" />
+            <div className="space-y-1">
                 <SidebarLink icon={Store} label="Manage Store" onClick={() => {}} />
                 <SidebarLink icon={Calendar} label="Manage Appointments" onClick={() => {}} />
                 <SidebarLink icon={Tag} label="Manage Promotions" onClick={() => {}} />
                 <SidebarLink icon={MessageCircle} label="Manage Chat" onClick={() => {}} />
                 <SidebarLink icon={Contact} label="Manage Contacts" onClick={() => {}} />
-              </div>
-            </section>
+            </div>
           </div>
         )}
     </>
@@ -2979,8 +2983,8 @@ export default function EditorSidebar({
             />
             {!isLandingMode && (
               <MainTab
-              icon={Settings}
-              label="Settings"
+              icon={Briefcase}
+              label="Business Info"
               isActive={activeTab === 'settings'}
               onClick={() => onTabChange('settings')}
               />
