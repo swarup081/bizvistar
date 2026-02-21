@@ -10,9 +10,9 @@ export async function middleware(request) {
 
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+     // Check if we are in a build/CI environment where this might be expected?
+     // For now, logging error.
      console.error('[Middleware] Missing Supabase Environment Variables');
-     // Allow request to proceed (or fail downstream) to avoid infinite redirects on misconfiguration
-     return response;
   }
 
   const supabase = createServerClient(

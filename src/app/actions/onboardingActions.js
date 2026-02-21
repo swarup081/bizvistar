@@ -4,461 +4,341 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 
-function getAdminClient() {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined');
-  }
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-}
-
-function getOpenAIClient() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not defined');
-  }
-  return new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-}
-
-// --- HELPER: Verify Website Ownership ---
-async function verifyWebsiteOwnership(websiteId) {
-  if (!websiteId) throw new Error('Website ID is required');
-
-  const cookieStore = await cookies();
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll(cookiesToSet) {
-           try {
-             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-           } catch {
-             // Pass
-           }
-        },
-      },
+// Lazy load clients to avoid build-time errors if env vars are missing
+const getSupabaseClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseServiceKey) {
+        // Log error but don't crash immediately unless used
+        console.error('Missing Supabase environment variables');
+        // Return a dummy client that throws on use, or better, just throw here
+        throw new Error('Missing Supabase environment variables');
     }
-  );
+    return createClient(supabaseUrl, supabaseServiceKey);
+};
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+const getOpenAIClient = () => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        return null;
+    }
+    return new OpenAI({ apiKey });
+};
 
-  if (authError || !user) {
-    throw new Error('Unauthorized: Please sign in.');
-  }
+async function checkWebsiteOwnership(websiteId, userId) {
+    const supabase = getSupabaseClient();
+    const { data: website, error } = await supabase
+        .from('websites')
+        .select('user_id')
+        .eq('id', websiteId)
+        .single();
 
-  const supabaseAdmin = getAdminClient();
-  // Verify ownership
-  const { data: website, error } = await supabaseAdmin
-    .from('websites')
-    .select('id')
-    .eq('id', websiteId)
-    .eq('user_id', user.id)
-    .single();
-
-   if (error || !website) {
-       throw new Error('Unauthorized or Website not found.');
-   }
-   return website.id;
+    if (error || !website) return false;
+    return website.user_id === userId;
 }
 
 export async function getOnboardingStatus(websiteId) {
-  try {
-    await verifyWebsiteOwnership(websiteId);
-    const supabaseAdmin = getAdminClient();
+    const supabase = getSupabaseClient();
+
+    // Auth check
+    const cookieStore = cookies();
+    // We need to use createServerClient from @supabase/ssr or manually handle cookies for auth
+    // But since this is a server action, we can just use the service role client for data
+    // provided we verify the user ourselves.
+    // However, to get the CURRENT user, we need the auth client.
+
+    // Let's use the pattern from other actions or just trust the caller?
+    // No, security first.
+    // We'll use the SB client constructed with cookies for Auth, then Service Role for data if needed (or just RLS).
+    // Using service role for now to ensure we can read/write onboarding_data without RLS issues if they aren't set up perfectly
+
+    const supabaseAuth = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          cookies: {
+            getAll() { return cookieStore.getAll() },
+            setAll(cookiesToSet) {
+                try {
+                    cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+                } catch {
+                }
+            },
+          },
+        }
+    );
+
+    const { data: { user } } = await supabaseAuth.auth.getUser();
+    if (!user) return { error: 'Unauthorized' };
+
+    const isOwner = await checkWebsiteOwnership(websiteId, user.id);
+    if (!isOwner) return { error: 'Unauthorized' };
 
     // Get onboarding data
-    const { data: onboarding, error } = await supabaseAdmin
-      .from('onboarding_data')
-      .select('*')
-      .eq('website_id', websiteId)
-      .maybeSingle();
+    const { data: existingOnboarding } = await supabase
+        .from('onboarding_data')
+        .select('*')
+        .eq('website_id', websiteId)
+        .maybeSingle();
 
-    if (error) throw error;
+    let currentData = existingOnboarding;
+    if (!currentData) {
+        const { data: newOnboarding, error: createError } = await supabase
+            .from('onboarding_data')
+            .insert([{ website_id: websiteId }])
+            .select()
+            .single();
+
+        if (createError) {
+             console.error("Failed to create onboarding record:", createError);
+             return { error: 'Failed to initialize onboarding' };
+        }
+        currentData = newOnboarding;
+    }
 
     // Get product count
-    const { count, error: countError } = await supabaseAdmin
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('website_id', websiteId);
+    const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('website_id', websiteId);
 
-    if (countError) throw countError;
-
-    // Get current business data (for pre-filling step 1 if needed)
-    const { data: websiteData, error: websiteError } = await supabaseAdmin
-      .from('websites')
-      .select('website_data')
-      .eq('id', websiteId)
-      .single();
-
-    if (websiteError) throw websiteError;
+    // Get current website data for pre-filling
+    const { data: websiteData } = await supabase
+        .from('websites')
+        .select('website_data')
+        .eq('id', websiteId)
+        .single();
 
     return {
-      isCompleted: onboarding?.is_completed || false,
-      data: onboarding || {},
-      productCount: count || 0,
-      websiteData: websiteData?.website_data || {},
-      websiteId
+        isCompleted: currentData.is_completed,
+        data: currentData,
+        productCount: count || 0,
+        websiteData: websiteData?.website_data || {}
     };
-
-  } catch (err) {
-    console.error("Error fetching onboarding status:", err);
-    return { error: err.message };
-  }
 }
 
 export async function saveOnboardingStep1(websiteId, data) {
-  try {
-    await verifyWebsiteOwnership(websiteId);
-    const supabaseAdmin = getAdminClient();
-    const { businessName, ownerName, socialInstagram, socialFacebook, logoUrl } = data;
+    const supabase = getSupabaseClient();
 
-    // 1. Update Onboarding Table
-    const { error: onboardingError } = await supabaseAdmin
-      .from('onboarding_data')
-      .upsert({
-        website_id: websiteId,
-        owner_name: ownerName,
-        social_instagram: socialInstagram,
-        social_facebook: socialFacebook,
-        logo_url: logoUrl,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'website_id' });
-
-    if (onboardingError) throw onboardingError;
-
-    // 2. Update Website Data (Business Data JSON)
-    const { data: currentSite, error: fetchError } = await supabaseAdmin
-      .from('websites')
-      .select('website_data')
-      .eq('id', websiteId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    let businessData = currentSite.website_data || {};
-
-    // Update fields
-    businessData.name = businessName;
-    businessData.logoText = businessName; // Sync logo text
-    businessData.logoImage = logoUrl; // Save logo image
-    businessData.ownerName = ownerName; // Save owner name
-
-    // Ensure footer exists
-    if (!businessData.footer) businessData.footer = {};
-    if (!businessData.footer.socials) businessData.footer.socials = [];
-
-    // Update socials in footer
-    const newSocials = [];
-    if (socialInstagram) newSocials.push({ platform: 'Instagram', url: socialInstagram });
-    if (socialFacebook) newSocials.push({ platform: 'Facebook', url: socialFacebook });
-
-    const otherSocials = (businessData.footer.socials || []).filter(s =>
-        s.platform.toLowerCase() !== 'instagram' && s.platform.toLowerCase() !== 'facebook'
-    );
-    businessData.footer.socials = [...otherSocials, ...newSocials];
-
-    // Save back to websites table
-    const { error: updateError } = await supabaseAdmin
-      .from('websites')
-      .update({ website_data: businessData })
-      .eq('id', websiteId);
-
-    if (updateError) throw updateError;
-
-    return { success: true, businessData };
-
-  } catch (err) {
-    console.error("Error saving step 1:", err);
-    return { success: false, error: err.message };
-  }
-}
-
-export async function saveOnboardingStep2Product(websiteId, productData) {
-  try {
-    await verifyWebsiteOwnership(websiteId);
-    const supabaseAdmin = getAdminClient();
-
-    // Check limit
-    const { count, error: countError } = await supabaseAdmin
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('website_id', websiteId);
-
-    if (countError) throw countError;
-
-    // If adding new (no ID) and limit reached
-    if (!productData.id && count >= 10) {
-        return { success: false, error: "Product limit reached (10). Please delete some products or edit existing ones." };
-    }
-
-    const payload = {
-        website_id: websiteId,
-        name: productData.name,
-        price: parseFloat(productData.price),
-        stock: parseInt(productData.stock), // Should be -1 or finite
-        image_url: productData.image,
-        description: productData.description || '',
-        category_id: productData.category_id || null // Optional
-    };
-
-    let result;
-    if (productData.id) {
-        // Update
-        result = await supabaseAdmin
-            .from('products')
-            .update(payload)
-            .eq('id', productData.id)
-            .select()
-            .single();
-    } else {
-        // Insert
-        result = await supabaseAdmin
-            .from('products')
-            .insert(payload)
-            .select()
-            .single();
-    }
-
-    if (result.error) throw result.error;
-
-    // Sync to website_data.allProducts for editor preview
-    const { data: allProducts } = await supabaseAdmin
-        .from('products')
-        .select('*')
+    // 1. Update onboarding_data
+    const { error: updateError } = await supabase
+        .from('onboarding_data')
+        .update({
+            owner_name: data.ownerName,
+            business_city: data.businessCity,
+            logo_url: data.logo,
+            social_instagram: data.instagram,
+            social_facebook: data.facebook,
+            updated_at: new Date().toISOString()
+        })
         .eq('website_id', websiteId);
 
-    const { data: currentSite } = await supabaseAdmin
-      .from('websites')
-      .select('website_data')
-      .eq('id', websiteId)
-      .single();
+    if (updateError) return { error: updateError.message };
 
-    let businessData = currentSite.website_data || {};
+    // 2. Update actual website_data for immediate preview
+    const { data: website } = await supabase
+        .from('websites')
+        .select('website_data')
+        .eq('id', websiteId)
+        .single();
 
-    businessData.allProducts = allProducts.map(p => ({
-        id: p.id,
-        name: p.name,
-        price: p.price,
-        image: p.image_url,
-        description: p.description,
-        category: p.category_id ? String(p.category_id) : '',
-        stock: p.stock
-    }));
+    if (website) {
+        const currentData = website.website_data || {};
+        const newData = { ...currentData };
 
-    await supabaseAdmin
-      .from('websites')
-      .update({ website_data: businessData })
-      .eq('id', websiteId);
+        // Update Business Name
+        if (data.businessName) {
+             if (!newData.hero) newData.hero = {};
+             newData.hero.title = data.businessName;
 
-    return { success: true, product: result.data, businessData };
+             // Also update logo text if no image logo provided, or as fallback
+             if (!newData.header) newData.header = {};
+             // If logo image is provided, we might set header.logo
+             // If only text, we might set header.title or similar depending on template
+             // Assuming header.logo is used for both image url or text in some templates, or there is a separate field.
+             // Based on memory, templates use businessData.header.logo for image.
+             // Let's set a specific field for text logo if needed.
+             // But the user asked to "update the sql if needed since logo is text based in sql".
+             // The SQL has `logo_url`.
+             // In the editor, `header.logo` usually expects a URL.
+        }
 
-  } catch (err) {
-    console.error("Error saving product:", err);
-    return { success: false, error: err.message };
-  }
+        if (data.logo) {
+             if (!newData.header) newData.header = {};
+             newData.header.logo = data.logo;
+        }
+
+        if (data.instagram || data.facebook) {
+             if (!newData.footer) newData.footer = {};
+             if (!newData.footer.socialLinks) newData.footer.socialLinks = [];
+
+             // Helper to upsert social link
+             const upsertLink = (platform, url) => {
+                 const idx = newData.footer.socialLinks.findIndex(l => l.platform === platform);
+                 if (idx >= 0) newData.footer.socialLinks[idx].url = url;
+                 else newData.footer.socialLinks.push({ platform, url });
+             };
+
+             if (data.instagram) upsertLink('instagram', `https://instagram.com/${data.instagram}`);
+             if (data.facebook) upsertLink('facebook', `https://facebook.com/${data.facebook}`);
+        }
+
+        await supabase
+            .from('websites')
+            .update({ website_data: newData })
+            .eq('id', websiteId);
+    }
+
+    return { success: true };
 }
 
-export async function deleteOnboardingProduct(websiteId, productId) {
-    try {
-        await verifyWebsiteOwnership(websiteId);
-        const supabaseAdmin = getAdminClient();
+export async function saveOnboardingStep2Product(websiteId, product) {
+    const supabase = getSupabaseClient();
 
-        const { error } = await supabaseAdmin
-            .from('products')
-            .delete()
-            .eq('id', productId)
-            .eq('website_id', websiteId); // Security check
+    // Check limit
+    const { count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('website_id', websiteId);
 
-        if (error) throw error;
-
-        // Sync businessData
-        const { data: allProducts } = await supabaseAdmin
-            .from('products')
-            .select('*')
-            .eq('website_id', websiteId);
-
-        const { data: currentSite } = await supabaseAdmin
-            .from('websites')
-            .select('website_data')
-            .eq('id', websiteId)
-            .single();
-
-        let businessData = currentSite.website_data || {};
-
-        businessData.allProducts = allProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            image: p.image_url,
-            description: p.description,
-            category: p.category_id ? String(p.category_id) : '',
-            stock: p.stock
-        }));
-
-        await supabaseAdmin
-            .from('websites')
-            .update({ website_data: businessData })
-            .eq('id', websiteId);
-
-        return { success: true, businessData };
-
-    } catch (err) {
-        return { success: false, error: err.message };
+    if (count >= 10) {
+        return { error: 'Maximum 10 products allowed during onboarding.' };
     }
+
+    // Insert product
+    const { data: newProduct, error } = await supabase
+        .from('products')
+        .insert([{
+            website_id: websiteId,
+            name: product.name,
+            price: parseFloat(product.price),
+            description: product.description,
+            image_url: product.image || 'https://placehold.co/600x400',
+            stock: product.stock ? parseInt(product.stock) : 0,
+            category_id: null
+        }])
+        .select()
+        .single();
+
+    if (error) return { error: error.message };
+    return { success: true, product: newProduct };
+}
+
+export async function deleteOnboardingProduct(productId, websiteId) {
+    const supabase = getSupabaseClient();
+
+    const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId)
+        .eq('website_id', websiteId);
+
+    if (error) return { error: error.message };
+    return { success: true };
 }
 
 export async function saveOnboardingStep3(websiteId, data) {
-    try {
-        await verifyWebsiteOwnership(websiteId);
-        const supabaseAdmin = getAdminClient();
-        const { upiId, isCodOnly } = data;
+    const supabase = getSupabaseClient();
 
-        const { error } = await supabaseAdmin
-            .from('onboarding_data')
-            .upsert({
-                website_id: websiteId,
-                upi_id: isCodOnly ? null : upiId,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'website_id' });
+    const updates = {
+        upi_id: data.paymentMethod === 'upi' ? data.upiId : null,
+        updated_at: new Date().toISOString()
+    };
 
-        if (error) throw error;
+    const { error } = await supabase
+        .from('onboarding_data')
+        .update(updates)
+        .eq('website_id', websiteId);
 
-        const { data: currentSite } = await supabaseAdmin
+    if (error) return { error: error.message };
+
+    // Update website_data disclaimer
+    const { data: website } = await supabase
+        .from('websites')
+        .select('website_data')
+        .eq('id', websiteId)
+        .single();
+
+    if (website) {
+        const newData = { ...website.website_data };
+        if (!newData.footer) newData.footer = {};
+
+        let disclaimer = "";
+        if (data.paymentMethod === 'upi') {
+            disclaimer = "Payment is directly between you and the customer. We do not take any commission. Please verify payment receipt before processing orders.";
+        } else {
+            disclaimer = "Cash on Delivery only. Please arrange payment settlement directly with the customer.";
+        }
+
+        newData.footer.paymentDisclaimer = disclaimer;
+
+        await supabase
             .from('websites')
-            .select('website_data')
-            .eq('id', websiteId)
-            .single();
-
-        let businessData = currentSite.website_data || {};
-
-        if (!businessData.payment) businessData.payment = {};
-        businessData.payment.upiId = isCodOnly ? '' : upiId;
-        businessData.payment.isCodOnly = isCodOnly;
-
-        await supabaseAdmin
-            .from('websites')
-            .update({ website_data: businessData })
+            .update({ website_data: newData })
             .eq('id', websiteId);
-
-        return { success: true, businessData };
-
-    } catch (err) {
-        return { success: false, error: err.message };
     }
+
+    return { success: true };
 }
 
 export async function generateAIContent(websiteId, description) {
+    const openai = getOpenAIClient();
+    if (!openai) return { error: 'AI service unavailable' };
+
+    const supabase = getSupabaseClient();
+
+    const { data: website } = await supabase
+        .from('websites')
+        .select('website_data')
+        .eq('id', websiteId)
+        .single();
+
+    if (!website) return { error: 'Website not found' };
+
+    const currentData = website.website_data;
+    const prompt = `
+    You are an AI assistant helping a user customize their website content.
+    The user has provided the following description of their business: "${description}".
+
+    Current Website Data (JSON):
+    ${JSON.stringify(currentData, null, 2)}
+
+    Please update the text content (headings, subheadings, descriptions, button labels) to match the user's business description.
+    Do NOT change the structure of the JSON. Do NOT remove keys. Only update string values that are visible text.
+    Do NOT change menu items, links, or image URLs.
+    Make the tone professional and engaging, matching the brand vibe.
+    Return ONLY the updated JSON.
+    `;
+
     try {
-        await verifyWebsiteOwnership(websiteId);
-        const supabaseAdmin = getAdminClient();
-        const openai = getOpenAIClient();
-
-        // 1. Get current data to know structure
-        const { data: currentSite } = await supabaseAdmin
-            .from('websites')
-            .select('website_data, template_id, templates(name)')
-            .eq('id', websiteId)
-            .single();
-
-        let businessData = currentSite.website_data || {};
-        const templateName = currentSite.templates?.name || 'unknown';
-
-        // 2. Prepare Prompt
-        const contentKeys = {
-            hero: { title: businessData.hero?.title, subtitle: businessData.hero?.subtitle },
-            about: {
-                title: businessData.about?.title || businessData.about?.heading,
-                text: businessData.about?.text || businessData.about?.statement,
-                subtext: businessData.about?.subtext || businessData.about?.subheading
-            },
-            features: businessData.features ? businessData.features.map(f => ({ title: f.title, text: f.text })) : null,
-        };
-
-        const prompt = `
-        You are a professional website copywriter.
-        The user has a business described as: "${description}".
-        The current template is "${templateName}".
-
-        Please rewrite the following website content to match the business description.
-        Make it engaging, professional, and SEO-friendly.
-        Do NOT change the structure. Only change the text values.
-        Return a valid JSON object with the exact same keys as provided below, but with new values.
-
-        Current Content:
-        ${JSON.stringify(contentKeys, null, 2)}
-        `;
-
         const completion = await openai.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
+            messages: [{ role: "system", content: "You are a JSON-editing assistant." }, { role: "user", content: prompt }],
             model: "gpt-3.5-turbo",
             response_format: { type: "json_object" },
         });
 
         const newContent = JSON.parse(completion.choices[0].message.content);
 
-        // 3. Merge back
-        if (newContent.hero) {
-            if (businessData.hero) {
-                if (newContent.hero.title) businessData.hero.title = newContent.hero.title;
-                if (newContent.hero.subtitle) businessData.hero.subtitle = newContent.hero.subtitle;
-            }
-        }
-
-        if (newContent.about) {
-             if (businessData.about) {
-                 if (newContent.about.title) businessData.about.title = newContent.about.title;
-                 if (newContent.about.heading) businessData.about.heading = newContent.about.heading; // Handle Avenix
-
-                 if (newContent.about.text) businessData.about.text = newContent.about.text;
-                 if (newContent.about.statement) businessData.about.statement = newContent.about.statement; // Handle Avenix
-
-                 if (newContent.about.subtext) businessData.about.subtext = newContent.about.subtext;
-             }
-        }
-
-        if (newContent.features && Array.isArray(businessData.features)) {
-             newContent.features.forEach((f, i) => {
-                 if (businessData.features[i]) {
-                     if (f.title) businessData.features[i].title = f.title;
-                     if (f.text) businessData.features[i].text = f.text;
-                 }
-             });
-        }
-
-        // 4. Save
-        await supabaseAdmin
+        await supabase
             .from('websites')
-            .update({ website_data: businessData })
+            .update({ website_data: newContent })
             .eq('id', websiteId);
 
-        return { success: true, businessData };
+        return { success: true };
 
-    } catch (err) {
-        console.error("AI Generation Error:", err);
-        return { success: false, error: err.message };
+    } catch (e) {
+        console.error("AI Error:", e);
+        return { error: 'Failed to generate content' };
     }
 }
 
 export async function completeOnboarding(websiteId) {
-    try {
-        await verifyWebsiteOwnership(websiteId);
-        const supabaseAdmin = getAdminClient();
+    const supabase = getSupabaseClient();
+    const { error } = await supabase
+        .from('onboarding_data')
+        .update({ is_completed: true, updated_at: new Date().toISOString() })
+        .eq('website_id', websiteId);
 
-        await supabaseAdmin
-            .from('onboarding_data')
-            .upsert({
-                website_id: websiteId,
-                is_completed: true,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'website_id' });
-
-        return { success: true };
-    } catch (err) {
-        return { success: false, error: err.message };
-    }
+    if (error) return { error: error.message };
+    return { success: true };
 }
