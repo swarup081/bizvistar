@@ -502,38 +502,34 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   );
 
   const renderStep4 = () => (
-      <div className="space-y-6 animate-in slide-in-from-right duration-200 py-4">
-          <div className="text-center space-y-2 mb-8">
-              <div className="flex justify-center mb-4">
-                  <div className="p-3 bg-purple-50 rounded-2xl text-[#8A63D2]">
-                      <Sparkles size={32} />
-                  </div>
+      <div className="space-y-4 animate-in slide-in-from-right duration-200 h-full flex flex-col">
+          <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase">Describe your business</label>
+              <div className="relative">
+                <textarea
+                    value={aiDescription}
+                    onChange={(e) => setAiDescription(e.target.value)}
+                    className="w-full p-3 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none h-40 transition-all custom-scrollbar"
+                    placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee..."
+                />
+                <div className="absolute bottom-2 right-2 text-[10px] text-gray-400 font-medium">
+                    {aiDescription.length} chars
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900">AI Content Magic</h3>
-              <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
-                  Describe your business, and our AI will instantly rewrite your website content to match your brand voice.
+              <p className="text-xs text-gray-400 mt-1">
+                  Our AI will rewrite your website content to match your brand voice.
               </p>
           </div>
 
-          <div className="relative">
-            <textarea
-                value={aiDescription}
-                onChange={(e) => setAiDescription(e.target.value)}
-                className="w-full p-4 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none min-h-[140px] transition-all bg-white"
-                placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee. We value organic ingredients and cozy atmosphere..."
-            />
-            <div className="absolute bottom-3 right-3 text-xs text-gray-400 font-medium">
-                {aiDescription.length} chars
-            </div>
-          </div>
+          <div className="flex-grow"></div>
 
           <button
               onClick={handleGenerateAI}
               disabled={isAiGenerating}
-              className="w-full py-3 bg-[#111] text-white font-medium rounded-xl hover:bg-black transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-2.5 bg-[#8A63D2] text-white font-bold rounded-lg hover:bg-[#7854bc] transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm"
           >
               {isAiGenerating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-              {isAiGenerating ? 'Generating Magic...' : 'Generate Content'}
+              {isAiGenerating ? 'Generate Content' : 'Generate Content'}
           </button>
       </div>
   );
