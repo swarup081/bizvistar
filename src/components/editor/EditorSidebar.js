@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { GeminiIcon } from './icons/GeminiIcon';
+
 import Image from 'next/image';
 import {
   LayoutDashboard,
@@ -91,23 +91,12 @@ const SectionTitle = ({ label }) => (
 
 // --- UPDATED: EditorInput for "Instant Update" UI (updates on every keystroke) ---
 // --- ADDED onFocus PROP ---
-const EditorInput = ({ label, value, onChange, isRequired = false, onFocus, onAI, aiPath }) => {
+const EditorInput = ({ label, value, onChange, isRequired = false, onFocus }) => {
   return (
     <div className="mb-4">
-      <div className="flex justify-between items-center mb-1">
-        <label className="block text-sm font-medium text-gray-700">
-            {label} {isRequired && <span className="text-red-500">*</span>}
-        </label>
-        {onAI && aiPath && (
-            <button
-                onClick={() => onAI({ type: 'field', key: aiPath, context: value })}
-                className="text-purple-600 hover:bg-purple-50 p-1 rounded-full transition-colors"
-                title="Rewrite with AI"
-            >
-                <GeminiIcon size={14} />
-            </button>
-        )}
-      </div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label} {isRequired && <span className="text-red-500">*</span>}
+      </label>
       <input
         type="text"
         value={value || ''}
@@ -121,23 +110,12 @@ const EditorInput = ({ label, value, onChange, isRequired = false, onFocus, onAI
 
 // --- UPDATED: EditorTextArea for "Instant Update" UI (updates on every keystroke) ---
 // --- ADDED onFocus PROP ---
-const EditorTextArea = ({ label, value, onChange, onFocus, onAI, aiPath }) => {
+const EditorTextArea = ({ label, value, onChange, onFocus }) => {
   return (
     <div className="mb-4">
-      <div className="flex justify-between items-center mb-1">
-        <label className="block text-sm font-medium text-gray-700">
-            {label}
-        </label>
-        {onAI && aiPath && (
-            <button
-                onClick={() => onAI({ type: 'field', key: aiPath, context: value })}
-                className="text-purple-600 hover:bg-purple-50 p-1 rounded-full transition-colors"
-                title="Rewrite with AI"
-            >
-                <GeminiIcon size={14} />
-            </button>
-        )}
-      </div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
       <textarea
         value={value || ''}
         onChange={onChange}
@@ -361,7 +339,7 @@ const EditorList = ({
 };
 
 // Accordion UI
-const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile, onCloseMobile, onAI, aiSection, aiContext }) => {
+const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile, onCloseMobile }) => {
   const displayIcon = <Icon size={18} className="text-gray-500" />;
 
   // Mobile Drill Down Render
@@ -379,18 +357,7 @@ const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile,
                       </div>
                   </div>
                   {/* AI Button Mobile */}
-                  {onAI && aiSection && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAI({ type: 'section', key: aiSection, context: aiContext });
-                        }}
-                        className="flex items-center gap-1 text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full text-xs font-bold"
-                    >
-                        <GeminiIcon size={14} />
-                        AI Writer
-                    </button>
-                  )}
+
               </div>
               <div className="flex-grow overflow-y-auto p-4 pb-24">
                   {children}
@@ -412,18 +379,7 @@ const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile,
 
         <div className="flex items-center gap-2">
             {/* AI Button Desktop */}
-            {!isMobile && onAI && aiSection && (
-                <div
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onAI({ type: 'section', key: aiSection, context: aiContext });
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-purple-100 rounded-full text-purple-600"
-                    title="Write section with AI"
-                >
-                    <GeminiIcon size={16} />
-                </div>
-            )}
+
 
             {!isMobile && (
                 <ChevronDown
@@ -538,7 +494,7 @@ export default function EditorSidebar({
   isLandingMode = false, // <-- NEW PROP
   templateName, // --- ADDED ---
   websiteId, // --- ADDED ---
-  onAI // <-- NEW PROP
+
 }) {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isMobileExpanded, setIsMobileExpanded] = useState(false);
@@ -830,10 +786,10 @@ export default function EditorSidebar({
         {activeTab === 'website' && (
           <section>
             {templateName !== 'aurora' && (
-              <AccordionItem onAI={onAI}
+              <AccordionItem
                 title="Global Settings"
                 icon={Info}
-                isOpen={activeAccordion === 'global'} aiSection='global' aiContext={businessData?.global} aiSection='global' aiContext={businessData?.global}
+                isOpen={activeAccordion === 'global'}
                 onClick={() => toggleAccordion('global')}
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
@@ -841,25 +797,25 @@ export default function EditorSidebar({
                 {/* --- THIS IS THE FIX: FLARA INFO BAR EDIT --- */}
                 {businessData?.infoBar !== undefined && (
                   <>
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Info Bar Text 1"
-                      value={getSafe(businessData, 'infoBar.0')} aiPath='infoBar.0' aiPath='infoBar.0'
+                      value={getSafe(businessData, 'infoBar.0')}
                       onChange={(e) =>
                         handleDataChange('infoBar.0', e.target.value)
                       }
                       onFocus={() => handleSectionFocus('global')}
                     />
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Info Bar Text 2"
-                      value={getSafe(businessData, 'infoBar.1')} aiPath='infoBar.1' aiPath='infoBar.1'
+                      value={getSafe(businessData, 'infoBar.1')}
                       onChange={(e) =>
                         handleDataChange('infoBar.1', e.target.value)
                       }
                       onFocus={() => handleSectionFocus('global')}
                     />
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Info Bar Text 3"
-                      value={getSafe(businessData, 'infoBar.2')} aiPath='infoBar.2' aiPath='infoBar.2'
+                      value={getSafe(businessData, 'infoBar.2')}
                       onChange={(e) =>
                         handleDataChange('infoBar.2', e.target.value)
                       }
@@ -869,32 +825,32 @@ export default function EditorSidebar({
                 )}
                 {/* --- END FLARA INFO BAR --- */}
                 {businessData?.announcementBar !== undefined && (
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Announcement Bar"
-                    value={getSafe(businessData, 'announcementBar')} aiPath='announcementBar' aiPath='announcementBar'
+                    value={getSafe(businessData, 'announcementBar')}
                     onChange={(e) =>
                       handleDataChange('announcementBar', e.target.value)
                     }
                     onFocus={() => handleSectionFocus('global')}
                   />
                 )}
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Business Name"
-                  value={getSafe(businessData, 'name')} aiPath='name' aiPath='name'
+                  value={getSafe(businessData, 'name')}
                   onChange={(e) => handleSyncedNameChange(e.target.value)}
                   onFocus={() => handleSectionFocus('global')}
                   isRequired={true}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Logo Text"
-                  value={getSafe(businessData, 'logoText')} aiPath='logoText' aiPath='logoText'
+                  value={getSafe(businessData, 'logoText')}
                   onChange={(e) => handleSyncedNameChange(e.target.value)}
                   onFocus={() => handleSectionFocus('global')}
                   isRequired={true}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Phone / WhatsApp"
-                  value={getSafe(businessData, 'whatsappNumber')} aiPath='whatsappNumber' aiPath='whatsappNumber'
+                  value={getSafe(businessData, 'whatsappNumber')}
                   onChange={(e) =>
                     handleDataChange('whatsappNumber', e.target.value)
                   }
@@ -905,19 +861,19 @@ export default function EditorSidebar({
 
             {/* --- GENERIC HERO (for flara, blissly, flavornest, aurora, frostify) --- */}
             {businessData?.hero && (
-              <AccordionItem onAI={onAI}
+              <AccordionItem
                 title="Hero Section"
                 icon={ImageIcon}
-                isOpen={activeAccordion === 'hero'} aiSection='hero' aiContext={businessData?.hero} aiSection='hero' aiContext={businessData?.hero}
+                isOpen={activeAccordion === 'hero'}
                 onClick={() => toggleAccordion('hero')}
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
               >
                 {/* Frostify Specific Fields */}
                 {businessData.hero.badge !== undefined && (
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Badge"
-                    value={getSafe(businessData, 'hero.badge')} aiPath='hero.badge' aiPath='hero.badge'
+                    value={getSafe(businessData, 'hero.badge')}
                     onChange={(e) => handleDataChange('hero.badge', e.target.value)}
                     onFocus={() => handleSectionFocus('hero')}
                   />
@@ -926,16 +882,16 @@ export default function EditorSidebar({
                 {/* Aurora Specific Fields */}
                 {templateName === 'aurora' && (
                    <>
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                           label="Logo Text"
                           value={getSafe(businessData, 'logoText') || getSafe(businessData, 'name')}
                           onChange={(e) => handleSyncedNameChange(e.target.value)}
                           onFocus={() => handleSectionFocus('hero')}
                           isRequired={true}
                       />
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Title"
-                        value={getSafe(businessData, 'hero.title')} aiPath='hero.title' aiPath='hero.title'
+                        value={getSafe(businessData, 'hero.title')}
                         onChange={(e) => handleDataChange('hero.title', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                         isRequired={true}
@@ -943,62 +899,62 @@ export default function EditorSidebar({
                       {/* Aurora Images */}
                       <EditorImageUpload
                         label="Main Image"
-                        value={getSafe(businessData, 'hero.imageArch1')} aiPath='hero.imageArch1' aiPath='hero.imageArch1'
+                        value={getSafe(businessData, 'hero.imageArch1')}
                         onChange={(e) => handleDataChange('hero.imageArch1', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                       <EditorImageUpload
                         label="Secondary Image (Stats)"
-                        value={getSafe(businessData, 'hero.imageArch1_b')} aiPath='hero.imageArch1_b' aiPath='hero.imageArch1_b'
+                        value={getSafe(businessData, 'hero.imageArch1_b')}
                         onChange={(e) => handleDataChange('hero.imageArch1_b', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                       <EditorImageUpload
                         label="Detail Image (Arch)"
-                        value={getSafe(businessData, 'hero.imageSmallArch')} aiPath='hero.imageSmallArch' aiPath='hero.imageSmallArch'
+                        value={getSafe(businessData, 'hero.imageSmallArch')}
                         onChange={(e) => handleDataChange('hero.imageSmallArch', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                       
                       <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Stats</h4>
                       {/* Stat 1 */}
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 1 Value"
-                        value={getSafe(businessData, 'hero.stats.0.value')} aiPath='hero.stats.0.value' aiPath='hero.stats.0.value'
+                        value={getSafe(businessData, 'hero.stats.0.value')}
                         onChange={(e) => handleDataChange('hero.stats.0.value', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 1 Label"
-                        value={getSafe(businessData, 'hero.stats.0.label')} aiPath='hero.stats.0.label' aiPath='hero.stats.0.label'
+                        value={getSafe(businessData, 'hero.stats.0.label')}
                         onChange={(e) => handleDataChange('hero.stats.0.label', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
                       
                       {/* Stat 2 */}
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 2 Value"
-                        value={getSafe(businessData, 'hero.stats.1.value')} aiPath='hero.stats.1.value' aiPath='hero.stats.1.value'
+                        value={getSafe(businessData, 'hero.stats.1.value')}
                         onChange={(e) => handleDataChange('hero.stats.1.value', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 2 Label"
-                        value={getSafe(businessData, 'hero.stats.1.label')} aiPath='hero.stats.1.label' aiPath='hero.stats.1.label'
+                        value={getSafe(businessData, 'hero.stats.1.label')}
                         onChange={(e) => handleDataChange('hero.stats.1.label', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
 
                       {/* Stat 3 */}
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 3 Value"
-                        value={getSafe(businessData, 'hero.stats.2.value')} aiPath='hero.stats.2.value' aiPath='hero.stats.2.value'
+                        value={getSafe(businessData, 'hero.stats.2.value')}
                         onChange={(e) => handleDataChange('hero.stats.2.value', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label="Stat 3 Label"
-                        value={getSafe(businessData, 'hero.stats.2.label')} aiPath='hero.stats.2.label' aiPath='hero.stats.2.label'
+                        value={getSafe(businessData, 'hero.stats.2.label')}
                         onChange={(e) => handleDataChange('hero.stats.2.label', e.target.value)}
                         onFocus={() => handleSectionFocus('hero')}
                       />
@@ -1007,26 +963,26 @@ export default function EditorSidebar({
                 
                 {/* Generic Title (if not Aurora) */}
                 {businessData.hero.title !== undefined && templateName !== 'aurora' && (
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Title"
-                    value={getSafe(businessData, 'hero.title')} aiPath='hero.title' aiPath='hero.title'
+                    value={getSafe(businessData, 'hero.title')}
                     onChange={(e) => handleDataChange('hero.title', e.target.value)}
                     onFocus={() => handleSectionFocus('hero')}
                     isRequired={true}
                   />
                 )}
 
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Subtitle"
-                  value={getSafe(businessData, 'hero.subtitle')} aiPath='hero.subtitle' aiPath='hero.subtitle'
+                  value={getSafe(businessData, 'hero.subtitle')}
                   onChange={(e) =>
                     handleDataChange('hero.subtitle', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Button Text"
-                  value={getSafe(businessData, 'hero.cta')} aiPath='hero.cta' aiPath='hero.cta'
+                  value={getSafe(businessData, 'hero.cta')}
                   onChange={(e) => handleDataChange('hero.cta', e.target.value)}
                   onFocus={() => handleSectionFocus('hero')}
                 />
@@ -1045,7 +1001,7 @@ export default function EditorSidebar({
                 {businessData.hero.image2 !== undefined && (
                   <EditorImageUpload
                     label="Hero Image 2"
-                    value={getSafe(businessData, 'hero.image2')} aiPath='hero.image2' aiPath='hero.image2'
+                    value={getSafe(businessData, 'hero.image2')}
                     onChange={(e) =>
                       handleDataChange('hero.image2', e.target.value)
                     }
@@ -1057,49 +1013,49 @@ export default function EditorSidebar({
 
             {/* --- AVENIX HERO --- */}
             {businessData?.heelsHero && (
-              <AccordionItem onAI={onAI}
+              <AccordionItem
                 title="Hero Section"
                 icon={ImageIcon}
-                isOpen={activeAccordion === 'hero'} aiSection='hero' aiContext={businessData?.hero} aiSection='hero' aiContext={businessData?.hero}
+                isOpen={activeAccordion === 'hero'}
                 onClick={() => toggleAccordion('hero')}
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
               >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Line 1"
-                  value={getSafe(businessData, 'heelsHero.line1')} aiPath='heelsHero.line1' aiPath='heelsHero.line1'
+                  value={getSafe(businessData, 'heelsHero.line1')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.line1', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Line 2 (Accent)"
-                  value={getSafe(businessData, 'heelsHero.line2')} aiPath='heelsHero.line2' aiPath='heelsHero.line2'
+                  value={getSafe(businessData, 'heelsHero.line2')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.line2', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Line 3"
-                  value={getSafe(businessData, 'heelsHero.line3')} aiPath='heelsHero.line3' aiPath='heelsHero.line3'
+                  value={getSafe(businessData, 'heelsHero.line3')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.line3', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Bent Text (Accent)"
-                  value={getSafe(businessData, 'heelsHero.bentText')} aiPath='heelsHero.bentText' aiPath='heelsHero.bentText'
+                  value={getSafe(businessData, 'heelsHero.bentText')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.bentText', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('hero')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Button Text"
-                  value={getSafe(businessData, 'heelsHero.buttonText')} aiPath='heelsHero.buttonText' aiPath='heelsHero.buttonText'
+                  value={getSafe(businessData, 'heelsHero.buttonText')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.buttonText', e.target.value)
                   }
@@ -1107,7 +1063,7 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Hero Image"
-                  value={getSafe(businessData, 'heelsHero.image')} aiPath='heelsHero.image' aiPath='heelsHero.image'
+                  value={getSafe(businessData, 'heelsHero.image')}
                   onChange={(e) =>
                     handleDataChange('heelsHero.image', e.target.value)
                   }
@@ -1119,33 +1075,33 @@ export default function EditorSidebar({
             {/* --- FLARA ABOUT (feature1) --- */}
             {businessData?.feature1 && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="About Section (Feature 1)"
                   icon={Home}
-                  isOpen={activeAccordion === 'about'} aiSection='about' aiContext={businessData?.about} aiSection='about' aiContext={businessData?.about}
+                  isOpen={activeAccordion === 'about'}
                   onClick={() => toggleAccordion('about')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Title"
-                    value={getSafe(businessData, 'feature1.title')} aiPath='feature1.title' aiPath='feature1.title'
+                    value={getSafe(businessData, 'feature1.title')}
                     onChange={(e) =>
                       handleDataChange('feature1.title', e.target.value)
                     }
                     onFocus={() => handleSectionFocus('about')}
                   />
-                  <EditorTextArea onAI={onAI}
+                  <EditorTextArea
                     label="Text"
-                    value={getSafe(businessData, 'feature1.text')} aiPath='feature1.text' aiPath='feature1.text'
+                    value={getSafe(businessData, 'feature1.text')}
                     onChange={(e) =>
                       handleDataChange('feature1.text', e.target.value)
                     }
                     onFocus={() => handleSectionFocus('about')}
                   />
-                  <EditorTextArea onAI={onAI}
+                  <EditorTextArea
                     label="Sub-text"
-                    value={getSafe(businessData, 'feature1.subtext')} aiPath='feature1.subtext' aiPath='feature1.subtext'
+                    value={getSafe(businessData, 'feature1.subtext')}
                     onChange={(e) =>
                       handleDataChange('feature1.subtext', e.target.value)
                     }
@@ -1153,7 +1109,7 @@ export default function EditorSidebar({
                   />
                   <EditorImageUpload
                     label="About Image"
-                    value={getSafe(businessData, 'feature1.image')} aiPath='feature1.image' aiPath='feature1.image'
+                    value={getSafe(businessData, 'feature1.image')}
                     onChange={(e) =>
                       handleDataChange('feature1.image', e.target.value)
                     }
@@ -1166,17 +1122,17 @@ export default function EditorSidebar({
             {/* --- FROSTIFY SPECIALTIES --- */}
             {businessData?.specialties?.items && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Specialties"
                   icon={CheckCircle}
-                  isOpen={activeAccordion === 'specialties'} aiSection='specialties' aiContext={businessData?.specialties} aiSection='specialties' aiContext={businessData?.specialties}
+                  isOpen={activeAccordion === 'specialties'}
                   onClick={() => toggleAccordion('specialties')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Title"
-                      value={getSafe(businessData, 'specialties.title')} aiPath='specialties.title' aiPath='specialties.title'
+                      value={getSafe(businessData, 'specialties.title')}
                       onChange={(e) => handleDataChange('specialties.title', e.target.value)}
                       onFocus={() => handleSectionFocus('specialties')}
                   />
@@ -1187,13 +1143,13 @@ export default function EditorSidebar({
                     addButtonLabel="Add Specialty"
                     renderItem={(item, index, onChange) => (
                       <>
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Title"
                           value={item.title}
                           onChange={(e) => onChange({ ...item, title: e.target.value })}
                           onFocus={() => handleSectionFocus('specialties')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Icon Name"
                           value={item.icon}
                           onChange={(e) => onChange({ ...item, icon: e.target.value })}
@@ -1209,17 +1165,17 @@ export default function EditorSidebar({
             {/* --- FROSTIFY GALLERY --- */}
             {businessData?.gallery && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Gallery"
                   icon={ImageIcon}
-                  isOpen={activeAccordion === 'gallery'} aiSection='gallery' aiContext={businessData?.gallery} aiSection='gallery' aiContext={businessData?.gallery}
+                  isOpen={activeAccordion === 'gallery'}
                   onClick={() => toggleAccordion('gallery')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Title"
-                      value={getSafe(businessData, 'gallery.title')} aiPath='gallery.title' aiPath='gallery.title'
+                      value={getSafe(businessData, 'gallery.title')}
                       onChange={(e) => handleDataChange('gallery.title', e.target.value)}
                       onFocus={() => handleSectionFocus('gallery')}
                   />
@@ -1246,17 +1202,17 @@ export default function EditorSidebar({
             {/* --- FROSTIFY TESTIMONIALS --- */}
             {businessData?.testimonials?.items && businessData.testimonials.items[0]?.image && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Testimonials"
                   icon={MessageSquare}
-                  isOpen={activeAccordion === 'testimonials'} aiSection='testimonials' aiContext={businessData?.testimonials} aiSection='testimonials' aiContext={businessData?.testimonials}
+                  isOpen={activeAccordion === 'testimonials'}
                   onClick={() => toggleAccordion('testimonials')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'testimonials.title')} aiPath='testimonials.title' aiPath='testimonials.title'
+                      value={getSafe(businessData, 'testimonials.title')}
                       onChange={(e) => handleDataChange('testimonials.title', e.target.value)}
                       onFocus={() => handleSectionFocus('testimonials')}
                   />
@@ -1267,13 +1223,13 @@ export default function EditorSidebar({
                     addButtonLabel="Add Testimonial"
                     renderItem={(item, index, onChange) => (
                       <>
-                        <EditorTextArea onAI={onAI}
+                        <EditorTextArea
                           label="Text"
                           value={item.text}
                           onChange={(e) => onChange({ ...item, text: e.target.value })}
                           onFocus={() => handleSectionFocus('testimonials')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Author"
                           value={item.author}
                           onChange={(e) => onChange({ ...item, author: e.target.value })}
@@ -1295,41 +1251,41 @@ export default function EditorSidebar({
             {/* --- AVENIX ABOUT --- */}
             {businessData?.about?.subheading && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="About Section"
                   icon={Home}
-                  isOpen={activeAccordion === 'about'} aiSection='about' aiContext={businessData?.about} aiSection='about' aiContext={businessData?.about}
+                  isOpen={activeAccordion === 'about'}
                   onClick={() => toggleAccordion('about')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Heading"
-                  value={getSafe(businessData, 'about.heading')} aiPath='about.heading' aiPath='about.heading'
+                  value={getSafe(businessData, 'about.heading')}
                   onChange={(e) =>
                     handleDataChange('about.heading', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Subheading Part 1"
-                  value={getSafe(businessData, 'about.subheading.part1')} aiPath='about.subheading.part1' aiPath='about.subheading.part1'
+                  value={getSafe(businessData, 'about.subheading.part1')}
                   onChange={(e) =>
                     handleDataChange('about.subheading.part1', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Subheading Part 2"
-                  value={getSafe(businessData, 'about.subheading.part2')} aiPath='about.subheading.part2' aiPath='about.subheading.part2'
+                  value={getSafe(businessData, 'about.subheading.part2')}
                   onChange={(e) =>
                     handleDataChange('about.subheading.part2', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Statement"
-                  value={getSafe(businessData, 'about.statement')} aiPath='about.statement' aiPath='about.statement'
+                  value={getSafe(businessData, 'about.statement')}
                   onChange={(e) =>
                     handleDataChange('about.statement', e.target.value)
                   }
@@ -1337,7 +1293,7 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Large Image"
-                  value={getSafe(businessData, 'about.largeImage')} aiPath='about.largeImage' aiPath='about.largeImage'
+                  value={getSafe(businessData, 'about.largeImage')}
                   onChange={(e) =>
                     handleDataChange('about.largeImage', e.target.value)
                   }
@@ -1350,25 +1306,25 @@ export default function EditorSidebar({
             {/* --- BLISSLY ABOUT --- */}
             {businessData?.about?.features && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="About Section"
                   icon={Home}
-                  isOpen={activeAccordion === 'about'} aiSection='about' aiContext={businessData?.about} aiSection='about' aiContext={businessData?.about}
+                  isOpen={activeAccordion === 'about'}
                   onClick={() => toggleAccordion('about')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Title"
-                  value={getSafe(businessData, 'about.title')} aiPath='about.title' aiPath='about.title'
+                  value={getSafe(businessData, 'about.title')}
                   onChange={(e) =>
                     handleDataChange('about.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Text"
-                  value={getSafe(businessData, 'about.text')} aiPath='about.text' aiPath='about.text'
+                  value={getSafe(businessData, 'about.text')}
                   onChange={(e) =>
                     handleDataChange('about.text', e.target.value)
                   }
@@ -1376,39 +1332,39 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Image"
-                  value={getSafe(businessData, 'about.image')} aiPath='about.image' aiPath='about.image'
+                  value={getSafe(businessData, 'about.image')}
                   onChange={(e) =>
                     handleDataChange('about.image', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Feature 1 Title"
-                  value={getSafe(businessData, 'about.features.0.title')} aiPath='about.features.0.title' aiPath='about.features.0.title'
+                  value={getSafe(businessData, 'about.features.0.title')}
                   onChange={(e) =>
                     handleDataChange('about.features.0.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Feature 1 Text"
-                  value={getSafe(businessData, 'about.features.0.text')} aiPath='about.features.0.text' aiPath='about.features.0.text'
+                  value={getSafe(businessData, 'about.features.0.text')}
                   onChange={(e) =>
                     handleDataChange('about.features.0.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Feature 2 Title"
-                  value={getSafe(businessData, 'about.features.1.title')} aiPath='about.features.1.title' aiPath='about.features.1.title'
+                  value={getSafe(businessData, 'about.features.1.title')}
                   onChange={(e) =>
                     handleDataChange('about.features.1.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('about')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Feature 2 Text"
-                  value={getSafe(businessData, 'about.features.1.text')} aiPath='about.features.1.text' aiPath='about.features.1.text'
+                  value={getSafe(businessData, 'about.features.1.text')}
                   onChange={(e) =>
                     handleDataChange('about.features.1.text', e.target.value)
                   }
@@ -1423,25 +1379,25 @@ export default function EditorSidebar({
               !businessData?.about?.subheading &&
               !businessData?.about?.features && (
                 <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                  <AccordionItem onAI={onAI}
+                  <AccordionItem
                     title="About Section"
                     icon={Home}
-                    isOpen={activeAccordion === 'about'} aiSection='about' aiContext={businessData?.about} aiSection='about' aiContext={businessData?.about}
+                    isOpen={activeAccordion === 'about'}
                     onClick={() => toggleAccordion('about')}
                     isMobile={isMobile}
                     onCloseMobile={() => toggleAccordion(null)}
                   >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Title"
-                    value={getSafe(businessData, 'about.title')} aiPath='about.title' aiPath='about.title'
+                    value={getSafe(businessData, 'about.title')}
                     onChange={(e) =>
                       handleDataChange('about.title', e.target.value)
                     }
                     onFocus={() => handleSectionFocus('about')}
                   />
-                  <EditorTextArea onAI={onAI}
+                  <EditorTextArea
                     label="Text"
-                    value={getSafe(businessData, 'about.text')} aiPath='about.text' aiPath='about.text'
+                    value={getSafe(businessData, 'about.text')}
                     onChange={(e) =>
                       handleDataChange('about.text', e.target.value)
                     }
@@ -1450,7 +1406,7 @@ export default function EditorSidebar({
                   {businessData.about.image !== undefined && (
                       <EditorImageUpload
                         label="Image"
-                        value={getSafe(businessData, 'about.image')} aiPath='about.image' aiPath='about.image'
+                        value={getSafe(businessData, 'about.image')}
                         onChange={(e) =>
                           handleDataChange('about.image', e.target.value)
                         }
@@ -1458,9 +1414,9 @@ export default function EditorSidebar({
                       />
                   )}
                    {businessData.about.subtext !== undefined && (
-                      <EditorTextArea onAI={onAI}
+                      <EditorTextArea
                         label="Subtext"
-                        value={getSafe(businessData, 'about.subtext')} aiPath='about.subtext' aiPath='about.subtext'
+                        value={getSafe(businessData, 'about.subtext')}
                         onChange={(e) =>
                           handleDataChange('about.subtext', e.target.value)
                         }
@@ -1474,10 +1430,10 @@ export default function EditorSidebar({
             {/* --- AURORA FEATURES --- */}
             {businessData?.features && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Features"
                   icon={CheckCircle}
-                  isOpen={activeAccordion === 'features'} aiSection='features' aiContext={businessData?.features} aiSection='features' aiContext={businessData?.features}
+                  isOpen={activeAccordion === 'features'}
                   onClick={() => toggleAccordion('features')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
@@ -1489,19 +1445,19 @@ export default function EditorSidebar({
                     addButtonLabel="Add Feature"
                     renderItem={(item, index, onChange) => (
                       <>
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Title"
                           value={item.title}
                           onChange={(e) => onChange({ ...item, title: e.target.value })}
                           onFocus={() => handleSectionFocus('features')}
                         />
-                        <EditorTextArea onAI={onAI}
+                        <EditorTextArea
                           label="Text"
                           value={item.text}
                           onChange={(e) => onChange({ ...item, text: e.target.value })}
                           onFocus={() => handleSectionFocus('features')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Icon Name"
                           value={item.icon}
                           onChange={(e) => onChange({ ...item, icon: e.target.value })}
@@ -1517,23 +1473,23 @@ export default function EditorSidebar({
             {/* --- AURORA COLLECTIONS (Plural) --- */}
             {businessData?.collections && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Collections"
                   icon={LayoutDashboard}
-                  isOpen={activeAccordion === 'collection'} aiSection='collection' aiContext={businessData?.collection} aiSection='collection' aiContext={businessData?.collection}
+                  isOpen={activeAccordion === 'collection'}
                   onClick={() => toggleAccordion('collection')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Title"
-                    value={getSafe(businessData, 'collections.title')} aiPath='collections.title' aiPath='collections.title'
+                    value={getSafe(businessData, 'collections.title')}
                     onChange={(e) => handleDataChange('collections.title', e.target.value)}
                     onFocus={() => handleSectionFocus('collection')}
                   />
-                  <EditorTextArea onAI={onAI}
+                  <EditorTextArea
                     label="Subtitle"
-                    value={getSafe(businessData, 'collections.subtitle')} aiPath='collections.subtitle' aiPath='collections.subtitle'
+                    value={getSafe(businessData, 'collections.subtitle')}
                     onChange={(e) => handleDataChange('collections.subtitle', e.target.value)}
                     onFocus={() => handleSectionFocus('collection')}
                   />
@@ -1558,17 +1514,17 @@ export default function EditorSidebar({
             {/* --- AURORA TESTIMONIALS --- */}
             {businessData?.testimonials?.items && businessData.testimonials.items[0]?.location && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Testimonials"
                   icon={MessageSquare}
-                  isOpen={activeAccordion === 'testimonials'} aiSection='testimonials' aiContext={businessData?.testimonials} aiSection='testimonials' aiContext={businessData?.testimonials}
+                  isOpen={activeAccordion === 'testimonials'}
                   onClick={() => toggleAccordion('testimonials')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'testimonials.title')} aiPath='testimonials.title' aiPath='testimonials.title'
+                      value={getSafe(businessData, 'testimonials.title')}
                       onChange={(e) => handleDataChange('testimonials.title', e.target.value)}
                       onFocus={() => handleSectionFocus('testimonials')}
                   />
@@ -1579,19 +1535,19 @@ export default function EditorSidebar({
                     addButtonLabel="Add Testimonial"
                     renderItem={(item, index, onChange) => (
                       <>
-                        <EditorTextArea onAI={onAI}
+                        <EditorTextArea
                           label="Quote"
                           value={item.quote}
                           onChange={(e) => onChange({ ...item, quote: e.target.value })}
                           onFocus={() => handleSectionFocus('testimonials')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Author"
                           value={item.author}
                           onChange={(e) => onChange({ ...item, author: e.target.value })}
                           onFocus={() => handleSectionFocus('testimonials')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Location"
                           value={item.location}
                           onChange={(e) => onChange({ ...item, location: e.target.value })}
@@ -1607,24 +1563,24 @@ export default function EditorSidebar({
             {/* --- AURORA FAQ --- */}
             {businessData?.faq?.questions && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="FAQ"
                   icon={MessageCircle}
-                  isOpen={activeAccordion === 'faq'} aiSection='faq' aiContext={businessData?.faq} aiSection='faq' aiContext={businessData?.faq}
+                  isOpen={activeAccordion === 'faq'}
                   onClick={() => toggleAccordion('faq')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Title"
-                      value={getSafe(businessData, 'faq.title')} aiPath='faq.title' aiPath='faq.title'
+                      value={getSafe(businessData, 'faq.title')}
                       onChange={(e) => handleDataChange('faq.title', e.target.value)}
                       onFocus={() => handleSectionFocus('faq')}
                   />
                   {businessData.faq.subtitle !== undefined && (
-                      <EditorTextArea onAI={onAI}
+                      <EditorTextArea
                           label="Subtitle"
-                          value={getSafe(businessData, 'faq.subtitle')} aiPath='faq.subtitle' aiPath='faq.subtitle'
+                          value={getSafe(businessData, 'faq.subtitle')}
                           onChange={(e) => handleDataChange('faq.subtitle', e.target.value)}
                           onFocus={() => handleSectionFocus('faq')}
                       />
@@ -1636,13 +1592,13 @@ export default function EditorSidebar({
                     addButtonLabel="Add Question"
                     renderItem={(item, index, onChange) => (
                       <>
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                           label="Question"
                           value={item.q}
                           onChange={(e) => onChange({ ...item, q: e.target.value })}
                           onFocus={() => handleSectionFocus('faq')}
                         />
-                        <EditorTextArea onAI={onAI}
+                        <EditorTextArea
                           label="Answer"
                           value={item.a}
                           onChange={(e) => onChange({ ...item, a: e.target.value })}
@@ -1658,35 +1614,35 @@ export default function EditorSidebar({
             {/* --- AURORA NEWSLETTER CTA --- */}
             {businessData?.newsletterCta && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Newsletter"
                   icon={Megaphone}
-                  isOpen={activeAccordion === 'cta'} aiSection='cta' aiContext={businessData?.cta} aiSection='cta' aiContext={businessData?.cta}
+                  isOpen={activeAccordion === 'cta'}
                   onClick={() => toggleAccordion('cta')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Title"
-                      value={getSafe(businessData, 'newsletterCta.title')} aiPath='newsletterCta.title' aiPath='newsletterCta.title'
+                      value={getSafe(businessData, 'newsletterCta.title')}
                       onChange={(e) => handleDataChange('newsletterCta.title', e.target.value)}
                       onFocus={() => handleSectionFocus('cta')}
                   />
-                  <EditorTextArea onAI={onAI}
+                  <EditorTextArea
                       label="Text"
-                      value={getSafe(businessData, 'newsletterCta.text')} aiPath='newsletterCta.text' aiPath='newsletterCta.text'
+                      value={getSafe(businessData, 'newsletterCta.text')}
                       onChange={(e) => handleDataChange('newsletterCta.text', e.target.value)}
                       onFocus={() => handleSectionFocus('cta')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Placeholder"
-                      value={getSafe(businessData, 'newsletterCta.placeholder')} aiPath='newsletterCta.placeholder' aiPath='newsletterCta.placeholder'
+                      value={getSafe(businessData, 'newsletterCta.placeholder')}
                       onChange={(e) => handleDataChange('newsletterCta.placeholder', e.target.value)}
                       onFocus={() => handleSectionFocus('cta')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Button Text"
-                      value={getSafe(businessData, 'newsletterCta.buttonText')} aiPath='newsletterCta.buttonText' aiPath='newsletterCta.buttonText'
+                      value={getSafe(businessData, 'newsletterCta.buttonText')}
                       onChange={(e) => handleDataChange('newsletterCta.buttonText', e.target.value)}
                       onFocus={() => handleSectionFocus('cta')}
                   />
@@ -1697,23 +1653,23 @@ export default function EditorSidebar({
             {/* --- AURORA INSTAGRAM --- */}
             {businessData?.instagram && (
                <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Instagram Feed"
                   icon={ImageIcon}
-                  isOpen={activeAccordion === 'instagram'} aiSection='instagram' aiContext={businessData?.instagram} aiSection='instagram' aiContext={businessData?.instagram}
+                  isOpen={activeAccordion === 'instagram'}
                   onClick={() => toggleAccordion('instagram')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Title"
-                      value={getSafe(businessData, 'instagram.title')} aiPath='instagram.title' aiPath='instagram.title'
+                      value={getSafe(businessData, 'instagram.title')}
                       onChange={(e) => handleDataChange('instagram.title', e.target.value)}
                       onFocus={() => handleSectionFocus('instagram')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="Handle"
-                      value={getSafe(businessData, 'instagram.handle')} aiPath='instagram.handle' aiPath='instagram.handle'
+                      value={getSafe(businessData, 'instagram.handle')}
                       onChange={(e) => handleDataChange('instagram.handle', e.target.value)}
                       onFocus={() => handleSectionFocus('instagram')}
                   />
@@ -1734,17 +1690,17 @@ export default function EditorSidebar({
             {/* --- BLISSLY EVENTS --- */}
             {businessData?.events?.items && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Events Section"
                   icon={Calendar}
-                  isOpen={activeAccordion === 'events'} aiSection='events' aiContext={businessData?.events} aiSection='events' aiContext={businessData?.events}
+                  isOpen={activeAccordion === 'events'}
                   onClick={() => toggleAccordion('events')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Title"
-                  value={getSafe(businessData, 'events.title')} aiPath='events.title' aiPath='events.title'
+                  value={getSafe(businessData, 'events.title')}
                   onChange={(e) =>
                     handleDataChange('events.title', e.target.value)
                   }
@@ -1752,23 +1708,23 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Event 1 Image"
-                  value={getSafe(businessData, 'events.items.0.image')} aiPath='events.items.0.image' aiPath='events.items.0.image'
+                  value={getSafe(businessData, 'events.items.0.image')}
                   onChange={(e) =>
                     handleDataChange('events.items.0.image', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('events')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Event 1 Title"
-                  value={getSafe(businessData, 'events.items.0.title')} aiPath='events.items.0.title' aiPath='events.items.0.title'
+                  value={getSafe(businessData, 'events.items.0.title')}
                   onChange={(e) =>
                     handleDataChange('events.items.0.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('events')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Event 1 Text"
-                  value={getSafe(businessData, 'events.items.0.text')} aiPath='events.items.0.text' aiPath='events.items.0.text'
+                  value={getSafe(businessData, 'events.items.0.text')}
                   onChange={(e) =>
                     handleDataChange('events.items.0.text', e.target.value)
                   }
@@ -1781,35 +1737,35 @@ export default function EditorSidebar({
             {/* --- BLISSLY MENU SECTION --- */}
             {businessData?.menu && businessData.menu.badge && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Homepage Menu"
                   icon={Menu}
-                  isOpen={activeAccordion === 'menu'} aiSection='menu' aiContext={businessData?.menu} aiSection='menu' aiContext={businessData?.menu}
+                  isOpen={activeAccordion === 'menu'}
                   onClick={() => toggleAccordion('menu')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Badge Text"
-                  value={getSafe(businessData, 'menu.badge')} aiPath='menu.badge' aiPath='menu.badge'
+                  value={getSafe(businessData, 'menu.badge')}
                   onChange={(e) => handleDataChange('menu.badge', e.target.value)}
                   onFocus={() => handleSectionFocus('menu')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Title"
-                  value={getSafe(businessData, 'menu.title')} aiPath='menu.title' aiPath='menu.title'
+                  value={getSafe(businessData, 'menu.title')}
                   onChange={(e) => handleDataChange('menu.title', e.target.value)}
                   onFocus={() => handleSectionFocus('menu')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Section Description"
-                  value={getSafe(businessData, 'menu.description')} aiPath='menu.description' aiPath='menu.description'
+                  value={getSafe(businessData, 'menu.description')}
                   onChange={(e) => handleDataChange('menu.description', e.target.value)}
                   onFocus={() => handleSectionFocus('menu')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Button Text (CTA)"
-                  value={getSafe(businessData, 'menu.cta')} aiPath='menu.cta' aiPath='menu.cta'
+                  value={getSafe(businessData, 'menu.cta')}
                   onChange={(e) => handleDataChange('menu.cta', e.target.value)}
                   onFocus={() => handleSectionFocus('menu')}
                 />
@@ -1824,19 +1780,19 @@ export default function EditorSidebar({
                 {/* Iterate over the first 4 menu items for editing */}
                 {[0, 1, 2, 3].map((index) => (
                   <div key={index} className="p-3 border rounded-md mb-2 bg-white">
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label={`Item ${index + 1} Name`}
                       value={getSafe(businessData, `menu.items.${index}.name`)}
                       onChange={(e) => handleDataChange(`menu.items.${index}.name`, e.target.value)}
                       onFocus={() => handleSectionFocus('menu')}
                     />
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label={`Item ${index + 1} Price`}
                       value={getSafe(businessData, `menu.items.${index}.price`)}
                       onChange={(e) => handleDataChange(`menu.items.${index}.price`, e.target.value)}
                       onFocus={() => handleSectionFocus('menu')}
                     />
-                    <EditorTextArea onAI={onAI}
+                    <EditorTextArea
                       label={`Item ${index + 1} Description`}
                       value={getSafe(businessData, `menu.items.${index}.description`)}
                       onChange={(e) => handleDataChange(`menu.items.${index}.description`, e.target.value)}
@@ -1853,33 +1809,33 @@ export default function EditorSidebar({
             {/* --- FLARA FEATURE 2 --- */}
             {businessData?.feature2 && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Feature Section 2"
                   icon={Columns}
-                  isOpen={activeAccordion === 'feature2'} aiSection='feature2' aiContext={businessData?.feature2} aiSection='feature2' aiContext={businessData?.feature2}
+                  isOpen={activeAccordion === 'feature2'}
                   onClick={() => toggleAccordion('feature2')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Title"
-                  value={getSafe(businessData, 'feature2.title')} aiPath='feature2.title' aiPath='feature2.title'
+                  value={getSafe(businessData, 'feature2.title')}
                   onChange={(e) =>
                     handleDataChange('feature2.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('feature2')}
                 />
-                 <EditorTextArea onAI={onAI}
+                 <EditorTextArea
                   label="Text"
-                  value={getSafe(businessData, 'feature2.text')} aiPath='feature2.text' aiPath='feature2.text'
+                  value={getSafe(businessData, 'feature2.text')}
                   onChange={(e) =>
                     handleDataChange('feature2.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('feature2')}
                 />
-                 <EditorTextArea onAI={onAI}
+                 <EditorTextArea
                   label="Sub-text"
-                  value={getSafe(businessData, 'feature2.subtext')} aiPath='feature2.subtext' aiPath='feature2.subtext'
+                  value={getSafe(businessData, 'feature2.subtext')}
                   onChange={(e) =>
                     handleDataChange('feature2.subtext', e.target.value)
                   }
@@ -1887,7 +1843,7 @@ export default function EditorSidebar({
                 />
                  <EditorImageUpload
                   label="Image 1"
-                  value={getSafe(businessData, 'feature2.image1')} aiPath='feature2.image1' aiPath='feature2.image1'
+                  value={getSafe(businessData, 'feature2.image1')}
                   onChange={(e) =>
                     handleDataChange('feature2.image1', e.target.value)
                   }
@@ -1895,7 +1851,7 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Image 2"
-                  value={getSafe(businessData, 'feature2.image2')} aiPath='feature2.image2' aiPath='feature2.image2'
+                  value={getSafe(businessData, 'feature2.image2')}
                   onChange={(e) =>
                     handleDataChange('feature2.image2', e.target.value)
                   }
@@ -1908,33 +1864,33 @@ export default function EditorSidebar({
             {/* --- AVENIX CTA SECTION --- */}
             {businessData?.ctaSection && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="CTA Section"
                   icon={Megaphone}
-                  isOpen={activeAccordion === 'cta'} aiSection='cta' aiContext={businessData?.cta} aiSection='cta' aiContext={businessData?.cta}
+                  isOpen={activeAccordion === 'cta'}
                   onClick={() => toggleAccordion('cta')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Title"
-                  value={getSafe(businessData, 'ctaSection.title')} aiPath='ctaSection.title' aiPath='ctaSection.title'
+                  value={getSafe(businessData, 'ctaSection.title')}
                   onChange={(e) =>
                     handleDataChange('ctaSection.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('cta')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Text"
-                  value={getSafe(businessData, 'ctaSection.text')} aiPath='ctaSection.text' aiPath='ctaSection.text'
+                  value={getSafe(businessData, 'ctaSection.text')}
                   onChange={(e) =>
                     handleDataChange('ctaSection.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('cta')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Button Text"
-                  value={getSafe(businessData, 'ctaSection.cta')} aiPath='ctaSection.cta' aiPath='ctaSection.cta'
+                  value={getSafe(businessData, 'ctaSection.cta')}
                   onChange={(e) =>
                     handleDataChange('ctaSection.cta', e.target.value)
                   }
@@ -1942,7 +1898,7 @@ export default function EditorSidebar({
                 />
                 <EditorImageUpload
                   label="Image"
-                  value={getSafe(businessData, 'ctaSection.image')} aiPath='ctaSection.image' aiPath='ctaSection.image'
+                  value={getSafe(businessData, 'ctaSection.image')}
                   onChange={(e) =>
                     handleDataChange('ctaSection.image', e.target.value)
                   }
@@ -1955,33 +1911,33 @@ export default function EditorSidebar({
             {/* --- BLISSLY CTA SECTION --- */}
             {businessData?.cta && !businessData?.ctaSection && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="CTA Section"
                   icon={Megaphone}
-                  isOpen={activeAccordion === 'cta'} aiSection='cta' aiContext={businessData?.cta} aiSection='cta' aiContext={businessData?.cta}
+                  isOpen={activeAccordion === 'cta'}
                   onClick={() => toggleAccordion('cta')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Title"
-                  value={getSafe(businessData, 'cta.title')} aiPath='cta.title' aiPath='cta.title'
+                  value={getSafe(businessData, 'cta.title')}
                   onChange={(e) =>
                     handleDataChange('cta.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('cta')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Text"
-                  value={getSafe(businessData, 'cta.text')} aiPath='cta.text' aiPath='cta.text'
+                  value={getSafe(businessData, 'cta.text')}
                   onChange={(e) =>
                     handleDataChange('cta.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('cta')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Button Text"
-                  value={getSafe(businessData, 'cta.cta')} aiPath='cta.cta' aiPath='cta.cta'
+                  value={getSafe(businessData, 'cta.cta')}
                   onChange={(e) => handleDataChange('cta.cta', e.target.value)}
                   onFocus={() => handleSectionFocus('cta')}
                 />
@@ -1992,57 +1948,57 @@ export default function EditorSidebar({
             {/* --- AVENIX STATS SECTION --- */}
             {businessData?.stats && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Stats Section"
                   icon={TrendingUp}
-                  isOpen={activeAccordion === 'stats'} aiSection='stats' aiContext={businessData?.stats} aiSection='stats' aiContext={businessData?.stats}
+                  isOpen={activeAccordion === 'stats'}
                   onClick={() => toggleAccordion('stats')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Title"
-                  value={getSafe(businessData, 'stats.title')} aiPath='stats.title' aiPath='stats.title'
+                  value={getSafe(businessData, 'stats.title')}
                   onChange={(e) =>
                     handleDataChange('stats.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('stats')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Text"
-                  value={getSafe(businessData, 'stats.text')} aiPath='stats.text' aiPath='stats.text'
+                  value={getSafe(businessData, 'stats.text')}
                   onChange={(e) =>
                     handleDataChange('stats.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('stats')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Stat 1 Number"
-                  value={getSafe(businessData, 'stats.items.0.number')} aiPath='stats.items.0.number' aiPath='stats.items.0.number'
+                  value={getSafe(businessData, 'stats.items.0.number')}
                   onChange={(e) =>
                     handleDataChange('stats.items.0.number', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('stats')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Stat 1 Label"
-                  value={getSafe(businessData, 'stats.items.0.label')} aiPath='stats.items.0.label' aiPath='stats.items.0.label'
+                  value={getSafe(businessData, 'stats.items.0.label')}
                   onChange={(e) =>
                     handleDataChange('stats.items.0.label', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('stats')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Stat 2 Number"
-                  value={getSafe(businessData, 'stats.items.1.number')} aiPath='stats.items.1.number' aiPath='stats.items.1.number'
+                  value={getSafe(businessData, 'stats.items.1.number')}
                   onChange={(e) =>
                     handleDataChange('stats.items.1.number', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('stats')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Stat 2 Label"
-                  value={getSafe(businessData, 'stats.items.1.label')} aiPath='stats.items.1.label' aiPath='stats.items.1.label'
+                  value={getSafe(businessData, 'stats.items.1.label')}
                   onChange={(e) =>
                     handleDataChange('stats.items.1.label', e.target.value)
                   }
@@ -2055,17 +2011,17 @@ export default function EditorSidebar({
             {/* --- BLISSLY TESTIMONIALS --- */}
             {businessData?.testimonials?.items && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Testimonials Section"
                   icon={MessageSquare}
-                  isOpen={activeAccordion === 'testimonials'} aiSection='testimonials' aiContext={businessData?.testimonials} aiSection='testimonials' aiContext={businessData?.testimonials}
+                  isOpen={activeAccordion === 'testimonials'}
                   onClick={() => toggleAccordion('testimonials')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Testimonial 1 Quote"
-                  value={getSafe(businessData, 'testimonials.items.0.quote')} aiPath='testimonials.items.0.quote' aiPath='testimonials.items.0.quote'
+                  value={getSafe(businessData, 'testimonials.items.0.quote')}
                   onChange={(e) =>
                     handleDataChange(
                       'testimonials.items.0.quote',
@@ -2074,9 +2030,9 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('testimonials')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Testimonial 1 Name"
-                  value={getSafe(businessData, 'testimonials.items.0.name')} aiPath='testimonials.items.0.name' aiPath='testimonials.items.0.name'
+                  value={getSafe(businessData, 'testimonials.items.0.name')}
                   onChange={(e) =>
                     handleDataChange(
                       'testimonials.items.0.name',
@@ -2085,9 +2041,9 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('testimonials')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Testimonial 1 Title"
-                  value={getSafe(businessData, 'testimonials.items.0.title')} aiPath='testimonials.items.0.title' aiPath='testimonials.items.0.title'
+                  value={getSafe(businessData, 'testimonials.items.0.title')}
                   onChange={(e) =>
                     handleDataChange(
                       'testimonials.items.0.title',
@@ -2103,33 +2059,33 @@ export default function EditorSidebar({
             {/* --- FLAVORNEST REVIEWS --- */}
             {businessData?.reviews?.items && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Reviews Section"
                   icon={MessageSquare}
-                  isOpen={activeAccordion === 'reviews'} aiSection='reviews' aiContext={businessData?.reviews} aiSection='reviews' aiContext={businessData?.reviews}
+                  isOpen={activeAccordion === 'reviews'}
                   onClick={() => toggleAccordion('reviews')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Title"
-                  value={getSafe(businessData, 'reviews.title')} aiPath='reviews.title' aiPath='reviews.title'
+                  value={getSafe(businessData, 'reviews.title')}
                   onChange={(e) =>
                     handleDataChange('reviews.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('reviews')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Review 1 Text"
-                  value={getSafe(businessData, 'reviews.items.0.text')} aiPath='reviews.items.0.text' aiPath='reviews.items.0.text'
+                  value={getSafe(businessData, 'reviews.items.0.text')}
                   onChange={(e) =>
                     handleDataChange('reviews.items.0.text', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('reviews')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Review 1 Author"
-                  value={getSafe(businessData, 'reviews.items.0.author')} aiPath='reviews.items.0.author' aiPath='reviews.items.0.author'
+                  value={getSafe(businessData, 'reviews.items.0.author')}
                   onChange={(e) =>
                     handleDataChange('reviews.items.0.author', e.target.value)
                   }
@@ -2140,10 +2096,10 @@ export default function EditorSidebar({
             )}
 
             <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-              <AccordionItem onAI={onAI}
+              <AccordionItem
                 title="Products & Categories"
                 icon={ShoppingBag}
-                isOpen={activeAccordion === 'products'} aiSection='products' aiContext={businessData?.products} aiSection='products' aiContext={businessData?.products}
+                isOpen={activeAccordion === 'products'}
                 onClick={() => toggleAccordion('products')}
                 isMobile={isMobile}
                 onCloseMobile={() => toggleAccordion(null)}
@@ -2152,7 +2108,7 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2">Categories</h4>
                 {allCategories.map((category, index) => (
                     <div key={category.id} className="flex items-end gap-2">
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                             label={`Category ${index + 1}`}
                             value={category.name}
                             onChange={(e) => handleDataChange(`categories.${index}.name`, e.target.value)}
@@ -2193,13 +2149,13 @@ export default function EditorSidebar({
                         >
                             <Trash size={16} />
                         </button>
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                             label={`Product ${index + 1} Name`}
                             value={product.name}
                             onChange={(e) => handleDataChange(`allProducts.${index}.name`, e.target.value)}
                             onFocus={() => handleSectionFocus('products')}
                         />
-                        <EditorInput onAI={onAI}
+                        <EditorInput
                             label={`Price`}
                             value={product.price}
                             onChange={(e) => handleDataChange(`allProducts.${index}.price`, Number(e.target.value) || 0)}
@@ -2233,10 +2189,10 @@ export default function EditorSidebar({
             {/* --- GENERIC HOMEPAGE COLLECTION MANAGER --- */}
             {(homepageProductIDs.length > 0 || businessData?.menu?.itemIDs) && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Home Page Collections"
                   icon={LayoutDashboard}
-                  isOpen={activeAccordion === 'collection'} aiSection='collection' aiContext={businessData?.collection} aiSection='collection' aiContext={businessData?.collection}
+                  isOpen={activeAccordion === 'collection'}
                   onClick={() => toggleAccordion('collection')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
@@ -2297,15 +2253,15 @@ export default function EditorSidebar({
                     <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                       "New Arrivals" Section
                     </h4>
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Section Heading"
-                      value={getSafe(businessData, 'newArrivals.heading')} aiPath='newArrivals.heading' aiPath='newArrivals.heading'
+                      value={getSafe(businessData, 'newArrivals.heading')}
                       onChange={(e) => handleDataChange('newArrivals.heading', e.target.value)}
                       onFocus={() => handleSectionFocus('products')}
                     />
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'newArrivals.title')} aiPath='newArrivals.title' aiPath='newArrivals.title'
+                      value={getSafe(businessData, 'newArrivals.title')}
                       onChange={(e) => handleDataChange('newArrivals.title', e.target.value)}
                       onFocus={() => handleSectionFocus('products')}
                     />
@@ -2332,21 +2288,21 @@ export default function EditorSidebar({
                     <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                       "Featured Products" Section
                     </h4>
-                     <EditorInput onAI={onAI}
+                     <EditorInput
                       label="Section Heading"
-                      value={getSafe(businessData, 'featured.sectionHeading')} aiPath='featured.sectionHeading' aiPath='featured.sectionHeading'
+                      value={getSafe(businessData, 'featured.sectionHeading')}
                       onChange={(e) => handleDataChange('featured.sectionHeading', e.target.value)}
                       onFocus={() => handleSectionFocus('collection')}
                     />
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'featured.title')} aiPath='featured.title' aiPath='featured.title'
+                      value={getSafe(businessData, 'featured.title')}
                       onChange={(e) => handleDataChange('featured.title', e.target.value)}
                       onFocus={() => handleSectionFocus('collection')}
                     />
                     <EditorImageUpload
                       label="Large Image"
-                      value={getSafe(businessData, 'featured.largeImage')} aiPath='featured.largeImage' aiPath='featured.largeImage'
+                      value={getSafe(businessData, 'featured.largeImage')}
                       onChange={(e) => handleDataChange('featured.largeImage', e.target.value)}
                       onFocus={() => handleSectionFocus('collection')}
                     />
@@ -2373,9 +2329,9 @@ export default function EditorSidebar({
                     <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                       "Our Specialty" Section
                     </h4>
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'specialty.title')} aiPath='specialty.title' aiPath='specialty.title'
+                      value={getSafe(businessData, 'specialty.title')}
                       onChange={(e) =>
                         handleDataChange('specialty.title', e.target.value)
                       }
@@ -2409,9 +2365,9 @@ export default function EditorSidebar({
                     <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                       "Signature Menu" Section
                     </h4>
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                       label="Section Title"
-                      value={getSafe(businessData, 'menu.title')} aiPath='menu.title' aiPath='menu.title'
+                      value={getSafe(businessData, 'menu.title')}
                       onChange={(e) =>
                         handleDataChange('menu.title', e.target.value)
                       }
@@ -2445,25 +2401,25 @@ export default function EditorSidebar({
             {/* --- THIS IS THE FIX: AVENIX BLOG --- */}
             {businessData?.blog?.heading && businessData?.blog?.items?.[0]?.category && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Blog Section (Avenix)"
                   icon={Pencil}
-                  isOpen={activeAccordion === 'blog'} aiSection='blog' aiContext={businessData?.blog} aiSection='blog' aiContext={businessData?.blog}
+                  isOpen={activeAccordion === 'blog'}
                   onClick={() => toggleAccordion('blog')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Heading"
-                  value={getSafe(businessData, 'blog.heading')} aiPath='blog.heading' aiPath='blog.heading'
+                  value={getSafe(businessData, 'blog.heading')}
                   onChange={(e) =>
                     handleDataChange('blog.heading', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('blog')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Title"
-                  value={getSafe(businessData, 'blog.title')} aiPath='blog.title' aiPath='blog.title'
+                  value={getSafe(businessData, 'blog.title')}
                   onChange={(e) =>
                     handleDataChange('blog.title', e.target.value)
                   }
@@ -2475,27 +2431,27 @@ export default function EditorSidebar({
                   Blog Post 1
                 </h4>
                 <div className="p-3 border rounded-md mb-2 bg-white">
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 1 Title"
-                    value={getSafe(businessData, 'blog.items.0.title')} aiPath='blog.items.0.title' aiPath='blog.items.0.title'
+                    value={getSafe(businessData, 'blog.items.0.title')}
                     onChange={(e) => handleDataChange('blog.items.0.title', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 1 Date"
-                    value={getSafe(businessData, 'blog.items.0.date')} aiPath='blog.items.0.date' aiPath='blog.items.0.date'
+                    value={getSafe(businessData, 'blog.items.0.date')}
                     onChange={(e) => handleDataChange('blog.items.0.date', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 1 Category"
-                    value={getSafe(businessData, 'blog.items.0.category')} aiPath='blog.items.0.category' aiPath='blog.items.0.category'
+                    value={getSafe(businessData, 'blog.items.0.category')}
                     onChange={(e) => handleDataChange('blog.items.0.category', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
                   <EditorImageUpload
                     label="Post 1 Image"
-                    value={getSafe(businessData, 'blog.items.0.image')} aiPath='blog.items.0.image' aiPath='blog.items.0.image'
+                    value={getSafe(businessData, 'blog.items.0.image')}
                     onChange={(e) => handleDataChange('blog.items.0.image', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
@@ -2506,27 +2462,27 @@ export default function EditorSidebar({
                   Blog Post 2
                 </h4>
                 <div className="p-3 border rounded-md mb-2 bg-white">
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 2 Title"
-                    value={getSafe(businessData, 'blog.items.1.title')} aiPath='blog.items.1.title' aiPath='blog.items.1.title'
+                    value={getSafe(businessData, 'blog.items.1.title')}
                     onChange={(e) => handleDataChange('blog.items.1.title', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 2 Date"
-                    value={getSafe(businessData, 'blog.items.1.date')} aiPath='blog.items.1.date' aiPath='blog.items.1.date'
+                    value={getSafe(businessData, 'blog.items.1.date')}
                     onChange={(e) => handleDataChange('blog.items.1.date', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                     label="Post 2 Category"
-                    value={getSafe(businessData, 'blog.items.1.category')} aiPath='blog.items.1.category' aiPath='blog.items.1.category'
+                    value={getSafe(businessData, 'blog.items.1.category')}
                     onChange={(e) => handleDataChange('blog.items.1.category', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
                   <EditorImageUpload
                     label="Post 2 Image"
-                    value={getSafe(businessData, 'blog.items.1.image')} aiPath='blog.items.1.image' aiPath='blog.items.1.image'
+                    value={getSafe(businessData, 'blog.items.1.image')}
                     onChange={(e) => handleDataChange('blog.items.1.image', e.target.value)}
                     onFocus={() => handleSectionFocus('blog')}
                   />
@@ -2538,17 +2494,17 @@ export default function EditorSidebar({
             {/* --- THIS IS THE FIX: FLARA BLOG --- */}
             {businessData?.blog?.title && businessData?.blog?.items?.[0]?.text && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Blog Section (Flara)"
                   icon={Pencil}
-                  isOpen={activeAccordion === 'blog'} aiSection='blog' aiContext={businessData?.blog} aiSection='blog' aiContext={businessData?.blog}
+                  isOpen={activeAccordion === 'blog'}
                   onClick={() => toggleAccordion('blog')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Section Title"
-                  value={getSafe(businessData, 'blog.title')} aiPath='blog.title' aiPath='blog.title'
+                  value={getSafe(businessData, 'blog.title')}
                   onChange={(e) =>
                     handleDataChange('blog.title', e.target.value)
                   }
@@ -2561,19 +2517,19 @@ export default function EditorSidebar({
                       Blog Post {index + 1}
                     </h4>
                     <div className="p-3 border rounded-md mb-2 bg-white">
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label={`Post ${index + 1} Date`}
                         value={getSafe(businessData, `blog.items.${index}.date`)}
                         onChange={(e) => handleDataChange(`blog.items.${index}.date`, e.target.value)}
                         onFocus={() => handleSectionFocus('blog')}
                       />
-                      <EditorInput onAI={onAI}
+                      <EditorInput
                         label={`Post ${index + 1} Title`}
                         value={getSafe(businessData, `blog.items.${index}.title`)}
                         onChange={(e) => handleDataChange(`blog.items.${index}.title`, e.target.value)}
                         onFocus={() => handleSectionFocus('blog')}
                       />
-                      <EditorTextArea onAI={onAI}
+                      <EditorTextArea
                         label={`Post ${index + 1} Text`}
                         value={getSafe(businessData, `blog.items.${index}.text`)}
                         onChange={(e) => handleDataChange(`blog.items.${index}.text`, e.target.value)}
@@ -2597,10 +2553,10 @@ export default function EditorSidebar({
             {/* --- FLARA FOOTER --- */}
             {businessData?.footer?.links?.about && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
@@ -2608,9 +2564,9 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2">
                   "About" Links
                 </h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Link 1 Title"
-                  value={getSafe(businessData, 'footer.links.about.0.name')} aiPath='footer.links.about.0.name' aiPath='footer.links.about.0.name'
+                  value={getSafe(businessData, 'footer.links.about.0.name')}
                   onChange={(e) =>
                     handleDataChange(
                       'footer.links.about.0.name',
@@ -2623,7 +2579,7 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                   "Categories" Links
                 </h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Link 1 Title"
                   value={getSafe(
                     businessData,
@@ -2641,9 +2597,9 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                   "Get Help" Links
                 </h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Link 1 Title"
-                  value={getSafe(businessData, 'footer.links.getHelp.0.name')} aiPath='footer.links.getHelp.0.name' aiPath='footer.links.getHelp.0.name'
+                  value={getSafe(businessData, 'footer.links.getHelp.0.name')}
                   onChange={(e) =>
                     handleDataChange(
                       'footer.links.getHelp.0.name',
@@ -2654,25 +2610,25 @@ export default function EditorSidebar({
                 />
                 
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Opening Hours</h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Mon-Fri"
-                  value={getSafe(businessData, 'footer.openingHours.monFri')} aiPath='footer.openingHours.monFri' aiPath='footer.openingHours.monFri'
+                  value={getSafe(businessData, 'footer.openingHours.monFri')}
                   onChange={(e) =>
                     handleDataChange('footer.openingHours.monFri', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Saturday"
-                  value={getSafe(businessData, 'footer.openingHours.sat')} aiPath='footer.openingHours.sat' aiPath='footer.openingHours.sat'
+                  value={getSafe(businessData, 'footer.openingHours.sat')}
                   onChange={(e) =>
                     handleDataChange('footer.openingHours.sat', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Sunday"
-                  value={getSafe(businessData, 'footer.openingHours.sun')} aiPath='footer.openingHours.sun' aiPath='footer.openingHours.sun'
+                  value={getSafe(businessData, 'footer.openingHours.sun')}
                   onChange={(e) =>
                     handleDataChange('footer.openingHours.sun', e.target.value)
                   }
@@ -2680,17 +2636,17 @@ export default function EditorSidebar({
                 />
 
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Contact Info</h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Phone"
-                  value={getSafe(businessData, 'footer.contact.phone')} aiPath='footer.contact.phone' aiPath='footer.contact.phone'
+                  value={getSafe(businessData, 'footer.contact.phone')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.phone', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Email"
-                  value={getSafe(businessData, 'footer.contact.email')} aiPath='footer.contact.email' aiPath='footer.contact.email'
+                  value={getSafe(businessData, 'footer.contact.email')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.email', e.target.value)
                   }
@@ -2700,7 +2656,7 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-4">Social Links</h4>
                 {/* Loop over first 3 socials or provide specific inputs */}
                 {(businessData.footer.socials || []).map((social, idx) => (
-                    <EditorInput onAI={onAI}
+                    <EditorInput
                         key={idx}
                         label={`${social.platform} URL`}
                         value={social.url}
@@ -2717,10 +2673,10 @@ export default function EditorSidebar({
             {/* --- AVENIX FOOTER --- */}
             {businessData?.footer?.description && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
@@ -2728,41 +2684,41 @@ export default function EditorSidebar({
                 <h4 className="text-base font-semibold text-gray-800 mb-2 mt-6">
                   Footer Content
                 </h4>
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Footer Description"
-                  value={getSafe(businessData, 'footer.description')} aiPath='footer.description' aiPath='footer.description'
+                  value={getSafe(businessData, 'footer.description')}
                   onChange={(e) =>
                     handleDataChange('footer.description', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Phone"
-                  value={getSafe(businessData, 'footer.contact.phone')} aiPath='footer.contact.phone' aiPath='footer.contact.phone'
+                  value={getSafe(businessData, 'footer.contact.phone')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.phone', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Email"
-                  value={getSafe(businessData, 'footer.contact.email')} aiPath='footer.contact.email' aiPath='footer.contact.email'
+                  value={getSafe(businessData, 'footer.contact.email')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.email', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Address"
-                  value={getSafe(businessData, 'footer.contact.address')} aiPath='footer.contact.address' aiPath='footer.contact.address'
+                  value={getSafe(businessData, 'footer.contact.address')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.address', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Subscribe Title"
-                  value={getSafe(businessData, 'footer.subscribe.title')} aiPath='footer.subscribe.title' aiPath='footer.subscribe.title'
+                  value={getSafe(businessData, 'footer.subscribe.title')}
                   onChange={(e) =>
                     handleDataChange('footer.subscribe.title', e.target.value)
                   }
@@ -2775,41 +2731,41 @@ export default function EditorSidebar({
             {/* --- BLISSLY FOOTER --- */}
             {businessData?.footer?.promoTitle && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Promo Title"
-                  value={getSafe(businessData, 'footer.promoTitle')} aiPath='footer.promoTitle' aiPath='footer.promoTitle'
+                  value={getSafe(businessData, 'footer.promoTitle')}
                   onChange={(e) =>
                     handleDataChange('footer.promoTitle', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Phone"
-                  value={getSafe(businessData, 'footer.contact.phone')} aiPath='footer.contact.phone' aiPath='footer.contact.phone'
+                  value={getSafe(businessData, 'footer.contact.phone')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.phone', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Email"
-                  value={getSafe(businessData, 'footer.contact.email')} aiPath='footer.contact.email' aiPath='footer.contact.email'
+                  value={getSafe(businessData, 'footer.contact.email')}
                   onChange={(e) =>
                     handleDataChange('footer.contact.email', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Page Link 1"
-                  value={getSafe(businessData, 'footer.links.pages.0.name')} aiPath='footer.links.pages.0.name' aiPath='footer.links.pages.0.name'
+                  value={getSafe(businessData, 'footer.links.pages.0.name')}
                   onChange={(e) =>
                     handleDataChange(
                       'footer.links.pages.0.name',
@@ -2818,9 +2774,9 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Utility Link 1"
-                  value={getSafe(businessData, 'footer.links.utility.0.name')} aiPath='footer.links.utility.0.name' aiPath='footer.links.utility.0.name'
+                  value={getSafe(businessData, 'footer.links.utility.0.name')}
                   onChange={(e) =>
                     handleDataChange(
                       'footer.links.utility.0.name',
@@ -2829,17 +2785,17 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Location Title"
-                  value={getSafe(businessData, 'footer.location.title')} aiPath='footer.location.title' aiPath='footer.location.title'
+                  value={getSafe(businessData, 'footer.location.title')}
                   onChange={(e) =>
                     handleDataChange('footer.location.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Location Address"
-                  value={getSafe(businessData, 'footer.location.address')} aiPath='footer.location.address' aiPath='footer.location.address'
+                  value={getSafe(businessData, 'footer.location.address')}
                   onChange={(e) =>
                     handleDataChange(
                       'footer.location.address',
@@ -2848,9 +2804,9 @@ export default function EditorSidebar({
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Opening Hours"
-                  value={getSafe(businessData, 'footer.location.hours')} aiPath='footer.location.hours' aiPath='footer.location.hours'
+                  value={getSafe(businessData, 'footer.location.hours')}
                   onChange={(e) =>
                     handleDataChange('footer.location.hours', e.target.value)
                   }
@@ -2863,25 +2819,25 @@ export default function EditorSidebar({
             {/* --- FLAVORNEST FOOTER --- */}
             {businessData?.footer?.madeBy && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Made By Text"
-                  value={getSafe(businessData, 'footer.madeBy')} aiPath='footer.madeBy' aiPath='footer.madeBy'
+                  value={getSafe(businessData, 'footer.madeBy')}
                   onChange={(e) =>
                     handleDataChange('footer.madeBy', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Social Text"
-                  value={getSafe(businessData, 'footer.socialText')} aiPath='footer.socialText' aiPath='footer.socialText'
+                  value={getSafe(businessData, 'footer.socialText')}
                   onChange={(e) =>
                     handleDataChange('footer.socialText', e.target.value)
                   }
@@ -2897,41 +2853,41 @@ export default function EditorSidebar({
             {/* --- AURORA FOOTER --- */}
             {businessData?.footer?.subscribe?.title && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorTextArea onAI={onAI}
+                <EditorTextArea
                   label="Description"
-                  value={getSafe(businessData, 'footer.description')} aiPath='footer.description' aiPath='footer.description'
+                  value={getSafe(businessData, 'footer.description')}
                   onChange={(e) =>
                     handleDataChange('footer.description', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Subscribe Title"
-                  value={getSafe(businessData, 'footer.subscribe.title')} aiPath='footer.subscribe.title' aiPath='footer.subscribe.title'
+                  value={getSafe(businessData, 'footer.subscribe.title')}
                   onChange={(e) =>
                     handleDataChange('footer.subscribe.title', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Subscribe Button Text"
-                  value={getSafe(businessData, 'footer.subscribe.cta')} aiPath='footer.subscribe.cta' aiPath='footer.subscribe.cta'
+                  value={getSafe(businessData, 'footer.subscribe.cta')}
                   onChange={(e) =>
                     handleDataChange('footer.subscribe.cta', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Copyright Text"
-                  value={getSafe(businessData, 'footer.copyright')} aiPath='footer.copyright' aiPath='footer.copyright'
+                  value={getSafe(businessData, 'footer.copyright')}
                   onChange={(e) =>
                     handleDataChange('footer.copyright', e.target.value)
                   }
@@ -2944,25 +2900,25 @@ export default function EditorSidebar({
             {/* --- FROSTIFY FOOTER --- */}
             {businessData?.footer?.contactTitle && (
               <div title={isLandingMode ? "Just a demo" : ""} className={isLandingMode ? "opacity-50 pointer-events-none" : ""}>
-                <AccordionItem onAI={onAI}
+                <AccordionItem
                   title="Footer"
                   icon={FileText}
-                  isOpen={activeAccordion === 'footer'} aiSection='footer' aiContext={businessData?.footer} aiSection='footer' aiContext={businessData?.footer}
+                  isOpen={activeAccordion === 'footer'}
                   onClick={() => toggleAccordion('footer')}
                   isMobile={isMobile}
                   onCloseMobile={() => toggleAccordion(null)}
                 >
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Contact Title"
-                  value={getSafe(businessData, 'footer.contactTitle')} aiPath='footer.contactTitle' aiPath='footer.contactTitle'
+                  value={getSafe(businessData, 'footer.contactTitle')}
                   onChange={(e) =>
                     handleDataChange('footer.contactTitle', e.target.value)
                   }
                   onFocus={() => handleSectionFocus('footer')}
                 />
-                <EditorInput onAI={onAI}
+                <EditorInput
                   label="Copyright Text"
-                  value={getSafe(businessData, 'footer.copyright')} aiPath='footer.copyright' aiPath='footer.copyright'
+                  value={getSafe(businessData, 'footer.copyright')}
                   onChange={(e) =>
                     handleDataChange('footer.copyright', e.target.value)
                   }
@@ -3000,7 +2956,7 @@ export default function EditorSidebar({
             <SectionTitle label="Fonts" />
             <EditorSelect
               label="Heading Font"
-              value={getSafe(businessData, 'theme.font.heading')} aiPath='theme.font.heading' aiPath='theme.font.heading'
+              value={getSafe(businessData, 'theme.font.heading')}
               onChange={(e) =>
                 handleDataChange('theme.font.heading', e.target.value)
               }
@@ -3009,7 +2965,7 @@ export default function EditorSidebar({
             />
             <EditorSelect
               label="Body Font"
-              value={getSafe(businessData, 'theme.font.body')} aiPath='theme.font.body' aiPath='theme.font.body'
+              value={getSafe(businessData, 'theme.font.body')}
               onChange={(e) =>
                 handleDataChange('theme.font.body', e.target.value)
               }
@@ -3052,19 +3008,19 @@ export default function EditorSidebar({
                       </label>
                   </div>
               </div>
-              <EditorInput onAI={onAI}
+              <EditorInput
                   label="Business Name"
-                  value={getSafe(businessData, 'name')} aiPath='name' aiPath='name'
+                  value={getSafe(businessData, 'name')}
                   onChange={(e) => handleSyncedNameChange(e.target.value)}
               />
-              <EditorInput onAI={onAI}
+              <EditorInput
                   label="Owner Name"
-                  value={getSafe(businessData, 'owner')} aiPath='owner' aiPath='owner'
+                  value={getSafe(businessData, 'owner')}
                   onChange={(e) => handleDataChange('owner', e.target.value)}
               />
-              <EditorInput onAI={onAI}
+              <EditorInput
                   label="Contact Phone / WhatsApp"
-                  value={getSafe(businessData, 'whatsappNumber')} aiPath='whatsappNumber' aiPath='whatsappNumber'
+                  value={getSafe(businessData, 'whatsappNumber')}
                   onChange={(e) => handleDataChange('whatsappNumber', e.target.value)}
               />
               
@@ -3074,7 +3030,7 @@ export default function EditorSidebar({
                       <Instagram size={18} className="text-pink-600" />
                       <input 
                           placeholder="Instagram URL"
-                          value={getSafe(businessData, 'footer.socials.0.url')} aiPath='footer.socials.0.url' aiPath='footer.socials.0.url'
+                          value={getSafe(businessData, 'footer.socials.0.url')}
                           onChange={(e) => {
                               // Ensure structure exists
                               if (!businessData.footer?.socials) handleDataChange('footer.socials', []);
@@ -3088,7 +3044,7 @@ export default function EditorSidebar({
                       <Facebook size={18} className="text-blue-600" />
                       <input 
                           placeholder="Facebook URL"
-                          value={getSafe(businessData, 'footer.socials.1.url')} aiPath='footer.socials.1.url' aiPath='footer.socials.1.url'
+                          value={getSafe(businessData, 'footer.socials.1.url')}
                           onChange={(e) => {
                               if (!businessData.footer?.socials) handleDataChange('footer.socials', []);
                               handleDataChange('footer.socials.1.platform', 'Facebook');
@@ -3121,9 +3077,9 @@ export default function EditorSidebar({
               </div>
 
               {getSafe(businessData, 'payment.mode') === 'UPI' && (
-                  <EditorInput onAI={onAI}
+                  <EditorInput
                       label="UPI ID"
-                      value={getSafe(businessData, 'payment.upiId')} aiPath='payment.upiId' aiPath='payment.upiId'
+                      value={getSafe(businessData, 'payment.upiId')}
                       onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
                       placeholder="username@upi"
                   />

@@ -148,19 +148,26 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
 
   // --- NEW: Handle Finish Button ---
   const handleFinish = async () => {
-      // If AI description is present, generate content first
-      if (step === 4 && aiDescription.trim()) {
-          setIsAiGenerating(true);
-          try {
-              const { success, data, error: aiError } = await generateAIContent(aiDescription);
-              if (!success) throw new Error(aiError);
+      // Validation for AI Step
+      if (step === 4) {
+          if (aiDescription.trim()) {
+              if (aiDescription.trim().length < 20) {
+                  setError("Our AI needs a minimum of 20 characters to write meaningful content.");
+                  return;
+              }
               
-              setBusinessData(data);
-          } catch (err) {
-              console.error("AI Generation failed:", err);
-              setError(err.message);
-              setIsAiGenerating(false);
-              return;
+              setIsAiGenerating(true);
+              try {
+                  const { success, data, error: aiError } = await generateAIContent(aiDescription);
+                  if (!success) throw new Error(aiError);
+
+                  setBusinessData(data);
+              } catch (err) {
+                  console.error("AI Generation failed:", err);
+                  setError(err.message);
+                  setIsAiGenerating(false);
+                  return;
+              }
           }
       }
 
@@ -509,18 +516,33 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
       <div className="space-y-4 animate-in slide-in-from-right duration-200 h-full flex flex-col">
           <div className="space-y-1.5 flex-grow">
               <label className="text-xl font-bold text-gray-600 uppercase">Describe your business </label>
-              <p  className="text-xs text-gray-500 mt-2"> AI will instantly rewrite your website content to match your brand voice.</p>
+              <p className="text-xs text-gray-500 mt-2"> AI will instantly rewrite your website content to match your brand voice.</p>
+
               <div className="relative h-full max-h-[250px]">
                 <textarea 
                     value={aiDescription}
-                    onChange={(e) => setAiDescription(e.target.value)}
-                    className="w-full h-full p-4 text-sm border border-gray-300 rounded-xl focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none transition-all custom-scrollbar bg-gray-50 focus:bg-white"
+                    onChange={(e) => {
+                        setAiDescription(e.target.value);
+                        setError('');
+                    }}
+                    className={`w-full h-full p-4 text-sm border rounded-xl focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none transition-all custom-scrollbar bg-gray-50 focus:bg-white
+                        ${aiDescription.trim().length > 0 && aiDescription.trim().length < 20 ? 'border-red-300 focus:ring-red-200 focus:border-red-500' : 'border-gray-300'}
+                    `}
                     placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee..."
                 />
-                <div className="absolute bottom-3 right-3 text-[10px] text-gray-400 font-medium">
-                    {aiDescription.length} chars
+                <div className="absolute bottom-3 right-3 text-[10px] font-medium flex gap-2">
+                    <span className={aiDescription.trim().length > 0 && aiDescription.trim().length < 20 ? 'text-red-500' : 'text-gray-400'}>
+                        {aiDescription.length} / 20+
+                    </span>
                 </div>
               </div>
+
+              {aiDescription.trim().length > 0 && aiDescription.trim().length < 20 && (
+                  <p className="text-xs text-red-500 mt-1 font-medium">
+                      Our AI needs a minimum of 20 characters to write meaningful content.
+                  </p>
+              )}
+
               <p className="text-xs text-gray-400 mt-2">
                   Leave empty to skip. If filled, our AI will instantly rewrite your website content to match your brand voice.
               </p>

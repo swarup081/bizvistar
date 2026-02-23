@@ -388,34 +388,22 @@ export async function generateAIContent(description) {
             You are a professional website copywriter.
             I have a website data JSON structure for a business described as: "${description}".
             
-            Your task is to update the text content across ALL sections to match this brand voice and industry.
+            Your task is to update the text content across ALL sections found in the input JSON to match this brand voice and industry.
             
-            Specific Sections to Update:
-            - Hero (title, subtitle, cta)
-            - About (title, text, story)
-            - Features (titles, descriptions)
-            - FAQ (questions, answers) - VERY IMPORTANT: Update questions/answers to be relevant to the business type.
-            - Testimonials (quotes, author names) - Update quotes to reflect happy customers of this specific business.
-            - Menu/Collections/Specialties (section titles like "Our Specialties" or "Menu", descriptions)
-            - CTA Sections (titles, text)
-            - Footer (description)
+            Scope of Work:
+            - Scan the entire JSON for keys like: 'hero', 'about', 'features', 'testimonials', 'faq', 'footer', 'cta', 'menu', 'collections', 'specialties', 'gallery', 'blog', 'reviews', 'stats', 'newsletterCta', 'instagram', 'heelsHero', 'feature1', 'feature2'.
+            - Update title, subtitle, heading, text, description, quote, question, answer fields within these sections.
             
             Strict Constraints:
-            1. Return ONLY valid JSON matching the structure of the input.
+            1. Return ONLY valid JSON matching the exact structure of the input.
             2. Do NOT change or touch 'allProducts' array or any individual product data (price, name, etc).
-            3. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields in sections.
-            4. For FAQ and Testimonials:
-               - If the user description lacks specific details (like return policy, specific ingredients, exact pricing), DO NOT invent specific numbers or strict policies.
-               - Use broad, positive, safe language. 
-               - Example (FAQ): "Do you offer delivery?" -> "Yes, we offer delivery services. Please contact us for details."
-               - Example (Testimonial): "Best pizza ever!" -> "Absolutely delicious! Highly recommended."
-            5. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
-            6. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
-            7. Target all templates including specific keys like 'heelsHero' (avenix), 'specialties' (frostify), 'collections' (aurora).
+            3. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields.
+            4. Do NOT modify any pages related to Shop, Checkout, Cart, or Products.
+            5. Ensure consistency in tone across all sections.
             
             Current JSON:
-            ${JSON.stringify(currentData).substring(0, 15000)} 
-        `; // Truncate to avoid token limits if necessary
+            ${JSON.stringify(currentData).substring(0, 25000)}
+        `; // Increased truncation limit to capture more context
 
         const completion = await openai.chat.completions.create({
             messages: [{ role: "user", content: prompt }],
