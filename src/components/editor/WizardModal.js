@@ -245,68 +245,53 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase">Business Name *</label>
-                <div className="relative">
-                    <Store className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                    <input
-                        value={businessInfo.name}
-                        onChange={(e) => setBusinessInfo(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
-                        placeholder="My Awesome Shop"
-                    />
-                </div>
+                <input
+                    value={businessInfo.name}
+                    onChange={(e) => setBusinessInfo(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                    placeholder="e.g. The Coffee House"
+                />
             </div>
 
             <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase">Owner Name</label>
-                <div className="relative">
-                    <User className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                    <input
-                        value={businessInfo.ownerName}
-                        onChange={(e) => setBusinessInfo(prev => ({ ...prev, ownerName: e.target.value }))}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
-                        placeholder="John Doe"
-                    />
-                </div>
+                <input
+                    value={businessInfo.ownerName}
+                    onChange={(e) => setBusinessInfo(prev => ({ ...prev, ownerName: e.target.value }))}
+                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                    placeholder="e.g. John Doe"
+                />
             </div>
           </div>
 
           <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-500 uppercase">Contact Phone / WhatsApp *</label>
-              <div className="relative">
-                  <Phone className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                  <input
-                      value={businessInfo.whatsappNumber}
-                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, whatsappNumber: e.target.value }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
-                      placeholder="+91 98765 43210"
-                  />
-              </div>
+              <input
+                  value={businessInfo.whatsappNumber}
+                  onChange={(e) => setBusinessInfo(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                  placeholder="e.g. +91 98765 43210"
+              />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase">Instagram URL</label>
-                  <div className="relative">
-                      <Instagram className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                      <input
-                          value={businessInfo.instagram}
-                          onChange={(e) => setBusinessInfo(prev => ({ ...prev, instagram: e.target.value }))}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
-                          placeholder="https://instagram.com/..."
-                      />
-                  </div>
+                  <input
+                      value={businessInfo.instagram}
+                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, instagram: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                      placeholder="e.g. https://instagram.com/mybusiness"
+                  />
               </div>
               <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase">Facebook URL</label>
-                  <div className="relative">
-                      <Facebook className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                      <input
-                          value={businessInfo.facebook}
-                          onChange={(e) => setBusinessInfo(prev => ({ ...prev, facebook: e.target.value }))}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
-                          placeholder="https://facebook.com/..."
-                      />
-                  </div>
+                  <input
+                      value={businessInfo.facebook}
+                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, facebook: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                      placeholder="e.g. https://facebook.com/mybusiness"
+                  />
               </div>
           </div>
       </div>
