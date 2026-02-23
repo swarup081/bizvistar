@@ -13,7 +13,8 @@ import {
   savePaymentInfo,
   generateAIContent,
   completeOnboarding,
-  uploadLogo
+  uploadLogo,
+  deleteWizardProduct
 } from '@/app/actions/onboardingActions';
 
 export default function WizardModal({ isOpen, onClose, websiteId, initialData, setBusinessData }) {
@@ -33,7 +34,9 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   });
 
   // Step 2: Products State
-  const [products, setProducts] = useState(initialData?.websiteData?.allProducts || []);
+  // Initialize with EMPTY array to strictly show only user-added products in this wizard session.
+  // We do not want to show template default products here.
+  const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image: null, imageUrl: '' });
   const [isAddingProduct, setIsAddingProduct] = useState(false);
 
@@ -161,7 +164,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                if (success) finalImageUrl = url;
           }
 
-          const { success, error: prodError } = await saveWizardProduct({
+          const { success, product, error: prodError } = await saveWizardProduct({
               name: newProduct.name,
               price: newProduct.price,
               description: newProduct.description,
@@ -171,16 +174,24 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           if (!success) throw new Error(prodError);
 
           const newProdObj = {
-              id: Date.now(),
-              name: newProduct.name,
-              price: newProduct.price,
-              image: finalImageUrl,
-              description: newProduct.description
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image_url,
+              description: product.description
           };
 
           const updatedProducts = [...products, newProdObj];
           setProducts(updatedProducts);
-          setBusinessData(prev => ({ ...prev, allProducts: updatedProducts }));
+          // We update the editor data with ALL products (user added + template defaults? No, usually replace)
+          // Actually, if we add products, we usually append them.
+          // But here, since we are hiding template defaults in the list, we need to be careful not to delete them from editor view inadvertently if we just set `allProducts` to `updatedProducts`.
+          // Ideally, we append to existing `allProducts` in businessData.
+
+          setBusinessData(prev => ({
+              ...prev,
+              allProducts: [...(prev.allProducts || []), newProdObj]
+          }));
 
           setNewProduct({ name: '', price: '', description: '', image: null, imageUrl: '' });
           setIsAddingProduct(false);
@@ -189,6 +200,27 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           setError(err.message);
       } finally {
           setLoading(false);
+      }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+      if (!confirm("Are you sure you want to delete this product?")) return;
+
+      try {
+          const { success, error: delError } = await deleteWizardProduct(productId);
+          if (!success) throw new Error(delError);
+
+          const updatedProducts = products.filter(p => p.id !== productId);
+          setProducts(updatedProducts);
+
+          // Also remove from editor preview
+          setBusinessData(prev => ({
+              ...prev,
+              allProducts: (prev.allProducts || []).filter(p => p.id !== productId)
+          }));
+
+      } catch (err) {
+          alert("Failed to delete: " + err.message);
       }
   };
 
@@ -319,8 +351,8 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                             No products added yet.
                         </div>
                     ) : (
-                        products.map((p, idx) => (
-                            <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm border border-gray-100">
+                        products.map((p) => (
+                            <div key={p.id} className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm border border-gray-100 group relative">
                                 <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                                     {p.image ? (
                                         <img src={p.image} className="w-full h-full object-cover" />
@@ -332,6 +364,12 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                                     <div className="font-medium text-sm text-gray-900">{p.name}</div>
                                     <div className="text-xs text-gray-500">${p.price}</div>
                                 </div>
+                                <button
+                                    onClick={() => handleDeleteProduct(p.id)}
+                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
                         ))
                     )}
@@ -410,14 +448,20 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
       <div className="space-y-6 animate-in slide-in-from-right duration-200">
           <div className="grid grid-cols-2 gap-4">
               <button
-                  onClick={() => setPayment(prev => ({ ...prev, mode: 'UPI' }))}
+                  onClick={() => {
+                      setPayment(prev => ({ ...prev, mode: 'UPI' }));
+                      setError(''); // Clear errors on switch
+                  }}
                   className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'UPI' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2] shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'}`}
               >
                   <Smartphone size={24} />
                   <span className="font-bold text-sm">UPI Payment</span>
               </button>
               <button
-                  onClick={() => setPayment(prev => ({ ...prev, mode: 'COD' }))}
+                  onClick={() => {
+                      setPayment(prev => ({ ...prev, mode: 'COD' }));
+                      setError(''); // Clear errors on switch
+                  }}
                   className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'COD' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2] shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'}`}
               >
                   <CreditCard size={24} />
@@ -458,14 +502,15 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   );
 
   const renderStep4 = () => (
-      <div className="space-y-6 animate-in slide-in-from-right duration-200 text-center py-4">
-          <div className="w-20 h-20 bg-gradient-to-tr from-purple-500 to-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-purple-200 mb-6">
-              <Sparkles className="text-white" size={40} />
-          </div>
-
-          <div className="space-y-2">
+      <div className="space-y-6 animate-in slide-in-from-right duration-200 py-4">
+          <div className="text-center space-y-2 mb-8">
+              <div className="flex justify-center mb-4">
+                  <div className="p-3 bg-purple-50 rounded-2xl text-[#8A63D2]">
+                      <Sparkles size={32} />
+                  </div>
+              </div>
               <h3 className="text-2xl font-bold text-gray-900">AI Content Magic</h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
+              <p className="text-gray-500 text-sm max-w-sm mx-auto leading-relaxed">
                   Describe your business, and our AI will instantly rewrite your website content to match your brand voice.
               </p>
           </div>
@@ -474,7 +519,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
             <textarea
                 value={aiDescription}
                 onChange={(e) => setAiDescription(e.target.value)}
-                className="w-full p-4 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none resize-none min-h-[140px] shadow-sm transition-all bg-gray-50 focus:bg-white"
+                className="w-full p-4 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none min-h-[140px] transition-all bg-white"
                 placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee. We value organic ingredients and cozy atmosphere..."
             />
             <div className="absolute bottom-3 right-3 text-xs text-gray-400 font-medium">
@@ -485,9 +530,9 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           <button
               onClick={handleGenerateAI}
               disabled={isAiGenerating}
-              className="w-full py-3.5 bg-gradient-to-r from-[#8A63D2] to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 transform active:scale-[0.98]"
+              className="w-full py-3 bg-[#111] text-white font-medium rounded-xl hover:bg-black transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm"
           >
-              {isAiGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
+              {isAiGenerating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
               {isAiGenerating ? 'Generating Magic...' : 'Generate Content'}
           </button>
       </div>
@@ -510,7 +555,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 {step === 4 && "AI Content"}
             </Dialog.Title>
             <Dialog.Close asChild>
-                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
+                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
                     <X size={20} />
                 </button>
             </Dialog.Close>

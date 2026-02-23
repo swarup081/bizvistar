@@ -273,7 +273,7 @@ export async function saveWizardProduct(productData) {
         }
 
         // 2. Insert
-        const { error: insertError } = await supabaseAdmin
+        const { data, error: insertError } = await supabaseAdmin
             .from('products')
             .insert({
                 website_id: websiteId,
@@ -282,15 +282,38 @@ export async function saveWizardProduct(productData) {
                 description: productData.description,
                 image_url: productData.imageUrl,
                 stock: -1 // Default unlimited for wizard
-            });
+            })
+            .select()
+            .single();
 
         if (insertError) throw insertError;
 
         // 3. Sync
         await syncWebsiteData(websiteId);
 
-        return { success: true };
+        return { success: true, product: data };
 
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
+// --- ACTION: Delete Product (Wizard) ---
+export async function deleteWizardProduct(productId) {
+    try {
+        const websiteId = await getWebsiteId();
+
+        const { error } = await supabaseAdmin
+            .from('products')
+            .delete()
+            .eq('id', productId)
+            .eq('website_id', websiteId);
+
+        if (error) throw error;
+
+        await syncWebsiteData(websiteId);
+
+        return { success: true };
     } catch (err) {
         return { success: false, error: err.message };
     }
