@@ -444,6 +444,75 @@ export async function generateAIContent(description) {
     }
 }
 
+// --- ACTION: Generate Section Content ---
+export async function generateSectionContent(sectionKey, promptText, currentSectionData) {
+    try {
+        const websiteId = await getWebsiteId(); // Ensure auth
+
+        // Construct Prompt
+        const systemPrompt = `
+            You are a professional website copywriter.
+            Your task is to rewrite the content for a specific website section ("${sectionKey}") based on the user's instruction.
+
+            User Instruction: "${promptText}"
+
+            Current Section Data (JSON):
+            ${JSON.stringify(currentSectionData)}
+
+            Constraints:
+            1. Return ONLY valid JSON matching the structure of the Current Section Data.
+            2. Do NOT change image URLs.
+            3. Focus on updating the text (titles, descriptions, button labels) to match the instruction.
+            4. Tone: Professional, engaging, and aligned with the user's prompt.
+        `;
+
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "user", content: systemPrompt }],
+            model: "gpt-3.5-turbo-1106",
+            response_format: { type: "json_object" },
+        });
+
+        const newContent = JSON.parse(completion.choices[0].message.content);
+
+        // We do NOT save to DB here. We return to client to let them preview/save.
+        return { success: true, data: newContent };
+
+    } catch (err) {
+        console.error("AI Section Generation Error:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+// --- ACTION: Generate Field Content ---
+export async function generateFieldContent(promptText, currentValue) {
+    try {
+        await getWebsiteId(); // Auth check
+
+        const systemPrompt = `
+            You are a professional website copywriter.
+            Rewrite the following text based on the instruction.
+
+            Original Text: "${currentValue}"
+            Instruction: "${promptText}"
+
+            Constraint: Return a JSON object with a single key "text" containing the rewritten string.
+        `;
+
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "user", content: systemPrompt }],
+            model: "gpt-3.5-turbo-1106",
+            response_format: { type: "json_object" },
+        });
+
+        const result = JSON.parse(completion.choices[0].message.content);
+        return { success: true, text: result.text };
+
+    } catch (err) {
+        console.error("AI Field Generation Error:", err);
+        return { success: false, error: err.message };
+    }
+}
+
 // --- ACTION: Complete Onboarding ---
 export async function completeOnboarding() {
     try {

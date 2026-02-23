@@ -5,8 +5,9 @@ import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
 import WizardModal from './WizardModal';
+import AIModal from './AIModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
-import { getOnboardingStatus } from '@/app/actions/onboardingActions';
+import { getOnboardingStatus, generateAIContent, generateSectionContent, generateFieldContent } from '@/app/actions/onboardingActions';
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -38,6 +39,69 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   // Wizard State
   const [showWizard, setShowWizard] = useState(false);
   const [wizardInitialData, setWizardInitialData] = useState(null);
+
+  // AI State
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [activeAITarget, setActiveAITarget] = useState(null); // { type: 'global'|'section'|'field', key, context }
+
+  const handleAIRequest = (target) => {
+      setActiveAITarget(target);
+      setAiModalOpen(true);
+  };
+
+  const handleAISubmit = async (prompt) => {
+      if (!activeAITarget) return;
+      setAiLoading(true);
+
+      try {
+          let result;
+          if (activeAITarget.type === 'global') {
+              result = await generateAIContent(prompt);
+              if (result.success) {
+                  handleDataUpdate(result.data);
+              }
+          } else if (activeAITarget.type === 'section') {
+              // activeAITarget.context contains the current section data
+              result = await generateSectionContent(activeAITarget.key, prompt, activeAITarget.context);
+              if (result.success) {
+                  handleDataUpdate(prev => {
+                      const newData = { ...prev };
+                      newData[activeAITarget.key] = result.data;
+                      return newData;
+                  });
+              }
+          } else if (activeAITarget.type === 'field') {
+              // activeAITarget.context contains the current value
+              result = await generateFieldContent(prompt, activeAITarget.context);
+              if (result.success) {
+                  handleDataUpdate(prev => {
+                      const newData = JSON.parse(JSON.stringify(prev));
+                      const keys = activeAITarget.key.split('.');
+                      let current = newData;
+                      for (let i = 0; i < keys.length - 1; i++) {
+                          if (!current[keys[i]]) current[keys[i]] = {}; // Safety
+                          current = current[keys[i]];
+                      }
+                      current[keys[keys.length - 1]] = result.text;
+                      return newData;
+                  });
+              }
+          }
+
+          if (result && !result.success) {
+              alert(`AI Generation Failed: ${result.error}`);
+          } else {
+              setAiModalOpen(false);
+          }
+
+      } catch (error) {
+          console.error("AI Error:", error);
+          alert("An unexpected error occurred.");
+      } finally {
+          setAiLoading(false);
+      }
+  };
 
   // Detect default view on mount
   useEffect(() => {
@@ -400,6 +464,7 @@ useEffect(() => {
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
             onRestart={handleRestart}
+            onAI={handleAIRequest}
           />
         </div>
 
@@ -454,8 +519,26 @@ useEffect(() => {
           onAccordionToggle={handleAccordionToggle} 
           templateName={templateName}
           websiteId={websiteId} // Pass websiteId for uploads in settings
+          onAI={handleAIRequest}
         />
       </div>
+
+      {/* AI Modal */}
+      <AIModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        onSubmit={handleAISubmit}
+        loading={aiLoading}
+        title={
+            activeAITarget?.type === 'global' ? 'Rewrite Website Content' :
+            activeAITarget?.type === 'section' ? `Rewrite ${activeAITarget.key} Section` :
+            'Rewrite Text'
+        }
+        placeholder={
+            activeAITarget?.type === 'global' ? "Describe your business and the tone you want..." :
+            "How should this content be written?"
+        }
+      />
 
       {/* Onboarding Wizard */}
       {showWizard && (

@@ -8,6 +8,7 @@ import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
 } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import { GeminiIcon } from './icons/GeminiIcon';
 
 // A simple reusable button component for the nav
 const NavButton = ({ children, className = '', ...props }) => (
@@ -148,7 +149,8 @@ export default function EditorTopNav({
     canUndo,
     canRedo,
     onRestart,
-    isLandingMode = false // <-- NEW PROP
+    isLandingMode = false, // <-- NEW PROP
+    onAI // <-- NEW PROP
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
@@ -244,7 +246,16 @@ export default function EditorTopNav({
                 >
                   <NavButton>Hire a Professional</NavButton>
                 </Tooltip>
-                <NavButton>Help</NavButton>
+                {/* AI Writer Button (Desktop) */}
+                <Tooltip title="AI Writer" description="Rewrite your entire website with AI.">
+                  <button
+                    onClick={() => onAI && onAI({ type: 'global' })}
+                    className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-md transition-colors hover:bg-purple-50"
+                  >
+                    <GeminiIcon size={18} />
+                    <span>AI Writer</span>
+                  </button>
+                </Tooltip>
               </div>
             </>
           ) : (
@@ -284,9 +295,9 @@ export default function EditorTopNav({
 
           <div className="w-px h-5 bg-gray-300"></div> 
           
-          {/* --- SAVE STATUS (Hidden on Mobile, moved to Right) --- */}
+          {/* --- SAVE STATUS (Visible on both Mobile and Desktop now, per user request to move it) --- */}
           <div
-            className={`hidden lg:flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
+            className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
               saveStatus === 'Saved' ? 'text-gray-400' : 'text-[#8A63D2]'
             }`}
           >
@@ -300,31 +311,34 @@ export default function EditorTopNav({
             {saveStatus}
           </div>
 
-          {isLandingMode ? (
-            <Tooltip title="Just a demo" description="Unlock full potential in the editor">
-              <Link 
-                href="#"
-                onClick={onLandingDummyClick}
-                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
-              >
-                Preview
-              </Link>
-            </Tooltip>
-          ) : (
-            <Tooltip
-              title="Preview"
-              description="See what your live site will look like to visitors."
-            >
-              <Link 
-                href={`/preview/site/${siteSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
-              >
-                Preview
-              </Link>
-            </Tooltip>
-          )}
+          {/* --- PREVIEW (Hidden on Mobile) --- */}
+          <div className="hidden lg:block">
+            {isLandingMode ? (
+                <Tooltip title="Just a demo" description="Unlock full potential in the editor">
+                <Link
+                    href="#"
+                    onClick={onLandingDummyClick}
+                    className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
+                >
+                    Preview
+                </Link>
+                </Tooltip>
+            ) : (
+                <Tooltip
+                title="Preview"
+                description="See what your live site will look like to visitors."
+                >
+                <Link
+                    href={`/preview/site/${siteSlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
+                >
+                    Preview
+                </Link>
+                </Tooltip>
+            )}
+          </div>
           
           {/* --- PUBLISH BUTTON --- */}
           {isLandingMode ? (
@@ -462,12 +476,15 @@ export default function EditorTopNav({
             </button>
           )}
         </div>
-        {/* Mobile: Reset & Save (Replaces Undo/Redo) */}
+        {/* Mobile: AI Button (Replaces Save Status) */}
         <div className="flex lg:hidden items-center gap-3 pl-5 mx-auto">
-           
-            <div className="text-base text-[#8A63D2] font-bold">
-                {saveStatus}
-            </div>
+           <button
+             onClick={() => onAI && onAI({ type: 'global' })}
+             className="flex items-center gap-2 bg-[#8A63D2]/10 text-[#8A63D2] px-4 py-1.5 rounded-full text-sm font-bold"
+           >
+             <GeminiIcon size={16} />
+             AI Writer
+           </button>
         </div>
       </div>
 
