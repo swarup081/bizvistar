@@ -428,14 +428,6 @@ const AccordionItem = ({ title, icon: Icon, isOpen, onClick, children, isMobile,
             {!isMobile && (
                 <ChevronDown
                 size={18}
-                className={}
-                />
-            )}
-        </div>
-      </button>
-            {!isMobile && (
-                <ChevronDown
-                size={18}
                 className={`text-gray-400 transition-transform ${
                     isOpen ? 'rotate-180' : 'rotate-0'
                 }`}
