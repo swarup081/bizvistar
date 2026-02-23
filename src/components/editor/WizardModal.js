@@ -146,6 +146,29 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
     }
   };
 
+  // --- NEW: Handle Finish Button ---
+  const handleFinish = async () => {
+      // If AI description is present, generate content first
+      if (step === 4 && aiDescription.trim()) {
+          setIsAiGenerating(true);
+          try {
+              const { success, data, error: aiError } = await generateAIContent(aiDescription);
+              if (!success) throw new Error(aiError);
+
+              setBusinessData(data);
+          } catch (err) {
+              console.error("AI Generation failed:", err);
+              setError(err.message);
+              setIsAiGenerating(false);
+              return;
+          }
+      }
+
+      // Mark as complete and close
+      await completeOnboarding();
+      onClose();
+  };
+
   const handleAddProduct = async () => {
       if (!newProduct.name || !newProduct.price) {
           setError("Name and Price are required.");
@@ -221,26 +244,6 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
 
       } catch (err) {
           alert("Failed to delete: " + err.message);
-      }
-  };
-
-  const handleGenerateAI = async () => {
-      if (!aiDescription) {
-          setError("Please enter a description.");
-          return;
-      }
-      setIsAiGenerating(true);
-      try {
-          const { success, data, error: aiError } = await generateAIContent(aiDescription);
-          if (!success) throw new Error(aiError);
-
-          setBusinessData(data);
-          await completeOnboarding();
-          onClose();
-      } catch (err) {
-          setError(err.message);
-      } finally {
-          setIsAiGenerating(false);
       }
   };
 
@@ -501,36 +504,26 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
       </div>
   );
 
+  // --- NEW: Refined AI Step (Step 4) ---
   const renderStep4 = () => (
       <div className="space-y-4 animate-in slide-in-from-right duration-200 h-full flex flex-col">
-          <div className="space-y-1.5">
-              <label className="text-xs font-bold text-gray-500 uppercase">Describe your business</label>
-              <div className="relative">
+          <div className="space-y-1.5 flex-grow">
+              <label className="text-xs font-bold text-gray-500 uppercase">Describe your business (Optional)</label>
+              <div className="relative h-full max-h-[300px]">
                 <textarea
                     value={aiDescription}
                     onChange={(e) => setAiDescription(e.target.value)}
-                    className="w-full p-3 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none h-40 transition-all custom-scrollbar"
+                    className="w-full h-full p-4 text-sm border border-gray-300 rounded-xl focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none transition-all custom-scrollbar bg-gray-50 focus:bg-white"
                     placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee..."
                 />
-                <div className="absolute bottom-2 right-2 text-[10px] text-gray-400 font-medium">
+                <div className="absolute bottom-3 right-3 text-[10px] text-gray-400 font-medium">
                     {aiDescription.length} chars
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
-                  Our AI will rewrite your website content to match your brand voice.
+              <p className="text-xs text-gray-400 mt-2">
+                  Leave empty to skip. If filled, our AI will instantly rewrite your website content to match your brand voice.
               </p>
           </div>
-
-          <div className="flex-grow"></div>
-
-          <button
-              onClick={handleGenerateAI}
-              disabled={isAiGenerating}
-              className="w-full py-2.5 bg-[#8A63D2] text-white font-bold rounded-lg hover:bg-[#7854bc] transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm"
-          >
-              {isAiGenerating ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-              {isAiGenerating ? 'Generate Content' : 'Generate Content'}
-          </button>
       </div>
   );
 
@@ -608,10 +601,12 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 </button>
             ) : (
                 <button
-                    onClick={() => { completeOnboarding(); onClose(); }}
-                    className="px-6 py-2.5 text-gray-500 font-medium hover:text-gray-800 transition-colors"
+                    onClick={handleFinish}
+                    disabled={isAiGenerating}
+                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
                 >
-                    Skip / Finish
+                    {isAiGenerating ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+                    {aiDescription.trim() ? (isAiGenerating ? 'Generating...' : 'Generate & Finish') : 'Finish'}
                 </button>
             )}
           </div>
