@@ -59,9 +59,6 @@ async function getWebsiteId() {
 
 // --- HELPER: Sync Website Data ---
 async function syncWebsiteData(websiteId) {
-    // Re-use logic from productActions or import it?
-    // For now, I'll copy the logic to avoid circular dependency issues if productActions imports this.
-    // Actually, I can just fetch products and update website_data.
     try {
         const { data: products } = await supabaseAdmin
           .from('products')
@@ -399,19 +396,22 @@ export async function generateAIContent(description) {
             - Features (titles, descriptions)
             - FAQ (questions, answers) - VERY IMPORTANT: Update questions/answers to be relevant to the business type.
             - Testimonials (quotes, author names) - Update quotes to reflect happy customers of this specific business.
-            - Menu/Collections (section titles, descriptions)
+            - Menu/Collections/Specialties (section titles like "Our Specialties" or "Menu", descriptions)
             - CTA Sections (titles, text)
+            - Footer (description)
 
             Strict Constraints:
             1. Return ONLY valid JSON matching the structure of the input.
-            2. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields.
-            3. For FAQ and Testimonials:
+            2. Do NOT change or touch 'allProducts' array or any individual product data (price, name, etc).
+            3. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields in sections.
+            4. For FAQ and Testimonials:
                - If the user description lacks specific details (like return policy, specific ingredients, exact pricing), DO NOT invent specific numbers or strict policies.
                - Use broad, positive, safe language.
                - Example (FAQ): "Do you offer delivery?" -> "Yes, we offer delivery services. Please contact us for details."
                - Example (Testimonial): "Best pizza ever!" -> "Absolutely delicious! Highly recommended."
-            4. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
-            5. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
+            5. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
+            6. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
+            7. Target all templates including specific keys like 'heelsHero' (avenix), 'specialties' (frostify), 'collections' (aurora).
 
             Current JSON:
             ${JSON.stringify(currentData).substring(0, 15000)}
