@@ -1,11 +1,11 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import {
   X, Check, ChevronRight, ChevronLeft, UploadCloud,
   Store, User, Instagram, Facebook, Smartphone,
-  CreditCard, Sparkles, Loader2, Package, Plus, Trash2
+  CreditCard, Sparkles, Loader2, Package, Plus, Trash2, Phone
 } from 'lucide-react';
 import {
   saveBusinessInfo,
@@ -13,8 +13,7 @@ import {
   savePaymentInfo,
   generateAIContent,
   completeOnboarding,
-  uploadLogo,
-  getOnboardingStatus
+  uploadLogo
 } from '@/app/actions/onboardingActions';
 
 export default function WizardModal({ isOpen, onClose, websiteId, initialData, setBusinessData }) {
@@ -26,6 +25,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   const [businessInfo, setBusinessInfo] = useState({
     name: initialData?.websiteData?.name || '',
     ownerName: initialData?.data?.owner_name || '',
+    whatsappNumber: initialData?.data?.whatsapp_number || '', // Added
     instagram: initialData?.data?.social_instagram || '',
     facebook: initialData?.data?.social_facebook || '',
     logoUrl: initialData?.data?.logo_url || '',
@@ -58,6 +58,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
         if (step === 1) {
             // Validate
             if (!businessInfo.name) throw new Error("Business Name is required.");
+            if (!businessInfo.whatsappNumber) throw new Error("Contact Number is required."); // Validation
 
             // Upload Logo if new file selected
             let finalLogoUrl = businessInfo.logoUrl;
@@ -83,7 +84,8 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 name: businessInfo.name,
                 logoText: businessInfo.name,
                 logo: finalLogoUrl,
-                owner: businessInfo.ownerName, // Custom field for future use
+                owner: businessInfo.ownerName,
+                whatsappNumber: businessInfo.whatsappNumber,
                 footer: {
                     ...prev.footer,
                     socials: [
@@ -94,8 +96,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
             }));
         }
         else if (step === 2) {
-            // Products are saved as they are added. Just move next.
-            // Maybe check if at least 1 product? No, optional.
+            // Products are saved as they are added.
         }
         else if (step === 3) {
             // Validate Payment
@@ -128,8 +129,6 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
             }));
         }
         else if (step === 4) {
-             // AI Step logic is separate (Generate vs Skip)
-             // If clicking "Finish" here (or Skip), we complete.
              await completeOnboarding();
              onClose();
              return;
@@ -154,12 +153,11 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
       setError('');
 
       try {
-          // Upload Image if present
           let finalImageUrl = newProduct.imageUrl;
           if (newProduct.image) {
                const formData = new FormData();
                formData.append('file', newProduct.image);
-               const { success, url } = await uploadLogo(formData); // Reuse uploadLogo for product images for now
+               const { success, url } = await uploadLogo(formData);
                if (success) finalImageUrl = url;
           }
 
@@ -172,7 +170,6 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
 
           if (!success) throw new Error(prodError);
 
-          // Update Local List & Editor
           const newProdObj = {
               id: Date.now(),
               name: newProduct.name,
@@ -185,7 +182,6 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           setProducts(updatedProducts);
           setBusinessData(prev => ({ ...prev, allProducts: updatedProducts }));
 
-          // Reset Form
           setNewProduct({ name: '', price: '', description: '', image: null, imageUrl: '' });
           setIsAddingProduct(false);
 
@@ -206,9 +202,9 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
           const { success, data, error: aiError } = await generateAIContent(aiDescription);
           if (!success) throw new Error(aiError);
 
-          setBusinessData(data); // Apply changes to editor
+          setBusinessData(data);
           await completeOnboarding();
-          onClose(); // Close wizard after AI generation success
+          onClose();
       } catch (err) {
           setError(err.message);
       } finally {
@@ -216,10 +212,10 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
       }
   };
 
-  // --- Render Steps ---
+  // --- Styles Matches AddOrderWizard.js ---
 
   const renderStep1 = () => (
-      <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="space-y-6 animate-in slide-in-from-right duration-200">
           <div className="flex justify-center mb-6">
                <div className="relative group w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] transition-colors cursor-pointer">
                     {businessInfo.logoUrl ? (
@@ -243,56 +239,71 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                         }}
                     />
                </div>
-               <span className="absolute mt-24 text-xs text-gray-500">Upload Logo</span>
+               <span className="absolute mt-24 text-xs text-gray-500 font-medium uppercase">Upload Logo</span>
           </div>
 
-          <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
-              <div className="relative">
-                  <Store className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                  <input
-                      value={businessInfo.name}
-                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
-                      placeholder="My Awesome Shop"
-                  />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase">Business Name *</label>
+                <div className="relative">
+                    <Store className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                    <input
+                        value={businessInfo.name}
+                        onChange={(e) => setBusinessInfo(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                        placeholder="My Awesome Shop"
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase">Owner Name</label>
+                <div className="relative">
+                    <User className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                    <input
+                        value={businessInfo.ownerName}
+                        onChange={(e) => setBusinessInfo(prev => ({ ...prev, ownerName: e.target.value }))}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                        placeholder="John Doe"
+                    />
+                </div>
+            </div>
           </div>
 
-          <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name</label>
+          <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase">Contact Phone / WhatsApp *</label>
               <div className="relative">
-                  <User className="absolute left-3 top-2.5 text-gray-400" size={18} />
+                  <Phone className="absolute left-3 top-2.5 text-gray-400" size={18} />
                   <input
-                      value={businessInfo.ownerName}
-                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, ownerName: e.target.value }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
-                      placeholder="John Doe"
+                      value={businessInfo.whatsappNumber}
+                      onChange={(e) => setBusinessInfo(prev => ({ ...prev, whatsappNumber: e.target.value }))}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                      placeholder="+91 98765 43210"
                   />
               </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-              <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
+              <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase">Instagram URL</label>
                   <div className="relative">
                       <Instagram className="absolute left-3 top-2.5 text-gray-400" size={18} />
                       <input
                           value={businessInfo.instagram}
                           onChange={(e) => setBusinessInfo(prev => ({ ...prev, instagram: e.target.value }))}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
                           placeholder="https://instagram.com/..."
                       />
                   </div>
               </div>
-              <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
+              <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase">Facebook URL</label>
                   <div className="relative">
                       <Facebook className="absolute left-3 top-2.5 text-gray-400" size={18} />
                       <input
                           value={businessInfo.facebook}
                           onChange={(e) => setBusinessInfo(prev => ({ ...prev, facebook: e.target.value }))}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
                           placeholder="https://facebook.com/..."
                       />
                   </div>
@@ -302,11 +313,11 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   );
 
   const renderStep2 = () => (
-      <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
+      <div className="space-y-4 animate-in slide-in-from-right duration-200 h-full flex flex-col">
           {!isAddingProduct ? (
               <>
                 <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-gray-700">Your Products ({products.length}/10)</h3>
+                    <h3 className="text-sm font-bold text-gray-700 uppercase">Your Products ({products.length}/10)</h3>
                     <button
                         onClick={() => setIsAddingProduct(true)}
                         disabled={products.length >= 10}
@@ -318,7 +329,10 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
 
                 <div className="flex-grow overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-2 bg-gray-50 max-h-[300px]">
                     {products.length === 0 ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">No products added yet.</div>
+                        <div className="text-center py-12 text-gray-400 text-sm flex flex-col items-center">
+                            <Package size={32} className="mb-2 opacity-50" />
+                            No products added yet.
+                        </div>
                     ) : (
                         products.map((p, idx) => (
                             <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-md shadow-sm border border-gray-100">
@@ -339,18 +353,21 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 </div>
               </>
           ) : (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                  <div className="flex justify-between items-center mb-2">
-                      <h4 className="font-medium text-sm">New Product</h4>
-                      <button onClick={() => setIsAddingProduct(false)} className="text-gray-400 hover:text-gray-600"><X size={16}/></button>
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4 shadow-sm animate-in zoom-in-95 duration-200">
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <h4 className="font-bold text-sm text-gray-900">New Product Details</h4>
+                      <button onClick={() => setIsAddingProduct(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={16}/></button>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white border border-gray-300 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden hover:border-[#8A63D2]">
+                  <div className="flex items-start gap-4">
+                      <div className="w-20 h-20 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all shrink-0">
                             {newProduct.imageUrl ? (
                                 <img src={newProduct.imageUrl} className="w-full h-full object-cover" />
                             ) : (
-                                <UploadCloud size={20} className="text-gray-400" />
+                                <div className="flex flex-col items-center text-gray-400">
+                                    <UploadCloud size={20} />
+                                    <span className="text-[10px] mt-1">Image</span>
+                                </div>
                             )}
                             <input
                                 type="file"
@@ -364,35 +381,39 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                                 }}
                             />
                       </div>
-                      <div className="flex-grow space-y-2">
-                          <input
-                              placeholder="Product Name"
-                              value={newProduct.name}
-                              onChange={(e) => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
-                              className="w-full p-2 text-sm border border-gray-300 rounded focus:border-[#8A63D2] outline-none"
-                          />
-                          <input
-                              placeholder="Price"
-                              type="number"
-                              value={newProduct.price}
-                              onChange={(e) => setNewProduct(prev => ({ ...prev, price: e.target.value }))}
-                              className="w-full p-2 text-sm border border-gray-300 rounded focus:border-[#8A63D2] outline-none"
-                          />
+                      <div className="flex-grow space-y-3">
+                          <div className="space-y-1">
+                              <input
+                                  placeholder="Product Name"
+                                  value={newProduct.name}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, name: e.target.value }))}
+                                  className="w-full p-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                              />
+                          </div>
+                          <div className="space-y-1">
+                              <input
+                                  placeholder="Price"
+                                  type="number"
+                                  value={newProduct.price}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, price: e.target.value }))}
+                                  className="w-full p-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
+                              />
+                          </div>
                       </div>
                   </div>
                   <textarea
                       placeholder="Description (Optional)"
                       value={newProduct.description}
                       onChange={(e) => setNewProduct(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full p-2 text-sm border border-gray-300 rounded focus:border-[#8A63D2] outline-none resize-none h-20"
+                      className="w-full p-3 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none resize-none h-20 transition-all"
                   />
-                  <div className="flex justify-end">
+                  <div className="flex justify-end pt-2">
                       <button
                           onClick={handleAddProduct}
                           disabled={loading}
-                          className="px-4 py-1.5 bg-[#8A63D2] text-white text-sm rounded hover:bg-[#7854bc] disabled:opacity-50"
+                          className="px-6 py-2 bg-[#8A63D2] text-white text-sm font-bold rounded-lg hover:bg-[#7854bc] disabled:opacity-50 transition-colors shadow-sm"
                       >
-                          {loading ? 'Adding...' : 'Add'}
+                          {loading ? 'Adding...' : 'Add Product'}
                       </button>
                   </div>
               </div>
@@ -401,50 +422,50 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   );
 
   const renderStep3 = () => (
-      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="space-y-6 animate-in slide-in-from-right duration-200">
           <div className="grid grid-cols-2 gap-4">
               <button
                   onClick={() => setPayment(prev => ({ ...prev, mode: 'UPI' }))}
-                  className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'UPI' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                  className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'UPI' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2] shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'}`}
               >
                   <Smartphone size={24} />
-                  <span className="font-medium text-sm">UPI Payment</span>
+                  <span className="font-bold text-sm">UPI Payment</span>
               </button>
               <button
                   onClick={() => setPayment(prev => ({ ...prev, mode: 'COD' }))}
-                  className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'COD' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
+                  className={`p-4 border rounded-xl flex flex-col items-center gap-2 transition-all ${payment.mode === 'COD' ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2] shadow-sm' : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'}`}
               >
                   <CreditCard size={24} />
-                  <span className="font-medium text-sm">Cash on Delivery</span>
+                  <span className="font-bold text-sm">Cash on Delivery</span>
               </button>
           </div>
 
           {payment.mode === 'UPI' ? (
-              <div className="space-y-4">
-                  <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Enter UPI ID</label>
+              <div className="space-y-4 animate-in fade-in duration-300">
+                  <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase">Enter UPI ID</label>
                       <input
                           value={payment.upiId}
                           onChange={(e) => setPayment(prev => ({ ...prev, upiId: e.target.value }))}
-                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
                           placeholder="username@upi"
                       />
                   </div>
-                  <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm UPI ID</label>
+                  <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-500 uppercase">Confirm UPI ID</label>
                       <input
                           value={payment.confirmUpiId}
                           onChange={(e) => setPayment(prev => ({ ...prev, confirmUpiId: e.target.value }))}
-                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none"
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#8A63D2] focus:border-[#8A63D2] outline-none transition-all"
                           placeholder="Re-enter username@upi"
                       />
                   </div>
-                  <div className="p-3 bg-blue-50 text-blue-700 text-xs rounded-lg border border-blue-100">
+                  <div className="p-3 bg-blue-50 text-blue-700 text-xs rounded-lg border border-blue-100 leading-relaxed">
                       <strong>Please note:</strong> Payments are processed directly between you and your customer. We do not facilitate transactions or charge commissions. You are responsible for verifying all payments received.
                   </div>
               </div>
           ) : (
-              <div className="p-4 bg-amber-50 text-amber-800 text-sm rounded-lg border border-amber-100">
+              <div className="p-4 bg-amber-50 text-amber-800 text-sm rounded-lg border border-amber-100 leading-relaxed animate-in fade-in duration-300">
                   <strong>Note:</strong> Since we cannot redirect users to a payment gateway, you are responsible for collecting payment upon delivery. Please ensure you have a process in place to settle these transactions.
               </div>
           )}
@@ -452,31 +473,36 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   );
 
   const renderStep4 = () => (
-      <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-          <div className="w-16 h-16 bg-gradient-to-tr from-purple-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-purple-200">
-              <Sparkles className="text-white" size={32} />
+      <div className="space-y-6 animate-in slide-in-from-right duration-200 text-center py-4">
+          <div className="w-20 h-20 bg-gradient-to-tr from-purple-500 to-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-purple-200 mb-6">
+              <Sparkles className="text-white" size={40} />
           </div>
 
-          <div>
-              <h3 className="text-xl font-bold text-gray-900">AI Content Magic</h3>
-              <p className="text-gray-500 text-sm mt-2">
+          <div className="space-y-2">
+              <h3 className="text-2xl font-bold text-gray-900">AI Content Magic</h3>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
                   Describe your business, and our AI will instantly rewrite your website content to match your brand voice.
               </p>
           </div>
 
-          <textarea
-              value={aiDescription}
-              onChange={(e) => setAiDescription(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none resize-none min-h-[120px]"
-              placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee..."
-          />
+          <div className="relative">
+            <textarea
+                value={aiDescription}
+                onChange={(e) => setAiDescription(e.target.value)}
+                className="w-full p-4 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#8A63D2] focus:border-transparent outline-none resize-none min-h-[140px] shadow-sm transition-all bg-gray-50 focus:bg-white"
+                placeholder="e.g. We are a boutique bakery in Paris specializing in gluten-free pastries and artisanal coffee. We value organic ingredients and cozy atmosphere..."
+            />
+            <div className="absolute bottom-3 right-3 text-xs text-gray-400 font-medium">
+                {aiDescription.length} chars
+            </div>
+          </div>
 
           <button
               onClick={handleGenerateAI}
               disabled={isAiGenerating}
-              className="w-full py-3 bg-gradient-to-r from-[#8A63D2] to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+              className="w-full py-3.5 bg-gradient-to-r from-[#8A63D2] to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 transform active:scale-[0.98]"
           >
-              {isAiGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={18} />}
+              {isAiGenerating ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
               {isAiGenerating ? 'Generating Magic...' : 'Generate Content'}
           </button>
       </div>
@@ -487,53 +513,57 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-md z-[90] animate-in fade-in duration-300" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-lg bg-white rounded-3xl shadow-2xl z-[100] overflow-hidden flex flex-col max-h-[90vh]">
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity animate-in fade-in duration-300" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg h-[80vh] md:h-[650px] bg-white rounded-2xl shadow-2xl z-[70] flex flex-col focus:outline-none overflow-hidden font-sans animate-in zoom-in-95 duration-200">
 
           {/* Header */}
-          <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
-            <div>
-                <h2 className="text-lg font-bold text-gray-900">
-                    {step === 1 && "Let's get started"}
-                    {step === 2 && "Add your products"}
-                    {step === 3 && "Setup Payments"}
-                    {step === 4 && "Final Polish"}
-                </h2>
-                <div className="flex gap-1 mt-1">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i <= step ? 'w-6 bg-[#8A63D2]' : 'w-2 bg-gray-200'}`} />
-                    ))}
-                </div>
-            </div>
-            {/* Optional Close Button */}
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 z-10">
+            <Dialog.Title className="text-xl font-bold text-gray-900">
+                {step === 1 && "Business Profile"}
+                {step === 2 && "Add Products"}
+                {step === 3 && "Payment Setup"}
+                {step === 4 && "AI Content"}
+            </Dialog.Title>
             <Dialog.Close asChild>
-                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
                     <X size={20} />
                 </button>
             </Dialog.Close>
           </div>
 
+          {/* Progress Steps */}
+          <div className="px-8 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between shrink-0 z-10">
+                {[1, 2, 3, 4].map((s) => (
+                    <div key={s} className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${step >= s ? 'bg-[#8A63D2] text-white scale-110' : 'bg-gray-200 text-gray-500'}`}>
+                            {step > s ? <Check size={16} /> : s}
+                        </div>
+                        {s < 4 && <div className={`w-8 sm:w-12 h-0.5 transition-colors ${step > s ? 'bg-[#8A63D2]/50' : 'bg-gray-200'}`}></div>}
+                    </div>
+                ))}
+          </div>
+
           {/* Body */}
-          <div className="p-6 overflow-y-auto custom-scrollbar flex-grow">
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
               {step === 1 && renderStep1()}
               {step === 2 && renderStep2()}
               {step === 3 && renderStep3()}
               {step === 4 && renderStep4()}
 
               {error && (
-                  <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                  <div className="mt-6 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center gap-2 animate-in slide-in-from-bottom-2">
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full shrink-0" />
                       {error}
                   </div>
               )}
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
+          <div className="p-6 border-t border-gray-100 bg-white flex justify-between items-center shrink-0 z-10">
             {step > 1 ? (
                 <button
                     onClick={() => setStep(prev => prev - 1)}
-                    className="text-gray-500 hover:text-gray-800 font-medium text-sm flex items-center gap-1"
+                    className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                     <ChevronLeft size={16} /> Back
                 </button>
@@ -545,7 +575,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 <button
                     onClick={handleNext}
                     disabled={loading || (step === 2 && isAddingProduct)} // Disable next while adding product form is open
-                    className="px-6 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
                 >
                     {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                     Next <ChevronRight size={18} />

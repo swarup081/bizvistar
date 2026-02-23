@@ -192,7 +192,7 @@ export async function uploadLogo(formData) {
 export async function saveBusinessInfo(data) {
   try {
     const websiteId = await getWebsiteId();
-    const { name, ownerName, instagram, facebook, logoUrl } = data;
+    const { name, ownerName, instagram, facebook, logoUrl, whatsappNumber } = data;
 
     // 1. Update Onboarding Data
     const { error: onboardingError } = await supabaseAdmin
@@ -201,8 +201,8 @@ export async function saveBusinessInfo(data) {
         owner_name: ownerName,
         social_instagram: instagram,
         social_facebook: facebook,
-        logo_url: logoUrl
-        // business_name: name // If column exists
+        logo_url: logoUrl,
+        whatsapp_number: whatsappNumber
       })
       .eq('website_id', websiteId);
 
@@ -222,6 +222,7 @@ export async function saveBusinessInfo(data) {
         ...currentData,
         name: name || currentData.name,
         logoText: name || currentData.logoText, // Sync logo text
+        whatsappNumber: whatsappNumber || currentData.whatsappNumber,
         // Update socials in footer/contact if they exist
         footer: {
             ...currentData.footer,
@@ -365,15 +366,29 @@ export async function generateAIContent(description) {
         // Construct Prompt
         const prompt = `
             You are a professional website copywriter.
-            I have a website data JSON structure.
-            Update the text content (headings, paragraphs, hero titles, about text) to match this business description: "${description}".
+            I have a website data JSON structure for a business described as: "${description}".
 
-            Strict Rules:
-            1. Return ONLY valid JSON.
-            2. Do NOT change the structure of the JSON. Only change string values of text fields.
-            3. Do NOT change image URLs, product lists, or navigational links.
-            4. Keep the tone professional and engaging.
-            5. Use the existing keys: hero.title, hero.subtitle, about.text, services.title, etc.
+            Your task is to update the text content across ALL sections to match this brand voice and industry.
+
+            Specific Sections to Update:
+            - Hero (title, subtitle, cta)
+            - About (title, text, story)
+            - Features (titles, descriptions)
+            - FAQ (questions, answers) - VERY IMPORTANT: Update questions/answers to be relevant to the business type.
+            - Testimonials (quotes, author names) - Update quotes to reflect happy customers of this specific business.
+            - Menu/Collections (section titles, descriptions)
+            - CTA Sections (titles, text)
+
+            Strict Constraints:
+            1. Return ONLY valid JSON matching the structure of the input.
+            2. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields.
+            3. For FAQ and Testimonials:
+               - If the user description lacks specific details (like return policy, specific ingredients, exact pricing), DO NOT invent specific numbers or strict policies.
+               - Use broad, positive, safe language.
+               - Example (FAQ): "Do you offer delivery?" -> "Yes, we offer delivery services. Please contact us for details."
+               - Example (Testimonial): "Best pizza ever!" -> "Absolutely delicious! Highly recommended."
+            4. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
+            5. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
 
             Current JSON:
             ${JSON.stringify(currentData).substring(0, 15000)}

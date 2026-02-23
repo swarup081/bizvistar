@@ -3087,17 +3087,7 @@ export default function EditorSidebar({
                   {getSafe(businessData, 'footer.paymentDisclaimer') || "Select a mode to see disclaimer."}
               </p>
             </section>
-            
-            <section className="mt-6 pt-6 border-t border-gray-100">
-              <SectionTitle label="Store Management" />
-              <div className="space-y-1">
-                <SidebarLink icon={Store} label="Manage Store" onClick={() => {}} />
-                <SidebarLink icon={Calendar} label="Manage Appointments" onClick={() => {}} />
-                <SidebarLink icon={Tag} label="Manage Promotions" onClick={() => {}} />
-                <SidebarLink icon={MessageCircle} label="Manage Chat" onClick={() => {}} />
-                <SidebarLink icon={Contact} label="Manage Contacts" onClick={() => {}} />
-              </div>
-            </section>
+
           </div>
         )}
     </>
