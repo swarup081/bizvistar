@@ -65,7 +65,7 @@ export async function publishWebsite(websiteId, currentData = null) {
     // 1. Verify ownership
     const { data: website, error: verifyError } = await supabaseAdmin
         .from('websites')
-        .select('id, draft_data, website_data')
+        .select('id, draft_data, website_data, is_published')
         .eq('id', websiteId)
         .eq('user_id', userId)
         .single();
@@ -73,11 +73,15 @@ export async function publishWebsite(websiteId, currentData = null) {
     if (verifyError || !website) throw new Error('Unauthorized access or website not found.');
 
     // 2. Check Subscription
-    try {
-        await validateUserSubscription(userId);
-    } catch (subError) {
-        // If subscription is invalid/inactive
-        return { success: false, error: 'PAYMENT_REQUIRED', message: subError.message };
+    // Requirement: If already published, allow direct update (skip payment check).
+    // If not published (first time), check payment.
+    if (!website.is_published) {
+        try {
+            await validateUserSubscription(userId);
+        } catch (subError) {
+            // If subscription is invalid/inactive
+            return { success: false, error: 'PAYMENT_REQUIRED', message: subError.message };
+        }
     }
 
     // 3. Publish
