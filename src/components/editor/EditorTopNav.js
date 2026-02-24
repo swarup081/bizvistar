@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import {
-  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw // Import icons
+  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, Save
 } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import AIContentModal from './AIContentModal';
+import { generateAIContent } from '@/app/actions/onboardingActions';
 
 // A simple reusable button component for the nav
 const NavButton = ({ children, className = '', ...props }) => (
@@ -148,11 +150,14 @@ export default function EditorTopNav({
     canUndo,
     canRedo,
     onRestart,
-    isLandingMode = false // <-- NEW PROP
+    isLandingMode = false, // <-- NEW PROP
+    setBusinessData // <-- ADDED for AI Update
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false); // AI Modal State
+
   const router = useRouter();
   
   const currentPageName = pages.find(p => p.path === activePage)?.name || 'Home';
@@ -225,6 +230,18 @@ export default function EditorTopNav({
     }
   };
 
+  // --- AI Generation Handler ---
+  const handleAIGenerate = async (description) => {
+      if (!setBusinessData) return;
+
+      const { success, data, error } = await generateAIContent(description, templateName);
+      if (success) {
+          setBusinessData(data);
+      } else {
+          throw new Error(error); // Modal will catch this
+      }
+  };
+
   return (
     <header className="w-full bg-white shadow-sm">
       {/* Top-most Bar */}
@@ -236,7 +253,7 @@ export default function EditorTopNav({
               <Link href="/">
                 <Logo className="text-3xl cursor-pointer" />
               </Link>
-              {/* Hide "Hire" and "Help" on mobile (< lg) */}
+              {/* Hide "Hire" on mobile (< lg) */}
               <div className="hidden lg:flex items-center gap-2">
                 <Tooltip
                   title="Hire a Professional"
@@ -244,7 +261,19 @@ export default function EditorTopNav({
                 >
                   <NavButton>Hire a Professional</NavButton>
                 </Tooltip>
-                <NavButton>Help</NavButton>
+
+                {/* AI Button (Replaces Help) - Desktop Only if mode != dashboard */}
+                {mode !== 'dashboard' && (
+                    <Tooltip title="AI Writer" description="Rewrite your website content instantly.">
+                        <button
+                            onClick={() => setIsAIModalOpen(true)}
+                            className="flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors hover:bg-purple-50 hover:text-purple-600"
+                        >
+                            <img src="/aiicon.png" alt="AI" className="w-5 h-5 object-contain" />
+                            AI Writer
+                        </button>
+                    </Tooltip>
+                )}
               </div>
             </>
           ) : (
@@ -282,9 +311,9 @@ export default function EditorTopNav({
             </Tooltip>
           )}
 
-          <div className="w-px h-5 bg-gray-300"></div> 
+          <div className="hidden lg:block w-px h-5 bg-gray-300"></div>
           
-          {/* --- SAVE STATUS (Hidden on Mobile, moved to Right) --- */}
+          {/* --- SAVE STATUS (Desktop) --- */}
           <div
             className={`hidden lg:flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-md ${
               saveStatus === 'Saved' ? 'text-gray-400' : 'text-[#8A63D2]'
@@ -300,17 +329,41 @@ export default function EditorTopNav({
             {saveStatus}
           </div>
 
+          {/* --- MOBILE ONLY: AI BUTTON --- */}
+          {mode !== 'dashboard' && (
+             <button
+               onClick={() => setIsAIModalOpen(true)}
+               className="lg:hidden flex items-center justify-center p-2 rounded-full hover:bg-purple-50 transition-colors"
+             >
+                <img src="/aiicon.png" alt="AI" className="w-6 h-6 object-contain" />
+             </button>
+          )}
+
+          {/* --- MOBILE ONLY: SAVE BUTTON (Manual) --- */}
+          <button
+               className="lg:hidden flex items-center gap-2 text-sm font-medium text-gray-700 px-3 py-2 rounded-md transition-colors"
+               // It doesn't actually trigger save (since auto-save handles it), but shows status visually
+               disabled={true}
+           >
+              {saveStatus === 'Saving...' ? (
+                   <Loader2 size={20} className="animate-spin text-[#8A63D2]" />
+              ) : (
+                  <span className="text-gray-600 font-bold text-xs">{saveStatus === 'Saved' ? 'Saved' : 'Save'}</span>
+              )}
+           </button>
+
           {isLandingMode ? (
             <Tooltip title="Just a demo" description="Unlock full potential in the editor">
               <Link 
                 href="#"
                 onClick={onLandingDummyClick}
-                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
+                className="hidden lg:flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
               >
                 Preview
               </Link>
             </Tooltip>
           ) : (
+            // Hide Preview on Mobile
             <Tooltip
               title="Preview"
               description="See what your live site will look like to visitors."
@@ -319,7 +372,7 @@ export default function EditorTopNav({
                 href={`/preview/site/${siteSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
+                className="hidden lg:flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
               >
                 Preview
               </Link>
@@ -462,13 +515,11 @@ export default function EditorTopNav({
             </button>
           )}
         </div>
-        {/* Mobile: Reset & Save (Replaces Undo/Redo) */}
-        <div className="flex lg:hidden items-center gap-3 pl-5 mx-auto">
-           
-            <div className="text-base text-[#8A63D2] font-bold">
-                {saveStatus}
-            </div>
-        </div>
+
+        {/* Mobile: Space Filler if needed */}
+         <div className="flex lg:hidden items-center gap-3 pl-5 mx-auto">
+            {/* The previous Save Status was here, but we moved it to top bar */}
+         </div>
       </div>
 
       <RestartConfirmationModal
@@ -476,6 +527,20 @@ export default function EditorTopNav({
         onClose={() => setIsRestartModalOpen(false)}
         onConfirm={handleRestartConfirm}
       />
+
+      <AIContentModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onGenerate={handleAIGenerate}
+      />
     </header>
   );
 }
+
+// Helper Loader for Save Button
+const Loader2 = ({ size, className }) => (
+    <svg className={`animate-spin ${className}`} width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
