@@ -7,6 +7,7 @@ import EditorSidebar from './EditorSidebar';
 import WizardModal from './WizardModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 import { getOnboardingStatus } from '@/app/actions/onboardingActions';
+import { saveDraft, revertToPublished, publishWebsite } from '@/app/actions/editorActions';
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -195,25 +196,13 @@ useEffect(() => {
 
   debounceTimer.current = setTimeout(async () => {
     if (websiteId) {
-      
-      // --- ADD THIS LINE ---
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Call the 'save-website' Supabase function
-      const { error } = await supabase.functions.invoke('save-website', {
         
-        // --- ADD THIS 'headers' OBJECT ---
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        // --- END OF ADDITIONS ---
-        
-        body: { websiteId, websiteData: businessData },
-      });
+      // Use Server Action to save draft
+      const { success, error } = await saveDraft(websiteId, businessData);
 
-      if (error) {
+      if (!success) {
         setSaveStatus('Error');
-        console.error('Error saving to Supabase:', error);
+        console.error('Error saving draft:', error);
       } else {
         setSaveStatus('Saved');
       }
@@ -255,7 +244,26 @@ useEffect(() => {
     }
   };
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
+    // If connected to a website, fetch the last published version (or initial state)
+    if (websiteId) {
+        const { success, data } = await revertToPublished(websiteId);
+        if (success && data) {
+             localStorage.removeItem(editorDataKey);
+             localStorage.removeItem(cartDataKey);
+
+             setBusinessData(data);
+             setHistory([data]);
+             setHistoryIndex(0);
+             sendDataToIframe(data);
+
+             const homePage = data.pages?.[0]?.path || `/templates/${templateName}`;
+             handlePageChange(homePage);
+             return;
+        }
+    }
+
+    // Fallback to template default
     localStorage.removeItem(editorDataKey);
     localStorage.removeItem(cartDataKey);
     setBusinessData(defaultData);
@@ -264,6 +272,13 @@ useEffect(() => {
     sendDataToIframe(defaultData);
     const homePage = defaultData.pages?.[0]?.path || `/templates/${templateName}`;
     handlePageChange(homePage);
+  };
+
+  // Handler for Publishing (passed to TopNav)
+  const handlePublish = async () => {
+      if (!websiteId) return { success: false, error: 'No website ID' };
+      // Pass current businessData to ensure we publish exactly what is on screen
+      return await publishWebsite(websiteId, businessData);
   };
 
   const sendDataToIframe = (data) => {
@@ -401,6 +416,7 @@ useEffect(() => {
             canRedo={historyIndex < history.length - 1}
             onRestart={handleRestart}
             setBusinessData={handleDataUpdate} // <-- ADDED for AI functionality
+            onPublish={handlePublish} // <-- ADDED
           />
         </div>
 
