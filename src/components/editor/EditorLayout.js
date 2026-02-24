@@ -7,6 +7,7 @@ import EditorSidebar from './EditorSidebar';
 import WizardModal from './WizardModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 import { getOnboardingStatus } from '@/app/actions/onboardingActions';
+import { saveDraft, revertToPublished, publishWebsite } from '@/app/actions/editorActions';
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -25,6 +26,68 @@ const templateDataMap = {
   frostify: frostifyData,
   // Add other templates here as they are created
 };
+
+// --- Helper: Deep Merge ---
+function deepMerge(target, source) {
+  const isObject = (obj) => obj && typeof obj === 'object';
+
+  if (!isObject(target) || !isObject(source)) {
+    return source;
+  }
+
+  Object.keys(source).forEach(key => {
+    const targetValue = target[key];
+    const sourceValue = source[key];
+
+    if (Array.isArray(targetValue) && Array.isArray(sourceValue)) {
+      target[key] = targetValue.concat(sourceValue);
+    } else if (isObject(targetValue) && isObject(sourceValue)) {
+      target[key] = deepMerge(Object.assign({}, targetValue), sourceValue);
+    } else {
+      target[key] = sourceValue;
+    }
+  });
+
+  return target;
+}
+
+// Better deep merge for defaults: prioritize EXISTING user data, fill MISSING from default
+function mergeWithDefaults(userData, defaultData) {
+    if (!userData) return defaultData;
+    if (!defaultData) return userData;
+
+    // Start with default data (ensures all keys exist)
+    const merged = JSON.parse(JSON.stringify(defaultData));
+
+    // Recursively apply user data OVER defaults
+    // Note: This needs to be careful with arrays. Usually we want user arrays to replace default arrays entirely.
+    
+    function recursiveMerge(base, override) {
+        Object.keys(override).forEach(key => {
+            if (override[key] === undefined) return; // Skip undefined
+
+            if (
+                typeof override[key] === 'object' && 
+                override[key] !== null && 
+                !Array.isArray(override[key]) &&
+                base[key] && 
+                typeof base[key] === 'object' && 
+                !Array.isArray(base[key])
+            ) {
+                // Both are objects, merge recursively
+                recursiveMerge(base[key], override[key]);
+            } else {
+                // Otherwise override directly (primitives, arrays, or null)
+                // This ensures if user deleted items in an array, they stay deleted (we don't merge arrays)
+                base[key] = override[key];
+            }
+        });
+    }
+
+    recursiveMerge(merged, userData);
+    return merged;
+}
+
 
 // Main component updated to read site_id
 export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
@@ -122,7 +185,8 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
 
   const [businessData, setBusinessData] = useState(() => {
      // Priority: initialData (from DB) > defaultData
-     let data = initialData || defaultData;
+     // FIX: Merge initialData with defaultData to ensure all keys exist
+     let data = initialData ? mergeWithDefaults(initialData, defaultData) : defaultData;
      
      // Inject storeName from Get Started if available and we are starting fresh (using defaultData)
      if (!initialData && typeof window !== 'undefined') {
@@ -145,7 +209,7 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
      return data;
   });
   
-  const [history, setHistory] = useState([initialData || defaultData]);
+  const [history, setHistory] = useState([businessData]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
   // Load data
@@ -155,13 +219,17 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
       const savedData = localStorage.getItem(editorDataKey);
       if (savedData) {
         const parsedData = JSON.parse(savedData);
-        setBusinessData(parsedData); 
-        setHistory([parsedData]);
+        // FIX: Merge saved data with defaults too
+        const merged = mergeWithDefaults(parsedData, defaultData);
+        setBusinessData(merged); 
+        setHistory([merged]);
         setHistoryIndex(0);
       } else if (initialData) {
          // If we have initialData passed prop (e.g. from Dashboard), use it.
-         setBusinessData(initialData);
-         setHistory([initialData]);
+         // Already merged in useState, but good to be explicit if props change
+         const merged = mergeWithDefaults(initialData, defaultData);
+         setBusinessData(merged);
+         setHistory([merged]);
          setHistoryIndex(0);
       } else {
         // If no local data and no initialData, use default
@@ -195,25 +263,13 @@ useEffect(() => {
 
   debounceTimer.current = setTimeout(async () => {
     if (websiteId) {
-      
-      // --- ADD THIS LINE ---
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Call the 'save-website' Supabase function
-      const { error } = await supabase.functions.invoke('save-website', {
         
-        // --- ADD THIS 'headers' OBJECT ---
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        // --- END OF ADDITIONS ---
-        
-        body: { websiteId, websiteData: businessData },
-      });
+      // Use Server Action to save draft
+      const { success, error } = await saveDraft(websiteId, businessData);
 
-      if (error) {
+      if (!success) {
         setSaveStatus('Error');
-        console.error('Error saving to Supabase:', error);
+        console.error('Error saving draft:', error);
       } else {
         setSaveStatus('Saved');
       }
@@ -255,7 +311,29 @@ useEffect(() => {
     }
   };
 
-  const handleRestart = () => {
+  const handleRestart = async () => {
+    // If connected to a website, fetch the last published version (or initial state)
+    if (websiteId) {
+        const { success, data } = await revertToPublished(websiteId);
+        if (success && data) {
+             localStorage.removeItem(editorDataKey);
+             localStorage.removeItem(cartDataKey);
+             
+             // Ensure we merge published data with defaults too (in case template updated)
+             const merged = mergeWithDefaults(data, defaultData);
+             
+             setBusinessData(merged);
+             setHistory([merged]);
+             setHistoryIndex(0);
+             sendDataToIframe(merged);
+             
+             const homePage = merged.pages?.[0]?.path || `/templates/${templateName}`;
+             handlePageChange(homePage);
+             return;
+        }
+    }
+    
+    // Fallback to template default
     localStorage.removeItem(editorDataKey);
     localStorage.removeItem(cartDataKey);
     setBusinessData(defaultData);
@@ -264,6 +342,13 @@ useEffect(() => {
     sendDataToIframe(defaultData);
     const homePage = defaultData.pages?.[0]?.path || `/templates/${templateName}`;
     handlePageChange(homePage);
+  };
+
+  // Handler for Publishing (passed to TopNav)
+  const handlePublish = async () => {
+      if (!websiteId) return { success: false, error: 'No website ID' };
+      // Pass current businessData to ensure we publish exactly what is on screen
+      return await publishWebsite(websiteId, businessData);
   };
 
   const sendDataToIframe = (data) => {
@@ -401,6 +486,7 @@ useEffect(() => {
             canRedo={historyIndex < history.length - 1}
             onRestart={handleRestart}
             setBusinessData={handleDataUpdate} // <-- ADDED for AI functionality
+            onPublish={handlePublish} // <-- ADDED
           />
         </div>
 
