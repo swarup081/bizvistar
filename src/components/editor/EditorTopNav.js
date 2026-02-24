@@ -151,7 +151,8 @@ export default function EditorTopNav({
     canRedo,
     onRestart,
     isLandingMode = false, // <-- NEW PROP
-    setBusinessData // <-- ADDED for AI Update
+    setBusinessData, // <-- ADDED for AI Update
+    onPublish // <-- ADDED
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
@@ -183,36 +184,17 @@ export default function EditorTopNav({
     if (isPublishing) return;
     setIsPublishing(true);
     try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            router.push('/login');
-            return;
-        }
+        const { success, error } = await onPublish();
 
-        // Check subscription
-        const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('status')
-            .eq('user_id', user.id)
-            .in('status', ['active', 'trialing'])
-            .order('current_period_end', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-        
-        if (sub) {
-            // User is subscribed, publish directly
-            const { error } = await supabase.functions.invoke('publish-website', {
-                body: { websiteId }
-            });
-            if (error) {
-                alert('Failed to publish. Please try again.');
-                console.error(error);
-            } else {
-                alert('Website published successfully!');
-            }
+        if (success) {
+            alert('Website published successfully!');
         } else {
-            // Not subscribed, go to pricing
-            router.push(`/pricing?site_id=${websiteId}`);
+            if (error === 'PAYMENT_REQUIRED') {
+                router.push(`/pricing?site_id=${websiteId}`);
+            } else {
+                console.error('Publish error:', error);
+                alert('Failed to publish. Please try again.');
+            }
         }
     } catch (error) {
         console.error('Publish error:', error);
