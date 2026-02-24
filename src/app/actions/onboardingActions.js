@@ -371,7 +371,7 @@ export async function savePaymentInfo(data) {
 }
 
 // --- ACTION: Generate AI Content ---
-export async function generateAIContent(description) {
+export async function generateAIContent(description, templateName = null) {
     try {
         const websiteId = await getWebsiteId();
         
@@ -390,6 +390,8 @@ export async function generateAIContent(description) {
             
             Your task is to update the text content across ALL sections to match this brand voice and industry.
             
+            ${templateName ? `IMPORTANT: The current template is "${templateName}". Only update fields relevant to this template structure. Do NOT invent fields for other templates (e.g. if using 'aurora', do not generate 'heelsHero' or 'specialties' unless they exist in the input).` : ''}
+
             Specific Sections to Update:
             - Hero (title, subtitle, cta)
             - About (title, text, story)
@@ -411,7 +413,7 @@ export async function generateAIContent(description) {
                - Example (Testimonial): "Best pizza ever!" -> "Absolutely delicious! Highly recommended."
             5. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
             6. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
-            7. Target all templates including specific keys like 'heelsHero' (avenix), 'specialties' (frostify), 'collections' (aurora).
+            7. Do NOT include fields from other templates that are not present in the input JSON.
             
             Current JSON:
             ${JSON.stringify(currentData).substring(0, 15000)} 

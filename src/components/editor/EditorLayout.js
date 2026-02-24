@@ -400,6 +400,7 @@ useEffect(() => {
             canUndo={historyIndex > 0}
             canRedo={historyIndex < history.length - 1}
             onRestart={handleRestart}
+            setBusinessData={handleDataUpdate} // <-- ADDED for AI functionality
           />
         </div>
 
