@@ -3029,7 +3029,7 @@ export default function EditorSidebar({
 
                   <div className={`flex items-center justify-between p-3 rounded-lg border border-gray-200 ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'bg-gray-50' : 'bg-gray-100 opacity-50 cursor-not-allowed'}`}>
                       <div className="flex items-center gap-2">
-                          <MessageCircle size={18} className="text-green-600" />
+                          <img src="/whatsappingreenicon.png" alt="WhatsApp" className="w-5 h-5" />
                           <span className="text-sm font-medium text-gray-700">Enable WhatsApp Redirect</span>
                       </div>
                       <label className={`relative inline-flex items-center ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
