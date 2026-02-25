@@ -7,9 +7,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
 import { notifyLowStock } from '@/app/actions/productStockActions';
+import { addProduct } from '@/app/actions/productActions';
+import UpgradeModal from '@/components/dashboard/UpgradeModal';
 
 export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId, productToEdit }) {
   const [loading, setLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -172,21 +175,21 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
       const cleanVariants = formData.variants.filter(v => v.name.trim() !== '' && v.values.trim() !== '');
 
-      const payload = {
-        name: formData.name,
-        price: parseFloat(formData.price),
-        category_id: (!formData.categoryId || formData.categoryId === 'uncategorized') ? null : parseInt(formData.categoryId),
-        description: formData.description,
-        image_url: formData.imageUrl,
-        stock: finalStock,
-        website_id: websiteId,
-        additional_images: formData.additionalImages,
-        variants: cleanVariants
-      };
-
       let productId = productToEdit ? productToEdit.id : null;
 
       if (productToEdit) {
+          const payload = {
+            name: formData.name,
+            price: parseFloat(formData.price),
+            category_id: (!formData.categoryId || formData.categoryId === 'uncategorized') ? null : parseInt(formData.categoryId),
+            description: formData.description,
+            image_url: formData.imageUrl,
+            stock: finalStock,
+            website_id: websiteId,
+            additional_images: formData.additionalImages,
+            variants: cleanVariants
+          };
+
           const { error } = await supabase
             .from('products')
             .update(payload)
@@ -194,22 +197,35 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
           if (error) throw new Error(error.message);
 
+          await syncWebsiteDataClient(websiteId);
+          if (finalStock !== -1 && finalStock <= 5) {
+              await notifyLowStock(productToEdit.id);
+          }
+
       } else {
-          const { data, error } = await supabase
-            .from('products')
-            .insert(payload)
-            .select('id')
-            .single();
+          // Use Server Action for Add
+          const serverPayload = {
+            name: formData.name,
+            price: parseFloat(formData.price),
+            categoryId: (!formData.categoryId || formData.categoryId === 'uncategorized') ? 'uncategorized' : String(formData.categoryId),
+            description: formData.description,
+            imageUrl: formData.imageUrl,
+            stock: finalStock,
+            isUnlimited: formData.isUnlimited,
+            additionalImages: formData.additionalImages,
+            variants: cleanVariants
+          };
 
-          if (error) throw new Error(error.message);
-          if (data) productId = data.id;
-      }
+          const result = await addProduct(serverPayload);
 
-      await syncWebsiteDataClient(websiteId);
-
-      // Trigger Notification if Low Stock via Server Action
-      if (productId && finalStock !== -1 && finalStock <= 5) {
-          await notifyLowStock(productId);
+          if (!result.success) {
+              if (result.error && result.error.includes("Plan limit reached")) {
+                  setShowUpgradeModal(true);
+                  setLoading(false);
+                  return; // Stop here, keep dialog open (UpgradeModal will show over it)
+              }
+              throw new Error(result.error);
+          }
       }
 
       onProductAdded();
@@ -224,106 +240,109 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={onClose}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg h-[80vh] md:h-[600px] bg-white rounded-2xl shadow-2xl z-[70] flex flex-col focus:outline-none overflow-hidden font-sans">
-          
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 z-10">
-            <Dialog.Title className="text-xl font-bold text-gray-900">
-              {productToEdit ? 'Edit Product' : 'Add New Product'}
-            </Dialog.Title>
-            <Dialog.Close asChild>
-              <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
-                <X size={20} />
-              </button>
-            </Dialog.Close>
-          </div>
+    <>
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      
+      <Dialog.Root open={isOpen} onOpenChange={onClose}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-full max-w-lg h-[80vh] md:h-[600px] bg-white rounded-2xl shadow-2xl z-[70] flex flex-col focus:outline-none overflow-hidden font-sans">
+            
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white shrink-0 z-10">
+              <Dialog.Title className="text-xl font-bold text-gray-900">
+                {productToEdit ? 'Edit Product' : 'Add New Product'}
+              </Dialog.Title>
+              <Dialog.Close asChild>
+                <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
+                  <X size={20} />
+                </button>
+              </Dialog.Close>
+            </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
-                <div className="space-y-6">
-                    
-                    {/* Main Image */}
-                    <div className="flex justify-center">
-                        <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all cursor-pointer">
-                            {formData.imageUrl ? (
-                            <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                            ) : (
-                            <div className="flex flex-col items-center text-gray-400">
-                                <UploadCloud size={24} />
-                                <span className="text-xs mt-1">Main Image</span>
-                            </div>
-                            )}
-                            <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="absolute inset-0 opacity-0 cursor-pointer" 
-                            onChange={handleImageUpload}
-                            />
-                        </div>
-                    </div>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
+                  <div className="space-y-6">
+                      
+                      {/* Main Image */}
+                      <div className="flex justify-center">
+                          <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all cursor-pointer">
+                              {formData.imageUrl ? (
+                              <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                              ) : (
+                              <div className="flex flex-col items-center text-gray-400">
+                                  <UploadCloud size={24} />
+                                  <span className="text-xs mt-1">Main Image</span>
+                              </div>
+                              )}
+                              <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="absolute inset-0 opacity-0 cursor-pointer" 
+                              onChange={handleImageUpload}
+                              />
+                          </div>
+                      </div>
 
-                    {/* Additional Images */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Additional Images (Max 9)</label>
-                        <div className="grid grid-cols-5 gap-2">
-                            {formData.additionalImages.map((img, idx) => (
-                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                                    <img src={img} alt="" className="w-full h-full object-cover" />
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeAdditionalImage(idx)}
-                                        className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X size={12} />
-                                    </button>
-                                </div>
-                            ))}
-                            {formData.additionalImages.length < 9 && (
-                                <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-colors cursor-pointer">
-                                    <Plus size={16} className="text-gray-400" />
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        multiple
-                                        className="absolute inset-0 opacity-0 cursor-pointer" 
-                                        onChange={handleAdditionalImageUpload}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                      {/* Additional Images */}
+                      <div className="space-y-2">
+                          <label className="text-xs font-bold text-gray-500 uppercase">Additional Images (Max 9)</label>
+                          <div className="grid grid-cols-5 gap-2">
+                              {formData.additionalImages.map((img, idx) => (
+                                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
+                                      <img src={img} alt="" className="w-full h-full object-cover" />
+                                      <button 
+                                          type="button" 
+                                          onClick={() => removeAdditionalImage(idx)}
+                                          className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                          <X size={12} />
+                                      </button>
+                                  </div>
+                              ))}
+                              {formData.additionalImages.length < 9 && (
+                                  <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-colors cursor-pointer">
+                                      <Plus size={16} className="text-gray-400" />
+                                      <input 
+                                          type="file" 
+                                          accept="image/*" 
+                                          multiple
+                                          className="absolute inset-0 opacity-0 cursor-pointer" 
+                                          onChange={handleAdditionalImageUpload}
+                                      />
+                                  </div>
+                              )}
+                          </div>
+                      </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Product Name</label>
-                        <input 
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        placeholder="e.g. Leather Pouch"
-                        className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
-                        />
-                    </div>
+                      <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-gray-500 uppercase">Product Name</label>
+                          <input 
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                          placeholder="e.g. Leather Pouch"
+                          className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                          />
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Price</label>
-                            <input 
-                            name="price"
-                            type="number"
-                            step="0.01"
-                            value={formData.price}
-                            onChange={handleChange}
-                            required
-                            placeholder="0.00"
-                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
-                            />
-                        </div>
-                        
-                        <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-gray-500 uppercase">Price</label>
+                              <input 
+                              name="price"
+                              type="number"
+                              step="0.01"
+                              value={formData.price}
+                              onChange={handleChange}
+                              required
+                              placeholder="0.00"
+                              className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                              />
+                          </div>
+                          
+                          <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
                                 <label className="text-xs font-bold text-gray-500 uppercase">Stock</label>
                                 <label className="flex items-center gap-1 cursor-pointer">
                                     <input 
@@ -494,5 +513,6 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+    </>
   );
 }

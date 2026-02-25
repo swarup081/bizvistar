@@ -218,7 +218,9 @@ export async function addProduct(productData) {
         description: productData.description,
         image_url: productData.imageUrl,
         stock: finalStock,
-        website_id: websiteId
+        website_id: websiteId,
+        additional_images: productData.additionalImages || [],
+        variants: productData.variants || []
       })
       .select()
       .single();
