@@ -1,23 +1,81 @@
 'use client';
 
+import { useContext, useState } from 'react';
 import { useCart } from '../cartContext.js';
+import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, QrCode, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { QRCodeSVG } from 'qrcode.react';
 import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
+    const { businessData } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
         cartDetails, subtotal, shipping, total 
     } = useCheckout(cart);
     
-    const handlePlaceOrder = (e) => {
+    const [showUpi, setShowUpi] = useState(false);
+    const [finalAmount, setFinalAmount] = useState(0);
+
+    const isUPI = businessData?.payment?.mode === 'UPI';
+    const upiId = businessData?.payment?.upiId;
+
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        submit();
+        const currentTotal = total;
+        const result = await submit();
+        if (result && result.success && isUPI) {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${currentTotal}&cu=INR`;
+                window.location.href = link;
+            }
+            setFinalAmount(currentTotal);
+            setShowUpi(true);
+        }
     };
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${finalAmount}&cu=INR`;
+
+    if (showUpi) {
+        return (
+            <div className="bg-[var(--color-bg)] w-full min-h-screen flex items-center justify-center p-6">
+                <div className="bg-white p-8 md:p-12 shadow-lg border border-gray-100 max-w-xl w-full text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Smartphone className="text-green-600 w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-serif text-[#0F1C23] mb-4">Almost There! Complete Your Payment</h2>
+                    <p className="text-gray-600 mb-8">Please complete your payment of <span className="font-bold text-[#0F1C23]">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
+                    
+                    <div className="hidden md:block mb-8">
+                        <div className="bg-white p-2 border border-gray-200 inline-block rounded-lg">
+                             <QRCodeSVG value={upiLink} size={200} />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2">Scan with any UPI App</p>
+                    </div>
+
+                    <a 
+                        href={upiLink}
+                        className="md:hidden w-full bg-[#25D366] text-white py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2 mb-4"
+                    >
+                        Pay Now
+                    </a>
+
+                    <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
+                        "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
+                    </p>
+                    
+                    <a href="/templates/aurora/shop" className="block mt-8 text-[#0F1C23] underline text-sm hover:text-opacity-70">
+                        Return to Shop
+                    </a>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden min-h-screen">
@@ -189,9 +247,15 @@ export default function CheckoutPage() {
                                         Processing...
                                     </>
                                 ) : (
-                                    'Place Order'
+                                    isUPI ? 'Place Order & Pay' : 'Place Order (COD)'
                                 )}
                             </button>
+                            <p className="text-xs text-center text-gray-400 mt-4">
+                                {isUPI 
+                                    ? "You will be redirected to payment after placing order."
+                                    : "Payment will be collected upon delivery."
+                                }
+                            </p>
                         </div>
                     </div>
                 )}

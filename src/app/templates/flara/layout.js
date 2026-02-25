@@ -7,24 +7,10 @@ import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
-function FlaraContent({ children, serverData, websiteId }) { // Renamed from CartLayout to avoid confusion
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter(); 
-    const pathname = usePathname();
-    
-    // Base Path Logic
-    let basePath = '/templates/flara';
-    if (serverData) {
-        if (pathname && pathname.startsWith('/site/')) {
-            const parts = pathname.split('/');
-            if (parts.length >= 3) {
-                 basePath = `/${parts[1]}/${parts[2]}`;
-            }
-        } else {
-             basePath = '.';
-        }
-    }
+function FlaraContent({ children }) {
+    const { businessData, basePath, websiteId } = useContext(TemplateContext);
     
     const { 
         cartCount, 
@@ -46,43 +32,10 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
         });
         document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
 
-        if (serverData) return;
-
-        let parentPath = '';
-        try {
-            parentPath = window.parent.location.pathname;
-        } catch (e) { }
-
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website') || parentPath === '/';
-        const isPreview = parentPath.startsWith('/preview/');
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') setBusinessData(event.data.payload);
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                if (event.data.type === 'CHANGE_PAGE') router.push(event.data.payload.path);
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        
-        } else if (isPreview) {
-            const editorDataKey = `editorData_flara`; 
-            const savedData = localStorage.getItem(editorDataKey);
-            if (savedData) {
-                try {
-                    setBusinessData(JSON.parse(savedData));
-                } catch (e) { console.error("Error parsing preview data", e); }
-            }
-        }
-
         return () => {
             document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.colorPalette, router, serverData]);
+    }, [businessData.theme.colorPalette]);
 
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
@@ -193,6 +146,7 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
             <div className={`fixed bottom-8 right-8 z-50 bg-brand-text text-brand-bg px-5 py-3 shadow-lg transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'}`}>
                 Item added to cart!
             </div>
+            <WhatsAppButton businessData={businessData} />
         </div>
     );
 }

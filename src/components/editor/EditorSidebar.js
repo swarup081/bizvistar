@@ -581,22 +581,20 @@ export default function EditorSidebar({
           newData.payment.mode = mode;
           if (mode === 'COD') {
               newData.payment.upiId = ''; // Clear UPI ID if COD
-              newData.footer.paymentDisclaimer = "Note: Since we cannot redirect users to a payment gateway, you are responsible for collecting payment upon delivery. Please ensure you have a process in place to settle these transactions.";
+              newData.footer.paymentDisclaimer = "Note: Payment will be collected upon delivery. Please ensure you have a process in place to settle these transactions.";
           } else {
-              newData.footer.paymentDisclaimer = "Please note: Payments are processed directly between you and your customer. We do not facilitate transactions or charge commissions. You are responsible for verifying all payments received.";
+              newData.footer.paymentDisclaimer = "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions.";
           }
           
           // Append disclaimer to footer description if needed or handle separately
           // For now, assume template handles paymentDisclaimer or we append it
-          if (newData.footer.description && !newData.footer.description.includes(newData.footer.paymentDisclaimer)) {
-               // Remove old disclaimer first? Complicated. Just set the property.
-               // Most templates won't render 'paymentDisclaimer' unless updated.
-               // Let's assume templates use 'footer.description' mostly.
-               // So we append it.
+          if (newData.footer.description) {
                const oldDesc = prev.footer?.description || '';
-               // Simple heuristic: if it contains "Note: Since..." or "Please note:...", replace it.
-               const baseDesc = oldDesc.split(/Note: Since|Please note: Payments/)[0].trim();
+               // Simple heuristic: if it contains "Note: Payment..." or "Please note: Payments...", replace it.
+               const baseDesc = oldDesc.split(/Note: Payment|Please note: Payments/)[0].trim();
                newData.footer.description = `${baseDesc}\n\n${newData.footer.paymentDisclaimer}`;
+          } else {
+               newData.footer.description = newData.footer.paymentDisclaimer;
           }
 
           return newData;
@@ -3016,11 +3014,46 @@ export default function EditorSidebar({
                   value={getSafe(businessData, 'owner')}
                   onChange={(e) => handleDataChange('owner', e.target.value)}
               />
-              <EditorInput
-                  label="Contact Phone / WhatsApp"
-                  value={getSafe(businessData, 'whatsappNumber')}
-                  onChange={(e) => handleDataChange('whatsappNumber', e.target.value)}
-              />
+              <div className="mb-4">
+                  <EditorInput
+                      label="Contact Phone / WhatsApp"
+                      value={getSafe(businessData, 'whatsappNumber')}
+                      onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          handleDataChange('whatsappNumber', val);
+                      }}
+                  />
+                  {getSafe(businessData, 'whatsappNumber') && getSafe(businessData, 'whatsappNumber').length !== 10 && (
+                      <p className="text-xs text-red-500 -mt-3 mb-2">Number must be 10 digits.</p>
+                  )}
+
+                  <div className={`flex items-center justify-between p-3 rounded-lg border border-gray-200 ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'bg-gray-50' : 'bg-gray-100 opacity-50 cursor-not-allowed'}`}>
+                      <div className="flex items-center gap-2">
+                          <img src="/whatsappingreenicon.png" alt="WhatsApp" className="w-5 h-5" />
+                          <span className="text-sm font-medium text-gray-700">Enable WhatsApp Redirect</span>
+                      </div>
+                      <label className={`relative inline-flex items-center ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                          <input 
+                              type="checkbox" 
+                              checked={getSafe(businessData, 'enableWhatsApp') || false} 
+                              onChange={(e) => {
+                                  if (getSafe(businessData, 'whatsappNumber').length === 10) {
+                                      handleDataChange('enableWhatsApp', e.target.checked);
+                                  }
+                              }}
+                              disabled={getSafe(businessData, 'whatsappNumber').length !== 10}
+                              className="sr-only peer" 
+                          />
+                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8A63D2] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8A63D2]"></div>
+                      </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 px-1">
+                      {getSafe(businessData, 'whatsappNumber').length !== 10 
+                          ? "Please enter a valid 10-digit number to enable."
+                          : "If enabled, a WhatsApp button will appear on your live site for customers to contact you directly."
+                      }
+                  </p>
+              </div>
               
               <h4 className="text-xs font-semibold text-gray-500 uppercase mt-4 mb-2">Social Media</h4>
               <div className="space-y-3">
@@ -3075,12 +3108,17 @@ export default function EditorSidebar({
               </div>
 
               {getSafe(businessData, 'payment.mode') === 'UPI' && (
-                  <EditorInput
-                      label="UPI ID"
-                      value={getSafe(businessData, 'payment.upiId')}
-                      onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
-                      placeholder="username@upi"
-                  />
+                  <div>
+                      <EditorInput
+                          label="UPI ID"
+                          value={getSafe(businessData, 'payment.upiId')}
+                          onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
+                          placeholder="username@upi"
+                      />
+                      {getSafe(businessData, 'payment.upiId') && !getSafe(businessData, 'payment.upiId').includes('@') && (
+                          <p className="text-xs text-red-500 -mt-3 mb-2">UPI ID must contain '@'.</p>
+                      )}
+                  </div>
               )}
               
               <p className="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded">

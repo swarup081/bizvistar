@@ -9,6 +9,7 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X, Minus, Plus } from 'lucide-react'; // Added icons
 import { colorPalettes } from '@/components/editor/EditorSidebar';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
@@ -304,6 +305,7 @@ function FrostifyContent({ children }) {
                     )}
                 </div>
             </div>
+            <WhatsAppButton businessData={businessData} />
         </div>
     );
 }
