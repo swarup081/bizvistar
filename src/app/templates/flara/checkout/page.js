@@ -165,7 +165,7 @@ export default function CheckoutPage() {
                     </a>
 
                     <p className="text-sm text-brand-text/60 bg-brand-bg/50 p-4 rounded-md">
-                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."}
+                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may kindly request a payment screenshot for verification. Please note that Bizvistar does not facilitate transactions or charge commissions."}
                     </p>
 
                     <a href="shop" className="block mt-8 text-brand-text underline text-sm hover:opacity-70">

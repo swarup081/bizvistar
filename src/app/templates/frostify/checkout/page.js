@@ -66,7 +66,7 @@ export default function FrostifyCheckoutPage() {
                     </a>
 
                     <p className="text-sm text-[var(--color-primary)]/60 bg-[var(--color-surface)] p-4 rounded-xl">
-                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."}
+                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may kindly request a payment screenshot for verification. Please note that Bizvistar does not facilitate transactions or charge commissions."}
                     </p>
 
                     <a href="/templates/frostify/shop" className="block mt-8 text-[var(--color-primary)] underline text-sm hover:opacity-70">

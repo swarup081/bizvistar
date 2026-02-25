@@ -1,7 +1,5 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
-
 export default function WhatsAppButton({ businessData }) {
     if (!businessData?.whatsappNumber || !businessData?.enableWhatsApp) return null;
 
@@ -18,10 +16,14 @@ export default function WhatsAppButton({ businessData }) {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-[9999] p-4 bg-[#25D366] text-white rounded-full shadow-lg hover:bg-[#20bd5a] hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center"
+            className="fixed bottom-6 right-6 z-[9999] bg-[#25D366] p-3 rounded-full shadow-lg hover:bg-[#20bd5a] hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center overflow-hidden"
             aria-label="Chat on WhatsApp"
         >
-            <MessageCircle size={28} fill="white" className="text-white" />
+            <img
+                src="/whatsappicon.png"
+                alt="WhatsApp"
+                className="w-8 h-8 object-contain"
+            />
         </a>
     );
 }
