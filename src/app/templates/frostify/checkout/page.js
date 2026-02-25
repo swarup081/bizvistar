@@ -1,23 +1,76 @@
 'use client';
 
+import { useContext, useState } from 'react';
 import { useCart } from '../cartContext.js';
+import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { QRCodeSVG } from 'qrcode.react';
 import StateSelector from '@/components/checkout/StateSelector';
 
 export default function FrostifyCheckoutPage() {
     const cart = useCart();
+    const { businessData } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
         cartDetails, subtotal, shipping, total 
     } = useCheckout(cart);
     
-    const handlePlaceOrder = (e) => {
+    const [showUpi, setShowUpi] = useState(false);
+    const [finalAmount, setFinalAmount] = useState(0);
+
+    const isUPI = businessData?.payment?.mode === 'UPI';
+    const upiId = businessData?.payment?.upiId;
+
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        submit();
+        const currentTotal = total;
+        const result = await submit();
+        if (result && result.success && isUPI) {
+            setFinalAmount(currentTotal);
+            setShowUpi(true);
+        }
     };
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${finalAmount}&cu=INR`;
+
+    if (showUpi) {
+        return (
+            <div className="bg-[#F9F4F6] min-h-screen pt-24 pb-12 flex items-center justify-center p-6">
+                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-lg max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-[var(--color-surface)] rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Smartphone className="text-[var(--color-secondary)] w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-serif text-[var(--color-primary)] mb-4">Order Placed!</h2>
+                    <p className="text-[var(--color-primary)]/80 mb-8">Pay <span className="font-bold">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
+
+                    <div className="hidden md:block mb-8">
+                        <div className="bg-white p-2 border border-gray-100 inline-block rounded-2xl shadow-sm">
+                            <QRCodeSVG value={upiLink} size={200} />
+                        </div>
+                        <p className="text-xs text-[var(--color-primary)]/60 mt-2">Scan with any UPI App</p>
+                    </div>
+
+                    <a
+                        href={upiLink}
+                        className="md:hidden w-full bg-[var(--color-secondary)] text-white py-4 rounded-full font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors flex items-center justify-center gap-2 mb-4"
+                    >
+                        Pay Now
+                    </a>
+
+                    <p className="text-sm text-[var(--color-primary)]/60 bg-[var(--color-surface)] p-4 rounded-xl">
+                        {businessData?.footer?.paymentDisclaimer || "Please share a payment screenshot."}
+                    </p>
+
+                    <a href="/templates/frostify/shop" className="block mt-8 text-[var(--color-primary)] underline text-sm hover:opacity-70">
+                        Return to Shop
+                    </a>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#F9F4F6] min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">
@@ -178,9 +231,15 @@ export default function FrostifyCheckoutPage() {
                                             Processing...
                                         </>
                                     ) : (
-                                        'Place Order'
+                                        isUPI ? 'Place Order & Pay' : 'Place Order (COD)'
                                     )}
                                 </button>
+                                <p className="text-xs text-white/70 text-center mt-4">
+                                    {isUPI
+                                        ? "Complete payment via UPI after placing order."
+                                        : "Payment will be collected upon delivery."
+                                    }
+                                </p>
                             </div>
                         </div>
                     </div>

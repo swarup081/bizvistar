@@ -9,6 +9,7 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import { X } from 'lucide-react';
 import { colorPalettes } from '@/components/editor/EditorSidebar';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const fontMap = {
     'Poppins': { url: 'family=Poppins:wght@300;400;500;600;700', family: "'Poppins', sans-serif" },
@@ -228,6 +229,7 @@ function AuroraContent({ children }) {
                     </div>
                 </div>
             </div>
+            <WhatsAppButton businessData={businessData} />
         </div>
     );
 }

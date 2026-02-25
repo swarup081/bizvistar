@@ -1,24 +1,76 @@
 'use client';
 
+import { useContext, useState } from 'react';
 import { useCart } from '../cartContext.js';
+import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { QRCodeSVG } from 'qrcode.react';
 import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
+    const { businessData } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
         cartDetails, subtotal, shipping, total 
     } = useCheckout(cart);
     
-    // Wrapper for submit to match event handler signature
-    const handlePlaceOrder = (e) => {
+    const [showUpi, setShowUpi] = useState(false);
+    const [finalAmount, setFinalAmount] = useState(0);
+
+    const isUPI = businessData?.payment?.mode === 'UPI';
+    const upiId = businessData?.payment?.upiId;
+
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        submit();
+        const currentTotal = total;
+        const result = await submit();
+        if (result && result.success && isUPI) {
+            setFinalAmount(currentTotal);
+            setShowUpi(true);
+        }
     };
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${finalAmount}&cu=INR`;
+
+    if (showUpi) {
+        return (
+            <div className="container mx-auto px-4 py-20 min-h-screen flex items-center justify-center">
+                <div className="bg-brand-primary p-8 md:p-12 rounded-2xl max-w-md w-full text-center shadow-lg">
+                    <div className="w-16 h-16 bg-brand-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Smartphone className="text-brand-secondary w-8 h-8" />
+                    </div>
+                    <h2 className="text-2xl font-serif text-brand-text mb-4">Order Placed!</h2>
+                    <p className="text-brand-text/80 mb-8">Pay <span className="font-bold">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
+
+                    <div className="hidden md:block mb-8">
+                        <div className="bg-white p-2 inline-block rounded-lg shadow-sm">
+                             <QRCodeSVG value={upiLink} size={200} />
+                        </div>
+                        <p className="text-xs text-brand-text/60 mt-2">Scan with any UPI App</p>
+                    </div>
+
+                    <a
+                        href={upiLink}
+                        className="md:hidden w-full bg-brand-secondary text-brand-bg py-4 rounded-full font-medium uppercase tracking-wider hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mb-4"
+                    >
+                        Pay Now
+                    </a>
+
+                    <p className="text-sm text-brand-text/60 bg-brand-bg/50 p-4 rounded-lg">
+                        {businessData?.footer?.paymentDisclaimer || "Please share a payment screenshot."}
+                    </p>
+
+                    <a href="/templates/avenix/shop" className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
+                        Return to Shop
+                    </a>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 font-sans">
@@ -205,10 +257,15 @@ export default function CheckoutPage() {
                                     Processing...
                                 </>
                             ) : (
-                                'Place Order (COD)'
+                                isUPI ? 'Place Order & Pay' : 'Place Order (COD)'
                             )}
                         </button>
-                        <p className="text-xs text-brand-text/60 text-center mt-2">Payment will be collected upon delivery.</p>
+                        <p className="text-xs text-brand-text/60 text-center mt-2">
+                            {isUPI
+                                ? "Complete payment via UPI after placing order."
+                                : "Payment will be collected upon delivery."
+                            }
+                        </p>
                     </div>
                 </div>
             )}

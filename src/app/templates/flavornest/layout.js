@@ -7,6 +7,7 @@ import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
@@ -219,6 +220,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
                 <div className={`fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                     Item added to cart!
                 </div>
+                <WhatsAppButton businessData={businessData} />
             </div>
         </TemplateContext.Provider>
     );
