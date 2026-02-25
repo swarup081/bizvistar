@@ -305,6 +305,7 @@ function FrostifyContent({ children }) {
                     )}
                 </div>
             </div>
+            <WhatsAppButton businessData={businessData} />
         </div>
     );
 }

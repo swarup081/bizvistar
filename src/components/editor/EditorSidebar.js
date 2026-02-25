@@ -583,7 +583,7 @@ export default function EditorSidebar({
               newData.payment.upiId = ''; // Clear UPI ID if COD
               newData.footer.paymentDisclaimer = "Note: Payment will be collected upon delivery. Please ensure you have a process in place to settle these transactions.";
           } else {
-              newData.footer.paymentDisclaimer = "Please note: Payments are processed directly between you and your customer via UPI. Please ask the customer for a payment screenshot to verify the transaction.";
+              newData.footer.paymentDisclaimer = "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions.";
           }
           
           // Append disclaimer to footer description if needed or handle separately

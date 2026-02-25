@@ -29,6 +29,11 @@ export default function CheckoutPage() {
         const currentTotal = total;
         const result = await submit();
         if (result && result.success && isUPI) {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${currentTotal}&cu=INR`;
+                window.location.href = link;
+            }
             setFinalAmount(currentTotal);
             setShowUpi(true);
         }
@@ -61,7 +66,7 @@ export default function CheckoutPage() {
                     </a>
 
                     <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
-                        {businessData?.footer?.paymentDisclaimer || "Please share a screenshot of the payment to verify your order."}
+                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."}
                     </p>
 
                     <a href="/templates/aurora/shop" className="block mt-8 text-[#0F1C23] underline text-sm hover:text-opacity-70">

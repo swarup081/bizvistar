@@ -9,10 +9,8 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
-function AvenixContent({ children, serverData, websiteId }) { 
-    const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
-    
+function AvenixContent({ children }) {
+    const { businessData, websiteId } = useContext(TemplateContext);
     const { 
         cartCount, 
         isCartOpen, 
@@ -36,64 +34,10 @@ function AvenixContent({ children, serverData, websiteId }) {
         });
         document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
 
-        if (serverData) return;
-
-        let parentPath = '';
-        try {
-            parentPath = window.parent.location.pathname;
-        } catch (e) { }
-
-        const isEditor = parentPath.startsWith('/editor/') || parentPath.startsWith('/dashboard/website');
-        const isPreview = parentPath.startsWith('/preview/');
-        const isLiveSite = !isEditor && !isPreview;
-
-        if (isEditor) {
-            const handleMessage = (event) => {
-                if (event.data.type === 'UPDATE_DATA') {
-                    setBusinessData(event.data.payload);
-                }
-                if (event.data.type === 'SCROLL_TO_SECTION') {
-                    const element = document.getElementById(event.data.payload.sectionId);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
-                if (event.data.type === 'CHANGE_PAGE') {
-                    router.push(event.data.payload.path);
-                }
-            };
-            window.addEventListener('message', handleMessage);
-            window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
-            return () => window.removeEventListener('message', handleMessage);
-        
-        } else if (isPreview) {
-            const editorDataKey = `editorData_avenix`;
-            const savedData = localStorage.getItem(editorDataKey);
-            if (savedData) {
-                try {
-                    setBusinessData(JSON.parse(savedData));
-                } catch (e) { }
-            }
-        
-        } else if (isLiveSite) {
-            const storedStoreName = localStorage.getItem('storeName');
-            if (storedStoreName) {
-                setBusinessData(prevData => ({
-                    ...prevData,
-                    name: storedStoreName,
-                    logoText: storedStoreName,
-                    footer: {
-                        ...prevData.footer,
-                        copyright: `© ${new Date().getFullYear()} ${storedStoreName},`
-                    }
-                }));
-            }
-        }
-
         return () => {
             document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
         };
-    }, [businessData.theme.colorPalette, router, serverData]);
+    }, [businessData.theme.colorPalette]);
 
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
@@ -248,7 +192,7 @@ export default function AvenixLayout({ children, serverData, websiteId }) {
     return (
         <AvenixStateProvider serverData={serverData} websiteId={websiteId}>
             <CartProvider>
-                <AvenixContent serverData={serverData} websiteId={websiteId}>
+                <AvenixContent>
                     {children}
                 </AvenixContent>
             </CartProvider>

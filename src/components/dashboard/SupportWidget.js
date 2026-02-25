@@ -140,7 +140,7 @@ export default function SupportWidget() {
 
   // Hide widget on public sites or templates
   // Assuming paths like /site/[slug] or /preview/[template] are public
-  if (pathname?.startsWith('/site/') || pathname?.startsWith('/preview/')) {
+  if (pathname?.startsWith('/site/') || pathname?.startsWith('/preview/') || pathname?.startsWith('/templates/')) {
     return null;
   }
 

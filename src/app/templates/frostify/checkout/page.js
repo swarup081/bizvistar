@@ -29,6 +29,11 @@ export default function FrostifyCheckoutPage() {
         const currentTotal = total;
         const result = await submit();
         if (result && result.success && isUPI) {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(businessData?.name || 'Store')}&am=${currentTotal}&cu=INR`;
+                window.location.href = link;
+            }
             setFinalAmount(currentTotal);
             setShowUpi(true);
         }
@@ -61,7 +66,7 @@ export default function FrostifyCheckoutPage() {
                     </a>
 
                     <p className="text-sm text-[var(--color-primary)]/60 bg-[var(--color-surface)] p-4 rounded-xl">
-                        {businessData?.footer?.paymentDisclaimer || "Please share a payment screenshot."}
+                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."}
                     </p>
 
                     <a href="/templates/frostify/shop" className="block mt-8 text-[var(--color-primary)] underline text-sm hover:opacity-70">
