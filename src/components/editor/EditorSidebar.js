@@ -3027,23 +3027,31 @@ export default function EditorSidebar({
                       <p className="text-xs text-red-500 -mt-3 mb-2">Number must be 10 digits.</p>
                   )}
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className={`flex items-center justify-between p-3 rounded-lg border border-gray-200 ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'bg-gray-50' : 'bg-gray-100 opacity-50 cursor-not-allowed'}`}>
                       <div className="flex items-center gap-2">
                           <MessageCircle size={18} className="text-green-600" />
                           <span className="text-sm font-medium text-gray-700">Enable WhatsApp Redirect</span>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label className={`relative inline-flex items-center ${getSafe(businessData, 'whatsappNumber').length === 10 ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                           <input
                               type="checkbox"
                               checked={getSafe(businessData, 'enableWhatsApp') || false}
-                              onChange={(e) => handleDataChange('enableWhatsApp', e.target.checked)}
+                              onChange={(e) => {
+                                  if (getSafe(businessData, 'whatsappNumber').length === 10) {
+                                      handleDataChange('enableWhatsApp', e.target.checked);
+                                  }
+                              }}
+                              disabled={getSafe(businessData, 'whatsappNumber').length !== 10}
                               className="sr-only peer"
                           />
                           <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#8A63D2] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#8A63D2]"></div>
                       </label>
                   </div>
                   <p className="text-xs text-gray-500 mt-2 px-1">
-                      If enabled, a WhatsApp button will appear on your live site for customers to contact you directly.
+                      {getSafe(businessData, 'whatsappNumber').length !== 10
+                          ? "Please enter a valid 10-digit number to enable."
+                          : "If enabled, a WhatsApp button will appear on your live site for customers to contact you directly."
+                      }
                   </p>
               </div>
               

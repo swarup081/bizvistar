@@ -48,7 +48,7 @@ export default function CheckoutPage() {
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Smartphone className="text-green-600 w-8 h-8" />
                     </div>
-                    <h2 className="text-2xl font-serif text-[#0F1C23] mb-4">Order Placed Successfully!</h2>
+                    <h2 className="text-2xl font-serif text-[#0F1C23] mb-4">Order Successfully Placed!</h2>
                     <p className="text-gray-600 mb-8">Please complete your payment of <span className="font-bold text-[#0F1C23]">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
 
                     <div className="hidden md:block mb-8">
@@ -66,7 +66,7 @@ export default function CheckoutPage() {
                     </a>
 
                     <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg">
-                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may kindly request a payment screenshot for verification. Please note that Bizvistar does not facilitate transactions or charge commissions."}
+                        "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
 
                     <a href="/templates/aurora/shop" className="block mt-8 text-[#0F1C23] underline text-sm hover:text-opacity-70">

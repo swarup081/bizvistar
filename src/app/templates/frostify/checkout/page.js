@@ -48,7 +48,7 @@ export default function FrostifyCheckoutPage() {
                     <div className="w-16 h-16 bg-[var(--color-surface)] rounded-full flex items-center justify-center mx-auto mb-6">
                         <Smartphone className="text-[var(--color-secondary)] w-8 h-8" />
                     </div>
-                    <h2 className="text-2xl font-serif text-[var(--color-primary)] mb-4">Order Placed!</h2>
+                    <h2 className="text-2xl font-serif text-[var(--color-primary)] mb-4">Order Successfully Placed!</h2>
                     <p className="text-[var(--color-primary)]/80 mb-8">Pay <span className="font-bold">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
 
                     <div className="hidden md:block mb-8">
@@ -66,7 +66,7 @@ export default function FrostifyCheckoutPage() {
                     </a>
 
                     <p className="text-sm text-[var(--color-primary)]/60 bg-[var(--color-surface)] p-4 rounded-xl">
-                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may kindly request a payment screenshot for verification. Please note that Bizvistar does not facilitate transactions or charge commissions."}
+                        "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
 
                     <a href="/templates/frostify/shop" className="block mt-8 text-[var(--color-primary)] underline text-sm hover:opacity-70">

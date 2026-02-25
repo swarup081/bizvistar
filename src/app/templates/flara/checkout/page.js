@@ -147,7 +147,7 @@ export default function CheckoutPage() {
                     <div className="w-16 h-16 bg-brand-secondary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Smartphone className="text-brand-secondary w-8 h-8" />
                     </div>
-                    <h2 className="text-2xl font-serif text-brand-text mb-4">Order Placed!</h2>
+                    <h2 className="text-2xl font-serif text-brand-text mb-4">Order Successfully Placed!</h2>
                     <p className="text-brand-text/80 mb-8">Pay <span className="font-bold">₹{finalAmount.toFixed(2)}</span> via UPI.</p>
 
                     <div className="hidden md:block mb-8">
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
                     </a>
 
                     <p className="text-sm text-brand-text/60 bg-brand-bg/50 p-4 rounded-md">
-                        {businessData?.footer?.paymentDisclaimer || "Payments are processed directly between you and the store owner. The owner may kindly request a payment screenshot for verification. Please note that Bizvistar does not facilitate transactions or charge commissions."}
+                        "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
 
                     <a href="shop" className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
