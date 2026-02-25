@@ -7,6 +7,7 @@ import { CartProvider, useCart } from './cartContext.js';
 import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 function FlaraContent({ children, serverData, websiteId }) { // Renamed from CartLayout to avoid confusion
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
@@ -193,6 +194,7 @@ function FlaraContent({ children, serverData, websiteId }) { // Renamed from Car
             <div className={`fixed bottom-8 right-8 z-50 bg-brand-text text-brand-bg px-5 py-3 shadow-lg transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5 pointer-events-none'}`}>
                 Item added to cart!
             </div>
+            <WhatsAppButton businessData={businessData} />
         </div>
     );
 }
