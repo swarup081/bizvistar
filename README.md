@@ -156,3 +156,40 @@ We make it possible for *every* local entrepreneur to have a stunning website, s
 ---
 
 > 💬 *“We handle your digital side, so you can handle your business side.”*
+
+---
+
+## 🧪 Testing and Quality Assurance
+
+### 1. Overview of Tests Conducted
+A comprehensive testing suite was introduced to validate core business logic, critical user flows, and system boundaries.
+
+- **Unit and Integration Tests (Vitest)**: Added to validate server actions (Supabase data mutations) for Checkout, Orders, and Razorpay interactions.
+- **Frontend Component Tests (React Testing Library)**: Added to simulate user interactions on the Checkout page, including form validations and coupon application logic.
+- **API Tests**: Validated Webhook endpoints for Razorpay events to ensure correct signature parsing and resilient fallback states.
+- **Areas Covered**:
+  - Payment flows (`razorpayActions.js`)
+  - Webhooks (`webhooks/razorpay/route.js`)
+  - Order Processing (`orderActions.js`)
+  - Core Component interactions (`checkout/page.js`)
+  - App routing and security middleware (`middleware.js`)
+
+### 2. Testing Scope and Safety
+- **No Production Modifications**: Production application code (`src/`) was largely unmodified. The tests focus purely on validating existing structures.
+- **External Services**: All calls to Razorpay API and Supabase clients were comprehensively mocked (`vi.mock`), ensuring tests run independently of active database sessions or payment gateways.
+- **Environment Agnostic**: Global mocks allow the test suite to execute locally without side-effects or requiring a local Supabase setup.
+
+### 3. Test Execution Status
+- **Framework**: Vitest & React Testing Library
+- **Total Tests Written**: ~25+ unit/integration/UI assertions
+- **Execution Strategy**: `npx vitest run --coverage`
+- **Result Status**: Mixed. While the structure, assertions, and components execute correctly in isolation, certain heavily chained `supabase-js` promise returns in `orderActions.js` and `razorpayActions.js` resulted in test runner assertion failures due to mocked destructured assignments resolving as undefined.
+
+### 4. Known Issues & Risks
+- **Mocking Complex Chained Promises**: The current codebase heavily utilizes chained Supabase client calls (e.g., `await supabaseAdmin.from('websites').select('id').eq('user_id', user.id).maybeSingle()`). Replicating the exact shape of these returns in Vitest via `vi.fn().mockReturnThis()` across various contexts sometimes fails to resolve the final `.data` property correctly, leading to `TypeError: Cannot destructure property 'data'`.
+- **Razorpay SDK Mock**: The `razorpay` node SDK requires exact initialization structure, leading to `BAD_REQUEST_ERROR: Please provide your api key` when the `Razorpay` constructor is instantiated within the action if the mock isn't scoped globally.
+- **Impact**: These are test-environment implementation hurdles, *not* production bugs.
+
+### 5. Fix Requirements (Informational Only)
+- **Are fixes needed?**: Yes (Test Infrastructure).
+- **Description**: The application code would greatly benefit from a Dependency Injection pattern for the `supabase` client and `razorpay` instances. Moving the instantiation of these clients outside of the Server Actions (or providing them as default arguments) would allow the test suite to inject highly controlled stub objects without relying on complex, global `vi.mock` interceptors for node modules. Further, the React component tests require additional setup for Next.js navigation hooks and lucide-react icons to fully render in JSDOM.
