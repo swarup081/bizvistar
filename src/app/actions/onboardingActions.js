@@ -5,9 +5,10 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+// Lazy load supabase admin to avoid build errors if env vars are missing
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 const openai = new OpenAI({
@@ -19,8 +20,8 @@ async function getWebsiteId() {
   const cookieStore = await cookies();
   
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -36,14 +37,14 @@ async function getWebsiteId() {
   }
 
   // Fetch website ID for this user
-  const { data: website, error: websiteError } = await supabaseAdmin
+  const { data: website, error: websiteError } = await getSupabaseAdmin()
     .from('websites')
     .select('id')
     .eq('user_id', user.id)
     .single();
 
   if (websiteError) {
-     const { data: firstWebsite } = await supabaseAdmin
+     const { data: firstWebsite } = await getSupabaseAdmin()
         .from('websites')
         .select('id')
         .eq('user_id', user.id)
@@ -60,13 +61,13 @@ async function getWebsiteId() {
 // --- HELPER: Sync Website Data ---
 async function syncWebsiteData(websiteId) {
     try {
-        const { data: products } = await supabaseAdmin
+        const { data: products } = await getSupabaseAdmin()
           .from('products')
           .select('*')
           .eq('website_id', websiteId)
           .order('id'); 
     
-        const { data: website } = await supabaseAdmin
+        const { data: website } = await getSupabaseAdmin()
           .from('websites')
           .select('website_data')
           .eq('id', websiteId)
@@ -91,7 +92,7 @@ async function syncWebsiteData(websiteId) {
             allProducts: mappedProducts,
         };
     
-        await supabaseAdmin
+        await getSupabaseAdmin()
           .from('websites')
           .update({ website_data: newData })
           .eq('id', websiteId);
@@ -109,14 +110,14 @@ export async function getOnboardingStatus() {
     if (!websiteId) return { error: 'No website found' };
 
     // 1. Fetch Website Data (for pre-fill)
-    const { data: website } = await supabaseAdmin
+    const { data: website } = await getSupabaseAdmin()
       .from('websites')
       .select('website_data, site_slug')
       .eq('id', websiteId)
       .single();
 
     // 2. Fetch Onboarding Data
-    let { data: onboarding, error } = await supabaseAdmin
+    let { data: onboarding, error } = await getSupabaseAdmin()
       .from('onboarding_data')
       .select('*')
       .eq('website_id', websiteId)
@@ -124,7 +125,7 @@ export async function getOnboardingStatus() {
 
     if (error && error.code === 'PGRST116') {
        // Create if missing
-       const { data: newOnboarding, error: createError } = await supabaseAdmin
+       const { data: newOnboarding, error: createError } = await getSupabaseAdmin()
          .from('onboarding_data')
          .insert({ website_id: websiteId })
          .select()
@@ -166,15 +167,15 @@ export async function uploadLogo(formData) {
     const filePath = `${fileName}`;
 
     // Ensure bucket exists (best effort)
-    await supabaseAdmin.storage.createBucket('logos', { public: true }).catch(() => {});
+    await getSupabaseAdmin().storage.createBucket('logos', { public: true }).catch(() => {});
 
-    const { error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await getSupabaseAdmin().storage
       .from('logos')
       .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
+    const { data: { publicUrl } } = getSupabaseAdmin().storage
       .from('logos')
       .getPublicUrl(filePath);
 
@@ -192,7 +193,7 @@ export async function saveBusinessInfo(data) {
     const { name, ownerName, instagram, facebook, logoUrl, whatsappNumber } = data;
 
     // 1. Update Onboarding Data
-    const { error: onboardingError } = await supabaseAdmin
+    const { error: onboardingError } = await getSupabaseAdmin()
       .from('onboarding_data')
       .update({
         owner_name: ownerName,
@@ -206,7 +207,7 @@ export async function saveBusinessInfo(data) {
     if (onboardingError) throw onboardingError;
 
     // 2. Update Website Data (Live Preview)
-    const { data: website } = await supabaseAdmin
+    const { data: website } = await getSupabaseAdmin()
       .from('websites')
       .select('website_data')
       .eq('id', websiteId)
@@ -241,7 +242,7 @@ export async function saveBusinessInfo(data) {
         newData.logo = logoUrl;
     }
 
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('websites')
       .update({ website_data: newData })
       .eq('id', websiteId);
@@ -259,7 +260,7 @@ export async function saveWizardProduct(productData) {
         const websiteId = await getWebsiteId();
         
         // 1. Check Limit (10)
-        const { count, error: countError } = await supabaseAdmin
+        const { count, error: countError } = await getSupabaseAdmin()
             .from('products')
             .select('*', { count: 'exact', head: true })
             .eq('website_id', websiteId);
@@ -270,7 +271,7 @@ export async function saveWizardProduct(productData) {
         }
 
         // 2. Insert
-        const { data, error: insertError } = await supabaseAdmin
+        const { data, error: insertError } = await getSupabaseAdmin()
             .from('products')
             .insert({
                 website_id: websiteId,
@@ -300,7 +301,7 @@ export async function deleteWizardProduct(productId) {
     try {
         const websiteId = await getWebsiteId();
         
-        const { error } = await supabaseAdmin
+        const { error } = await getSupabaseAdmin()
             .from('products')
             .delete()
             .eq('id', productId)
@@ -323,13 +324,13 @@ export async function savePaymentInfo(data) {
         const { upiId, isCodOnly } = data;
 
         // 1. Update Onboarding Data
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from('onboarding_data')
             .update({ upi_id: isCodOnly ? null : upiId })
             .eq('website_id', websiteId);
 
         // 2. Update Website Data (Disclaimer)
-        const { data: website } = await supabaseAdmin
+        const { data: website } = await getSupabaseAdmin()
             .from('websites')
             .select('website_data')
             .eq('id', websiteId)
@@ -358,7 +359,7 @@ export async function savePaymentInfo(data) {
             }
         };
 
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from('websites')
             .update({ website_data: newData })
             .eq('id', websiteId);
@@ -375,7 +376,7 @@ export async function generateAIContent(description, templateName = null) {
     try {
         const websiteId = await getWebsiteId();
         
-        const { data: website } = await supabaseAdmin
+        const { data: website } = await getSupabaseAdmin()
             .from('websites')
             .select('website_data')
             .eq('id', websiteId)
@@ -433,7 +434,7 @@ export async function generateAIContent(description, templateName = null) {
         
         const mergedData = { ...currentData, ...newContent };
 
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from('websites')
             .update({ website_data: mergedData })
             .eq('id', websiteId);
@@ -450,7 +451,7 @@ export async function generateAIContent(description, templateName = null) {
 export async function completeOnboarding() {
     try {
         const websiteId = await getWebsiteId();
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from('onboarding_data')
             .update({ is_completed: true })
             .eq('website_id', websiteId);

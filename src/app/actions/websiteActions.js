@@ -4,9 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+// Lazy load supabase admin to avoid build errors if env vars are missing
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 // --- HELPER: Get Authenticated User's Website ID ---
@@ -14,8 +15,8 @@ async function getWebsiteId() {
   const cookieStore = await cookies();
   
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -37,7 +38,7 @@ async function getWebsiteId() {
   }
 
   // Fetch website ID for this user
-  const { data: website, error: websiteError } = await supabaseAdmin
+  const { data: website, error: websiteError } = await getSupabaseAdmin()
     .from('websites')
     .select('id')
     .eq('user_id', user.id)
@@ -45,7 +46,7 @@ async function getWebsiteId() {
 
    if (websiteError || !website) {
        // Try maybeSingle just in case multiple rows exist (shouldn't per unique constraint on user? actually user_id usually unique for website ownership in this app context)
-       const { data: firstWebsite } = await supabaseAdmin
+       const { data: firstWebsite } = await getSupabaseAdmin()
         .from('websites')
         .select('id')
         .eq('user_id', user.id)
@@ -67,7 +68,7 @@ export async function checkSlugAvailability(slug) {
     if (!clean) return false;
 
     // Check in DB
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
         .from('websites')
         .select('id')
         .eq('site_slug', clean)
@@ -134,7 +135,7 @@ export async function updateSiteSlug(newSlug) {
         }
         
         // 2. Update
-        const { error } = await supabaseAdmin
+        const { error } = await getSupabaseAdmin()
             .from('websites')
             .update({ site_slug: clean })
             .eq('id', websiteId);

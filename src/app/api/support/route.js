@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 

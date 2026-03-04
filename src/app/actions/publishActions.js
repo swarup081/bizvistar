@@ -6,8 +6,8 @@ import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
 import { getKeyId } from '../config/razorpay-config';
 
-// Admin client for DB updates (bypassing RLS)
-const supabaseAdmin = createClient(
+// Lazy load supabase admin to avoid build errors if env vars are missing
+const getSupabaseAdmin = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -16,8 +16,8 @@ const supabaseAdmin = createClient(
 async function getUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -42,7 +42,7 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
     let isSubscriptionValid = false;
 
     // 1. Check DB for Valid Subscription
-    const { data: subscription, error: subError } = await supabaseAdmin
+    const { data: subscription, error: subError } = await getSupabaseAdmin()
         .from('subscriptions')
         .select('status, current_period_end')
         .eq('user_id', user.id)
@@ -81,7 +81,7 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
                     const currentPeriodStart = new Date(rzpSub.current_start * 1000).toISOString();
                     const currentPeriodEnd = new Date(rzpSub.current_end * 1000).toISOString();
                     
-                    await supabaseAdmin.from('subscriptions').upsert({
+                    await getSupabaseAdmin().from('subscriptions').upsert({
                         razorpay_subscription_id: rzpSub.id,
                         user_id: user.id,
                         status: 'active',
@@ -104,7 +104,7 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
     }
 
     // 3. Publish Website
-    const { data: website, error: webError } = await supabaseAdmin
+    const { data: website, error: webError } = await getSupabaseAdmin()
         .from('websites')
         .select('id, draft_data, is_published')
         .eq('user_id', user.id)
@@ -125,7 +125,7 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
         updatePayload.website_data = website.draft_data;
     }
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await getSupabaseAdmin()
         .from('websites')
         .update(updatePayload)
         .eq('id', website.id);

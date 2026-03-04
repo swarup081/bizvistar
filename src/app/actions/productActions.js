@@ -7,9 +7,10 @@ import { validateUserSubscription } from './subscriptionUtils';
 import { getPlanLimits } from '../config/razorpay-config';
 import { createNotification } from '@/lib/notificationUtils';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+// Lazy load supabase admin to avoid build errors if env vars are missing
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 // --- HELPER: Get Current Website ID ---
@@ -17,8 +18,8 @@ async function getWebsiteId() {
   const cookieStore = await cookies();
   
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -40,14 +41,14 @@ async function getWebsiteId() {
   }
 
   // Fetch website ID for this user
-  const { data: website, error: websiteError } = await supabaseAdmin
+  const { data: website, error: websiteError } = await getSupabaseAdmin()
     .from('websites')
     .select('id')
     .eq('user_id', user.id)
     .single();
 
   if (websiteError) {
-     const { data: firstWebsite } = await supabaseAdmin
+     const { data: firstWebsite } = await getSupabaseAdmin()
         .from('websites')
         .select('id')
         .eq('user_id', user.id)
@@ -64,20 +65,20 @@ async function getWebsiteId() {
 // --- HELPER: Sync JSON ---
 async function syncWebsiteData(websiteId) {
   try {
-    const { data: products } = await supabaseAdmin
+    const { data: products } = await getSupabaseAdmin()
       .from('products')
       .select('*')
       .eq('website_id', websiteId)
       .order('id'); 
 
-    const { data: categories } = await supabaseAdmin
+    const { data: categories } = await getSupabaseAdmin()
       .from('categories')
       .select('id, name')
       .eq('website_id', websiteId);
 
     if (!products) return;
 
-    const { data: website } = await supabaseAdmin
+    const { data: website } = await getSupabaseAdmin()
       .from('websites')
       .select('website_data')
       .eq('id', websiteId)
@@ -109,7 +110,7 @@ async function syncWebsiteData(websiteId) {
         categories: mappedCategories.length > 0 ? mappedCategories : (currentData.categories || [])
     };
 
-    await supabaseAdmin
+    await getSupabaseAdmin()
       .from('websites')
       .update({ website_data: newData })
       .eq('id', websiteId);
@@ -125,7 +126,7 @@ export async function getCategories() {
   const websiteId = await getWebsiteId();
   if (!websiteId) return [];
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('categories')
     .select('id, name')
     .eq('website_id', websiteId)
@@ -142,7 +143,7 @@ export async function addCategory(name) {
         const websiteId = await getWebsiteId();
         if (!websiteId) throw new Error("No website ID found.");
 
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await getSupabaseAdmin()
             .from('categories')
             .insert({ name, website_id: websiteId })
             .select()
@@ -163,8 +164,8 @@ export async function addProduct(productData) {
     // 1. Get User & Website
     const cookieStore = await cookies();
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
+      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
       {
         cookies: {
           getAll() { return cookieStore.getAll() },
@@ -184,7 +185,7 @@ export async function addProduct(productData) {
 
     if (limits.maxProducts !== -1) {
         // Count existing products
-        const { count, error: countError } = await supabaseAdmin
+        const { count, error: countError } = await getSupabaseAdmin()
             .from('products')
             .select('*', { count: 'exact', head: true })
             .eq('website_id', websiteId);
@@ -209,7 +210,7 @@ export async function addProduct(productData) {
     // Ensure we don't store negative numbers other than -1
     if (finalStock < 0) finalStock = -1;
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('products')
       .insert({
         name: productData.name,
@@ -301,7 +302,7 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 6);
 
-      const { data: orderItems } = await supabaseAdmin
+      const { data: orderItems } = await getSupabaseAdmin()
         .from('order_items')
         .select('quantity, orders!inner(created_at)')
         .eq('product_id', p.id)

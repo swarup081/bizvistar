@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // src/app/site/[slug]/shop/page.js
 import { createClient } from '@supabase/supabase-js';
 
@@ -11,9 +12,10 @@ import BlisslyShopPage from '@/app/templates/blissly/shop/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+// Lazy load supabase admin to avoid build errors if env vars are missing
+const getSupabaseAdmin = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 // CHANGED: The function signature is now (props)
@@ -30,7 +32,7 @@ export default async function LiveShopPage(props) {
     );
   }
 
-  const { data: site, error } = await supabaseAdmin
+  const { data: site, error } = await getSupabaseAdmin()
     .from('websites')
     .select(`is_published, website_data, template:templates ( name )`)
     .eq('site_slug', slug)
