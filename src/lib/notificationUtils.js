@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // This client uses the Service Role Key, so it bypasses RLS.
 // This utility should ONLY be used in server-side contexts (Server Actions, API Routes).
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 /**
