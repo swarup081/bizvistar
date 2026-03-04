@@ -3,8 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // Initialize Supabase Admin Client
 // This client uses the Service Role Key, so it bypasses RLS.
 // This utility should ONLY be used in server-side contexts (Server Actions, API Routes).
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -22,7 +21,7 @@ const getSupabaseAdmin = () => createClient(
  */
 export async function createNotification({ websiteId, type, title, message, data = {} }) {
   try {
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('notifications')
       .insert({
         website_id: websiteId,

@@ -12,8 +12,7 @@ import BlisslyShopPage from '@/app/templates/blissly/shop/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -32,7 +31,7 @@ export default async function LiveShopPage(props) {
     );
   }
 
-  const { data: site, error } = await getSupabaseAdmin()
+  const { data: site, error } = await supabaseAdmin
     .from('websites')
     .select(`is_published, website_data, template:templates ( name )`)
     .eq('site_slug', slug)

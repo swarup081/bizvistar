@@ -14,8 +14,7 @@ import AvenixPage from '@/app/templates/avenix/page';
 import BlisslyPage from '@/app/templates/blissly/page';
 import FlavornestPage from '@/app/templates/flavornest/page';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -37,7 +36,7 @@ export default async function LiveSitePage(props) {
   }
 
   // Fetch website
-  const { data: site, error } = await getSupabaseAdmin()
+  const { data: site, error } = await supabaseAdmin
     .from("websites")
     .select(
       `

@@ -5,8 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createNotification } from '@/lib/notificationUtils';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -14,8 +13,8 @@ const getSupabaseAdmin = () => createClient(
 async function getUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -33,7 +32,7 @@ export async function notifyLowStock(productId) {
         if (!user) throw new Error("Unauthorized");
 
         // Verify ownership and get latest stock
-        const { data: product, error } = await getSupabaseAdmin()
+        const { data: product, error } = await supabaseAdmin
             .from('products')
             .select('id, name, stock, website_id, websites(user_id)')
             .eq('id', productId)

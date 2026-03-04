@@ -7,8 +7,7 @@ import { validateUserSubscription } from './subscriptionUtils';
 import { getPlanLimits } from '../config/razorpay-config';
 import { createNotification } from '@/lib/notificationUtils';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -18,8 +17,8 @@ async function getWebsiteId() {
   const cookieStore = await cookies();
   
   const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -41,14 +40,14 @@ async function getWebsiteId() {
   }
 
   // Fetch website ID for this user
-  const { data: website, error: websiteError } = await getSupabaseAdmin()
+  const { data: website, error: websiteError } = await supabaseAdmin
     .from('websites')
     .select('id')
     .eq('user_id', user.id)
     .single();
 
   if (websiteError) {
-     const { data: firstWebsite } = await getSupabaseAdmin()
+     const { data: firstWebsite } = await supabaseAdmin
         .from('websites')
         .select('id')
         .eq('user_id', user.id)
@@ -65,20 +64,20 @@ async function getWebsiteId() {
 // --- HELPER: Sync JSON ---
 async function syncWebsiteData(websiteId) {
   try {
-    const { data: products } = await getSupabaseAdmin()
+    const { data: products } = await supabaseAdmin
       .from('products')
       .select('*')
       .eq('website_id', websiteId)
       .order('id'); 
 
-    const { data: categories } = await getSupabaseAdmin()
+    const { data: categories } = await supabaseAdmin
       .from('categories')
       .select('id, name')
       .eq('website_id', websiteId);
 
     if (!products) return;
 
-    const { data: website } = await getSupabaseAdmin()
+    const { data: website } = await supabaseAdmin
       .from('websites')
       .select('website_data')
       .eq('id', websiteId)
@@ -110,7 +109,7 @@ async function syncWebsiteData(websiteId) {
         categories: mappedCategories.length > 0 ? mappedCategories : (currentData.categories || [])
     };
 
-    await getSupabaseAdmin()
+    await supabaseAdmin
       .from('websites')
       .update({ website_data: newData })
       .eq('id', websiteId);
@@ -126,7 +125,7 @@ export async function getCategories() {
   const websiteId = await getWebsiteId();
   if (!websiteId) return [];
 
-  const { data, error } = await getSupabaseAdmin()
+  const { data, error } = await supabaseAdmin
     .from('categories')
     .select('id, name')
     .eq('website_id', websiteId)
@@ -143,7 +142,7 @@ export async function addCategory(name) {
         const websiteId = await getWebsiteId();
         if (!websiteId) throw new Error("No website ID found.");
 
-        const { data, error } = await getSupabaseAdmin()
+        const { data, error } = await supabaseAdmin
             .from('categories')
             .insert({ name, website_id: websiteId })
             .select()
@@ -164,8 +163,8 @@ export async function addProduct(productData) {
     // 1. Get User & Website
     const cookieStore = await cookies();
     const supabase = createServerClient(
-      (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
           getAll() { return cookieStore.getAll() },
@@ -185,7 +184,7 @@ export async function addProduct(productData) {
 
     if (limits.maxProducts !== -1) {
         // Count existing products
-        const { count, error: countError } = await getSupabaseAdmin()
+        const { count, error: countError } = await supabaseAdmin
             .from('products')
             .select('*', { count: 'exact', head: true })
             .eq('website_id', websiteId);
@@ -210,7 +209,7 @@ export async function addProduct(productData) {
     // Ensure we don't store negative numbers other than -1
     if (finalStock < 0) finalStock = -1;
 
-    const { data, error } = await getSupabaseAdmin()
+    const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
         name: productData.name,
@@ -302,7 +301,7 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 6);
 
-      const { data: orderItems } = await getSupabaseAdmin()
+      const { data: orderItems } = await supabaseAdmin
         .from('order_items')
         .select('quantity, orders!inner(created_at)')
         .eq('product_id', p.id)

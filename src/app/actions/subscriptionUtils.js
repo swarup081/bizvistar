@@ -2,8 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -17,7 +16,7 @@ export async function validateUserSubscription(userId) {
 
   // Fetch subscription with Plan details
   // Fix: Order by created_at desc to get the LATEST subscription if multiple exist (e.g. old canceled ones)
-  const { data: subscription, error } = await getSupabaseAdmin()
+  const { data: subscription, error } = await supabaseAdmin
     .from('subscriptions')
     .select(`
       status, 

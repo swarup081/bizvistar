@@ -5,8 +5,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createNotification } from '@/lib/notificationUtils';
 
-// Initialize Supabase Admin Client lazily to prevent build errors
-const getSupabaseAdmin = () => createClient(
+// Initialize Supabase Admin Client
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -14,7 +14,7 @@ const getSupabaseAdmin = () => createClient(
 // Helper to sync stock back to website JSON
 async function syncStockToJSON(websiteId, productMap) {
     try {
-        const { data: website } = await getSupabaseAdmin()
+        const { data: website } = await supabaseAdmin
             .from('websites')
             .select('website_data')
             .eq('id', websiteId)
@@ -34,7 +34,7 @@ async function syncStockToJSON(websiteId, productMap) {
         });
 
         if (updated) {
-            await getSupabaseAdmin()
+            await supabaseAdmin
                 .from('websites')
                 .update({ 
                     website_data: {
@@ -53,8 +53,8 @@ async function syncStockToJSON(websiteId, productMap) {
 async function getUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -69,7 +69,7 @@ async function getUser() {
 export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
   try {
     // 1. Resolve Website ID
-    const { data: website, error: websiteError } = await getSupabaseAdmin()
+    const { data: website, error: websiteError } = await supabaseAdmin
       .from('websites')
       .select('id, user_id')
       .eq('site_slug', siteSlug)
@@ -81,7 +81,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
     const websiteId = website.id;
 
     // 2. Upsert Customer
-    const { data: existingCustomer } = await getSupabaseAdmin()
+    const { data: existingCustomer } = await supabaseAdmin
       .from('customers')
       .select('id')
       .eq('website_id', websiteId)
@@ -93,7 +93,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
 
     if (existingCustomer) {
       customerId = existingCustomer.id;
-      await getSupabaseAdmin()
+      await supabaseAdmin
         .from('customers')
         .update({ 
             name: `${customerDetails.firstName} ${customerDetails.lastName}`,
@@ -101,7 +101,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
         })
         .eq('id', customerId);
     } else {
-      const { data: newCustomer, error: customerError } = await getSupabaseAdmin()
+      const { data: newCustomer, error: customerError } = await supabaseAdmin
         .from('customers')
         .insert({
           website_id: websiteId,
@@ -125,7 +125,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
       // Find product
       let productData = null;
       
-      const { data: byId } = await getSupabaseAdmin()
+      const { data: byId } = await supabaseAdmin
          .from('products')
          .select('id, stock, price')
          .eq('website_id', websiteId)
@@ -136,7 +136,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
           productData = byId;
       } else {
           // Fallback to name
-          const { data: byName } = await getSupabaseAdmin()
+          const { data: byName } = await supabaseAdmin
              .from('products')
              .select('id, stock, price')
              .eq('website_id', websiteId)
@@ -155,7 +155,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
         // DECREMENT STOCK IF NOT UNLIMITED (Stock = -1)
         if (productData.stock !== -1) {
             const newStock = Math.max(0, (productData.stock || 0) - item.quantity);
-            await getSupabaseAdmin()
+            await supabaseAdmin
                 .from('products')
                 .update({ stock: newStock })
                 .eq('id', productData.id);
@@ -196,7 +196,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
     // Determine Source
     const orderSource = customerDetails.isManual ? 'pos' : 'website';
 
-    const { data: order, error: orderError } = await getSupabaseAdmin()
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         website_id: websiteId,
@@ -222,7 +222,7 @@ export async function submitOrder({ siteSlug, cartDetails, customerDetails }) {
         };
     });
 
-    const { error: itemsError } = await getSupabaseAdmin()
+    const { error: itemsError } = await supabaseAdmin
       .from('order_items')
       .insert(orderItemsData);
 
@@ -259,7 +259,7 @@ export async function updateOrderStatus(orderId, newStatus) {
     if (!user) throw new Error("Unauthorized");
 
     // Verify ownership
-    const { data: order } = await getSupabaseAdmin()
+    const { data: order } = await supabaseAdmin
         .from('orders')
         .select('website_id, websites(user_id)')
         .eq('id', orderId)
@@ -269,7 +269,7 @@ export async function updateOrderStatus(orderId, newStatus) {
          throw new Error("Unauthorized: You do not own this order.");
     }
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
@@ -283,7 +283,7 @@ export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
     if (!user) throw new Error("Unauthorized");
 
     // Verify ownership
-    const { data: website } = await getSupabaseAdmin()
+    const { data: website } = await supabaseAdmin
         .from('websites')
         .select('user_id')
         .eq('id', websiteId)
@@ -294,7 +294,7 @@ export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
     }
     
     // Also verify order belongs to website
-    const { data: order } = await getSupabaseAdmin()
+    const { data: order } = await supabaseAdmin
         .from('orders')
         .select('website_id')
         .eq('id', orderId)
@@ -304,7 +304,7 @@ export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
          throw new Error("Mismatch between order and website.");
     }
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
         .from('deliveries')
         .insert({
             order_id: orderId,
@@ -315,13 +315,13 @@ export async function addOrderLogistics(orderId, websiteId, trackingDetails) {
 
     if (error) throw new Error(error.message);
     
-    await getSupabaseAdmin().from('orders').update({ status: 'shipped' }).eq('id', orderId);
+    await supabaseAdmin.from('orders').update({ status: 'shipped' }).eq('id', orderId);
 
     return { success: true };
 }
 
 export async function getOrderLogistics(orderId) {
-     const { data, error } = await getSupabaseAdmin()
+     const { data, error } = await supabaseAdmin
         .from('deliveries')
         .select('*')
         .eq('order_id', orderId)

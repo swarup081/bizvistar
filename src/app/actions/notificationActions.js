@@ -4,8 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -14,8 +13,8 @@ const getSupabaseAdmin = () => createClient(
 async function getUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -35,7 +34,7 @@ export async function getNotifications(websiteId) {
     if (!user) throw new Error("Unauthorized");
     
     // Check if user owns the website
-    const { data: website } = await getSupabaseAdmin()
+    const { data: website } = await supabaseAdmin
         .from('websites')
         .select('user_id')
         .eq('id', websiteId)
@@ -46,7 +45,7 @@ export async function getNotifications(websiteId) {
          return [];
     }
 
-    const { data, error } = await getSupabaseAdmin()
+    const { data, error } = await supabaseAdmin
       .from('notifications')
       .select('*')
       .eq('website_id', websiteId)
@@ -67,7 +66,7 @@ export async function deleteNotification(notificationId) {
     
     // Verify ownership via RLS or explicit check
     // We'll use explicit check for safety with Admin client
-    const { data: notif } = await getSupabaseAdmin()
+    const { data: notif } = await supabaseAdmin
         .from('notifications')
         .select('website_id, websites(user_id)')
         .eq('id', notificationId)
@@ -77,7 +76,7 @@ export async function deleteNotification(notificationId) {
         throw new Error("Unauthorized");
     }
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('notifications')
       .delete()
       .eq('id', notificationId);
@@ -96,7 +95,7 @@ export async function clearAllNotifications(websiteId) {
     if (!user) throw new Error("Unauthorized");
 
     // Verify ownership
-    const { data: website } = await getSupabaseAdmin()
+    const { data: website } = await supabaseAdmin
         .from('websites')
         .select('user_id')
         .eq('id', websiteId)
@@ -106,7 +105,7 @@ export async function clearAllNotifications(websiteId) {
         throw new Error("Unauthorized");
     }
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('notifications')
       .delete()
       .eq('website_id', websiteId);
@@ -125,7 +124,7 @@ export async function markNotificationRead(notificationId) {
     if (!user) throw new Error("Unauthorized");
 
      // Verify ownership
-    const { data: notif } = await getSupabaseAdmin()
+    const { data: notif } = await supabaseAdmin
         .from('notifications')
         .select('website_id, websites(user_id)')
         .eq('id', notificationId)
@@ -135,7 +134,7 @@ export async function markNotificationRead(notificationId) {
         throw new Error("Unauthorized");
     }
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('notifications')
       .update({ is_read: true })
       .eq('id', notificationId);

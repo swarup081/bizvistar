@@ -5,8 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateUserSubscription } from './subscriptionUtils';
 
-// Lazy load supabase admin to avoid build errors if env vars are missing
-const getSupabaseAdmin = () => createClient(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
@@ -15,8 +14,8 @@ const getSupabaseAdmin = () => createClient(
 async function getUserId() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    (process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'),
-    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'),
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
@@ -36,7 +35,7 @@ export async function saveDraft(websiteId, draftData) {
     const userId = await getUserId();
 
     // Verify ownership
-    const { error: verifyError } = await getSupabaseAdmin()
+    const { error: verifyError } = await supabaseAdmin
       .from('websites')
       .select('id')
       .eq('id', websiteId)
@@ -45,7 +44,7 @@ export async function saveDraft(websiteId, draftData) {
 
     if (verifyError) throw new Error('Unauthorized access to website.');
 
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('websites')
       .update({ draft_data: draftData, updated_at: new Date() })
       .eq('id', websiteId);
@@ -64,7 +63,7 @@ export async function publishWebsite(websiteId, currentData = null) {
     const userId = await getUserId();
 
     // 1. Verify ownership
-    const { data: website, error: verifyError } = await getSupabaseAdmin()
+    const { data: website, error: verifyError } = await supabaseAdmin
         .from('websites')
         .select('id, draft_data, website_data, is_published')
         .eq('id', websiteId)
@@ -94,7 +93,7 @@ export async function publishWebsite(websiteId, currentData = null) {
         return { success: false, error: 'No data to publish.' };
     }
 
-    const { error: updateError } = await getSupabaseAdmin()
+    const { error: updateError } = await supabaseAdmin
         .from('websites')
         .update({ 
             website_data: dataToPublish, 
@@ -121,7 +120,7 @@ export async function revertToPublished(websiteId) {
         const userId = await getUserId();
 
         // 1. Verify ownership and get published data
-        const { data: website, error: verifyError } = await getSupabaseAdmin()
+        const { data: website, error: verifyError } = await supabaseAdmin
             .from('websites')
             .select('website_data')
             .eq('id', websiteId)
@@ -131,7 +130,7 @@ export async function revertToPublished(websiteId) {
         if (verifyError || !website) throw new Error('Unauthorized or website not found.');
 
         // 2. Clear draft_data so next load uses website_data
-        const { error: updateError } = await getSupabaseAdmin()
+        const { error: updateError } = await supabaseAdmin
             .from('websites')
             .update({ draft_data: null }) 
             .eq('id', websiteId);
