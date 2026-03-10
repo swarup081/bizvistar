@@ -116,11 +116,11 @@ export default function DashboardLayout({ children }) {
         {/* Right: User Controls (Desktop) */}
         <div className="hidden lg:flex items-center gap-4">
           <NotificationBell />
-          <div className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm">
-             <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500">
+          <Link href="/dashboard/profile" className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+             <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
                <User size={20} />
              </div>
-          </div>
+          </Link>
         </div>
 
         {/* Right: Hamburger (Mobile) */}
