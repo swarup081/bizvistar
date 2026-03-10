@@ -38,8 +38,15 @@ export default function PostPaymentManager() {
   useEffect(() => {
     const checkPaymentFlow = async () => {
       const isPaymentSuccess = searchParams.get('payment_success') === 'true';
+      const isUpdate = searchParams.get('update') === 'true';
       
       if (!isPaymentSuccess) return;
+
+      // If this is just a plan update, we don't need to do slug checks
+      if (isUpdate) {
+        setStatus('success');
+        return;
+      }
 
       setStatus('checking');
 

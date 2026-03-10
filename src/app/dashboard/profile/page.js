@@ -20,7 +20,8 @@ export default function ProfilePage() {
 
   const [message, setMessage] = useState({ type: '', text: '' });
   const [pwdMessage, setPwdMessage] = useState({ type: '', text: '' });
-  const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     fetchUserData();
@@ -109,16 +110,33 @@ export default function ProfilePage() {
   const handlePasswordChange = async (e) => {
       e.preventDefault();
       setPwdMessage({ type: '', text: '' });
-      if (!password || password.length < 6) {
-          setPwdMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
+      if (!currentPassword) {
+          setPwdMessage({ type: 'error', text: 'Please enter your current password.' });
+          return;
+      }
+      if (!newPassword || newPassword.length < 6) {
+          setPwdMessage({ type: 'error', text: 'New password must be at least 6 characters.' });
           return;
       }
 
       try {
-          const { error } = await supabase.auth.updateUser({ password: password });
-          if (error) throw error;
+          // 1. Re-authenticate to verify current password
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+              email: formData.email,
+              password: currentPassword
+          });
+
+          if (signInError) {
+              throw new Error("Incorrect current password.");
+          }
+
+          // 2. Update to new password
+          const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+          if (updateError) throw updateError;
+
           setPwdMessage({ type: 'success', text: 'Password updated successfully!' });
-          setPassword('');
+          setCurrentPassword('');
+          setNewPassword('');
       } catch (error) {
           setPwdMessage({ type: 'error', text: error.message || 'Failed to update password.' });
       }
@@ -156,6 +174,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+
+          <PlanManager />
         </div>
 
         {/* Right Content - Forms */}
@@ -227,8 +247,6 @@ export default function ProfilePage() {
             </form>
           </div>
 
-          <PlanManager />
-
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -244,17 +262,28 @@ export default function ProfilePage() {
                     </div>
                 )}
                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Current Password</label>
+                    <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                        placeholder="••••••••"
+                    />
+                </div>
+                 <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">New Password</label>
                     <input
                         type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
                         placeholder="••••••••"
                         minLength={6}
                     />
                 </div>
-                <div className="flex justify-end pt-4 border-t border-gray-100">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <a href="/forgot-password" className="text-sm text-[#8A63D2] hover:underline font-medium">Forgot Password?</a>
                     <button
                         type="submit"
                         className="px-6 py-3 bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 rounded-xl font-medium transition-colors"

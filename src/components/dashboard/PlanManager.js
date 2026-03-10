@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { CreditCard, Loader2, Check, ArrowRight } from 'lucide-react';
+import { CreditCard, Loader2, Check, ArrowRight, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
@@ -32,7 +32,6 @@ export default function PlanManager() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // Fetch active subscription
             const { data: sub } = await supabase
                 .from('subscriptions')
                 .select('*, plans(*)')
@@ -41,7 +40,6 @@ export default function PlanManager() {
                 .single();
 
             if (sub && sub.plans) {
-                // Determine billing cycle from plan name (basic parsing, adjust if needed)
                 let cycle = 'monthly';
                 if (sub.plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
 
@@ -53,11 +51,12 @@ export default function PlanManager() {
                     end: sub.current_period_end,
                     cycle: cycle
                 });
+                // Set the default billing to their current one
+                setSelectedBilling(cycle);
             } else {
                 setCurrentPlan(null);
             }
 
-            // Fetch website to get product count
             const { data: website } = await supabase
                 .from('websites')
                 .select('id')
@@ -82,60 +81,104 @@ export default function PlanManager() {
     const handlePlanSelect = (targetPlan) => {
         setErrorMsg('');
 
-        // Downgrade logic: check limits
         if (targetPlan.limit !== -1 && productCount > targetPlan.limit) {
             setErrorMsg(`You cannot downgrade to the ${targetPlan.name} plan because you currently have ${productCount} products. The limit for this plan is ${targetPlan.limit}. Please delete some products before downgrading.`);
             return;
         }
 
-        // Redirect to checkout with the new plan and 'update' flag
         router.push(`/checkout?plan=${targetPlan.name}&billing=${selectedBilling}&update=true`);
     };
+
+    const getNextPlan = () => {
+        if (!currentPlan) return plans[0]; // If no plan, recommend Starter
+
+        const currentIndex = plans.findIndex(p => p.name === currentPlan.name);
+        // If current is Growth (last), there is no "next" plan.
+        if (currentIndex === plans.length - 1) return null;
+
+        return plans[currentIndex + 1];
+    };
+
+    const nextPlan = getNextPlan();
 
     if (loading) {
         return <div className="p-6 text-center text-gray-500 flex justify-center items-center"><Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading plan details...</div>;
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-gray-400" />
-                    Subscription Plan
-                </h3>
-            </div>
+        <div className="space-y-4 w-full mt-6">
 
-            <div className="p-6">
+            {/* CURRENT PLAN OVERVIEW */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 w-full">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" /> Current Plan
+                </h3>
+
                 {currentPlan ? (
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-[#8A63D2]/10 rounded-xl border border-[#8A63D2]/20">
-                        <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h4 className="text-xl font-bold text-gray-900">{currentPlan.name} Plan</h4>
-                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8A63D2] text-white uppercase tracking-wider shadow-sm">Active</span>
-                            </div>
-                            <p className="text-gray-600 text-sm">
-                                Billed {currentPlan.cycle}. Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
-                            </p>
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h4 className="text-2xl font-bold text-gray-900">{currentPlan.name}</h4>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8A63D2]/10 text-[#8A63D2] uppercase tracking-wider">Active</span>
                         </div>
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="px-6 py-2.5 bg-white border border-gray-200 hover:border-[#8A63D2] hover:text-[#8A63D2] text-gray-700 rounded-xl font-medium transition-all shadow-sm"
-                        >
-                            Change Plan
-                        </button>
+                        <p className="text-gray-600 text-sm mt-2">
+                            Billed {currentPlan.cycle}.
+                        </p>
+                        <p className="text-gray-600 text-sm">
+                            Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
+                        </p>
                     </div>
                 ) : (
-                    <div className="text-center py-6">
+                    <div>
                         <p className="text-gray-500 mb-4">You do not have an active subscription.</p>
                         <button
                             onClick={() => setShowModal(true)}
-                            className="px-6 py-2.5 bg-[#8A63D2] hover:bg-[#7a55bd] text-white rounded-xl font-medium transition-all shadow-md"
+                            className="w-full py-2.5 bg-[#8A63D2] hover:bg-[#7a55bd] text-white rounded-xl font-medium transition-all shadow-sm"
                         >
                             View Plans
                         </button>
                     </div>
                 )}
             </div>
+
+            {/* UPGRADE TEASER */}
+            {currentPlan && nextPlan && (
+                <div className="relative bg-gradient-to-br from-[#8A63D2] to-[#603da8] rounded-2xl p-6 shadow-md border border-[#8A63D2]/20 w-full overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
+                        <Zap className="w-24 h-24 text-white" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-3 backdrop-blur-sm">
+                            <Zap className="w-3 h-3 fill-white" /> Recommended Upgrade
+                        </div>
+                        <h4 className="text-xl font-bold text-white mb-1">Upgrade to {nextPlan.name}</h4>
+                        <p className="text-purple-100 text-sm mb-5 opacity-90">
+                            {nextPlan.limit === -1 ? 'Get unlimited products and advanced tools.' : `Scale up to ${nextPlan.limit} products.`}
+                        </p>
+                        <button
+                            onClick={() => {
+                                setSelectedBilling(currentPlan.cycle);
+                                setShowModal(true);
+                            }}
+                            className="w-full py-3 bg-white text-[#8A63D2] hover:bg-gray-50 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                        >
+                            Explore {nextPlan.name} <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* VIEW ALL PLANS LINK */}
+            {currentPlan && (
+                <div className="text-center">
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors"
+                    >
+                        Change to a different plan
+                    </button>
+                </div>
+            )}
 
             {/* Change Plan Modal */}
             <Dialog.Root open={showModal} onOpenChange={setShowModal}>
