@@ -32,10 +32,26 @@ export async function updateProfileDataAction(formData) {
 
         const supabaseAdmin = getSupabaseAdmin();
 
-        // 1. Update Profile (Full Name)
+        // 1. Format Billing Data
+        const billingAddress = {
+            fullName: formData.fullName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber || '',
+            address: formData.address || '',
+            city: formData.city || '',
+            state: formData.state || '',
+            zipCode: formData.zipCode || '',
+            country: formData.country || 'India',
+            companyName: formData.companyName || '',
+            gstNumber: formData.gstNumber || ''
+        };
+
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
-            .update({ full_name: formData.fullName })
+            .update({
+                full_name: formData.fullName,
+                billing_address: billingAddress
+            })
             .eq('id', user.id);
 
         if (profileError) throw profileError;
@@ -55,7 +71,9 @@ export async function updateProfileDataAction(formData) {
                 .from('onboarding_data')
                 .update({
                     owner_name: formData.businessName,
-                    upi_id: formData.upiId
+                    upi_id: formData.upiId,
+                    whatsapp_number: formData.phoneNumber,
+                    logo_url: formData.logoUrl
                 })
                 .eq('website_id', website.id);
 
@@ -68,15 +86,23 @@ export async function updateProfileDataAction(formData) {
             // Update Live Data
             const updatedData = { ...currentData };
             if (formData.businessName !== undefined) updatedData.businessName = formData.businessName;
+            if (formData.logoUrl !== undefined) updatedData.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedData.payment = { ...(updatedData.payment || {}), upiId: formData.upiId };
+            }
+            if (formData.phoneNumber !== undefined) {
+                updatedData.contact = { ...(updatedData.contact || {}), whatsapp: formData.phoneNumber };
             }
 
             // Update Draft Data
             const updatedDraft = { ...currentDraft };
             if (formData.businessName !== undefined) updatedDraft.businessName = formData.businessName;
+            if (formData.logoUrl !== undefined) updatedDraft.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedDraft.payment = { ...(updatedDraft.payment || {}), upiId: formData.upiId };
+            }
+            if (formData.phoneNumber !== undefined) {
+                updatedDraft.contact = { ...(updatedDraft.contact || {}), whatsapp: formData.phoneNumber };
             }
 
             const { error: websiteError } = await supabaseAdmin

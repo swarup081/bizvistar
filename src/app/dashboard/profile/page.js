@@ -16,6 +16,15 @@ export default function ProfilePage() {
     email: '',
     businessName: '',
     upiId: '',
+    logoUrl: '',
+    phoneNumber: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'India',
+    companyName: '',
+    gstNumber: ''
   });
 
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -49,6 +58,7 @@ export default function ProfilePage() {
 
       let businessName = '';
       let upiId = '';
+      let logoUrl = '';
 
       if (websites && websites.length > 0) {
         const websiteId = websites[0].id;
@@ -56,6 +66,7 @@ export default function ProfilePage() {
 
         businessName = websiteData.businessName || '';
         upiId = websiteData.payment?.upiId || '';
+        logoUrl = websiteData.logo || '';
 
         const { data: onboarding } = await supabase
           .from('onboarding_data')
@@ -66,14 +77,26 @@ export default function ProfilePage() {
         if (onboarding) {
             if (!businessName) businessName = onboarding.owner_name || '';
             if (!upiId) upiId = onboarding.upi_id || '';
+            if (!logoUrl) logoUrl = onboarding.logo_url || '';
         }
       }
+
+      const billing = profile?.billing_address || {};
 
       setFormData({
         fullName: profile?.full_name || '',
         email: user.email || '',
         businessName: businessName,
         upiId: upiId,
+        logoUrl: logoUrl,
+        phoneNumber: billing.phoneNumber || '',
+        address: billing.address || '',
+        city: billing.city || '',
+        state: billing.state || '',
+        zipCode: billing.zipCode || '',
+        country: billing.country || 'India',
+        companyName: billing.companyName || '',
+        gstNumber: billing.gstNumber || ''
       });
 
     } catch (error) {
@@ -86,6 +109,21 @@ export default function ProfilePage() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Logo image must be smaller than 2MB.' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, logoUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -161,10 +199,30 @@ export default function ProfilePage() {
         {/* Left Sidebar - Quick Info */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-[#8A63D2]/20 text-[#8A63D2] flex items-center justify-center text-4xl font-bold mb-4 uppercase">
-              {formData.fullName ? formData.fullName.charAt(0) : formData.email.charAt(0)}
+
+            <div className="relative group cursor-pointer mb-4">
+              <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  onChange={handleLogoUpload}
+                  title="Upload new logo"
+              />
+              <div className="w-28 h-28 rounded-full border-4 border-white shadow-md bg-[#8A63D2]/10 text-[#8A63D2] flex items-center justify-center text-4xl font-bold uppercase overflow-hidden relative">
+                {formData.logoUrl ? (
+                  <img src={formData.logoUrl} alt="Business Logo" className="w-full h-full object-cover" />
+                ) : (
+                  formData.businessName ? formData.businessName.charAt(0) : (formData.fullName ? formData.fullName.charAt(0) : formData.email.charAt(0))
+                )}
+
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white text-xs font-semibold mt-1">Change Logo</span>
+                </div>
+              </div>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">{formData.fullName || 'User'}</h2>
+
+            <h2 className="text-xl font-bold text-gray-900">{formData.businessName || formData.fullName || 'User'}</h2>
             <p className="text-sm text-gray-500 mt-1">{formData.businessName || 'Business not set'}</p>
 
             <div className="w-full mt-6 pt-6 border-t border-gray-100 text-left space-y-4">
@@ -232,6 +290,101 @@ export default function ProfilePage() {
                         placeholder="e.g. yourname@upi"
                     />
                     <p className="text-xs text-gray-500 mt-1">Used for receiving payments on your website.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                    <div className="space-y-2 md:col-span-2">
+                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Billing Address</h4>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                        <input
+                            type="tel"
+                            name="phoneNumber"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                            placeholder="e.g. 9876543210"
+                        />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                        <label className="text-sm font-medium text-gray-700">Address</label>
+                        <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                            placeholder="Street address, building, etc."
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">City</label>
+                        <input
+                            type="text"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">State</label>
+                        <input
+                            type="text"
+                            name="state"
+                            value={formData.state}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">ZIP Code</label>
+                        <input
+                            type="text"
+                            name="zipCode"
+                            value={formData.zipCode}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Country</label>
+                        <input
+                            type="text"
+                            name="country"
+                            value={formData.country}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 outline-none"
+                            disabled
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                    <div className="space-y-2 md:col-span-2">
+                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Company Details (Optional)</h4>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Company Name</label>
+                        <input
+                            type="text"
+                            name="companyName"
+                            value={formData.companyName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">GST Number</label>
+                        <input
+                            type="text"
+                            name="gstNumber"
+                            value={formData.gstNumber}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none font-mono"
+                        />
+                    </div>
                 </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-100">

@@ -57,7 +57,15 @@ export default function PlanManager() {
                 // Set the default billing to their current one
                 setSelectedBilling(cycle);
             } else {
-                setCurrentPlan(null);
+                // If no active subscription is found, assume they are on the default Starter plan (or a free trial).
+                setCurrentPlan({
+                    id: 'default',
+                    name: 'Starter',
+                    price: '299',
+                    status: 'active',
+                    end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(), // Dummy next month date
+                    cycle: 'monthly'
+                });
             }
 
             const { data: website } = await supabase
@@ -145,27 +153,33 @@ export default function PlanManager() {
 
             {/* UPGRADE TEASER */}
             {currentPlan && nextPlan && (
-                <div className="relative bg-gradient-to-br from-[#8A63D2] to-[#603da8] rounded-2xl p-6 shadow-md border border-[#8A63D2]/20 w-full overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
-                        <Zap className="w-24 h-24 text-white" />
+                <div className="relative bg-gradient-to-br from-[#8A63D2] via-[#754eb5] to-[#512c91] rounded-2xl p-6 shadow-xl border border-purple-400/40 w-full overflow-hidden group">
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity duration-700"></div>
+                    <div className="absolute top-0 right-0 p-4 opacity-15 transform translate-x-2 -translate-y-2 group-hover:scale-125 transition-transform duration-700">
+                        <Zap className="w-28 h-28 text-white" />
                     </div>
 
                     <div className="relative z-10">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-3 backdrop-blur-sm">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-4 backdrop-blur-md shadow-sm">
                             <Zap className="w-3 h-3 fill-white" /> Recommended Upgrade
                         </div>
-                        <h4 className="text-xl font-bold text-white mb-1">Upgrade to {nextPlan.name}</h4>
-                        <p className="text-purple-100 text-sm mb-5 opacity-90">
-                            {nextPlan.limit === -1 ? 'Get unlimited products and advanced tools.' : `Scale up to ${nextPlan.limit} products.`}
+
+                        <h4 className="text-3xl font-extrabold text-white mb-2 drop-shadow-sm">
+                            {nextPlan.name} Plan
+                        </h4>
+
+                        <p className="text-purple-50 text-sm mb-6 leading-relaxed opacity-95">
+                            {nextPlan.limit === -1 ? 'Unlock unlimited products, advanced analytics, and priority features.' : `Scale your business up to ${nextPlan.limit} products instantly.`}
                         </p>
+
                         <button
                             onClick={() => {
                                 setSelectedBilling(currentPlan.cycle);
                                 setShowModal(true);
                             }}
-                            className="w-full py-3 bg-white text-[#8A63D2] hover:bg-gray-50 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                            className="w-full py-3.5 bg-white text-[#8A63D2] hover:bg-gray-50 rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
                         >
-                            Explore {nextPlan.name} <ArrowRight className="w-4 h-4" />
+                            Explore {nextPlan.name} Features <ArrowRight className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
