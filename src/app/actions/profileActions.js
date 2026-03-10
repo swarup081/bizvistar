@@ -67,15 +67,15 @@ export async function updateProfileDataAction(formData) {
 
             // Update Live Data
             const updatedData = { ...currentData };
-            if (formData.businessName) updatedData.businessName = formData.businessName;
-            if (formData.upiId) {
+            if (formData.businessName !== undefined) updatedData.businessName = formData.businessName;
+            if (formData.upiId !== undefined) {
                 updatedData.payment = { ...(updatedData.payment || {}), upiId: formData.upiId };
             }
 
             // Update Draft Data
             const updatedDraft = { ...currentDraft };
-            if (formData.businessName) updatedDraft.businessName = formData.businessName;
-            if (formData.upiId) {
+            if (formData.businessName !== undefined) updatedDraft.businessName = formData.businessName;
+            if (formData.upiId !== undefined) {
                 updatedDraft.payment = { ...(updatedDraft.payment || {}), upiId: formData.upiId };
             }
 

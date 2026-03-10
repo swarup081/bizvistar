@@ -32,12 +32,15 @@ export default function PlanManager() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data: sub } = await supabase
+            const { data: subs } = await supabase
                 .from('subscriptions')
                 .select('*, plans(*)')
                 .eq('user_id', user.id)
                 .in('status', ['active', 'trialing'])
-                .single();
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            const sub = subs && subs.length > 0 ? subs[0] : null;
 
             if (sub && sub.plans) {
                 let cycle = 'monthly';

@@ -237,37 +237,90 @@ function CheckoutContent() {
 
     const fetchProfileData = async (userId, authEmail) => {
         try {
-            const { data, error } = await supabase
+            // 1. Fetch Profile Data
+            const { data: profile } = await supabase
                 .from('profiles')
                 .select('full_name, billing_address')
                 .eq('id', userId)
                 .single();
 
-            if (data && data.billing_address) {
-                const billing = data.billing_address;
-                const [firstName, ...lastNameParts] = (data.full_name || billing.fullName || '').split(' ');
+            // 2. Try fetching Onboarding Data (for phone, business name fallback)
+            let onboardingData = null;
+            const { data: websites } = await supabase
+                .from('websites')
+                .select('id')
+                .eq('user_id', userId)
+                .limit(1);
+            if (websites && websites.length > 0) {
+                const { data: obData } = await supabase
+                    .from('onboarding_data')
+                    .select('owner_name, whatsapp_number')
+                    .eq('website_id', websites[0].id)
+                    .single();
+                onboardingData = obData;
+            }
+
+            // 3. Merge Data Priority: Profile.billing > Onboarding > User
+            let merged = {
+                firstName: '',
+                lastName: '',
+                email: authEmail,
+                phoneNumber: '',
+                companyName: ''
+            };
+
+            // Apply Onboarding Fallbacks
+            if (onboardingData) {
+                merged.phoneNumber = onboardingData.whatsapp_number || '';
+                merged.companyName = onboardingData.owner_name || '';
+                const [fn, ...ln] = (onboardingData.owner_name || '').split(' ');
+                merged.firstName = fn || '';
+                merged.lastName = ln.join(' ') || '';
+            }
+
+            // Apply Profile full_name
+            if (profile && profile.full_name) {
+                const [fn, ...ln] = profile.full_name.split(' ');
+                merged.firstName = fn || merged.firstName;
+                merged.lastName = ln.join(' ') || merged.lastName;
+            }
+
+            // Apply Profile Billing details (Highest Priority)
+            if (profile && profile.billing_address) {
+                const b = profile.billing_address;
+                if (b.fullName) {
+                    const [fn, ...ln] = b.fullName.split(' ');
+                    merged.firstName = fn || merged.firstName;
+                    merged.lastName = ln.join(' ') || merged.lastName;
+                }
                 
                 setFormData(prev => ({
                     ...prev,
-                    firstName: firstName || prev.firstName,
-                    lastName: lastNameParts.join(' ') || prev.lastName,
-                    email: billing.email || authEmail || prev.email, // Prefer billing email, fallback to auth
-                    address: billing.address || prev.address,
-                    city: billing.city || prev.city,
-                    state: billing.state || prev.state,
-                    zip: billing.zipCode || prev.zip,
-                    phoneNumber: billing.phoneNumber || prev.phoneNumber,
-                    companyName: billing.companyName || prev.companyName,
-                    gstNumber: billing.gstNumber || prev.gstNumber
+                    firstName: merged.firstName,
+                    lastName: merged.lastName,
+                    email: b.email || merged.email,
+                    address: b.address || prev.address,
+                    city: b.city || prev.city,
+                    state: b.state || prev.state,
+                    zip: b.zipCode || prev.zip,
+                    phoneNumber: b.phoneNumber || merged.phoneNumber,
+                    companyName: b.companyName || merged.companyName,
+                    gstNumber: b.gstNumber || prev.gstNumber
                 }));
-                if (billing.companyName) setAddCompanyDetails(true);
+                if (b.companyName) setAddCompanyDetails(true);
             } else {
-                // Pre-fill email from auth if no profile data
-                setFormData(prev => ({ ...prev, email: authEmail }));
+                setFormData(prev => ({
+                    ...prev,
+                    firstName: merged.firstName,
+                    lastName: merged.lastName,
+                    email: merged.email,
+                    phoneNumber: merged.phoneNumber,
+                    companyName: merged.companyName
+                }));
             }
         } catch (err) {
             console.error("Failed to fetch profile data", err);
-             if (authEmail) setFormData(prev => ({ ...prev, email: authEmail }));
+            if (authEmail) setFormData(prev => ({ ...prev, email: authEmail }));
         }
     };
 
