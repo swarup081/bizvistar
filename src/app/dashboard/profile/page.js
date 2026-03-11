@@ -31,6 +31,8 @@ export default function ProfilePage() {
   const [pwdMessage, setPwdMessage] = useState({ type: '', text: '' });
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [currentPlan, setCurrentPlan] = useState(null);
+  const [productCount, setProductCount] = useState(0);
 
   useEffect(() => {
     fetchUserData();
@@ -98,6 +100,47 @@ export default function ProfilePage() {
         companyName: billing.companyName || '',
         gstNumber: billing.gstNumber || ''
       });
+
+      // Fetch Active Subscription & Products
+      const { data: subs } = await supabase
+        .from('subscriptions')
+        .select('*, plans(*)')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const sub = subs && subs.length > 0 ? subs[0] : null;
+
+      if (sub && sub.plans) {
+          let cycle = 'monthly';
+          if (sub.plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
+          setCurrentPlan({
+              id: sub.id,
+              name: sub.plans.name.replace(/ yearly| monthly/gi, ''),
+              price: sub.plans.price,
+              status: sub.status,
+              end: sub.current_period_end,
+              cycle: cycle
+          });
+      } else {
+          setCurrentPlan({
+              id: 'default',
+              name: 'Starter',
+              price: '299',
+              status: 'active',
+              end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
+              cycle: 'monthly'
+          });
+      }
+
+      if (websites && websites.length > 0) {
+          const { count } = await supabase
+              .from('products')
+              .select('*', { count: 'exact', head: true })
+              .eq('website_id', websites[0].id);
+          setProductCount(count || 0);
+      }
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -225,15 +268,33 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-gray-900">{formData.businessName || formData.fullName || 'User'}</h2>
             <p className="text-sm text-gray-500 mt-1">{formData.businessName || 'Business not set'}</p>
 
-            <div className="w-full mt-6 pt-6 border-t border-gray-100 text-left space-y-4">
+            <div className="w-full mt-6 pt-6 border-t border-gray-100 text-left space-y-6">
               <div>
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email (Verified)</span>
                 <p className="text-gray-800 font-medium mt-1">{formData.email}</p>
               </div>
+
+              {currentPlan && (
+                <div className="pt-6 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Plan</span>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-700 uppercase tracking-wider">
+                      Active
+                    </span>
+                  </div>
+                  <h4 className="text-2xl font-extrabold text-gray-900 mb-1">{currentPlan.name}</h4>
+                  <p className="text-gray-600 text-sm">
+                      Billed {currentPlan.cycle}.
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                      Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          <PlanManager />
+          <PlanManager currentPlan={currentPlan} productCount={productCount} />
         </div>
 
         {/* Right Content - Forms */}

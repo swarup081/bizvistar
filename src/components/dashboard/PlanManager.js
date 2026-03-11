@@ -1,19 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { CreditCard, Loader2, Check, ArrowRight, Zap } from 'lucide-react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { PLAN_LIMITS } from '@/app/config/razorpay-config';
 
-export default function PlanManager() {
-    const [loading, setLoading] = useState(true);
-    const [currentPlan, setCurrentPlan] = useState(null);
-    const [productCount, setProductCount] = useState(0);
+export default function PlanManager({ currentPlan, productCount }) {
     const [showModal, setShowModal] = useState(false);
-    const [selectedBilling, setSelectedBilling] = useState('monthly');
+    const [selectedBilling, setSelectedBilling] = useState(currentPlan?.cycle || 'monthly');
     const [errorMsg, setErrorMsg] = useState('');
     const router = useRouter();
 
@@ -52,72 +47,16 @@ export default function PlanManager() {
         }
     ];
 
-    useEffect(() => {
-        fetchPlanData();
-    }, []);
-
-    const fetchPlanData = async () => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data: subs } = await supabase
-                .from('subscriptions')
-                .select('*, plans(*)')
-                .eq('user_id', user.id)
-                .in('status', ['active', 'trialing'])
-                .order('created_at', { ascending: false })
-                .limit(1);
-
-            const sub = subs && subs.length > 0 ? subs[0] : null;
-
-            if (sub && sub.plans) {
-                let cycle = 'monthly';
-                if (sub.plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
-
-                setCurrentPlan({
-                    id: sub.id,
-                    name: sub.plans.name.replace(/ yearly| monthly/gi, ''), // Clean name
-                    price: sub.plans.price,
-                    status: sub.status,
-                    end: sub.current_period_end,
-                    cycle: cycle
-                });
-                setSelectedBilling(cycle);
-            } else {
-                // If no active subscription is found, assume they are on the default Starter plan (or a free trial).
-                setCurrentPlan({
-                    id: 'default',
-                    name: 'Starter',
-                    price: '299',
-                    status: 'active',
-                    end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(), // Dummy next month date
-                    cycle: 'monthly'
-                });
-            }
-
-            const { data: website } = await supabase
-                .from('websites')
-                .select('id')
-                .eq('user_id', user.id)
-                .single();
-
-            if (website) {
-                const { count } = await supabase
-                    .from('products')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('website_id', website.id);
-                setProductCount(count || 0);
-            }
-
-        } catch (error) {
-            console.error("Error fetching plan data:", error);
-        } finally {
-            setLoading(false);
-        }
+    const getNextPlan = () => {
+        if (!currentPlan) return plans[0];
+        const currentIndex = plans.findIndex(p => p.name === currentPlan.name);
+        if (currentIndex === plans.length - 1 || currentIndex === -1) return null;
+        return plans[currentIndex + 1];
     };
 
-    const handlePlanSelect = (targetPlan) => {
+    const nextPlan = getNextPlan();
+
+    const handlePlanSelect = (targetPlan, directUpgrade = false) => {
         setErrorMsg('');
 
         if (targetPlan.limit !== -1 && productCount > targetPlan.limit) {
@@ -125,97 +64,54 @@ export default function PlanManager() {
             return;
         }
 
-        router.push(`/checkout?plan=${targetPlan.name}&billing=${selectedBilling}&update=true`);
+        // If direct upgrade from the fleshy card, use the user's current billing cycle
+        const billingToUse = directUpgrade ? (currentPlan?.cycle || 'monthly') : selectedBilling;
+        router.push(`/checkout?plan=${targetPlan.name}&billing=${billingToUse}&update=true`);
     };
 
-    const getNextPlan = () => {
-        if (!currentPlan) return plans[0];
-
-        const currentIndex = plans.findIndex(p => p.name === currentPlan.name);
-        if (currentIndex === plans.length - 1 || currentIndex === -1) return null;
-
-        return plans[currentIndex + 1];
-    };
-
-    const nextPlan = getNextPlan();
-
-    if (loading) {
-        return <div className="p-6 text-center text-gray-500 flex justify-center items-center"><Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading plan details...</div>;
-    }
+    if (!nextPlan) return null; // If they are on Growth, we don't show the upgrade card (maybe just the change link)
 
     return (
-        <div className="space-y-4 w-full mt-6">
+        <div className="w-full mt-6 space-y-4">
 
-            {/* MERGED PLAN OVERVIEW & UPGRADE */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden flex flex-col md:flex-row">
-                {/* Left Side: Current Plan */}
-                <div className="p-6 md:w-1/2 flex flex-col justify-between border-b md:border-b-0 md:border-r border-gray-100">
-                    <div>
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                            <CreditCard className="w-4 h-4" /> Current Plan
-                        </h3>
-                        {currentPlan ? (
-                            <div>
-                                <h4 className="text-3xl font-extrabold text-gray-900 mb-2">{currentPlan.name}</h4>
-                                <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-700 uppercase tracking-wider mb-4">
-                                    Active
-                                </span>
-                                <p className="text-gray-600 text-sm mb-1">
-                                    Billed {currentPlan.cycle}.
-                                </p>
-                                <p className="text-gray-500 text-sm">
-                                    Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
-                                </p>
-                            </div>
-                        ) : (
-                            <p className="text-gray-500 text-sm">No active plan found.</p>
-                        )}
-                    </div>
+            {/* INSPIRATION CARD DESIGN */}
+            <div className="relative rounded-[24px] p-6 sm:p-8 overflow-hidden shadow-2xl group flex flex-col items-center justify-center text-center isolate"
+                 style={{
+                     background: 'linear-gradient(135deg, #0A1128 0%, #002B5E 50%, #0A1128 100%)',
+                     boxShadow: '0 20px 40px -10px rgba(0, 43, 94, 0.4)'
+                 }}>
+
+                {/* Glow effects */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-blue-500/30 blur-[60px] rounded-full pointer-events-none"></div>
+                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-purple-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+
+                {/* Title & Badge */}
+                <div className="flex items-center justify-center gap-3 mb-3 z-10">
+                    <h3 className="text-4xl font-extrabold text-white tracking-tight">{nextPlan.name}</h3>
+                    <span className="bg-white text-[#0A1128] text-xs font-black uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                        PRO
+                    </span>
                 </div>
 
-                {/* Right Side: Recommended Upgrade */}
-                <div className="md:w-1/2 bg-gray-50 relative overflow-hidden group">
-                    {nextPlan ? (
-                        <>
-                            <div className="absolute top-0 right-0 p-4 opacity-5 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
-                                <Zap className="w-24 h-24 text-[#8A63D2]" />
-                            </div>
-                            <div className="p-6 h-full flex flex-col justify-center relative z-10">
-                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#8A63D2]/10 text-[#8A63D2] text-[10px] font-bold uppercase tracking-wider mb-3 w-fit">
-                                    <Zap className="w-3 h-3 fill-[#8A63D2]" /> Recommended Upgrade
-                                </div>
-                                <h4 className="text-2xl font-bold text-gray-900 mb-2">{nextPlan.name} Plan</h4>
-                                <p className="text-gray-600 text-sm mb-5">
-                                    {nextPlan.limit === -1 ? 'Unlock unlimited products, advanced analytics, and priority features.' : `Scale your business up to ${nextPlan.limit} products instantly.`}
-                                </p>
-                                <button
-                                    onClick={() => {
-                                        setSelectedBilling(currentPlan?.cycle || 'monthly');
-                                        setShowModal(true);
-                                    }}
-                                    className="w-full py-3 bg-[#8A63D2] hover:bg-[#7853bd] text-white rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-                                >
-                                    Explore {nextPlan.name} Features <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="p-6 h-full flex flex-col justify-center items-center text-center">
-                             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                 <Check className="w-6 h-6 text-green-600" />
-                             </div>
-                             <h4 className="text-xl font-bold text-gray-900 mb-2">You're on the Top Tier!</h4>
-                             <p className="text-gray-500 text-sm">You have access to all premium features.</p>
-                        </div>
-                    )}
-                </div>
+                {/* Subtitle */}
+                <p className="text-blue-100/90 text-sm sm:text-base font-medium mb-8 max-w-xs mx-auto leading-relaxed z-10">
+                    Upgrade now & unlock more exclusive features
+                </p>
+
+                {/* Direct Upgrade Button */}
+                <button
+                    onClick={() => handlePlanSelect(nextPlan, true)}
+                    className="w-full sm:w-[90%] py-3.5 bg-white hover:bg-gray-50 text-[#0A1128] rounded-[16px] font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 z-10"
+                >
+                    Upgrade
+                </button>
             </div>
 
             {/* VIEW ALL PLANS LINK */}
-            <div className="text-center">
+            <div className="text-center mt-4">
                 <button
                     onClick={() => setShowModal(true)}
-                    className="text-xs text-gray-500 hover:text-[#8A63D2] underline underline-offset-4 transition-colors font-medium"
+                    className="text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors border-b border-dashed border-gray-300 hover:border-gray-900 pb-0.5"
                 >
                     Change to a different plan
                 </button>
@@ -224,8 +120,8 @@ export default function PlanManager() {
             {/* Change Plan Modal */}
             <Dialog.Root open={showModal} onOpenChange={setShowModal}>
                 <Dialog.Portal>
-                    <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]" />
-                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[1000px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl z-[90] p-8 md:p-10">
+                    <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] animate-in fade-in" />
+                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[1000px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl z-[90] p-8 md:p-10 animate-in zoom-in-95">
                         <div className="absolute top-4 right-4">
                             <Dialog.Close asChild>
                                 <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
