@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // src/app/site/[slug]/product/[productId]/page.js
 import { createClient } from '@supabase/supabase-js';
 

@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react'; // Added Info icon
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react'; // Added AnimatePresence
 
 // --- Reusable Icons ---
 const CheckMark = () => <div className="flex justify-center"><Check className="w-5 h-5 text-blue-600" strokeWidth={2.5} /></div>;
@@ -129,7 +132,41 @@ const featureList = [
   { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
 ];
 
-export default function PricingPage() {
+import { Suspense } from 'react';
+
+function PricingContent() {
+  const [currentPlan, setCurrentPlan] = useState(null);
+  const searchParams = useSearchParams();
+  const isUpdateFlow = searchParams.get('update') === 'true';
+
+  useEffect(() => {
+    const fetchCurrentPlan = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: subs } = await supabase
+          .from('subscriptions')
+          .select('*, plans(name)')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .order('id', { ascending: false })
+          .limit(1);
+
+      if (subs && subs.length > 0 && subs[0].plans) {
+          let cycle = 'monthly';
+          if (subs[0].plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
+          setCurrentPlan({
+             name: subs[0].plans.name.replace(/ yearly| monthly/gi, ''),
+             cycle: cycle
+          });
+          // Auto-toggle to the user's current billing cycle
+          setIsYearly(cycle === 'yearly');
+      } else {
+          setCurrentPlan({ name: 'Starter', cycle: 'monthly' }); // Default active
+      }
+    };
+    fetchCurrentPlan();
+  }, []);
   const plans = {
     monthly: [
       {
@@ -446,7 +483,8 @@ const PlanCard = ({ plan, isYearly, className }) => (
             query: {
                 plan: plan.name,
                 billing: isYearly ? 'yearly' : 'monthly',
-                price: plan.price
+                price: plan.price,
+                ...(isUpdateFlow ? { update: 'true' } : {})
             }
         }} className="w-full">
         <button 
@@ -830,3 +868,12 @@ const FaqSection = () => {
   );
 };
 // --- THIS IS THE END OF THE CHANGED SECTION ---
+
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PricingContent />
+    </Suspense>
+  );
+}

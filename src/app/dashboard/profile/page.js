@@ -49,7 +49,7 @@ export default function ProfilePage() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       // Fetch Onboarding Data (for Business Name, UPI)
       const { data: websites } = await supabase
@@ -74,7 +74,7 @@ export default function ProfilePage() {
           .from('onboarding_data')
           .select('*')
           .eq('website_id', websiteId)
-          .single();
+          .maybeSingle();
 
         if (onboarding) {
             if (!businessName) businessName = onboarding.owner_name || '';
@@ -102,12 +102,14 @@ export default function ProfilePage() {
       });
 
       // Fetch Active Subscription & Products
+      // We order by 'id' descending to ensure we ALWAYS get the absolute most recently inserted subscription row
+      // in case `created_at` timestamps are identical or webhook canceled the old one slightly late.
       const { data: subs } = await supabase
         .from('subscriptions')
         .select('*, plans(*)')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing'])
-        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(1);
 
       const sub = subs && subs.length > 0 ? subs[0] : null;
@@ -154,7 +156,7 @@ export default function ProfilePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogoUpload = (e) => {
+  const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
@@ -162,8 +164,25 @@ export default function ProfilePage() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, logoUrl: reader.result }));
+      reader.onloadend = async () => {
+        const base64Logo = reader.result;
+        setFormData(prev => ({ ...prev, logoUrl: base64Logo }));
+
+        // Immediately save logo to backend
+        try {
+            // We can just call updateProfileDataAction with a partial update if we adapt it,
+            // or call it with current formData + new logo. Since formData might have unsaved text changes,
+            // we will pass the exact updated formData state.
+            const dataToSave = { ...formData, logoUrl: base64Logo };
+            const res = await updateProfileDataAction(dataToSave);
+            if (res.success) {
+                setMessage({ type: 'success', text: 'Logo updated successfully!' });
+            } else {
+                setMessage({ type: 'error', text: 'Failed to save logo.' });
+            }
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Failed to upload logo.' });
+        }
       };
       reader.readAsDataURL(file);
     }
