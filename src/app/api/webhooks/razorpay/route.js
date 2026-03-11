@@ -145,6 +145,18 @@ export async function POST(req) {
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
       }
 
+      // If this was an upgrade (has old_subscription_id), mark the old one as canceled locally
+      if (newStatus === 'active' && subscription.notes?.old_subscription_id) {
+         try {
+             await supabaseAdmin
+               .from('subscriptions')
+               .update({ status: 'canceled' })
+               .eq('razorpay_subscription_id', subscription.notes.old_subscription_id);
+         } catch (e) {
+             console.error("Failed to cancel old subscription internally", e);
+         }
+      }
+
       // --- PUBLISH WEBSITE (Critical Fix) ---
       // Ensure the user's website is published and accessible immediately
       if (newStatus === 'active') {

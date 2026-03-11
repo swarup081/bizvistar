@@ -18,9 +18,38 @@ export default function PlanManager() {
     const router = useRouter();
 
     const plans = [
-        { name: 'Starter', price: '299', yearlyPrice: '2990', limit: PLAN_LIMITS['starter'] },
-        { name: 'Pro', price: '799', yearlyPrice: '7990', limit: PLAN_LIMITS['pro'] },
-        { name: 'Growth', price: '1499', yearlyPrice: '14990', limit: PLAN_LIMITS['growth'] }
+        {
+            name: 'Starter', price: '299', yearlyPrice: '2990', limit: PLAN_LIMITS['starter'],
+            features: [
+                'Professional Website',
+                'Easy-to-Use Editor',
+                'Secure Hosting & Subdomain',
+                'Automated Order Emails',
+                'Standard Email Support',
+            ]
+        },
+        {
+            name: 'Pro', price: '799', yearlyPrice: '7990', limit: PLAN_LIMITS['pro'],
+            features: [
+                '500 sms for user authentication',
+                'Instant WhatsApp Order Notifications',
+                'Priority WhatsApp Support',
+                '2 Advanced Business Tools',
+                'Basic Website Analytics',
+                'Unlimited Products'
+            ]
+        },
+        {
+            name: 'Growth', price: '1499', yearlyPrice: '14990', limit: PLAN_LIMITS['growth'],
+            features: [
+                '1000 sms for user authentication',
+                'Google Maps Management',
+                'Access to All Business Tools',
+                'Free Custom Domain (First Year)',
+                'Priority Onboarding Call',
+                'Unlimited Products'
+            ]
+        }
     ];
 
     useEffect(() => {
@@ -54,7 +83,6 @@ export default function PlanManager() {
                     end: sub.current_period_end,
                     cycle: cycle
                 });
-                // Set the default billing to their current one
                 setSelectedBilling(cycle);
             } else {
                 // If no active subscription is found, assume they are on the default Starter plan (or a free trial).
@@ -101,11 +129,10 @@ export default function PlanManager() {
     };
 
     const getNextPlan = () => {
-        if (!currentPlan) return plans[0]; // If no plan, recommend Starter
+        if (!currentPlan) return plans[0];
 
         const currentIndex = plans.findIndex(p => p.name === currentPlan.name);
-        // If current is Growth (last), there is no "next" plan.
-        if (currentIndex === plans.length - 1) return null;
+        if (currentIndex === plans.length - 1 || currentIndex === -1) return null;
 
         return plans[currentIndex + 1];
     };
@@ -119,89 +146,86 @@ export default function PlanManager() {
     return (
         <div className="space-y-4 w-full mt-6">
 
-            {/* CURRENT PLAN OVERVIEW */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 w-full">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" /> Current Plan
-                </h3>
+            {/* MERGED PLAN OVERVIEW & UPGRADE */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden flex flex-col md:flex-row">
+                {/* Left Side: Current Plan */}
+                <div className="p-6 md:w-1/2 flex flex-col justify-between border-b md:border-b-0 md:border-r border-gray-100">
+                    <div>
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" /> Current Plan
+                        </h3>
+                        {currentPlan ? (
+                            <div>
+                                <h4 className="text-3xl font-extrabold text-gray-900 mb-2">{currentPlan.name}</h4>
+                                <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-700 uppercase tracking-wider mb-4">
+                                    Active
+                                </span>
+                                <p className="text-gray-600 text-sm mb-1">
+                                    Billed {currentPlan.cycle}.
+                                </p>
+                                <p className="text-gray-500 text-sm">
+                                    Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-gray-500 text-sm">No active plan found.</p>
+                        )}
+                    </div>
+                </div>
 
-                {currentPlan ? (
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <h4 className="text-2xl font-bold text-gray-900">{currentPlan.name}</h4>
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#8A63D2]/10 text-[#8A63D2] uppercase tracking-wider">Active</span>
+                {/* Right Side: Recommended Upgrade */}
+                <div className="md:w-1/2 bg-gray-50 relative overflow-hidden group">
+                    {nextPlan ? (
+                        <>
+                            <div className="absolute top-0 right-0 p-4 opacity-5 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
+                                <Zap className="w-24 h-24 text-[#8A63D2]" />
+                            </div>
+                            <div className="p-6 h-full flex flex-col justify-center relative z-10">
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#8A63D2]/10 text-[#8A63D2] text-[10px] font-bold uppercase tracking-wider mb-3 w-fit">
+                                    <Zap className="w-3 h-3 fill-[#8A63D2]" /> Recommended Upgrade
+                                </div>
+                                <h4 className="text-2xl font-bold text-gray-900 mb-2">{nextPlan.name} Plan</h4>
+                                <p className="text-gray-600 text-sm mb-5">
+                                    {nextPlan.limit === -1 ? 'Unlock unlimited products, advanced analytics, and priority features.' : `Scale your business up to ${nextPlan.limit} products instantly.`}
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setSelectedBilling(currentPlan?.cycle || 'monthly');
+                                        setShowModal(true);
+                                    }}
+                                    className="w-full py-3 bg-[#8A63D2] hover:bg-[#7853bd] text-white rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                                >
+                                    Explore {nextPlan.name} Features <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="p-6 h-full flex flex-col justify-center items-center text-center">
+                             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                 <Check className="w-6 h-6 text-green-600" />
+                             </div>
+                             <h4 className="text-xl font-bold text-gray-900 mb-2">You're on the Top Tier!</h4>
+                             <p className="text-gray-500 text-sm">You have access to all premium features.</p>
                         </div>
-                        <p className="text-gray-600 text-sm mt-2">
-                            Billed {currentPlan.cycle}.
-                        </p>
-                        <p className="text-gray-600 text-sm">
-                            Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
-                        </p>
-                    </div>
-                ) : (
-                    <div>
-                        <p className="text-gray-500 mb-4">You do not have an active subscription.</p>
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="w-full py-2.5 bg-[#8A63D2] hover:bg-[#7a55bd] text-white rounded-xl font-medium transition-all shadow-sm"
-                        >
-                            View Plans
-                        </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
-            {/* UPGRADE TEASER */}
-            {currentPlan && nextPlan && (
-                <div className="relative bg-gradient-to-br from-[#8A63D2] via-[#754eb5] to-[#512c91] rounded-2xl p-6 shadow-xl border border-purple-400/40 w-full overflow-hidden group">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity duration-700"></div>
-                    <div className="absolute top-0 right-0 p-4 opacity-15 transform translate-x-2 -translate-y-2 group-hover:scale-125 transition-transform duration-700">
-                        <Zap className="w-28 h-28 text-white" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-widest mb-4 backdrop-blur-md shadow-sm">
-                            <Zap className="w-3 h-3 fill-white" /> Recommended Upgrade
-                        </div>
-
-                        <h4 className="text-3xl font-extrabold text-white mb-2 drop-shadow-sm">
-                            {nextPlan.name} Plan
-                        </h4>
-
-                        <p className="text-purple-50 text-sm mb-6 leading-relaxed opacity-95">
-                            {nextPlan.limit === -1 ? 'Unlock unlimited products, advanced analytics, and priority features.' : `Scale your business up to ${nextPlan.limit} products instantly.`}
-                        </p>
-
-                        <button
-                            onClick={() => {
-                                setSelectedBilling(currentPlan.cycle);
-                                setShowModal(true);
-                            }}
-                            className="w-full py-3.5 bg-white text-[#8A63D2] hover:bg-gray-50 rounded-xl font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
-                        >
-                            Explore {nextPlan.name} Features <ArrowRight className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
-
             {/* VIEW ALL PLANS LINK */}
-            {currentPlan && (
-                <div className="text-center">
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="text-xs text-gray-500 hover:text-gray-800 underline underline-offset-2 transition-colors"
-                    >
-                        Change to a different plan
-                    </button>
-                </div>
-            )}
+            <div className="text-center">
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="text-xs text-gray-500 hover:text-[#8A63D2] underline underline-offset-4 transition-colors font-medium"
+                >
+                    Change to a different plan
+                </button>
+            </div>
 
             {/* Change Plan Modal */}
             <Dialog.Root open={showModal} onOpenChange={setShowModal}>
                 <Dialog.Portal>
                     <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80]" />
-                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[900px] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl z-[90] p-8">
+                    <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[1000px] max-h-[95vh] overflow-y-auto bg-white rounded-3xl shadow-2xl z-[90] p-8 md:p-10">
                         <div className="absolute top-4 right-4">
                             <Dialog.Close asChild>
                                 <button className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors">
@@ -210,31 +234,31 @@ export default function PlanManager() {
                             </Dialog.Close>
                         </div>
 
-                        <div className="text-center mb-8 mt-2">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Change your plan</h2>
-                            <p className="text-gray-500">Choose the best plan for your growing business.</p>
+                        <div className="text-center mb-10">
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Choose your plan</h2>
+                            <p className="text-gray-500 text-lg">Select the best plan for your growing business.</p>
 
-                            <div className="flex justify-center mt-6">
-                                <div className="bg-gray-100 p-1 rounded-full flex items-center">
+                            <div className="flex justify-center mt-8">
+                                <div className="bg-gray-100 p-1.5 rounded-full flex items-center shadow-inner">
                                     <button
                                         onClick={() => setSelectedBilling('monthly')}
-                                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${selectedBilling === 'monthly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                                        className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all ${selectedBilling === 'monthly' ? 'bg-white text-gray-900 shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
                                         Monthly
                                     </button>
                                     <button
                                         onClick={() => setSelectedBilling('yearly')}
-                                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${selectedBilling === 'yearly' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                                        className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${selectedBilling === 'yearly' ? 'bg-white text-gray-900 shadow-md' : 'text-gray-500 hover:text-gray-900'}`}
                                     >
                                         Yearly
-                                        <span className="bg-green-100 text-green-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Save 20%</span>
+                                        <span className="bg-green-100 text-green-700 text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full tracking-wider">Save 20%</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         {errorMsg && (
-                            <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start gap-3">
+                            <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start gap-3">
                                 <div className="mt-0.5"><X className="w-5 h-5" /></div>
                                 <div>
                                     <h4 className="font-bold text-sm">Cannot Change Plan</h4>
@@ -243,46 +267,63 @@ export default function PlanManager() {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                             {plans.map((plan) => {
                                 const isCurrent = currentPlan?.name === plan.name && currentPlan?.cycle === selectedBilling;
+                                const isPro = plan.name === 'Pro';
 
                                 return (
-                                    <div key={plan.name} className={`relative rounded-2xl border p-6 flex flex-col ${isCurrent ? 'border-[#8A63D2] shadow-md bg-purple-50/20' : 'border-gray-200 bg-white hover:border-gray-300'} transition-all`}>
-                                        {isCurrent && (
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#8A63D2] text-white px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                                    <div key={plan.name} className={`relative rounded-3xl p-8 flex flex-col transition-all ${isPro ? 'bg-gray-900 text-white shadow-2xl scale-105 z-10' : 'bg-white border border-gray-200 hover:border-gray-300 shadow-lg'} ${isCurrent && !isPro ? 'ring-2 ring-[#8A63D2]' : ''}`}>
+
+                                        {isPro && (
+                                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-[#8A63D2] text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-md">
+                                                Most Popular
+                                            </div>
+                                        )}
+                                        {isCurrent && !isPro && (
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-200 text-gray-800 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
                                                 Current Plan
                                             </div>
                                         )}
 
-                                        <h3 className="text-xl font-bold text-gray-900 mb-1">{plan.name}</h3>
+                                        <h3 className={`text-2xl font-bold mb-2 ${isPro ? 'text-white' : 'text-gray-900'}`}>{plan.name}</h3>
+                                        <p className={`text-sm mb-6 ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {plan.limit === -1 ? 'Unlimited potential.' : `Up to ${plan.limit} products.`}
+                                        </p>
 
-                                        <div className="flex items-baseline gap-1 mb-6">
-                                            <span className="text-3xl font-extrabold text-gray-900">₹{selectedBilling === 'yearly' ? plan.yearlyPrice : plan.price}</span>
-                                            <span className="text-gray-500 font-medium">/{selectedBilling === 'yearly' ? 'yr' : 'mo'}</span>
+                                        <div className="flex items-baseline gap-1 mb-8">
+                                            <span className="text-xl font-medium">₹</span>
+                                            <span className={`text-5xl font-extrabold tracking-tight ${isPro ? 'text-white' : 'text-gray-900'}`}>
+                                                {selectedBilling === 'yearly' ? plan.yearlyPrice : plan.price}
+                                            </span>
+                                            <span className={`font-medium ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                /{selectedBilling === 'yearly' ? 'yr' : 'mo'}
+                                            </span>
                                         </div>
 
                                         <div className="flex-grow space-y-4 mb-8">
-                                            <div className="flex items-start gap-3">
-                                                <div className="mt-0.5 rounded-full bg-green-100 p-0.5 text-green-600">
-                                                    <Check className="w-3 h-3" />
+                                            {plan.features.map((feature, i) => (
+                                                <div key={i} className="flex items-start gap-3">
+                                                    <div className={`mt-1 rounded-full p-0.5 flex-shrink-0 ${isPro ? 'bg-purple-500/20 text-purple-400' : 'bg-green-100 text-green-600'}`}>
+                                                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                                    </div>
+                                                    <span className={`text-sm ${isPro ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                        {feature}
+                                                    </span>
                                                 </div>
-                                                <span className="text-sm text-gray-600">
-                                                    {plan.limit === -1 ? <strong className="text-gray-900">Unlimited</strong> : <strong className="text-gray-900">Up to {plan.limit}</strong>} products
-                                                </span>
-                                            </div>
+                                            ))}
                                         </div>
 
                                         <button
                                             onClick={() => handlePlanSelect(plan)}
                                             disabled={isCurrent}
-                                            className={`w-full py-3 rounded-xl font-bold transition-all ${
+                                            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
                                                 isCurrent
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-gray-900 text-white hover:bg-black shadow-md hover:shadow-lg'
+                                                    ? (isPro ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed')
+                                                    : (isPro ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-black shadow-md hover:shadow-lg')
                                             }`}
                                         >
-                                            {isCurrent ? 'Active' : 'Select Plan'}
+                                            {isCurrent ? 'Active' : `Get ${plan.name}`}
                                         </button>
                                     </div>
                                 );
