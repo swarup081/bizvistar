@@ -342,6 +342,7 @@ function PricingContent() {
                 key={plan.name}
                 plan={plan}
                 isYearly={isYearly}
+                isUpdateFlow={isUpdateFlow}
                 // Make the middle card (Pro) physically larger
                 className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
               />
@@ -434,7 +435,7 @@ function PricingContent() {
 }
 
 // --- Sub-component: PlanCard (ENHANCED) ---
-const PlanCard = ({ plan, isYearly, className }) => (
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow }) => (
   <div 
     className={cn(
       'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 

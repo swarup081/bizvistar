@@ -21,6 +21,7 @@ import { usePathname } from 'next/navigation';
 import Logo from '@/lib/logo/logoOfBizVistar';
 import { NotificationManager } from '@/components/dashboard/notifications/NotificationManager';
 import NotificationBell from '@/components/dashboard/notifications/NotificationBell';
+import UpdatePlanNavButton from '@/components/dashboard/UpdatePlanNavButton';
 // import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {
@@ -115,12 +116,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Right: User Controls (Desktop) */}
         <div className="hidden lg:flex items-center gap-4">
-          <Link
-            href="/pricing?update=true"
-            className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#0A1128] to-[#002B5E] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-          >
-            <span>Update Plan</span>
-          </Link>
+          <UpdatePlanNavButton isMobile={false} />
           <NotificationBell />
           <Link href="/dashboard/profile" className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
              <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
@@ -131,13 +127,7 @@ export default function DashboardLayout({ children }) {
 
         {/* Right: Hamburger (Mobile) */}
         <div className="flex lg:hidden items-center gap-3">
-            <Link
-                href="/pricing?update=true"
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#0A1128] to-[#002B5E] text-white shadow-md hover:shadow-lg transition-all"
-                title="Update Plan"
-            >
-                <span className="font-bold text-xs tracking-tighter">UP</span>
-            </Link>
+            <UpdatePlanNavButton isMobile={true} />
             <NotificationBell />
             <button className="p-2 text-gray-600" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu size={24} />
