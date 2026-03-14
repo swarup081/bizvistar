@@ -34,6 +34,12 @@ export default function ProfilePage() {
   const [currentPlan, setCurrentPlan] = useState(null);
   const [productCount, setProductCount] = useState(0);
 
+  // UPI Verification state
+  const [initialUpiId, setInitialUpiId] = useState('');
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const [confirmUpiId, setConfirmUpiId] = useState('');
+  const [upiModalError, setUpiModalError] = useState('');
+
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -83,10 +89,20 @@ export default function ProfilePage() {
         }
       }
 
-      const billing = profile?.billing_address || {};
+      // If billing_address is stored as a JSON string, we should try to parse it
+      let billing = {};
+      try {
+        if (typeof profile?.billing_address === 'string') {
+          billing = JSON.parse(profile.billing_address);
+        } else if (profile?.billing_address) {
+          billing = profile.billing_address;
+        }
+      } catch (e) {
+        console.error("Error parsing billing address", e);
+      }
 
       setFormData({
-        fullName: profile?.full_name || '',
+        fullName: profile?.full_name || billing.fullName || '',
         email: user.email || '',
         businessName: businessName,
         upiId: upiId,
@@ -100,6 +116,7 @@ export default function ProfilePage() {
         companyName: billing.companyName || '',
         gstNumber: billing.gstNumber || ''
       });
+      setInitialUpiId(upiId || '');
 
       // Fetch Active Subscription & Products
       // We order by 'id' descending to ensure we ALWAYS get the absolute most recently inserted subscription row
@@ -117,12 +134,21 @@ export default function ProfilePage() {
       if (sub && sub.plans) {
           let cycle = 'monthly';
           if (sub.plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
+          // Check if current_period_end is a Unix timestamp (seconds)
+          let endValue = sub.current_period_end;
+          if (endValue && typeof endValue === 'number' && endValue < 10000000000) {
+              // Convert seconds to milliseconds
+              endValue = new Date(endValue * 1000).toISOString();
+          } else if (endValue && !isNaN(Number(endValue)) && String(endValue).length === 10) {
+              endValue = new Date(Number(endValue) * 1000).toISOString();
+          }
+
           setCurrentPlan({
               id: sub.id,
               name: sub.plans.name.replace(/ yearly| monthly/gi, ''),
               price: sub.plans.price,
               status: sub.status,
-              end: sub.current_period_end,
+              end: endValue,
               cycle: cycle
           });
       } else {
@@ -188,8 +214,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const proceedWithSave = async () => {
     setSaving(true);
     setMessage({ type: '', text: '' });
 
@@ -197,6 +222,10 @@ export default function ProfilePage() {
         const res = await updateProfileDataAction(formData);
         if (res.success) {
              setMessage({ type: 'success', text: 'Profile updated successfully!' });
+             setInitialUpiId(formData.upiId);
+             setShowUpiModal(false);
+             setConfirmUpiId('');
+             setUpiModalError('');
         } else {
              setMessage({ type: 'error', text: res.error || 'Failed to update profile.' });
         }
@@ -205,6 +234,26 @@ export default function ProfilePage() {
     } finally {
         setSaving(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Check if UPI ID was added or changed
+    if (formData.upiId !== initialUpiId && formData.upiId.trim() !== '') {
+        setShowUpiModal(true);
+    } else {
+        proceedWithSave();
+    }
+  };
+
+  const handleConfirmUpi = () => {
+      if (confirmUpiId !== formData.upiId) {
+          setUpiModalError('UPI IDs do not match.');
+          return;
+      }
+      setUpiModalError('');
+      proceedWithSave();
   };
 
   const handlePasswordChange = async (e) => {
@@ -251,7 +300,54 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-12">
+    <div className="max-w-6xl mx-auto pb-12 relative">
+      {showUpiModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm UPI ID</h3>
+                <p className="text-gray-500 text-sm mb-4">You are updating your UPI ID. Please re-enter it to confirm.</p>
+
+                <div className="space-y-4">
+                    <input
+                        type="text"
+                        value={confirmUpiId}
+                        onChange={(e) => {
+                            setConfirmUpiId(e.target.value);
+                            if (upiModalError) setUpiModalError('');
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl border ${upiModalError ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-[#8A63D2]/20'} focus:ring-2 focus:border-[#8A63D2] outline-none font-mono`}
+                        placeholder="Re-enter UPI ID"
+                    />
+                    {upiModalError && <p className="text-red-500 text-sm">{upiModalError}</p>}
+                    <p className="text-xs font-semibold text-amber-600 bg-amber-50 p-2 rounded-lg">
+                        ⚠️ Note: Incorrect UPI ID will lead to payment failure or wrong payment.
+                    </p>
+                </div>
+
+                <div className="flex gap-3 justify-end mt-6">
+                    <button
+                        onClick={() => {
+                            setShowUpiModal(false);
+                            setConfirmUpiId('');
+                            setUpiModalError('');
+                        }}
+                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleConfirmUpi}
+                        disabled={saving}
+                        className="px-6 py-2 bg-gray-900 hover:bg-black text-white rounded-xl font-medium transition-colors disabled:opacity-70 flex items-center gap-2"
+                    >
+                        {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Profile <span className="text-gray-400 font-light italic">Management</span></h1>
         <p className="text-gray-500 mt-2">Manage your personal information, business settings, and subscription plan.</p>

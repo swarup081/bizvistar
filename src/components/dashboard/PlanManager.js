@@ -13,27 +13,53 @@ export default function PlanManager({ currentPlan, productCount }) {
         { name: 'Growth', limit: PLAN_LIMITS['growth'] }
     ];
 
-    const getNextPlan = () => {
-        if (!currentPlan) return plans[0];
+    const getNextPlanInfo = () => {
+        if (!currentPlan) return { plan: plans[0], billing: 'monthly' };
         const currentIndex = plans.findIndex(p => p.name === currentPlan.name);
-        if (currentIndex === plans.length - 1 || currentIndex === -1) return null;
-        return plans[currentIndex + 1];
+
+        // If on max plan (Growth) but monthly, suggest Growth Yearly
+        if (currentIndex === plans.length - 1) {
+            if (currentPlan.cycle === 'monthly') {
+                return { plan: plans[currentIndex], billing: 'yearly', isYearlyUpsell: true };
+            }
+            return null; // Growth Yearly has no higher tier
+        }
+
+        if (currentIndex === -1) return null;
+        return { plan: plans[currentIndex + 1], billing: currentPlan.cycle || 'monthly', isYearlyUpsell: false };
     };
 
-    const nextPlan = getNextPlan();
+    const nextPlanInfo = getNextPlanInfo();
 
     const handleDirectUpgrade = () => {
-        if (!nextPlan) return;
+        if (!nextPlanInfo) return;
 
-        // Product limit check before allowing upgrade/downgrade theoretically,
-        // but since this card ONLY shows the *next* plan, it's always an upgrade with higher/unlimited limits.
-        // Still, safe to leave the structure.
-        const billingToUse = currentPlan?.cycle || 'monthly';
-        router.push(`/checkout?plan=${nextPlan.name}&billing=${billingToUse}&update=true`);
+        const { plan, billing } = nextPlanInfo;
+        router.push(`/checkout?plan=${plan.name}&billing=${billing}&update=true`);
     };
 
-    if (!nextPlan) return null; // Hide upgrade card if on max plan
+    const isMaxPlan = !nextPlanInfo;
+    const canChangePlan = currentPlan?.end ? new Date(currentPlan.end) <= new Date() : true;
 
+    if (isMaxPlan) {
+        return (
+            <div className="w-full mt-6 text-center">
+                 {!canChangePlan && (
+                    <p className="text-xs text-gray-500 mb-2">You can change your plan after {new Date(currentPlan.end).toLocaleDateString()}</p>
+                 )}
+                {canChangePlan && (
+                    <button
+                        onClick={() => router.push('/pricing?update=true')}
+                        className="w-full py-3 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 rounded-[16px] font-bold text-sm transition-all"
+                    >
+                        Change Plan
+                    </button>
+                )}
+            </div>
+        );
+    }
+
+    const { plan: nextPlan, isYearlyUpsell } = nextPlanInfo;
     const isStarter = currentPlan?.name === 'Starter';
     // Match inspiration title exactly or adapt based on tier
     const displayTitle = isStarter ? "Bizvistar" : "Vision";
@@ -55,13 +81,13 @@ export default function PlanManager({ currentPlan, productCount }) {
                 <div className="flex items-center justify-center gap-3 mb-3 z-10">
                     <h3 className="text-4xl font-extrabold text-white tracking-tight">{displayTitle}</h3>
                     <span className="bg-white text-[#0A1128] text-xs font-black uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-                        {nextPlan.name === 'Pro' ? 'PRO' : nextPlan.name.toUpperCase()}
+                        {isYearlyUpsell ? `${nextPlan.name.toUpperCase()} YEARLY` : (nextPlan.name === 'Pro' ? 'PRO' : nextPlan.name.toUpperCase())}
                     </span>
                 </div>
 
                 {/* Subtitle */}
                 <p className="text-blue-100/90 text-sm sm:text-base font-medium mb-8 max-w-xs mx-auto leading-relaxed z-10">
-                    Upgrade now & unlock more exclusive features
+                    {isYearlyUpsell ? "Pay for 10 months and get 2 months free!" : "Upgrade now & unlock more exclusive features"}
                 </p>
 
                 {/* Direct Upgrade Button */}
