@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
@@ -143,6 +144,18 @@ export async function POST(req) {
       if (error) {
         console.error('Error updating subscription in DB:', error);
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
+      }
+
+      // If this was an upgrade (has old_subscription_id), mark the old one as canceled locally
+      if (newStatus === 'active' && subscription.notes?.old_subscription_id) {
+         try {
+             await supabaseAdmin
+               .from('subscriptions')
+               .update({ status: 'canceled' })
+               .eq('razorpay_subscription_id', subscription.notes.old_subscription_id);
+         } catch (e) {
+             console.error("Failed to cancel old subscription internally", e);
+         }
       }
 
       // --- PUBLISH WEBSITE (Critical Fix) ---

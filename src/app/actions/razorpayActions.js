@@ -332,21 +332,21 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     const finalPlanId = getPlanId(standardPlanId, couponCode); 
     
     // 1. Check for Existing Active Subscription
-    const { data: existingSub } = await supabaseAdmin
+    // 1. Fetch Existing Active Subscription to possibly cancel it later or just log it
+    // For now, Razorpay will handle a new subscription being created.
+    // We will cancel the old one via webhook or let the user have multiple if they didn't explicitly upgrade.
+    // However, since they requested an upgrade path, we allow creating a new one.
+    // We remove the hard block to enable upgrades.
+    const { data: existingSubs } = await supabaseAdmin
         .from('subscriptions')
-        .select('status, current_period_end')
+        .select('razorpay_subscription_id, status, current_period_end')
         .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle();
+        .in('status', ['active', 'trialing']);
 
-    if (existingSub) {
-        // Double check if period is actually valid (logic shared with subscriptionUtils but simplified here)
-        const now = new Date();
-        const end = new Date(existingSub.current_period_end);
-        if (now < end) {
-             // User really has an active plan
-             return { success: false, error: "You already have an active plan. Please upgrade or manage it in the dashboard." };
-        }
+    // Pass the old subscription ID in notes so webhook knows to cancel it
+    let oldSubId = null;
+    if (existingSubs && existingSubs.length > 0) {
+        oldSubId = existingSubs[0].razorpay_subscription_id;
     }
 
     const couponConfig = COUPON_CONFIG[normalizedCoupon];
@@ -443,6 +443,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
         coupon_used: normalizedCoupon || 'none',
         plan_name: planName,
         billing_cycle: billingCycle,
+        old_subscription_id: oldSubId || '', // Pass old sub ID to cancel on success
         ...billingNotes
         // We pass coupon_used here so webhook can pick it up
       }

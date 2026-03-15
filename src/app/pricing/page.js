@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react'; // Added Info icon
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react'; // Added AnimatePresence
 
 // --- Reusable Icons ---
 const CheckMark = () => <div className="flex justify-center"><Check className="w-5 h-5 text-blue-600" strokeWidth={2.5} /></div>;
@@ -129,7 +132,41 @@ const featureList = [
   { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
 ];
 
-export default function PricingPage() {
+import { Suspense } from 'react';
+
+function PricingContent() {
+  const [currentPlan, setCurrentPlan] = useState(null);
+  const searchParams = useSearchParams();
+  const isUpdateFlow = searchParams.get('update') === 'true';
+
+  useEffect(() => {
+    const fetchCurrentPlan = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: subs } = await supabase
+          .from('subscriptions')
+          .select('*, plans(name)')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .order('id', { ascending: false })
+          .limit(1);
+
+      if (subs && subs.length > 0 && subs[0].plans) {
+          let cycle = 'monthly';
+          if (subs[0].plans.name.toLowerCase().includes('yearly')) cycle = 'yearly';
+          setCurrentPlan({
+             name: subs[0].plans.name.replace(/ yearly| monthly/gi, ''),
+             cycle: cycle
+          });
+          // Auto-toggle to the user's current billing cycle
+          setIsYearly(cycle === 'yearly');
+      } else {
+          setCurrentPlan({ name: 'Starter', cycle: 'monthly' }); // Default active
+      }
+    };
+    fetchCurrentPlan();
+  }, []);
   const plans = {
     monthly: [
       {
@@ -300,15 +337,22 @@ export default function PricingPage() {
 
         {/* --- PRICING CARDS (Pro is LARGER) --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end max-w-6xl mx-auto">
-            {activePlans.map((plan, index) => (
-              <PlanCard
-                key={plan.name}
-                plan={plan}
-                isYearly={isYearly}
-                // Make the middle card (Pro) physically larger
-                className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
-              />
-            ))}
+            {activePlans.map((plan, index) => {
+              const currentCycle = isYearly ? 'yearly' : 'monthly';
+              const isCurrentPlan = currentPlan?.name === plan.name && currentPlan?.cycle === currentCycle;
+
+              return (
+                <PlanCard
+                  key={plan.name}
+                  plan={plan}
+                  isYearly={isYearly}
+                  isUpdateFlow={isUpdateFlow}
+                  isCurrentPlan={isCurrentPlan}
+                  // Make the middle card (Pro) physically larger
+                  className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
+                />
+              );
+            })}
         </div>
 
         {/* --- "Compare Plan Features" Button --- */}
@@ -397,7 +441,7 @@ export default function PricingPage() {
 }
 
 // --- Sub-component: PlanCard (ENHANCED) ---
-const PlanCard = ({ plan, isYearly, className }) => (
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => (
   <div 
     className={cn(
       'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
@@ -441,25 +485,37 @@ const PlanCard = ({ plan, isYearly, className }) => (
       </div>
       {/* --- END OF UPDATED PRICE SECTION --- */}
 
-      <Link href={{
-            pathname: '/checkout',
-            query: {
-                plan: plan.name,
-                billing: isYearly ? 'yearly' : 'monthly',
-                price: plan.price
-            }
-        }} className="w-full">
-        <button 
-          className={cn(
-            'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
-            plan.isRecommended
-              ? 'bg-purple-600 text-white hover:bg-[purple-700] shadow-md hover:shadow-lg'
-              : 'bg-gray-900 text-white hover:bg-gray-800'
-          )}
-        >
-          {plan.cta}
-        </button>
-      </Link>
+      {isCurrentPlan ? (
+          <button
+            disabled
+            className={cn(
+              'w-full py-4 rounded-full text-xl font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
+            )}
+          >
+            Current Plan
+          </button>
+      ) : (
+          <Link href={{
+                pathname: '/checkout',
+                query: {
+                    plan: plan.name,
+                    billing: isYearly ? 'yearly' : 'monthly',
+                    price: plan.price,
+                    ...(isUpdateFlow ? { update: 'true' } : {})
+                }
+            }} className="w-full">
+            <button
+              className={cn(
+                'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
+                plan.isRecommended
+                  ? 'bg-purple-600 text-white hover:bg-[purple-700] shadow-md hover:shadow-lg'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              )}
+            >
+              {plan.cta}
+            </button>
+          </Link>
+      )}
 
        {!isYearly && (
          <p className="text-base font-semibold text-blue-600 mt-4">{plan.dailyRate}</p>
@@ -830,3 +886,12 @@ const FaqSection = () => {
   );
 };
 // --- THIS IS THE END OF THE CHANGED SECTION ---
+
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <PricingContent />
+    </Suspense>
+  );
+}
