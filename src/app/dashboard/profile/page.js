@@ -293,8 +293,91 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#8A63D2]" />
+      <div className="max-w-6xl mx-auto pb-12 animate-pulse">
+        <div className="mb-8">
+          <div className="h-10 bg-gray-200 rounded-lg w-64 mb-4"></div>
+          <div className="h-5 bg-gray-200 rounded-lg w-96"></div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Sidebar Skeleton */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center">
+              <div className="w-28 h-28 bg-gray-200 rounded-full mb-4"></div>
+              <div className="h-6 bg-gray-200 rounded-lg w-32 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded-lg w-24"></div>
+
+              <div className="w-full mt-6 pt-6 border-t border-gray-100 text-left space-y-6">
+                <div>
+                  <div className="h-3 bg-gray-200 rounded-lg w-20 mb-2"></div>
+                  <div className="h-5 bg-gray-200 rounded-lg w-40"></div>
+                </div>
+
+                <div className="pt-6 border-t border-gray-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="h-3 bg-gray-200 rounded-lg w-24"></div>
+                    <div className="h-4 bg-gray-200 rounded-lg w-12"></div>
+                  </div>
+                  <div className="h-8 bg-gray-200 rounded-lg w-32 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded-lg w-24 mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded-lg w-48"></div>
+                </div>
+              </div>
+            </div>
+            {/* Plan Manager Skeleton */}
+            <div className="h-64 bg-gray-200 rounded-[24px]"></div>
+          </div>
+
+          {/* Right Content Skeleton */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                  <div className="h-6 bg-gray-200 rounded-lg w-48"></div>
+              </div>
+              <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                  </div>
+                  <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                      <div className="md:col-span-2 h-5 bg-gray-200 rounded-lg w-32"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="md:col-span-2 h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                      <div className="md:col-span-2 h-5 bg-gray-200 rounded-lg w-48"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                      <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                  </div>
+
+                  <div className="flex justify-end pt-4 border-t border-gray-100">
+                      <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                  </div>
+              </div>
+            </div>
+
+             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100">
+                    <div className="h-6 bg-gray-200 rounded-lg w-32"></div>
+                </div>
+                <div className="p-6 space-y-6">
+                    <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                    <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                        <div className="h-4 bg-gray-200 rounded-lg w-24"></div>
+                        <div className="h-12 bg-gray-200 rounded-xl w-32"></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

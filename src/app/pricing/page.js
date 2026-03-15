@@ -337,16 +337,22 @@ function PricingContent() {
 
         {/* --- PRICING CARDS (Pro is LARGER) --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end max-w-6xl mx-auto">
-            {activePlans.map((plan, index) => (
-              <PlanCard
-                key={plan.name}
-                plan={plan}
-                isYearly={isYearly}
-                isUpdateFlow={isUpdateFlow}
-                // Make the middle card (Pro) physically larger
-                className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
-              />
-            ))}
+            {activePlans.map((plan, index) => {
+              const currentCycle = isYearly ? 'yearly' : 'monthly';
+              const isCurrentPlan = currentPlan?.name === plan.name && currentPlan?.cycle === currentCycle;
+
+              return (
+                <PlanCard
+                  key={plan.name}
+                  plan={plan}
+                  isYearly={isYearly}
+                  isUpdateFlow={isUpdateFlow}
+                  isCurrentPlan={isCurrentPlan}
+                  // Make the middle card (Pro) physically larger
+                  className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
+                />
+              );
+            })}
         </div>
 
         {/* --- "Compare Plan Features" Button --- */}
@@ -435,7 +441,7 @@ function PricingContent() {
 }
 
 // --- Sub-component: PlanCard (ENHANCED) ---
-const PlanCard = ({ plan, isYearly, className, isUpdateFlow }) => (
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => (
   <div 
     className={cn(
       'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
@@ -479,26 +485,37 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow }) => (
       </div>
       {/* --- END OF UPDATED PRICE SECTION --- */}
 
-      <Link href={{
-            pathname: '/checkout',
-            query: {
-                plan: plan.name,
-                billing: isYearly ? 'yearly' : 'monthly',
-                price: plan.price,
-                ...(isUpdateFlow ? { update: 'true' } : {})
-            }
-        }} className="w-full">
-        <button 
-          className={cn(
-            'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
-            plan.isRecommended
-              ? 'bg-purple-600 text-white hover:bg-[purple-700] shadow-md hover:shadow-lg'
-              : 'bg-gray-900 text-white hover:bg-gray-800'
-          )}
-        >
-          {plan.cta}
-        </button>
-      </Link>
+      {isCurrentPlan ? (
+          <button
+            disabled
+            className={cn(
+              'w-full py-4 rounded-full text-xl font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
+            )}
+          >
+            Current Plan
+          </button>
+      ) : (
+          <Link href={{
+                pathname: '/checkout',
+                query: {
+                    plan: plan.name,
+                    billing: isYearly ? 'yearly' : 'monthly',
+                    price: plan.price,
+                    ...(isUpdateFlow ? { update: 'true' } : {})
+                }
+            }} className="w-full">
+            <button
+              className={cn(
+                'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
+                plan.isRecommended
+                  ? 'bg-purple-600 text-white hover:bg-[purple-700] shadow-md hover:shadow-lg'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
+              )}
+            >
+              {plan.cta}
+            </button>
+          </Link>
+      )}
 
        {!isYearly && (
          <p className="text-base font-semibold text-blue-600 mt-4">{plan.dailyRate}</p>
