@@ -3108,16 +3108,37 @@ export default function EditorSidebar({
               </div>
 
               {getSafe(businessData, 'payment.mode') === 'UPI' && (
-                  <div>
+                  <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-100 mb-4">
                       <EditorInput
                           label="UPI ID"
                           value={getSafe(businessData, 'payment.upiId')}
                           onChange={(e) => handleDataChange('payment.upiId', e.target.value)}
                           placeholder="username@upi"
                       />
-                      {getSafe(businessData, 'payment.upiId') && !getSafe(businessData, 'payment.upiId').includes('@') && (
+                      {getSafe(businessData, 'payment.upiId') && !getSafe(businessData, 'payment.upiId').includes('@') ? (
                           <p className="text-xs text-red-500 -mt-3 mb-2">UPI ID must contain '@'.</p>
-                      )}
+                      ) : null}
+                      
+                      <div className="mt-2">
+                        <label className="block text-xs font-semibold text-amber-700 mb-1">Confirm UPI ID <span className="text-red-500">*</span></label>
+                        <input
+                            type="text"
+                            placeholder="Re-enter UPI ID to verify"
+                            value={getSafe(businessData, 'payment.confirmUpiId')}
+                            onChange={(e) => handleDataChange('payment.confirmUpiId', e.target.value)}
+                            className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A63D2] ${
+                                getSafe(businessData, 'payment.confirmUpiId') && getSafe(businessData, 'payment.upiId') !== getSafe(businessData, 'payment.confirmUpiId')
+                                ? 'border-red-400 bg-red-50' 
+                                : 'border-gray-300'
+                            }`}
+                        />
+                        {getSafe(businessData, 'payment.confirmUpiId') && getSafe(businessData, 'payment.upiId') !== getSafe(businessData, 'payment.confirmUpiId') && (
+                            <p className="text-xs text-red-500 mt-1">UPI IDs do not match.</p>
+                        )}
+                        <p className="text-[10px] text-amber-700 mt-2 font-medium bg-amber-100 p-1.5 rounded">
+                            ⚠️ Note: Incorrect UPI ID will lead to payment failure or wrong payment.
+                        </p>
+                      </div>
                   </div>
               )}
               

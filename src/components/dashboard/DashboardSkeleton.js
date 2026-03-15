@@ -25,15 +25,16 @@ export default function DashboardSkeleton() {
             ))}
         </div>
 
+        {/* Recent Sales Table */}
+        <div className="col-span-1 md:col-span-3 h-[500px] bg-gray-200 rounded-2xl"></div>
+
         {/* Traffic & Best Sellers */}
         <div className="col-span-1 md:col-span-1 grid grid-cols-2 md:flex md:flex-col gap-3 md:gap-8">
              <div className="h-[250px] md:h-[400px] bg-gray-200 rounded-2xl"></div>
              <div className="h-[250px] md:h-full flex-1 bg-gray-200 rounded-2xl"></div>
         </div>
 
-        {/* Recent Sales Table */}
-        <div className="col-span-1 md:col-span-3 h-[500px] bg-gray-200 rounded-2xl"></div>
-
+       
       </div>
     </div>
   );

@@ -34,12 +34,35 @@ export default function PostPaymentManager() {
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updatedPlanName, setUpdatedPlanName] = useState('');
 
   useEffect(() => {
     const checkPaymentFlow = async () => {
       const isPaymentSuccess = searchParams.get('payment_success') === 'true';
+      const isUpdate = searchParams.get('update') === 'true';
       
       if (!isPaymentSuccess) return;
+
+      // If this is just a plan update, we don't need to do slug checks
+      if (isUpdate) {
+        setStatus('checking');
+        
+        // Fetch the new plan name to show in the success modal
+        const subId = searchParams.get('sub_id');
+        if (subId) {
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('plans(name)')
+                .eq('razorpay_subscription_id', subId)
+                .single();
+            if (sub && sub.plans) {
+                setUpdatedPlanName(sub.plans.name.replace(/ yearly| monthly/gi, ''));
+            }
+        }
+        
+        setStatus('success-update');
+        return;
+      }
 
       setStatus('checking');
 
@@ -282,6 +305,31 @@ export default function PostPaymentManager() {
                       className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-lg hover:shadow-xl transition-all"
                   >
                       Go to Dashboard
+                  </button>
+              </ModalContent>
+          </ModalOverlay>
+      );
+  }
+
+  if (status === 'success-update') {
+      return (
+          <ModalOverlay>
+              <ModalContent className="p-8 text-center border border-purple-100">
+                  <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-purple-100">
+                      <div className="w-14 h-14 bg-gradient-to-tr from-purple-600 to-purple-400 rounded-full flex items-center justify-center shadow-md">
+                        <Check className="w-8 h-8 text-white" strokeWidth={3} />
+                      </div>
+                  </div>
+                  <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">Plan Updated!</h2>
+                  <p className="text-gray-600 mb-8 text-lg">
+                      Your subscription has been successfully changed to the <span className="font-bold text-purple-700">{updatedPlanName || 'new'}</span> plan.
+                  </p>
+                  
+                  <button 
+                      onClick={handleClose}
+                      className="block w-full py-3.5 bg-gray-900 hover:bg-black text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                      Continue to Dashboard
                   </button>
               </ModalContent>
           </ModalOverlay>
