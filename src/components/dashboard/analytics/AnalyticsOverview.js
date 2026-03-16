@@ -2,11 +2,11 @@
 import React from 'react';
 import { DollarSign, ShoppingBag, Users, TrendingUp, CreditCard, ArrowUp } from 'lucide-react';
 
-export default function AnalyticsOverview({ revenue, orders, visitors, conversion, aov }) {
+export default function AnalyticsOverview({ revenue = 0, orders = 0, visitors = 0, conversion = 0, aov = 0 }) {
   const cards = [
     {
       title: 'Total Revenue',
-      value: `₹${revenue.toLocaleString()}`,
+      value: `₹${(revenue || 0).toLocaleString()}`,
       icon: DollarSign,
       // Using generic growth for demo since we don't have historical data comparison yet
       change: '12%',
@@ -14,28 +14,28 @@ export default function AnalyticsOverview({ revenue, orders, visitors, conversio
     },
     {
       title: 'Total Orders',
-      value: orders.toLocaleString(),
+      value: (orders || 0).toLocaleString(),
       icon: ShoppingBag,
       change: '8%',
       period: 'vs last period'
     },
     {
       title: 'Avg Order Value',
-      value: `₹${aov ? aov.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}`,
+      value: `₹${aov ? Number(aov).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : '0'}`,
       icon: CreditCard,
       change: '4%',
       period: 'vs last period'
     },
     {
       title: 'Unique Visitors',
-      value: visitors.toLocaleString(),
+      value: (visitors || 0).toLocaleString(),
       icon: Users,
       change: '24%',
       period: 'vs last period'
     },
     {
       title: 'Conversion Rate',
-      value: `${conversion}%`,
+      value: `${conversion || 0}%`,
       icon: TrendingUp,
       change: '2%',
       period: 'vs last period'
