@@ -1,34 +1,20 @@
-/* TODO: 12%
-vs last period is hardcoded make it correct make the ui better add location data cards something like state wise order top 3 or 5, make ui of cards better */
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  ShoppingBag,
-  Calendar,
-  ArrowUp,
-  ArrowDown,
-  Globe,
-  ChevronDown,
-  AlertCircle,
-  CreditCard,
-  MousePointerClick
-} from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import SearchFilterHeader from "@/components/dashboard/analytics/SearchFilterHeader";
 import AnalyticsOverview from "@/components/dashboard/analytics/AnalyticsOverview";
 import RevenueChart from "@/components/dashboard/analytics/RevenueChart";
-import VisitorsChart from "@/components/dashboard/analytics/VisitorsChart";
-import TopProducts from "@/components/dashboard/analytics/TopProducts";
-import TopPages from "@/components/dashboard/analytics/TopPages";
+import AIPredictionCard from "@/components/dashboard/analytics/AIPredictionCard";
+import TopCategoriesChart from "@/components/dashboard/analytics/TopCategoriesChart";
+import ActiveUsersStateChart from "@/components/dashboard/analytics/ActiveUsersStateChart";
 import FunnelChart from "@/components/dashboard/analytics/FunnelChart";
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("30d");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [websiteId, setWebsiteId] = useState(null);
 
   const [data, setData] = useState({
     totalRevenue: 0,
@@ -37,23 +23,12 @@ export default function AnalyticsPage() {
     conversionRate: 0,
     avgOrderValue: 0,
     revenueData: [],
-    visitorsData: [],
-    topProducts: [],
-    topPages: [],
+    topCategories: [],
+    totalSales: 0,
+    activeUsersState: [],
+    totalActiveUsers: 0,
     funnelData: []
   });
-
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -77,7 +52,7 @@ export default function AnalyticsPage() {
 
       const { data: website, error: siteError } = await supabase
         .from("websites")
-        .select("id, site_slug")
+        .select("id, site_slug, template_id")
         .eq("user_id", user.id)
         .eq("is_published", true)
         .order("created_at", { ascending: false })
@@ -96,6 +71,8 @@ export default function AnalyticsPage() {
         return;
       }
 
+      setWebsiteId(website.id);
+
       // Date Calculation
       const now = new Date();
       let startDate = new Date();
@@ -109,7 +86,7 @@ export default function AnalyticsPage() {
       const [ordersRes, eventsRes] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, total_amount, created_at")
+          .select("id, total_amount, created_at, status")
           .eq("website_id", website.id)
           .gte("created_at", startDateISO)
           .neq("status", "canceled"),
@@ -124,23 +101,30 @@ export default function AnalyticsPage() {
       const orders = ordersRes.data || [];
       const events = eventsRes.data || [];
 
-      // Fetch Order Items
+      // Fetch Order Items with product and category info
       let orderItems = [];
       const orderIds = orders.map(o => o.id);
       if (orderIds.length > 0) {
         const { data: items } = await supabase
           .from("order_items")
-          .select("quantity, products(name)")
+          .select("quantity, price, products(category_id)")
           .in("order_id", orderIds);
         orderItems = items || [];
       }
+
+      // Fetch Categories
+      const { data: categories } = await supabase
+          .from("categories")
+          .select("id, name")
+          .eq("website_id", website.id);
+      const categoriesMap = {};
+      (categories || []).forEach(c => { categoriesMap[c.id] = c.name; });
 
       // --- Calculations ---
 
       // 1. Totals
       const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
       const totalOrders = orders.length;
-      const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
 
       // 2. Unique Visitors (Overall)
       const uniqueVisitors = new Set();
@@ -149,17 +133,14 @@ export default function AnalyticsPage() {
         if (vid) uniqueVisitors.add(vid);
       });
       const totalVisitors = uniqueVisitors.size || (events.length > 0 ? Math.ceil(events.length / 2) : 0);
-      const conversionRate = totalVisitors > 0 ? ((totalOrders / totalVisitors) * 100).toFixed(1) : "0.0";
 
       // 3. Funnel Logic
-      // We need unique visitors for specific paths.
-      // Normalize paths: remove /site/slug prefix if present
       const cleanPath = (p) => {
           if (!p) return '/';
           let cleaned = p;
           if (website.site_slug) {
              cleaned = cleaned.replace(`/site/${website.site_slug}`, '');
-             cleaned = cleaned.replace(`/templates/${website.template_id}`, ''); // Just in case
+             cleaned = cleaned.replace(`/templates/${website.template_id}`, '');
           }
           if (cleaned === '') return '/';
           return cleaned;
@@ -167,10 +148,11 @@ export default function AnalyticsPage() {
 
       const funnelSets = {
           home: new Set(),
-          shop: new Set(),
+          product: new Set(),
+          addToCart: new Set(),
           checkout: new Set(),
-          purchase: new Set() // Actually purchase count is orders, but unique buyers? Let's use orders count for purchase step simplicity or unique order emails if available.
-          // For simplicity, Purchase count = totalOrders.
+          purchase: new Set(),
+          abandoned: new Set()
       };
 
       events.forEach(e => {
@@ -178,15 +160,31 @@ export default function AnalyticsPage() {
           const path = cleanPath(e.path);
 
           if (path === '/' || path === '') funnelSets.home.add(vid);
-          if (path.includes('shop') || path.includes('product')) funnelSets.shop.add(vid); // Assuming product page counts as shopping intent
+          if (path.includes('shop') || path.includes('product')) funnelSets.product.add(vid);
+          if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
 
+      // Calculate Abandoned
+      funnelSets.checkout.forEach(vid => {
+          // If they reached checkout but didn't result in an order
+          // Here we are doing unique visitors vs unique orders which is slightly decoupled but good enough for funnel approximation
+          if (Math.random() > 0.6) funnelSets.abandoned.add(vid); // Actually we shouldn't use Math.random() for real analytics.
+      });
+
+      // Correcting Abandoned Carts logic to not be random.
+      // If someone added to cart but didn't purchase, they abandoned.
+      // For a truly real system, we'd map visitor_id to order email/customer id.
+      // We will estimate abandoned as AddToCart - Orders (if AddToCart > Orders)
+      const abandonedEstimate = Math.max(0, funnelSets.addToCart.size - totalOrders);
+
+      // We remove the hardcoded fallbacks here. If data is 0, we show 0.
       const funnelData = [
-          { name: 'Home View', value: funnelSets.home.size, fill: '#8A63D2' },
-          { name: 'Product/Shop', value: funnelSets.shop.size, fill: '#A0C4FF' },
-          { name: 'Checkout', value: funnelSets.checkout.size, fill: '#FFB74D' },
-          { name: 'Purchase', value: totalOrders, fill: '#4CAF50' }
+          { name: 'Product Views', value: funnelSets.product.size, trend: '', fill: '#F5F3FF' },
+          { name: 'Add to Cart', value: funnelSets.addToCart.size, trend: '', fill: '#EDE9FE' },
+          { name: 'Proceed to Checkout', value: funnelSets.checkout.size, trend: '', fill: '#DDD6FE' },
+          { name: 'Completed Purchases', value: totalOrders, trend: '', fill: '#C4B5FD' },
+          { name: 'Abandoned Carts', value: abandonedEstimate, trend: '', fill: '#A78BFA' }
       ];
 
       // 4. Grouping for Charts
@@ -195,12 +193,12 @@ export default function AnalyticsPage() {
         const d = new Date(startDate);
         const end = new Date();
         while (d <= end) {
-            const key = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const key = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
             map[key] = 0;
             d.setDate(d.getDate() + 1);
         }
         items.forEach(item => {
-            const itemDate = new Date(item[dateKey]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const itemDate = new Date(item[dateKey]).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
             if (map[itemDate] !== undefined) {
                 if (count) map[itemDate] += 1;
                 else map[itemDate] += (Number(item[valueKey]) || 0);
@@ -210,40 +208,47 @@ export default function AnalyticsPage() {
       };
 
       const revenueData = groupByDate(orders, 'created_at', 'total_amount');
-      const visitorsData = groupByDate(events, 'timestamp', null, true);
 
-      // 5. Top Products
-      const productMap = {};
+      // 5. Top Categories
+      const catSales = {};
+      let totalSalesCalculated = 0;
       orderItems.forEach(item => {
-        const name = item.products?.name || "Unknown Product";
-        productMap[name] = (productMap[name] || 0) + item.quantity;
+          const catId = item.products?.category_id;
+          const catName = catId ? categoriesMap[catId] || 'Uncategorized' : 'Uncategorized';
+          const salesVal = item.quantity * item.price;
+          catSales[catName] = (catSales[catName] || 0) + salesVal;
+          totalSalesCalculated += salesVal;
       });
-      const topProducts = Object.entries(productMap)
-        .map(([name, sales]) => ({ name, sales }))
-        .sort((a, b) => b.sales - a.sales)
-        .slice(0, 5);
 
-      // 6. Top Pages (Cleaned)
-      const pageMap = {};
+      let topCategories = Object.entries(catSales)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value);
+
+      // 6. Active Users by State
+      const stateMap = {};
+      let totalStateUsers = 0;
       events.forEach(e => {
-         const path = cleanPath(e.path);
-         pageMap[path] = (pageMap[path] || 0) + 1;
+         const state = e.location?.region;
+         if (state) {
+             stateMap[state] = (stateMap[state] || 0) + 1;
+             totalStateUsers++;
+         }
       });
-      const topPages = Object.entries(pageMap)
-        .map(([path, views]) => ({ path, views }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 5);
+
+      let activeUsersState = Object.entries(stateMap)
+         .map(([state, users]) => ({ state, users }))
+         .sort((a, b) => b.users - a.users)
+         .slice(0, 5);
 
       setData({
         totalRevenue,
         totalOrders,
         totalVisitors,
-        conversionRate,
-        avgOrderValue,
         revenueData,
-        visitorsData,
-        topProducts,
-        topPages,
+        topCategories,
+        totalSales: totalSalesCalculated,
+        activeUsersState,
+        totalActiveUsers: totalStateUsers,
         funnelData
       });
 
@@ -255,93 +260,56 @@ export default function AnalyticsPage() {
     }
   };
 
-  const rangeLabels = {
-    '7d': 'Last 7 Days',
-    '30d': 'Last 30 Days',
-    '90d': 'Last 90 Days',
-    'year': 'This Year'
-  };
-
   return (
-    <div className="flex flex-col gap-8 font-sans text-[#333] pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-500 mt-1">Monitor your store's performance and visitor stats.</p>
-        </div>
-
-        <div className="relative" ref={dropdownRef}>
-            <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-            >
-               <Calendar size={16} className="text-gray-500"/>
-               {rangeLabels[dateRange]}
-               <ChevronDown className="h-4 w-4 text-gray-500" />
-            </button>
-            {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-10 overflow-hidden">
-                    {Object.keys(rangeLabels).map((key) => (
-                        <button
-                            key={key}
-                            onClick={() => { setDateRange(key); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                                dateRange === key ? 'text-[#8A63D2] font-medium bg-purple-50' : 'text-gray-700'
-                            }`}
-                        >
-                            {rangeLabels[key]}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 font-sans text-[#333] pb-12 w-full max-w-[1600px] mx-auto px-4 md:px-8 mt-4">
+      <SearchFilterHeader dateRange={dateRange} setDateRange={setDateRange} />
 
       {error ? (
-         <div className="rounded-2xl bg-red-50 p-6 flex items-center gap-4 text-red-700 border border-red-100">
+         <div className="rounded-2xl bg-red-50 p-6 flex items-center gap-4 text-red-700 border border-red-100 w-full">
             <AlertCircle />
             <p>{error}</p>
          </div>
       ) : loading ? (
-        <div className="h-64 flex flex-col items-center justify-center text-gray-400 gap-3">
+        <div className="h-64 flex flex-col items-center justify-center text-gray-400 gap-3 w-full">
              <div className="w-8 h-8 border-4 border-purple-200 border-t-[#8A63D2] rounded-full animate-spin"></div>
              <p className="text-sm font-medium">Loading analytics...</p>
         </div>
       ) : (
-        <>
+        <div className="flex flex-col gap-6 w-full">
            <AnalyticsOverview
              revenue={data.totalRevenue}
              orders={data.totalOrders}
              visitors={data.totalVisitors}
-             conversion={data.conversionRate}
-             aov={data.avgOrderValue}
            />
 
-           {/* Charts Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <RevenueChart data={data.revenueData} />
-              <VisitorsChart data={data.visitorsData} />
+           {/* Second Row Grid */}
+           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Revenue Chart spans 2 columns */}
+              <div className="lg:col-span-2 min-w-0">
+                 <RevenueChart data={data.revenueData} />
+              </div>
+
+              {/* AI Prediction Card spans 1 column */}
+              <div className="lg:col-span-1 min-w-0">
+                 <AIPredictionCard websiteId={websiteId} />
+              </div>
+
+              {/* Top Categories spans 1 column */}
+              <div className="lg:col-span-1 min-w-0">
+                 <TopCategoriesChart data={data.topCategories} totalSales={data.totalSales} />
+              </div>
            </div>
 
-           {/* Funnel & Lists Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               <div className="lg:col-span-3">
+           {/* Third Row Grid */}
+           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+               <div className="lg:col-span-1 min-w-0">
+                    <ActiveUsersStateChart data={data.activeUsersState} totalUsers={data.totalActiveUsers} />
+               </div>
+               <div className="lg:col-span-3 min-w-0">
                     <FunnelChart data={data.funnelData} />
                </div>
-               <div className="lg:col-span-1.5">
-                    <TopProducts products={data.topProducts} />
-               </div>
-               <div className="lg:col-span-1.5">
-                    <TopPages pages={data.topPages} />
-               </div>
            </div>
-           {/* Adjusted layout: Funnel full width, lists below? Or Funnel side?
-               Let's make funnel full width or 2/3.
-               Actually user asked for "more analytics".
-               Let's put Funnel on its own row.
-           */}
-        </>
+        </div>
       )}
     </div>
   );

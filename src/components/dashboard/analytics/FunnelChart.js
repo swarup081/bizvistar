@@ -1,45 +1,62 @@
 "use client";
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { ChevronDown } from 'lucide-react';
 
 export default function FunnelChart({ data }) {
-  // data: [{ name, value, fill }]
-  
+  const maxVal = Math.max(...data.map(d => d.value), 1);
+  const themeColors = ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD', '#A78BFA'];
+
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-bold text-gray-900 mb-6 font-sans">Conversion Funnel</h3>
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
-            <XAxis type="number" hide />
-            <YAxis 
-                dataKey="name" 
-                type="category" 
-                width={100} 
-                tick={{ fontSize: 13, fill: '#4B5563', fontWeight: 500 }}
-                axisLine={false}
-                tickLine={false}
-            />
-            <Tooltip 
-              cursor={{ fill: '#F9FAFB' }}
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-            />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
-               {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
+      <div className="flex justify-between items-center mb-10">
+        <h3 className="font-semibold text-gray-900 text-lg">Conversion Rate</h3>
+        <button className="flex items-center gap-2 bg-purple-50 text-[#8A63D2] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors shadow-sm">
+          This Week
+          <ChevronDown className="w-4 h-4" />
+        </button>
       </div>
-      <div className="mt-4 flex flex-wrap justify-center gap-6">
-          {data.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.fill }}></span>
-                  <span className="text-sm text-gray-600 font-medium">{item.name}: <span className="text-gray-900 font-bold">{item.value}</span></span>
+
+      <div className="flex-grow flex items-end justify-between relative w-full h-48 mt-4 overflow-visible">
+        {data.map((step, index) => {
+          const heightPercent = step.value === 0 ? 5 : (step.value / maxVal) * 100;
+          const bgCol = themeColors[index % themeColors.length];
+
+          return (
+            <div key={step.name} className="flex flex-col items-center justify-end h-full w-full group relative px-1">
+
+              <div className="absolute -top-12 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-gray-900 text-white shadow-lg rounded-lg px-3 py-1.5 pointer-events-none transform -translate-y-2 text-xs whitespace-nowrap">
+                 <span className="font-semibold">{step.value.toLocaleString()} users</span>
+                 <div className="absolute bottom-[-4px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
               </div>
-          ))}
+
+              <div className="absolute top-[-70px] w-full flex flex-col items-start px-2 z-0 overflow-hidden">
+                 <span className="text-[11px] font-medium text-gray-500 leading-tight h-8 flex items-start w-full break-words whitespace-normal">
+                     {step.name}
+                 </span>
+                 <span className="text-lg font-bold text-gray-900 mt-1">{step.value.toLocaleString()}</span>
+
+                 {step.trend && (
+                   <span className={`text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded flex items-center w-max ${
+                       step.trend.startsWith('+') ? 'text-[#4CAF50] bg-green-50' : 'text-red-500 bg-red-50'
+                   }`}>
+                       {step.trend}
+                   </span>
+                 )}
+              </div>
+
+              <div className="w-full h-full flex items-end">
+                <div
+                   className="w-full rounded-t-lg transition-all duration-500 ease-out hover:brightness-95 mx-auto"
+                   style={{
+                     height: `${heightPercent}%`,
+                     backgroundColor: bgCol,
+                     maxWidth: '85%'
+                   }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
