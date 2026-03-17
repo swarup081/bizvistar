@@ -2,7 +2,35 @@
 import React from 'react';
 import { Sparkles, TrendingUp, Package, Tag, AlertCircle } from 'lucide-react';
 
-export default function PredictionCard({ prediction }) {
+export default function PredictionCard({ prediction, isLocked = false }) {
+  if (isLocked) {
+      return (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center h-full relative overflow-hidden">
+            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/60 flex flex-col items-center justify-center rounded-2xl p-6">
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100 text-center max-w-[280px]">
+                    <div className="w-12 h-12 bg-purple-100 text-[#8A63D2] rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Sparkles size={24} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">AI Insights Locked</h3>
+                    <p className="text-sm text-gray-500 mb-4">Upgrade to Growth or Pro to unlock actionable AI-driven store predictions.</p>
+                    <a href="/dashboard/billing" className="block w-full py-2 px-4 bg-[#8A63D2] hover:bg-[#7a55bd] text-white rounded-lg font-medium transition-colors text-sm">
+                        View Plans
+                    </a>
+                </div>
+            </div>
+            {/* Background dummy skeleton */}
+            <div className="flex flex-col items-center justify-center opacity-30 pointer-events-none p-6 text-center w-full">
+                <Sparkles className="text-gray-300 w-12 h-12 mb-4" />
+                <p className="text-sm text-gray-400 font-medium">Loading AI Insights...</p>
+                <div className="mt-8 w-full flex flex-col gap-4">
+                    <div className="h-16 bg-gray-50 rounded-xl w-full"></div>
+                    <div className="h-16 bg-gray-50 rounded-xl w-full"></div>
+                </div>
+            </div>
+        </div>
+      );
+  }
+
   if (!prediction) {
     return (
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col justify-center items-center text-center">

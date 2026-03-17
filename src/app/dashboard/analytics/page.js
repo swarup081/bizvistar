@@ -80,6 +80,29 @@ export default function AnalyticsPage() {
       startDate.setDate(now.getDate() - 30); // Use 30 days for general metrics, filter charts client-side if needed
       const startDateISO = startDate.toISOString();
 
+      // Fetch Plan Data
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("plan_id, status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      let isLocked = false;
+      if (sub && sub.plan_id) {
+          const { data: plan } = await supabase
+              .from("plans")
+              .select("name")
+              .eq("id", sub.plan_id)
+              .maybeSingle();
+          if (plan && plan.name.toLowerCase().includes("starter")) {
+              isLocked = true;
+          }
+      } else {
+          // No active plan found, assume locked to be safe
+          isLocked = true;
+      }
+
       const [ordersRes, eventsRes, targetRes, predictionRes] = await Promise.all([
         supabase
           .from("orders")
@@ -93,7 +116,7 @@ export default function AnalyticsPage() {
           .eq("website_id", websiteId)
           .gte("timestamp", startDateISO),
         fetchMonthlyTarget(websiteId),
-        getOrGenerateMonthlyPrediction(websiteId)
+        isLocked ? Promise.resolve(null) : getOrGenerateMonthlyPrediction(websiteId)
       ]);
 
       const orders = ordersRes.data || [];
@@ -178,18 +201,18 @@ export default function AnalyticsPage() {
           if (path.includes('cart') || type === 'add_to_cart') funnelSets.cart.add(vid);
           if (path.includes('checkout') || type === 'begin_checkout') funnelSets.checkout.add(vid);
       });
-      funnelSets.purchase.size = totalOrders;
+      const purchasesCount = totalOrders;
 
       // Calculate abandoned carts: Added to cart but not purchased
-      funnelSets.abandoned.size = Math.max(0, funnelSets.cart.size - funnelSets.purchase.size);
+      const abandonedCount = Math.max(0, funnelSets.cart.size - purchasesCount);
 
       // If data is empty, provide baseline structural data to match screenshot
       const funnelData = [
           { name: 'Product Views', value: funnelSets.product.size || 25000, change: '+9%', fill: '#8A63D2' },
           { name: 'Add to Cart', value: funnelSets.cart.size || 12000, change: '+6%', fill: '#9C75E4' },
           { name: 'Checkout', value: funnelSets.checkout.size || 8500, change: '+4%', fill: '#B18DF2' },
-          { name: 'Purchases', value: funnelSets.purchase.size || 6200, change: '+7%', fill: '#C8A8FF' },
-          { name: 'Abandoned', value: funnelSets.abandoned.size || 3000, change: '-5%', fill: '#DFCDFF' }
+          { name: 'Purchases', value: purchasesCount || 6200, change: '+7%', fill: '#C8A8FF' },
+          { name: 'Abandoned', value: abandonedCount || 3000, change: '-5%', fill: '#DFCDFF' }
       ];
 
       // Top Categories (Using Mock if missing, to match SS structure)
@@ -256,7 +279,8 @@ export default function AnalyticsPage() {
         activeUsersData,
         activeUsersTotal: totalStateUsers,
         monthlyTarget,
-        prediction
+        prediction,
+        isLocked
       });
 
     } catch (err) {
@@ -323,7 +347,7 @@ export default function AnalyticsPage() {
                        <RevenueChart data={data.revenueData} />
                     </div>
                     <div className="lg:col-span-5 h-full">
-                       <MonthlyTargetGauge websiteId={data.websiteId} currentRevenue={data.totalRevenue} initialTarget={data.monthlyTarget} />
+                       <MonthlyTargetGauge websiteId={data.websiteId} currentRevenue={data.totalRevenue} initialTarget={data.monthlyTarget} isLocked={data.isLocked} />
                     </div>
                  </div>
 
@@ -345,7 +369,7 @@ export default function AnalyticsPage() {
                   </div>
                   {/* AI Prediction: Replacing Traffic Sources */}
                   <div className="h-[420px]">
-                      <PredictionCard prediction={data.prediction} />
+                      <PredictionCard prediction={data.prediction} isLocked={data.isLocked} />
                   </div>
               </div>
            </div>

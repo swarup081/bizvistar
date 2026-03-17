@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Edit2, Check, X, TrendingUp } from 'lucide-react';
 import { updateMonthlyTarget } from '@/app/actions/analyticsActions';
 
-export default function MonthlyTargetGauge({ websiteId, currentRevenue, initialTarget }) {
+export default function MonthlyTargetGauge({ websiteId, currentRevenue, initialTarget, isLocked = false }) {
   const [target, setTarget] = useState(initialTarget || 0);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(initialTarget || 0);
@@ -27,7 +27,23 @@ export default function MonthlyTargetGauge({ websiteId, currentRevenue, initialT
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-full relative overflow-hidden">
+      {isLocked && (
+        <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/60 flex flex-col items-center justify-center rounded-2xl">
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100 text-center max-w-[280px]">
+            <div className="w-12 h-12 bg-purple-100 text-[#8A63D2] rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Upgrade to Unlock</h3>
+            <p className="text-sm text-gray-500 mb-4">Set and track monthly revenue goals with Growth & Pro plans.</p>
+            <a href="/dashboard/billing" className="block w-full py-2 px-4 bg-[#8A63D2] hover:bg-[#7a55bd] text-white rounded-lg font-medium transition-colors text-sm">
+              View Plans
+            </a>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-col h-full justify-between ${isLocked ? 'opacity-40 pointer-events-none' : ''}`}>
       <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-bold text-gray-900 font-sans">Monthly Target</h3>
           {!isEditing && (
@@ -89,6 +105,7 @@ export default function MonthlyTargetGauge({ websiteId, currentRevenue, initialT
               <p className="text-xs text-gray-500 font-medium mb-1">Revenue</p>
               <p className="text-lg font-bold text-gray-900 font-sans tracking-tight">₹{Number(currentRevenue).toLocaleString()}</p>
           </div>
+      </div>
       </div>
     </div>
   );
