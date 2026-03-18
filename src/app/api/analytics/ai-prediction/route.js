@@ -49,20 +49,25 @@ export async function POST(req) {
 
     // Check if an insight already exists for this month. We handle errors gracefully just in case the table doesn't exist
 
+
     let existingInsight = null;
     try {
-      const { data, error: insightError } = await supabase
-        .from('ai_insights')
-        .select('*')
-        .eq('website_id', websiteId)
-        .eq('month', currentMonth)
-        .eq('year', currentYear)
-        .maybeSingle();
+      const { data: website, error: insightError } = await supabase
+        .from('websites')
+        .select('website_data')
+        .eq('id', websiteId)
+        .single();
 
-      if (data) existingInsight = data;
+      const websiteData = website?.website_data || {};
+      const key = `${currentYear}-${currentMonth}`;
+
+      if (websiteData.analytics?.ai_insights && websiteData.analytics.ai_insights[key]) {
+          existingInsight = { insights: websiteData.analytics.ai_insights[key] };
+      }
     } catch (e) {
-      console.warn("Table ai_insights might not exist yet:", e);
+      console.warn("Could not check existing insights:", e);
     }
+
 
     if (existingInsight && existingInsight.insights && Object.keys(existingInsight.insights).length > 0) {
       return NextResponse.json({ data: existingInsight.insights });
@@ -190,19 +195,31 @@ Required JSON format:
         parsedInsight = fallbackInsight;
     }
 
-    // Attempt to save, don't break if table is missing
+
+    // Attempt to save to website_data
     try {
+        const { data: website } = await supabase
+          .from('websites')
+          .select('website_data')
+          .eq('id', websiteId)
+          .single();
+
+        let websiteData = website?.website_data || {};
+        if (!websiteData.analytics) websiteData.analytics = {};
+        if (!websiteData.analytics.ai_insights) websiteData.analytics.ai_insights = {};
+
+        const key = `${currentYear}-${currentMonth}`;
+        websiteData.analytics.ai_insights[key] = parsedInsight;
+
         await supabase
-          .from('ai_insights')
-          .insert({
-            website_id: websiteId,
-            month: currentMonth,
-            year: currentYear,
-            insights: parsedInsight
-          });
+          .from('websites')
+          .update({ website_data: websiteData })
+          .eq('id', websiteId);
+
     } catch(e) {
-        console.warn("Could not save insight (maybe table missing):", e);
+        console.warn("Could not save insight:", e);
     }
+
 
     return NextResponse.json({ data: parsedInsight });
 

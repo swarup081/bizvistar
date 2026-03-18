@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { saveMonthlyTarget, getMonthlyTarget } from '@/app/actions/analyticsActions';
 import { MoreHorizontal, Edit2, Check, X, RefreshCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
@@ -16,27 +16,22 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
+
   useEffect(() => {
      async function fetchTarget() {
          if (!websiteId) return;
          try {
-             const { data, error } = await supabase
-               .from('monthly_targets')
-               .select('target_amount')
-               .eq('website_id', websiteId)
-               .eq('month', currentMonth)
-               .eq('year', currentYear)
-               .maybeSingle();
-
-             if (data && data.target_amount) {
-                 setTarget(data.target_amount);
+             const res = await getMonthlyTarget(websiteId);
+             if (res && res.data) {
+                 setTarget(res.data);
              }
          } catch (e) {
              console.error("Failed to load target", e);
          }
      }
      fetchTarget();
-  }, [websiteId, currentMonth, currentYear]);
+  }, [websiteId]);
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -48,7 +43,9 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
   const handleSave = async (e) => {
+      e.preventDefault();
       e.stopPropagation(); // Stop event bubbling
       const newTarget = parseInt(editValue, 10);
       if (isNaN(newTarget) || newTarget <= 0) {
@@ -58,32 +55,12 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       setLoading(true);
 
       try {
-          // Manual Upsert Logic
-          const { data: existing } = await supabase
-              .from('monthly_targets')
-              .select('id')
-              .eq('website_id', websiteId)
-              .eq('month', currentMonth)
-              .eq('year', currentYear)
-              .maybeSingle();
-
-          let queryError = null;
-          if (existing) {
-              const { error: e1 } = await supabase.from('monthly_targets')
-                  .update({ target_amount: newTarget })
-                  .eq('id', existing.id);
-              queryError = e1;
-          } else {
-              const { error: e2 } = await supabase.from('monthly_targets')
-                  .insert({ website_id: websiteId, month: currentMonth, year: currentYear, target_amount: newTarget });
-              queryError = e2;
-          }
-
-          if (!queryError) {
+          const res = await saveMonthlyTarget(websiteId, newTarget);
+          if (res && res.success) {
              setTarget(newTarget);
              setIsEditing(false);
           } else {
-             console.error("Error saving target:", queryError);
+             console.error("Error saving target:", res.error);
           }
       } catch (err) {
           console.error("Error saving target:", err);
@@ -91,16 +68,13 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       setLoading(false);
   };
 
+
+
   const handleReset = async () => {
       setLoading(true);
       try {
-          const { error } = await supabase.from('monthly_targets')
-               .delete()
-               .eq('website_id', websiteId)
-               .eq('month', currentMonth)
-               .eq('year', currentYear);
-
-          if (!error) {
+          const res = await saveMonthlyTarget(websiteId, 600000); // 6L is default placeholder visually
+          if (res && res.success) {
               setTarget(600000); // Reset to default visual
               setIsDropdownOpen(false);
           }
@@ -109,6 +83,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       }
       setLoading(false);
   };
+
 
   const percentage = Math.min(100, (currentRevenue / target) * 100);
   const pieData = [
