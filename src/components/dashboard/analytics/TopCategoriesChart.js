@@ -6,7 +6,7 @@ const COLORS = ['#8A63D2', '#9B7BE0', '#B096ED', '#C7B3F7', '#E2D1F9', '#F0E5FF'
 
 export default function TopCategoriesChart({ data, totalSales }) {
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
+    <div id="top-categories" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-semibold text-gray-900 text-lg">Top Categories</h3>
         <button className="text-xs text-[#8A63D2] font-medium hover:text-[#7A52C0]">See All</button>

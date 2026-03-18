@@ -45,7 +45,7 @@ export default function AIPredictionCard({ websiteId }) {
   }, [websiteId]);
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
+    <div id="ai-insights" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-[#8A63D2]" />

@@ -184,7 +184,7 @@ export default function AnalyticsPage() {
       currentEvents.forEach(e => {
           const vid = e.location?.visitor_id || e.location?.ip || 'anon';
           const path = cleanPath(e.path);
-          if (path.includes('shop') || path.includes('product')) funnelSets.product.add(vid);
+          if (path.includes(.shop.) || path.includes(.product.) || e.event_type === .product_view.) funnelSets.product.add(vid);
           if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
@@ -193,7 +193,7 @@ export default function AnalyticsPage() {
       const addCarts = Math.max(funnelSets.addToCart.size, 0);
       const checkouts = Math.max(funnelSets.checkout.size, 0);
       const purchases = totalOrdersCount;
-      const abandonedEstimate = Math.max(0, addCarts - purchases);
+      const abandonedEstimate = Math.max(0, funnelSets.addToCart.size - totalOrdersCount);
 
       const funnelData = [
           { name: 'Product Views', value: productViews, fill: '#F5F3FF' },
@@ -323,7 +323,7 @@ export default function AnalyticsPage() {
                  <RevenueChart data={data.revenueData} />
               </div>
               <div className="lg:col-span-1 min-w-0">
-                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} />
+                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} prevRevenue={data.prevRevenue} />
               </div>
               <div className="lg:col-span-1 min-w-0">
                  <TopCategoriesChart data={data.topCategories} totalSales={data.totalSales} />

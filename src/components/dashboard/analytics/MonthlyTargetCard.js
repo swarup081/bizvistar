@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { MoreHorizontal, Edit2, Check, X, RefreshCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export default function MonthlyTargetCard({ websiteId, currentRevenue }) {
+export default function MonthlyTargetCard({ websiteId, currentRevenue, prevRevenue = 0 }) {
   const [target, setTarget] = useState(600000); // Default placeholder
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -57,17 +57,32 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue }) {
       setLoading(true);
 
       try {
-          // Attempt update/insert
-          const { error } = await supabase.from('monthly_targets').upsert(
-              { website_id: websiteId, month: currentMonth, year: currentYear, target_amount: newTarget },
-              { onConflict: 'website_id,month,year' }
-          );
+          // Manual Upsert Logic (Select then Update/Insert) to avoid constraint issues
+          const { data: existing } = await supabase
+              .from('monthly_targets')
+              .select('id')
+              .eq('website_id', websiteId)
+              .eq('month', currentMonth)
+              .eq('year', currentYear)
+              .maybeSingle();
 
-          if (!error) {
+          let queryError = null;
+          if (existing) {
+              const { error: e1 } = await supabase.from('monthly_targets')
+                  .update({ target_amount: newTarget })
+                  .eq('id', existing.id);
+              queryError = e1;
+          } else {
+              const { error: e2 } = await supabase.from('monthly_targets')
+                  .insert({ website_id: websiteId, month: currentMonth, year: currentYear, target_amount: newTarget });
+              queryError = e2;
+          }
+
+          if (!queryError) {
              setTarget(newTarget);
              setIsEditing(false);
           } else {
-             console.error("Error saving target:", error);
+             console.error("Error saving target:", queryError);
           }
       } catch (err) {
           console.error("Error saving target:", err);
@@ -99,6 +114,17 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue }) {
     { name: 'Revenue', value: percentage },
     { name: 'Remaining', value: Math.max(0, 100 - percentage) }
   ];
+
+  // Calculate dynamic text values
+  const revenueGrowth = currentRevenue - prevRevenue;
+  const growthText = revenueGrowth >= 0 ? `increased by ₹${revenueGrowth.toLocaleString()}` : `decreased by ₹${Math.abs(revenueGrowth).toLocaleString()}`;
+
+  let percentageGrowth = 0;
+  if (prevRevenue > 0) {
+      percentageGrowth = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
+  } else if (currentRevenue > 0) {
+      percentageGrowth = 100; // If prev was 0 and we have revenue now
+  }
 
   return (
     <div id="monthly-target" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
@@ -154,8 +180,8 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue }) {
         </ResponsiveContainer>
         <div className="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center pointer-events-none z-10">
            <span className="text-2xl font-bold text-gray-900">{percentage.toFixed(0)}%</span>
-           <span className="text-[10px] font-bold text-[#4CAF50] bg-green-50 px-2 py-0.5 rounded-full mt-1">
-               +{percentage.toFixed(2)}% <span className="text-gray-500 font-medium">from last month</span>
+           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${percentageGrowth >= 0 ? 'text-[#4CAF50] bg-green-50' : 'text-red-500 bg-red-50'}`}>
+               {percentageGrowth >= 0 ? '+' : ''}{percentageGrowth.toFixed(2)}% <span className="text-gray-500 font-medium">from last month</span>
            </span>
         </div>
       </div>
@@ -163,7 +189,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue }) {
       <div className="text-center mt-6 mb-4">
           <p className="text-sm font-bold text-gray-800">Great Progress! 🎉</p>
           <p className="text-xs text-gray-500 mt-1 leading-relaxed px-2">
-              Our achievement increased by <span className="text-[#8A63D2] font-semibold">₹{currentRevenue.toLocaleString()}</span>;
+              Our achievement <span className="text-[#8A63D2] font-semibold">{growthText}</span>;
               let's reach 100% next month.
           </p>
       </div>

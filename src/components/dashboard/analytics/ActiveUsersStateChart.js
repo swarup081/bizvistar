@@ -4,8 +4,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { TrendingUp, MapPin } from 'lucide-react';
 
 export default function ActiveUsersStateChart({ data, totalUsers }) {
-  // Data is pre-sorted in page.js, up to top 4 + "Other"
-
   const calculatePercentage = (value) => {
     if (!totalUsers || totalUsers === 0) return "0%";
     return `${((value / totalUsers) * 100).toFixed(1)}%`;
@@ -32,46 +30,48 @@ export default function ActiveUsersStateChart({ data, totalUsers }) {
         </button>
       </div>
 
-      <div className="flex-grow flex flex-col justify-center gap-4 w-full h-full min-h-[220px] relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={data}
-            margin={{ top: 10, right: 40, left: 0, bottom: 10 }}
-          >
-            <XAxis type="number" hide />
-            <YAxis
-               dataKey="state"
-               type="category"
-               axisLine={false}
-               tickLine={false}
-               width={85}
-               tick={{ fill: '#4B5563', fontSize: 12, fontWeight: 500 }}
-            />
-            <Tooltip
-              cursor={{ fill: 'rgba(138, 99, 210, 0.04)' }}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            />
-            <Bar
-               dataKey="users"
-               radius={[0, 6, 6, 0]}
-               barSize={14}
-               background={{ fill: '#F9FAFB', radius: [0, 6, 6, 0] }}
+      <div className="flex-grow flex flex-col justify-center w-full h-full min-h-[220px] relative">
+        <div className="absolute inset-0 flex">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={data}
+              margin={{ top: 15, right: 45, left: 0, bottom: 15 }}
             >
-               {data.map((entry, index) => (
-                   <Cell key={`cell-${index}`} fill={index === 0 ? '#8A63D2' : '#C7B3F7'} />
-               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <XAxis type="number" hide />
+              <YAxis
+                 dataKey="state"
+                 type="category"
+                 axisLine={false}
+                 tickLine={false}
+                 width={85}
+                 tick={{ fill: '#4B5563', fontSize: 12, fontWeight: 500 }}
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(138, 99, 210, 0.04)' }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              />
+              <Bar
+                 dataKey="users"
+                 radius={[0, 6, 6, 0]}
+                 barSize={14}
+                 background={{ fill: '#F9FAFB', radius: [0, 6, 6, 0] }}
+              >
+                 {data.map((entry, index) => (
+                     <Cell key={`cell-${index}`} fill={index === 0 ? '#8A63D2' : '#C7B3F7'} />
+                 ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
 
-        {/* Render percentages overlaid on the right edge */}
-        <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between text-xs font-bold text-gray-700 pointer-events-none py-6 pr-1">
-            {data.map((d, i) => (
-                <span key={i} className={`flex items-center h-full ${i === 0 ? 'text-[#8A63D2]' : ''}`}>
-                    {calculatePercentage(d.users)}
-                </span>
-            ))}
+          {/* Ensure percentage labels align exactly with the bars inside Recharts margin */}
+          <div className="absolute right-0 top-[15px] bottom-[15px] w-10 flex flex-col justify-around text-xs font-bold text-gray-700 pointer-events-none pr-1">
+              {data.map((d, i) => (
+                  <span key={i} className={`flex items-center justify-end w-full h-full ${i === 0 ? 'text-[#8A63D2]' : ''}`}>
+                      {calculatePercentage(d.users)}
+                  </span>
+              ))}
+          </div>
         </div>
       </div>
       {data.length === 0 && (

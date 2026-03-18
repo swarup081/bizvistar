@@ -6,7 +6,7 @@ export default function FunnelChart({ data }) {
   const themeColors = ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD', '#A78BFA'];
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
+    <div id="funnel-chart" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-10">
         <h3 className="font-semibold text-gray-900 text-lg">Conversion Rate</h3>
       </div>
