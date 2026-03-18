@@ -4,15 +4,15 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { TrendingUp, MapPin } from 'lucide-react';
 
 export default function ActiveUsersStateChart({ data, totalUsers }) {
-  const sortedData = [...data].sort((a, b) => b.users - a.users).slice(0, 5);
+  // Data is pre-sorted in page.js, up to top 4 + "Other"
 
   const calculatePercentage = (value) => {
-    if (!totalUsers) return "0%";
+    if (!totalUsers || totalUsers === 0) return "0%";
     return `${((value / totalUsers) * 100).toFixed(1)}%`;
   };
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
+    <div id="active-users" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
       <div className="flex justify-between items-start mb-6">
         <div>
            <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
@@ -36,8 +36,8 @@ export default function ActiveUsersStateChart({ data, totalUsers }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
-            data={sortedData}
-            margin={{ top: 0, right: 35, left: 0, bottom: 0 }}
+            data={data}
+            margin={{ top: 10, right: 40, left: 0, bottom: 10 }}
           >
             <XAxis type="number" hide />
             <YAxis
@@ -45,7 +45,7 @@ export default function ActiveUsersStateChart({ data, totalUsers }) {
                type="category"
                axisLine={false}
                tickLine={false}
-               width={80}
+               width={85}
                tick={{ fill: '#4B5563', fontSize: 12, fontWeight: 500 }}
             />
             <Tooltip
@@ -58,21 +58,23 @@ export default function ActiveUsersStateChart({ data, totalUsers }) {
                barSize={14}
                background={{ fill: '#F9FAFB', radius: [0, 6, 6, 0] }}
             >
-               {sortedData.map((entry, index) => (
+               {data.map((entry, index) => (
                    <Cell key={`cell-${index}`} fill={index === 0 ? '#8A63D2' : '#C7B3F7'} />
                ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
 
-        {/* Render percentages overlaid */}
-        <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-around text-xs font-bold text-gray-700 pointer-events-none pr-1 py-4">
-            {sortedData.map((d, i) => (
-                <span key={i} className={i === 0 ? 'text-[#8A63D2]' : ''}>{calculatePercentage(d.users)}</span>
+        {/* Render percentages overlaid on the right edge */}
+        <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between text-xs font-bold text-gray-700 pointer-events-none py-6 pr-1">
+            {data.map((d, i) => (
+                <span key={i} className={`flex items-center h-full ${i === 0 ? 'text-[#8A63D2]' : ''}`}>
+                    {calculatePercentage(d.users)}
+                </span>
             ))}
         </div>
       </div>
-      {sortedData.length === 0 && (
+      {data.length === 0 && (
          <div className="absolute inset-0 flex items-center justify-center text-center text-gray-400 text-sm bg-white/80 backdrop-blur-[1px] rounded-2xl">
              No location data available
          </div>

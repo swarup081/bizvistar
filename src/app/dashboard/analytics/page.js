@@ -204,26 +204,27 @@ export default function AnalyticsPage() {
       ];
 
       // 4. Grouping for Charts
-      const groupByDate = (items, dateKey, valueKey = null, count = false) => {
+      // 4. Grouping for Charts (Revenue AND Orders)
+      const getRevenueAndOrdersByDate = (ordersList) => {
         const map = {};
         const d = new Date(startDate);
         const end = new Date();
         while (d <= end) {
             const key = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-            map[key] = 0;
+            map[key] = { value: 0, orderCount: 0 };
             d.setDate(d.getDate() + 1);
         }
-        items.forEach(item => {
-            const itemDate = new Date(item[dateKey]).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-            if (map[itemDate] !== undefined) {
-                if (count) map[itemDate] += 1;
-                else map[itemDate] += (Number(item[valueKey]) || 0);
+        ordersList.forEach(order => {
+            const itemDate = new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            if (map[itemDate]) {
+                map[itemDate].value += (Number(order.total_amount) || 0);
+                map[itemDate].orderCount += 1;
             }
         });
-        return Object.keys(map).map(date => ({ date, value: map[date] }));
+        return Object.keys(map).map(date => ({ date, ...map[date] }));
       };
 
-      const revenueData = groupByDate(currentOrders, 'created_at', 'total_amount');
+      const revenueData = getRevenueAndOrdersByDate(currentOrders);
 
       // 5. Top Categories
       const catSales = {};

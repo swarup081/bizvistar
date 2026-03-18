@@ -49,18 +49,14 @@ export default function AnalyticsOverview({
   ];
 
   return (
-    <div className="flex overflow-x-auto gap-6 pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 snap-x snap-mandatory hide-scrollbar">
+    <div id="overview-cards" className="flex overflow-x-auto gap-6 pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 snap-x snap-mandatory hide-scrollbar">
       {cards.map((card, idx) => (
         <div
            key={idx}
-           className={`rounded-2xl p-6 flex flex-col justify-between h-[160px] min-w-[280px] md:min-w-0 snap-center shrink-0 ${
-              card.isPrimary
-                ? 'bg-purple-50'
-                : 'bg-white border border-gray-100 shadow-sm'
-           }`}
+           className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-[160px] min-w-[280px] md:min-w-0 snap-center shrink-0"
         >
             <div className="flex justify-between items-center w-full">
-                <span className={`text-[15px] font-medium ${card.isPrimary ? 'text-gray-800' : 'text-gray-500'}`}>
+                <span className="text-[15px] font-medium text-gray-500">
                     {card.title}
                 </span>
                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
