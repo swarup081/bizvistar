@@ -30,9 +30,7 @@ export default function AIPredictionCard({ websiteId }) {
 
         const data = await res.json();
 
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        if (data.error) throw new Error(data.error);
 
         setInsight(data.data);
       } catch (err) {
@@ -71,7 +69,7 @@ export default function AIPredictionCard({ websiteId }) {
         </div>
       ) : error || !insight ? (
         <div className="flex-grow flex items-center justify-center text-sm text-gray-400 min-h-[150px]">
-          No insights available right now.
+          No insights available right now. ({error || 'Unknown error'})
         </div>
       ) : (
         <div className="flex flex-col gap-4 flex-grow w-full">

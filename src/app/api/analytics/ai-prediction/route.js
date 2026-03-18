@@ -48,6 +48,7 @@ export async function POST(req) {
     const currentYear = now.getFullYear();
 
     // Check if an insight already exists for this month. We handle errors gracefully just in case the table doesn't exist
+
     let existingInsight = null;
     try {
       const { data, error: insightError } = await supabase
@@ -63,7 +64,7 @@ export async function POST(req) {
       console.warn("Table ai_insights might not exist yet:", e);
     }
 
-    if (existingInsight && existingInsight.insights) {
+    if (existingInsight && existingInsight.insights && Object.keys(existingInsight.insights).length > 0) {
       return NextResponse.json({ data: existingInsight.insights });
     }
 
@@ -182,9 +183,11 @@ Required JSON format:
             };
         } else {
             console.error("OpenAI API returned non-ok status:", await openaiRes.text());
+            parsedInsight = fallbackInsight;
         }
     } catch (e) {
         console.error("Failed to parse or fetch OpenAI response:", e);
+        parsedInsight = fallbackInsight;
     }
 
     // Attempt to save, don't break if table is missing

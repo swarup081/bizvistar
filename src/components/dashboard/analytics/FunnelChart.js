@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 
-export default function FunnelChart({ data }) {
+export default function FunnelChart({ data, abandonedCarts = 0 }) {
   const maxVal = Math.max(...data.map(d => d.value), 1);
   const themeColors = ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD', '#A78BFA'];
 
@@ -15,10 +15,16 @@ export default function FunnelChart({ data }) {
     <div id="funnel-chart" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-10">
         <h3 className="font-semibold text-gray-900 text-lg">Conversion Funnel</h3>
-        <span className="text-xs font-semibold bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1">
-           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-           {conversionRate}% Conv. Rate
-        </span>
+        <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold bg-orange-50 text-orange-700 px-3 py-1.5 rounded-full border border-orange-100 flex items-center gap-1">
+               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+               {abandonedCarts} Abandoned
+            </span>
+            <span className="text-xs font-semibold bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1">
+               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+               {conversionRate}% Conv. Rate
+            </span>
+        </div>
       </div>
 
 

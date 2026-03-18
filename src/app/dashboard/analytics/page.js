@@ -164,6 +164,7 @@ export default function AnalyticsPage() {
       const prevVisitors = prevUniqueVisitors.size || (prevEventsList.length > 0 ? Math.ceil(prevEventsList.length / 2) : 0);
 
 
+
       // 3. Funnel Logic
       const cleanPath = (p) => {
           if (!p) return '/';
@@ -177,6 +178,7 @@ export default function AnalyticsPage() {
       };
 
       const funnelSets = {
+          visitors: new Set(),
           product: new Set(),
           addToCart: new Set(),
           checkout: new Set(),
@@ -185,12 +187,14 @@ export default function AnalyticsPage() {
       currentEvents.forEach(e => {
           const vid = e.location?.visitor_id || e.location?.ip || 'anon';
           if (vid === 'anon') return;
+          funnelSets.visitors.add(vid);
           const path = cleanPath(e.path);
           if (path.includes('shop') || path.includes('product') || e.event_type === 'product_view') funnelSets.product.add(vid);
           if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
 
+      const rawVisitors = funnelSets.visitors.size;
       const rawProductViews = funnelSets.product.size;
       const rawAddCarts = funnelSets.addToCart.size;
       const rawCheckouts = funnelSets.checkout.size;
@@ -199,18 +203,25 @@ export default function AnalyticsPage() {
       // Waterfall Enforce: Each step must be at least as big as the next step
       const checkouts = Math.max(rawCheckouts, purchases);
       const addCarts = Math.max(rawAddCarts, checkouts);
-      const productViews = Math.max(rawProductViews, addCarts, totalVisitors);
+      const productViews = Math.max(rawProductViews, addCarts);
+      const visitors = Math.max(rawVisitors, productViews, totalVisitors);
+
+      // Abandoned carts: users who added to cart but didn't purchase.
+      // E.g. addCarts = 10, purchases = 2 -> abandoned = 8
       const abandonedEstimate = Math.max(0, addCarts - purchases);
 
       const funnelData = [
-          { name: 'Product Views', value: productViews, fill: '#F5F3FF' },
-          { name: 'Add to Cart', value: addCarts, fill: '#EDE9FE' },
-          { name: 'Proceed to Checkout', value: checkouts, fill: '#DDD6FE' },
-          { name: 'Completed Purchases', value: purchases, fill: '#C4B5FD' },
-          { name: 'Abandoned Carts', value: abandonedEstimate, fill: '#A78BFA' }
+          { name: 'Total Visitors', value: visitors, fill: '#F5F3FF' },
+          { name: 'Product Views', value: productViews, fill: '#EDE9FE' },
+          { name: 'Add to Cart', value: addCarts, fill: '#DDD6FE' },
+          { name: 'Proceed to Checkout', value: checkouts, fill: '#C4B5FD' },
+          { name: 'Completed Purchases', value: purchases, fill: '#A78BFA' }
       ];
 
+      const abandonedCartData = abandonedEstimate;
+
       // 4. Grouping for Charts
+
 
       // 4. Grouping for Charts (Revenue AND Orders)
       const getRevenueAndOrdersByDate = (ordersList) => {
@@ -288,7 +299,8 @@ export default function AnalyticsPage() {
         totalSales: totalSalesCalculated,
         activeUsersState,
         totalActiveUsers: totalStateUsers,
-        funnelData
+        funnelData,
+        abandonedCartData
       });
 
     } catch (err) {
@@ -344,7 +356,7 @@ export default function AnalyticsPage() {
                     <ActiveUsersStateChart data={data.activeUsersState} totalUsers={data.totalActiveUsers} />
                </div>
                <div className="lg:col-span-2 min-w-0">
-                    <FunnelChart data={data.funnelData} />
+                    <FunnelChart data={data.funnelData} abandonedCarts={data.abandonedCartData} />
                </div>
                <div className="lg:col-span-1 min-w-0">
                     <AIPredictionCard websiteId={websiteId} />
