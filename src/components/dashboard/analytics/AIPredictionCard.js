@@ -55,8 +55,22 @@ export default function AIPredictionCard({ websiteId }) {
       </div>
 
       {loading ? (
-        <div className="flex-grow flex items-center justify-center min-h-[150px]">
-          <div className="w-6 h-6 border-2 border-purple-200 border-t-[#8A63D2] rounded-full animate-spin"></div>
+        <div className="flex-grow flex flex-col gap-4 w-full h-full min-h-[150px] animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="flex items-start gap-3 w-full">
+             <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0"></div>
+             <div className="flex-1 space-y-2">
+                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                 <div className="h-3 bg-gray-200 rounded w-full"></div>
+             </div>
+          </div>
+          <div className="flex items-start gap-3 w-full">
+             <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0"></div>
+             <div className="flex-1 space-y-2">
+                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                 <div className="h-3 bg-gray-200 rounded w-full"></div>
+             </div>
+          </div>
         </div>
       ) : error || !insight ? (
         <div className="flex-grow flex items-center justify-center text-sm text-gray-400 min-h-[150px]">

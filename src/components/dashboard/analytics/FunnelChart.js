@@ -1,6 +1,5 @@
 "use client";
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
 
 export default function FunnelChart({ data }) {
   const maxVal = Math.max(...data.map(d => d.value), 1);
@@ -10,13 +9,9 @@ export default function FunnelChart({ data }) {
     <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-10">
         <h3 className="font-semibold text-gray-900 text-lg">Conversion Rate</h3>
-        <button className="flex items-center gap-2 bg-purple-50 text-[#8A63D2] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors shadow-sm">
-          This Week
-          <ChevronDown className="w-4 h-4" />
-        </button>
       </div>
 
-      <div className="flex-grow flex items-end justify-between relative w-full h-48 mt-4 overflow-visible">
+      <div className="flex-grow flex items-end justify-between relative w-full h-48 mt-12 overflow-visible">
         {data.map((step, index) => {
           const heightPercent = step.value === 0 ? 5 : (step.value / maxVal) * 100;
           const bgCol = themeColors[index % themeColors.length];
@@ -24,12 +19,12 @@ export default function FunnelChart({ data }) {
           return (
             <div key={step.name} className="flex flex-col items-center justify-end h-full w-full group relative px-1">
 
-              <div className="absolute -top-12 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-gray-900 text-white shadow-lg rounded-lg px-3 py-1.5 pointer-events-none transform -translate-y-2 text-xs whitespace-nowrap">
+              <div className="absolute -top-12 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-gray-900 text-white shadow-lg rounded-lg px-3 py-1.5 pointer-events-none transform -translate-y-2 text-xs whitespace-nowrap">
                  <span className="font-semibold">{step.value.toLocaleString()} users</span>
                  <div className="absolute bottom-[-4px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
               </div>
 
-              <div className="absolute top-[-70px] w-full flex flex-col items-start px-2 z-0 overflow-hidden">
+              <div className="absolute top-[-90px] w-full flex flex-col items-start px-2 z-10">
                  <span className="text-[11px] font-medium text-gray-500 leading-tight h-8 flex items-start w-full break-words whitespace-normal">
                      {step.name}
                  </span>

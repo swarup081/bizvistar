@@ -9,6 +9,7 @@ import AIPredictionCard from "@/components/dashboard/analytics/AIPredictionCard"
 import TopCategoriesChart from "@/components/dashboard/analytics/TopCategoriesChart";
 import ActiveUsersStateChart from "@/components/dashboard/analytics/ActiveUsersStateChart";
 import FunnelChart from "@/components/dashboard/analytics/FunnelChart";
+import MonthlyTargetCard from "@/components/dashboard/analytics/MonthlyTargetCard";
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -18,10 +19,11 @@ export default function AnalyticsPage() {
 
   const [data, setData] = useState({
     totalRevenue: 0,
+    prevRevenue: 0,
     totalOrders: 0,
+    prevOrders: 0,
     totalVisitors: 0,
-    conversionRate: 0,
-    avgOrderValue: 0,
+    prevVisitors: 0,
     revenueData: [],
     topCategories: [],
     totalSales: 0,
@@ -59,60 +61,78 @@ export default function AnalyticsPage() {
         .limit(1)
         .maybeSingle();
 
-      if (siteError) {
-        console.error("Error fetching website:", JSON.stringify(siteError));
-        setError("Failed to load website data.");
-        setLoading(false);
-        return;
-      }
-
-      if (!website) {
+      if (siteError || !website) {
         setLoading(false);
         return;
       }
 
       setWebsiteId(website.id);
 
-      // Date Calculation
+      // Date Calculation (Current Period vs Previous Period)
       const now = new Date();
       let startDate = new Date();
-      if (dateRange === "7d") startDate.setDate(now.getDate() - 7);
-      if (dateRange === "30d") startDate.setDate(now.getDate() - 30);
-      if (dateRange === "90d") startDate.setDate(now.getDate() - 90);
-      if (dateRange === "year") startDate.setFullYear(now.getFullYear(), 0, 1);
+      let prevStartDate = new Date();
+      let prevEndDate = new Date();
+
+      if (dateRange === "7d") {
+        startDate.setDate(now.getDate() - 7);
+        prevStartDate.setDate(startDate.getDate() - 7);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "30d") {
+        startDate.setDate(now.getDate() - 30);
+        prevStartDate.setDate(startDate.getDate() - 30);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "90d") {
+        startDate.setDate(now.getDate() - 90);
+        prevStartDate.setDate(startDate.getDate() - 90);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "year") {
+        startDate.setFullYear(now.getFullYear(), 0, 1);
+        prevStartDate.setFullYear(now.getFullYear() - 1, 0, 1);
+        prevEndDate.setFullYear(now.getFullYear(), 0, 1);
+      }
 
       const startDateISO = startDate.toISOString();
+      const prevStartDateISO = prevStartDate.toISOString();
+      const prevEndDateISO = prevEndDate.toISOString();
 
-      const [ordersRes, eventsRes] = await Promise.all([
+      // Fetch ALL orders and events from prevStartDate to now
+      const [allOrdersRes, allEventsRes] = await Promise.all([
         supabase
           .from("orders")
           .select("id, total_amount, created_at, status")
           .eq("website_id", website.id)
-          .gte("created_at", startDateISO)
+          .gte("created_at", prevStartDateISO)
           .neq("status", "canceled"),
 
         supabase
           .from("client_analytics")
           .select("event_type, timestamp, location, path")
           .eq("website_id", website.id)
-          .gte("timestamp", startDateISO)
+          .gte("timestamp", prevStartDateISO)
       ]);
 
-      const orders = ordersRes.data || [];
-      const events = eventsRes.data || [];
+      const allOrders = allOrdersRes.data || [];
+      const allEvents = allEventsRes.data || [];
 
-      // Fetch Order Items with product and category info
+      // Split into Current and Previous Period
+      const currentOrders = allOrders.filter(o => new Date(o.created_at) >= startDate);
+      const prevOrdersList = allOrders.filter(o => new Date(o.created_at) >= prevStartDate && new Date(o.created_at) < prevEndDate);
+
+      const currentEvents = allEvents.filter(e => new Date(e.timestamp) >= startDate);
+      const prevEventsList = allEvents.filter(e => new Date(e.timestamp) >= prevStartDate && new Date(e.timestamp) < prevEndDate);
+
+      // Fetch Order Items for current period only
       let orderItems = [];
-      const orderIds = orders.map(o => o.id);
-      if (orderIds.length > 0) {
+      const currentOrderIds = currentOrders.map(o => o.id);
+      if (currentOrderIds.length > 0) {
         const { data: items } = await supabase
           .from("order_items")
           .select("quantity, price, products(category_id)")
-          .in("order_id", orderIds);
+          .in("order_id", currentOrderIds);
         orderItems = items || [];
       }
 
-      // Fetch Categories
       const { data: categories } = await supabase
           .from("categories")
           .select("id, name")
@@ -123,16 +143,25 @@ export default function AnalyticsPage() {
       // --- Calculations ---
 
       // 1. Totals
-      const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-      const totalOrders = orders.length;
+      const totalRevenue = currentOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+      const prevRevenue = prevOrdersList.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+      const totalOrdersCount = currentOrders.length;
+      const prevOrdersCount = prevOrdersList.length;
 
-      // 2. Unique Visitors (Overall)
+      // 2. Visitors
       const uniqueVisitors = new Set();
-      events.forEach(e => {
+      currentEvents.forEach(e => {
         const vid = e.location?.visitor_id || e.location?.ip;
         if (vid) uniqueVisitors.add(vid);
       });
-      const totalVisitors = uniqueVisitors.size || (events.length > 0 ? Math.ceil(events.length / 2) : 0);
+      const totalVisitors = uniqueVisitors.size || (currentEvents.length > 0 ? Math.ceil(currentEvents.length / 2) : 0);
+
+      const prevUniqueVisitors = new Set();
+      prevEventsList.forEach(e => {
+        const vid = e.location?.visitor_id || e.location?.ip;
+        if (vid) prevUniqueVisitors.add(vid);
+      });
+      const prevVisitors = prevUniqueVisitors.size || (prevEventsList.length > 0 ? Math.ceil(prevEventsList.length / 2) : 0);
 
       // 3. Funnel Logic
       const cleanPath = (p) => {
@@ -147,44 +176,31 @@ export default function AnalyticsPage() {
       };
 
       const funnelSets = {
-          home: new Set(),
           product: new Set(),
           addToCart: new Set(),
           checkout: new Set(),
-          purchase: new Set(),
-          abandoned: new Set()
       };
 
-      events.forEach(e => {
+      currentEvents.forEach(e => {
           const vid = e.location?.visitor_id || e.location?.ip || 'anon';
           const path = cleanPath(e.path);
-
-          if (path === '/' || path === '') funnelSets.home.add(vid);
           if (path.includes('shop') || path.includes('product')) funnelSets.product.add(vid);
           if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
 
-      // Calculate Abandoned
-      funnelSets.checkout.forEach(vid => {
-          // If they reached checkout but didn't result in an order
-          // Here we are doing unique visitors vs unique orders which is slightly decoupled but good enough for funnel approximation
-          if (Math.random() > 0.6) funnelSets.abandoned.add(vid); // Actually we shouldn't use Math.random() for real analytics.
-      });
+      const productViews = Math.max(funnelSets.product.size, 0);
+      const addCarts = Math.max(funnelSets.addToCart.size, 0);
+      const checkouts = Math.max(funnelSets.checkout.size, 0);
+      const purchases = totalOrdersCount;
+      const abandonedEstimate = Math.max(0, addCarts - purchases);
 
-      // Correcting Abandoned Carts logic to not be random.
-      // If someone added to cart but didn't purchase, they abandoned.
-      // For a truly real system, we'd map visitor_id to order email/customer id.
-      // We will estimate abandoned as AddToCart - Orders (if AddToCart > Orders)
-      const abandonedEstimate = Math.max(0, funnelSets.addToCart.size - totalOrders);
-
-      // We remove the hardcoded fallbacks here. If data is 0, we show 0.
       const funnelData = [
-          { name: 'Product Views', value: funnelSets.product.size, trend: '', fill: '#F5F3FF' },
-          { name: 'Add to Cart', value: funnelSets.addToCart.size, trend: '', fill: '#EDE9FE' },
-          { name: 'Proceed to Checkout', value: funnelSets.checkout.size, trend: '', fill: '#DDD6FE' },
-          { name: 'Completed Purchases', value: totalOrders, trend: '', fill: '#C4B5FD' },
-          { name: 'Abandoned Carts', value: abandonedEstimate, trend: '', fill: '#A78BFA' }
+          { name: 'Product Views', value: productViews, fill: '#F5F3FF' },
+          { name: 'Add to Cart', value: addCarts, fill: '#EDE9FE' },
+          { name: 'Proceed to Checkout', value: checkouts, fill: '#DDD6FE' },
+          { name: 'Completed Purchases', value: purchases, fill: '#C4B5FD' },
+          { name: 'Abandoned Carts', value: abandonedEstimate, fill: '#A78BFA' }
       ];
 
       // 4. Grouping for Charts
@@ -207,7 +223,7 @@ export default function AnalyticsPage() {
         return Object.keys(map).map(date => ({ date, value: map[date] }));
       };
 
-      const revenueData = groupByDate(orders, 'created_at', 'total_amount');
+      const revenueData = groupByDate(currentOrders, 'created_at', 'total_amount');
 
       // 5. Top Categories
       const catSales = {};
@@ -227,7 +243,7 @@ export default function AnalyticsPage() {
       // 6. Active Users by State
       const stateMap = {};
       let totalStateUsers = 0;
-      events.forEach(e => {
+      currentEvents.forEach(e => {
          const state = e.location?.region;
          if (state) {
              stateMap[state] = (stateMap[state] || 0) + 1;
@@ -235,15 +251,29 @@ export default function AnalyticsPage() {
          }
       });
 
-      let activeUsersState = Object.entries(stateMap)
+      let sortedStates = Object.entries(stateMap)
          .map(([state, users]) => ({ state, users }))
-         .sort((a, b) => b.users - a.users)
-         .slice(0, 5);
+         .sort((a, b) => b.users - a.users);
+
+      // Top 4 states, group the rest into "Other"
+      let activeUsersState = [];
+      if (sortedStates.length > 4) {
+          activeUsersState = sortedStates.slice(0, 4);
+          const otherUsers = sortedStates.slice(4).reduce((sum, s) => sum + s.users, 0);
+          if (otherUsers > 0) {
+              activeUsersState.push({ state: 'Other', users: otherUsers });
+          }
+      } else {
+          activeUsersState = sortedStates;
+      }
 
       setData({
         totalRevenue,
-        totalOrders,
+        prevRevenue,
+        totalOrders: totalOrdersCount,
+        prevOrders: prevOrdersCount,
         totalVisitors,
+        prevVisitors,
         revenueData,
         topCategories,
         totalSales: totalSalesCalculated,
@@ -275,38 +305,40 @@ export default function AnalyticsPage() {
              <p className="text-sm font-medium">Loading analytics...</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col gap-6 w-full overflow-hidden">
            <AnalyticsOverview
              revenue={data.totalRevenue}
+             prevRevenue={data.prevRevenue}
              orders={data.totalOrders}
+             prevOrders={data.prevOrders}
              visitors={data.totalVisitors}
+             prevVisitors={data.prevVisitors}
+             dateRange={dateRange}
            />
 
-           {/* Second Row Grid */}
+           {/* Second Row Grid: Revenue (2), Monthly Target (1), Top Categories (1) */}
            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Revenue Chart spans 2 columns */}
               <div className="lg:col-span-2 min-w-0">
                  <RevenueChart data={data.revenueData} />
               </div>
-
-              {/* AI Prediction Card spans 1 column */}
               <div className="lg:col-span-1 min-w-0">
-                 <AIPredictionCard websiteId={websiteId} />
+                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} />
               </div>
-
-              {/* Top Categories spans 1 column */}
               <div className="lg:col-span-1 min-w-0">
                  <TopCategoriesChart data={data.topCategories} totalSales={data.totalSales} />
               </div>
            </div>
 
-           {/* Third Row Grid */}
+           {/* Third Row Grid: Active Users (1), Funnel (2), AI Card (1) */}
            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                <div className="lg:col-span-1 min-w-0">
                     <ActiveUsersStateChart data={data.activeUsersState} totalUsers={data.totalActiveUsers} />
                </div>
-               <div className="lg:col-span-3 min-w-0">
+               <div className="lg:col-span-2 min-w-0">
                     <FunnelChart data={data.funnelData} />
+               </div>
+               <div className="lg:col-span-1 min-w-0">
+                    <AIPredictionCard websiteId={websiteId} />
                </div>
            </div>
         </div>

@@ -2,38 +2,58 @@
 import React from 'react';
 import { DollarSign, ShoppingCart, User } from 'lucide-react';
 
-export default function AnalyticsOverview({ revenue = 0, orders = 0, visitors = 0 }) {
+export default function AnalyticsOverview({
+  revenue = 0, prevRevenue = 0,
+  orders = 0, prevOrders = 0,
+  visitors = 0, prevVisitors = 0,
+  dateRange
+}) {
+
+  const calculateChange = (current, previous) => {
+    if (previous === 0) return current > 0 ? '+100%' : '0%';
+    const pct = ((current - previous) / previous) * 100;
+    return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+  };
+
+  const periodLabels = {
+    '7d': 'vs last 7 days',
+    '30d': 'vs last 30 days',
+    '90d': 'vs last 90 days',
+    'year': 'vs last year'
+  };
+  const periodText = periodLabels[dateRange] || 'vs last period';
+
   const cards = [
     {
       title: 'Total Sales',
       value: `₹${(revenue || 0).toLocaleString()}`,
       icon: DollarSign,
-      change: '+3.34%',
-      period: 'vs last week',
+      change: calculateChange(revenue, prevRevenue),
+      period: periodText,
       isPrimary: true
     },
     {
       title: 'Total Orders',
       value: (orders || 0).toLocaleString(),
       icon: ShoppingCart,
-      change: '-2.89%',
-      period: 'vs last week'
+      change: calculateChange(orders, prevOrders),
+      period: periodText
     },
     {
       title: 'Total Visitors',
       value: (visitors || 0).toLocaleString(),
       icon: User,
-      change: '+8.02%',
-      period: 'vs last week'
+      change: calculateChange(visitors, prevVisitors),
+      period: periodText
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="flex overflow-x-auto gap-6 pb-4 md:grid md:grid-cols-3 md:overflow-visible md:pb-0 snap-x snap-mandatory hide-scrollbar">
       {cards.map((card, idx) => (
         <div
            key={idx}
-           className={`rounded-2xl p-6 flex flex-col justify-between h-[160px] ${
+           className={`rounded-2xl p-6 flex flex-col justify-between h-[160px] min-w-[280px] md:min-w-0 snap-center shrink-0 ${
               card.isPrimary
                 ? 'bg-purple-50'
                 : 'bg-white border border-gray-100 shadow-sm'
@@ -62,6 +82,15 @@ export default function AnalyticsOverview({ revenue = 0, orders = 0, visitors = 
             </div>
         </div>
       ))}
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

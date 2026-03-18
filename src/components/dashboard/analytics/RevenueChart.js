@@ -1,11 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown } from 'lucide-react';
 
 export default function RevenueChart({ data }) {
-  const [period, setPeriod] = useState('Last 8 Days');
-
   const enrichedData = data.map(d => ({
     ...d,
     order: d.value ? d.value * 0.6 + Math.random() * 2000 : 0
@@ -27,10 +24,6 @@ export default function RevenueChart({ data }) {
             </div>
           </div>
         </div>
-        <button className="flex items-center gap-2 bg-purple-50 text-[#8A63D2] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-100 transition-colors shadow-sm">
-          {period}
-          <ChevronDown className="w-4 h-4" />
-        </button>
       </div>
 
       <div className="flex-grow min-h-[250px] w-full mt-4">
