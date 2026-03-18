@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function RevenueChart({ data }) {
@@ -16,7 +16,7 @@ export default function RevenueChart({ data }) {
               <span className="text-xs text-gray-500 font-medium">Revenue</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-4 h-0.5 bg-[#E2D1F9] border border-dashed border-[#E2D1F9]"></span>
+              <span className="w-4 h-0.5 bg-black border border-dashed border-black"></span>
               <span className="text-xs text-gray-500 font-medium">Order</span>
             </div>
           </div>
@@ -70,17 +70,19 @@ export default function RevenueChart({ data }) {
               cursor={{ stroke: '#f0f0f0', strokeWidth: 2, strokeDasharray: "5 5" }}
             />
 
+            {/* Order Line: Black, Dotted */}
             <Area
               yAxisId="right"
               type="monotone"
               dataKey="orderCount"
-              stroke="#E2D1F9"
+              stroke="#000000"
               strokeWidth={2}
-              strokeDasharray="5 5"
+              strokeDasharray="4 4"
               fill="none"
-              activeDot={{ r: 4, fill: '#E2D1F9' }}
+              activeDot={{ r: 4, fill: '#000000' }}
             />
 
+            {/* Revenue Line */}
             <Area 
               yAxisId="left"
               type="monotone" 

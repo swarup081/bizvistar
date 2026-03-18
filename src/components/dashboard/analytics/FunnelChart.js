@@ -5,11 +5,22 @@ export default function FunnelChart({ data }) {
   const maxVal = Math.max(...data.map(d => d.value), 1);
   const themeColors = ['#F5F3FF', '#EDE9FE', '#DDD6FE', '#C4B5FD', '#A78BFA'];
 
+
+  const purchases = data.find(d => d.name === 'Completed Purchases')?.value || 0;
+  const productViews = data.find(d => d.name === 'Product Views')?.value || 1; // Prevent div/0
+  let conversionRate = ((purchases / productViews) * 100).toFixed(1);
+  if (isNaN(conversionRate) || conversionRate === "Infinity") conversionRate = "0.0";
+
   return (
     <div id="funnel-chart" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-10">
-        <h3 className="font-semibold text-gray-900 text-lg">Conversion Rate</h3>
+        <h3 className="font-semibold text-gray-900 text-lg">Conversion Funnel</h3>
+        <span className="text-xs font-semibold bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-100 flex items-center gap-1">
+           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+           {conversionRate}% Conv. Rate
+        </span>
       </div>
+
 
       <div className="flex-grow flex items-end justify-between relative w-full h-48 mt-12 overflow-visible">
         {data.map((step, index) => {

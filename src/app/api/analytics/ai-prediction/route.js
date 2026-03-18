@@ -93,9 +93,24 @@ export async function POST(req) {
 
     const fallbackInsight = {
         recommendations: [
-          { title: "Review Inventory", description: "Check stock levels for your top-selling products.", icon: "Package" },
-          { title: "Launch Promotion", description: "Consider creating a small discount offer to boost conversions.", icon: "Tag" },
-          { title: "Optimize Listings", description: "Update product descriptions to improve SEO and visibility.", icon: "Sparkles" }
+          {
+            title: "Review Inventory",
+            description: "Check stock levels for your top-selling products to avoid stockouts during peak hours.",
+            detailed_insight: "Based on recent sales velocity, maintaining at least a 20% buffer on top-selling items can prevent revenue loss from out-of-stock scenarios. Consider setting up automated low-stock alerts.",
+            icon: "Package"
+          },
+          {
+            title: "Launch Promotion",
+            description: "Consider creating a small discount offer to boost conversions.",
+            detailed_insight: "A targeted 10% discount on slow-moving inventory can help clear shelf space and improve cash flow while rewarding your existing customer base.",
+            icon: "Tag"
+          },
+          {
+            title: "Optimize Listings",
+            description: "Update product descriptions to improve SEO and visibility.",
+            detailed_insight: "Adding high-quality images and specific keywords to your product titles can increase organic search traffic by up to 15%. Focus on top categories first.",
+            icon: "Sparkles"
+          }
         ],
         summary: "Your store is gathering data; review basic metrics to improve performance."
     };
@@ -109,7 +124,7 @@ export async function POST(req) {
 
     // Call OpenAI API
     const prompt = `
-You are an expert e-commerce business analyst. Analyze the following data for an online store over the last 30 days and provide 3 highly actionable, specific recommendations to improve sales, stock management, or customer experience.
+You are an expert e-commerce business analyst. Analyze the following data for an online store over the last 30 days and provide 3 highly actionable, specific, numerical recommendations to improve sales, stock management, or customer experience.
 Output MUST be valid JSON in the exact structure below, without any markdown formatting or extra text.
 
 Data summary:
@@ -122,8 +137,9 @@ Required JSON format:
 {
   "recommendations": [
     {
-      "title": "Short title (e.g., 'Increase Stock')",
-      "description": "Specific action to take.",
+      "title": "Short title (e.g., 'Increase Hug Candle Stock by 20')",
+      "description": "A brief 1-sentence summary of the action.",
+      "detailed_insight": "A longer, 2-3 sentence detailed explanation of *why* this action is recommended and *how* to execute it based on the data provided.",
       "icon": "One of: 'TrendingUp', 'Package', 'Tag', 'AlertTriangle', 'Zap'"
     }
   ],
@@ -150,9 +166,20 @@ Required JSON format:
 
         if (openaiRes.ok) {
             const aiData = await openaiRes.json();
-            const rawContent = aiData.choices[0].message.content;
-            const jsonStr = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
-            parsedInsight = JSON.parse(jsonStr);
+            let rawContent = aiData.choices[0].message.content;
+            let jsonStr = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+            let aiResult = JSON.parse(jsonStr);
+
+            // Ensure fallback properties exist if AI hallucinates schema
+            parsedInsight = {
+               summary: aiResult.summary || fallbackInsight.summary,
+               recommendations: (aiResult.recommendations || []).map((rec, i) => ({
+                   title: rec.title || fallbackInsight.recommendations[i].title,
+                   description: rec.description || fallbackInsight.recommendations[i].description,
+                   detailed_insight: rec.detailed_insight || fallbackInsight.recommendations[i].detailed_insight,
+                   icon: rec.icon || fallbackInsight.recommendations[i].icon
+               }))
+            };
         } else {
             console.error("OpenAI API returned non-ok status:", await openaiRes.text());
         }
@@ -180,7 +207,12 @@ Required JSON format:
     console.error('AI Prediction API Error:', error);
     // Even on total failure, don't crash the frontend card
     return NextResponse.json({ data: {
-        recommendations: [{ title: "System Notice", description: "AI analysis is temporarily unavailable.", icon: "AlertTriangle" }],
+        recommendations: [{
+            title: "System Notice",
+            description: "AI analysis is temporarily unavailable.",
+            detailed_insight: "Our AI systems are currently running maintenance or encountered an error. Please check back later for your personalized business insights.",
+            icon: "AlertTriangle"
+        }],
         summary: "Analysis unavailable."
     } });
   }

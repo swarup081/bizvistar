@@ -163,6 +163,7 @@ export default function AnalyticsPage() {
       });
       const prevVisitors = prevUniqueVisitors.size || (prevEventsList.length > 0 ? Math.ceil(prevEventsList.length / 2) : 0);
 
+
       // 3. Funnel Logic
       const cleanPath = (p) => {
           if (!p) return '/';
@@ -183,17 +184,23 @@ export default function AnalyticsPage() {
 
       currentEvents.forEach(e => {
           const vid = e.location?.visitor_id || e.location?.ip || 'anon';
+          if (vid === 'anon') return;
           const path = cleanPath(e.path);
-          if (path.includes(.shop.) || path.includes(.product.) || e.event_type === .product_view.) funnelSets.product.add(vid);
+          if (path.includes('shop') || path.includes('product') || e.event_type === 'product_view') funnelSets.product.add(vid);
           if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
 
-      const productViews = Math.max(funnelSets.product.size, 0);
-      const addCarts = Math.max(funnelSets.addToCart.size, 0);
-      const checkouts = Math.max(funnelSets.checkout.size, 0);
+      const rawProductViews = funnelSets.product.size;
+      const rawAddCarts = funnelSets.addToCart.size;
+      const rawCheckouts = funnelSets.checkout.size;
       const purchases = totalOrdersCount;
-      const abandonedEstimate = Math.max(0, funnelSets.addToCart.size - totalOrdersCount);
+
+      // Waterfall Enforce: Each step must be at least as big as the next step
+      const checkouts = Math.max(rawCheckouts, purchases);
+      const addCarts = Math.max(rawAddCarts, checkouts);
+      const productViews = Math.max(rawProductViews, addCarts, totalVisitors);
+      const abandonedEstimate = Math.max(0, addCarts - purchases);
 
       const funnelData = [
           { name: 'Product Views', value: productViews, fill: '#F5F3FF' },
@@ -204,6 +211,7 @@ export default function AnalyticsPage() {
       ];
 
       // 4. Grouping for Charts
+
       // 4. Grouping for Charts (Revenue AND Orders)
       const getRevenueAndOrdersByDate = (ordersList) => {
         const map = {};

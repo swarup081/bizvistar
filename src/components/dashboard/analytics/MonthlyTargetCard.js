@@ -48,7 +48,8 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+      e.stopPropagation(); // Stop event bubbling
       const newTarget = parseInt(editValue, 10);
       if (isNaN(newTarget) || newTarget <= 0) {
           setIsEditing(false);
@@ -57,7 +58,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       setLoading(true);
 
       try {
-          // Manual Upsert Logic (Select then Update/Insert) to avoid constraint issues
+          // Manual Upsert Logic
           const { data: existing } = await supabase
               .from('monthly_targets')
               .select('id')
@@ -123,7 +124,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   if (prevRevenue > 0) {
       percentageGrowth = ((currentRevenue - prevRevenue) / prevRevenue) * 100;
   } else if (currentRevenue > 0) {
-      percentageGrowth = 100; // If prev was 0 and we have revenue now
+      percentageGrowth = 100;
   }
 
   return (
@@ -194,31 +195,39 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
           </p>
       </div>
 
-      <div className="flex mt-auto rounded-xl bg-purple-50 overflow-hidden divide-x divide-white">
-          <div className="flex-1 py-3 px-2 flex flex-col items-center relative">
-             <span className="text-xs text-gray-500 font-medium mb-1">Target</span>
+      <div className="flex mt-auto rounded-xl bg-purple-50 overflow-hidden divide-x divide-white h-[60px] relative">
+          <div className="flex-1 py-3 px-2 flex flex-col items-center justify-center relative">
              {isEditing ? (
-                 <div className="flex items-center gap-1 absolute bottom-1.5 px-1 bg-white rounded-md border border-purple-200 shadow-sm z-20">
-                    <input
-                       autoFocus
-                       type="number"
-                       value={editValue}
-                       onChange={(e) => setEditValue(e.target.value)}
-                       className="w-16 text-xs font-bold text-gray-900 bg-transparent outline-none p-1 text-center"
-                    />
-                    <button onClick={handleSave} disabled={loading} className="text-green-500 hover:text-green-700 p-0.5">
-                       <Check className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => setIsEditing(false)} className="text-red-500 hover:text-red-700 p-0.5">
-                       <X className="w-3.5 h-3.5" />
-                    </button>
+                 <div className="absolute inset-0 bg-white z-20 flex flex-col justify-center items-center px-1">
+                    <div className="flex items-center gap-1 w-full justify-center mt-1">
+                       <input
+                          autoFocus
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => {
+                             if (e.key === 'Enter') handleSave(e);
+                             if (e.key === 'Escape') setIsEditing(false);
+                          }}
+                          className="w-16 text-xs font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded outline-none p-1 text-center"
+                       />
+                       <button type="button" onClick={handleSave} disabled={loading} className="text-green-500 hover:text-green-700 bg-green-50 p-1.5 rounded-md transition-colors cursor-pointer flex-shrink-0 z-30">
+                          <Check className="w-3.5 h-3.5 pointer-events-none" />
+                       </button>
+                       <button type="button" onClick={(e) => { e.stopPropagation(); setIsEditing(false); }} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md transition-colors cursor-pointer flex-shrink-0 z-30">
+                          <X className="w-3.5 h-3.5 pointer-events-none" />
+                       </button>
+                    </div>
                  </div>
              ) : (
-                 <span className="text-sm font-bold text-gray-900">₹{target.toLocaleString()}</span>
+                 <>
+                    <span className="text-[11px] text-gray-500 font-medium mb-1 uppercase tracking-wide">Target</span>
+                    <span className="text-sm font-bold text-gray-900">₹{target.toLocaleString()}</span>
+                 </>
              )}
           </div>
-          <div className="flex-1 py-3 px-2 flex flex-col items-center">
-             <span className="text-xs text-gray-500 font-medium mb-1">Revenue</span>
+          <div className="flex-1 py-3 px-2 flex flex-col items-center justify-center">
+             <span className="text-[11px] text-gray-500 font-medium mb-1 uppercase tracking-wide">Revenue</span>
              <span className="text-sm font-bold text-gray-900">₹{currentRevenue.toLocaleString()}</span>
           </div>
       </div>

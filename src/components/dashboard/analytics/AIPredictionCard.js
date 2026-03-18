@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Tag, TrendingUp, Package, AlertTriangle, Zap, Sparkles } from 'lucide-react';
+import { Tag, TrendingUp, Package, AlertTriangle, Zap, Sparkles, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const iconMap = {
   Tag: Tag,
@@ -14,6 +15,7 @@ export default function AIPredictionCard({ websiteId }) {
   const [loading, setLoading] = useState(true);
   const [insight, setInsight] = useState(null);
   const [error, setError] = useState(null);
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
   useEffect(() => {
     async function fetchInsights() {
@@ -51,26 +53,21 @@ export default function AIPredictionCard({ websiteId }) {
           <Sparkles className="w-5 h-5 text-[#8A63D2]" />
           AI Insights
         </h3>
-        <span className="text-xs bg-purple-50 text-[#8A63D2] px-2 py-1 rounded-full font-medium">Monthly AI</span>
+        <span className="text-xs bg-purple-50 text-[#8A63D2] px-2 py-1 rounded-full font-medium border border-purple-100">Monthly AI</span>
       </div>
 
       {loading ? (
-        <div className="flex-grow flex flex-col gap-4 w-full h-full min-h-[150px] animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="flex items-start gap-3 w-full">
-             <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0"></div>
-             <div className="flex-1 space-y-2">
-                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                 <div className="h-3 bg-gray-200 rounded w-full"></div>
+        <div className="flex-grow flex flex-col gap-5 w-full h-full min-h-[250px] animate-pulse">
+          <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-2"></div>
+          {[1, 2, 3].map((i) => (
+             <div key={i} className="flex items-start gap-3 w-full bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0 mt-0.5"></div>
+                <div className="flex-1 space-y-2.5 py-1">
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                </div>
              </div>
-          </div>
-          <div className="flex items-start gap-3 w-full">
-             <div className="w-8 h-8 bg-gray-200 rounded-lg shrink-0"></div>
-             <div className="flex-1 space-y-2">
-                 <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                 <div className="h-3 bg-gray-200 rounded w-full"></div>
-             </div>
-          </div>
+          ))}
         </div>
       ) : error || !insight ? (
         <div className="flex-grow flex items-center justify-center text-sm text-gray-400 min-h-[150px]">
@@ -78,19 +75,46 @@ export default function AIPredictionCard({ websiteId }) {
         </div>
       ) : (
         <div className="flex flex-col gap-4 flex-grow w-full">
-          <p className="text-sm text-gray-600 mb-2 leading-relaxed">{insight.summary}</p>
+          <p className="text-sm text-gray-600 mb-2 leading-relaxed font-medium">{insight.summary}</p>
           <div className="flex flex-col gap-3">
             {insight.recommendations?.map((rec, idx) => {
               const IconComponent = iconMap[rec.icon] || Sparkles;
+              const isExpanded = expandedIndex === idx;
+
               return (
-                <div key={idx} className="flex items-start gap-3 bg-purple-50/50 p-3 rounded-xl border border-purple-50/80 hover:bg-purple-50 transition-colors w-full">
-                  <div className="mt-0.5 p-1.5 bg-white rounded-lg shadow-sm">
-                    <IconComponent className="w-4 h-4 text-[#8A63D2]" />
+                <div
+                   key={idx}
+                   onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                   className="flex flex-col bg-purple-50/40 p-3 rounded-xl border border-purple-50 hover:bg-purple-50/80 hover:border-purple-100 transition-all cursor-pointer w-full group overflow-hidden"
+                >
+                  <div className="flex items-start gap-3 w-full">
+                    <div className="mt-0.5 p-1.5 bg-white rounded-lg shadow-sm border border-gray-50 flex-shrink-0 group-hover:scale-105 transition-transform">
+                      <IconComponent className="w-4 h-4 text-[#8A63D2]" />
+                    </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h4 className="text-sm font-semibold text-gray-800 break-words leading-snug">{rec.title}</h4>
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{rec.description}</p>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-1 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-gray-800 truncate">{rec.title}</h4>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed overflow-hidden text-ellipsis line-clamp-2">{rec.description}</p>
-                  </div>
+
+                  <AnimatePresence>
+                     {isExpanded && (
+                        <motion.div
+                           initial={{ height: 0, opacity: 0 }}
+                           animate={{ height: 'auto', opacity: 1 }}
+                           exit={{ height: 0, opacity: 0 }}
+                           transition={{ duration: 0.2 }}
+                           className="overflow-hidden"
+                        >
+                           <div className="mt-3 ml-12 pr-2 pt-3 border-t border-purple-100/50">
+                              <p className="text-xs text-gray-600 leading-relaxed font-medium italic">
+                                 "{rec.detailed_insight || rec.description}"
+                              </p>
+                           </div>
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
                 </div>
               );
             })}
