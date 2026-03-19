@@ -15,10 +15,7 @@ import FlavornestLayout from '@/app/templates/flavornest/layout';
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
 
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co', process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder');
 
 // CHANGED: The function signature is now (props)
 export default async function LiveProductPage(props) {
