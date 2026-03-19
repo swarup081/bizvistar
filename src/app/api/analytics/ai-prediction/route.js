@@ -178,6 +178,7 @@ Required JSON format:
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
+            response_format: { type: "json_object" },
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
             max_tokens: 500,
@@ -187,19 +188,24 @@ Required JSON format:
         if (openaiRes.ok) {
             const aiData = await openaiRes.json();
             let rawContent = aiData.choices[0].message.content;
-            let jsonStr = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
-            let aiResult = JSON.parse(jsonStr);
 
-            // Ensure fallback properties exist if AI hallucinates schema
-            parsedInsight = {
-               summary: aiResult.summary || fallbackInsight.summary,
-               recommendations: (aiResult.recommendations || []).map((rec, i) => ({
-                   title: rec.title || fallbackInsight.recommendations[i].title,
-                   description: rec.description || fallbackInsight.recommendations[i].description,
-                   detailed_insight: rec.detailed_insight || fallbackInsight.recommendations[i].detailed_insight,
-                   icon: rec.icon || fallbackInsight.recommendations[i].icon
-               }))
-            };
+            let jsonStr = rawContent.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            let aiResult;
+            try {
+                aiResult = JSON.parse(jsonStr);
+                parsedInsight = {
+                   summary: aiResult.summary || fallbackInsight.summary,
+                   recommendations: (aiResult.recommendations || []).map((rec, i) => ({
+                       title: rec.title || fallbackInsight.recommendations[i]?.title || "Review Metric",
+                       description: rec.description || fallbackInsight.recommendations[i]?.description || "Check your store stats.",
+                       detailed_insight: rec.detailed_insight || fallbackInsight.recommendations[i]?.detailed_insight || "Maintain good inventory buffers.",
+                       icon: rec.icon || fallbackInsight.recommendations[i]?.icon || "Sparkles"
+                   }))
+                };
+            } catch (parseError) {
+                console.error("OpenAI JSON Parse Error:", parseError, rawContent);
+                parsedInsight = fallbackInsight;
+            }
         } else {
             console.error("OpenAI API returned non-ok status:", await openaiRes.text());
             parsedInsight = fallbackInsight;

@@ -220,19 +220,25 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
                           autoFocus
                           type="number"
                           value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
+                          onChange={(e) => setEditValue(e.target.value)} disabled={loading}
                           onKeyDown={(e) => {
                              if (e.key === 'Enter') handleSave(e);
                              if (e.key === 'Escape') setIsEditing(false);
                           }}
                           className="w-16 text-xs font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded outline-none p-1 text-center"
                        />
+
                        <button type="button" onMouseDown={(e) => { e.preventDefault(); handleSave(e); }} disabled={loading} className="text-green-500 hover:text-green-700 bg-green-50 p-1.5 rounded-md transition-colors cursor-pointer flex-shrink-0 z-30">
-                          <Check className="w-3.5 h-3.5 pointer-events-none" />
+                          {loading ? (
+                             <div className="w-3.5 h-3.5 border-2 border-green-200 border-t-green-500 rounded-full animate-spin pointer-events-none" />
+                          ) : (
+                             <Check className="w-3.5 h-3.5 pointer-events-none" />
+                          )}
                        </button>
-                       <button type="button" onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); }} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md transition-colors cursor-pointer flex-shrink-0 z-30">
+                       <button type="button" onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); }} disabled={loading} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-md transition-colors cursor-pointer flex-shrink-0 z-30">
                           <X className="w-3.5 h-3.5 pointer-events-none" />
                        </button>
+
                     </div>
                  </div>
              ) : (
