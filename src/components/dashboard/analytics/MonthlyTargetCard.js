@@ -195,7 +195,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
         </ResponsiveContainer>
         <div className="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center pointer-events-none z-10">
            <span className="text-2xl font-bold text-gray-900">{percentage.toFixed(0)}%</span>
-           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${percentageGrowth >= 0 ? 'text-[#4CAF50] bg-green-50' : 'text-red-500 bg-red-50'}`}>
+           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full -mb-2 ${percentageGrowth >= 0 ? 'text-[#4CAF50] ' : 'text-red-500 bg-red-50'}`}>
                {percentageGrowth >= 0 ? '+' : ''}{percentageGrowth.toFixed(2)}% <span className="text-gray-500 font-medium">from last month</span>
            </span>
         </div>
@@ -203,10 +203,29 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
 
       
       <div className="text-center mt-auto mb-6">
-          <p className="text-sm font-bold text-gray-800">Great Progress! 🎉</p>
+          <p className="text-sm font-bold text-gray-800">
+              {percentage < 40 && "Keep Pushing!"}
+              {percentage >= 40 && percentage < 75 && "Good Progress!"}
+              {percentage >= 75 && percentage < 100 && "Almost There!"}
+              {percentage >= 100 && "Target Achieved!"}
+          </p>
+
           <p className="text-xs text-gray-500 mt-1.5 leading-relaxed px-2">
-              Our achievement <span className="text-[#8A63D2] font-semibold">{growthText}</span>; 
-              let's reach 100% next month.
+              {percentage < 40 && (
+                  <>You're just getting started — consistency is key. Let's aim higher next month </>
+              )}
+
+              {percentage >= 40 && percentage < 75 && (
+                  <>You're on the right track. <span className="text-[#8A63D2] font-semibold">{growthText}</span> — keep building momentum.</>
+              )}
+
+              {percentage >= 75 && percentage < 100 && (
+                  <>So close! <span className="text-[#8A63D2] font-semibold">{growthText}</span>. A small push and you'll hit 100% next month.</>
+              )}
+
+              {percentage >= 100 && (
+                  <>Amazing work! You exceeded your target Time to set an even bigger goal next month.</>
+              )}
           </p>
       </div>
 
