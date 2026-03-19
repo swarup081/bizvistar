@@ -87,7 +87,7 @@ export default function RecentSalesTable({ orders = [], isSearching = false }) {
                             <button
                                 key={key}
                                 onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-brand-600 font-medium' : 'text-gray-700'}`}
                             >
                                 {labels[key]}
                             </button>
@@ -129,7 +129,7 @@ export default function RecentSalesTable({ orders = [], isSearching = false }) {
                 <td className="py-5 text-right align-middle">
                    <button 
                      onClick={() => handleManage(row.id)}
-                     className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
+                     className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-brand-600 hover:bg-brand-500 hover:text-white transition-colors"
                    >
                      Manage
                    </button>
@@ -148,7 +148,7 @@ export default function RecentSalesTable({ orders = [], isSearching = false }) {
 
       {/* View All Button */}
       <div className="mt-4 pt-2 border-t border-gray-50 text-center">
-          <Link href="/dashboard/orders" className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-700 hover:underline">
+          <Link href="/dashboard/orders" className="inline-flex items-center gap-2 text-sm font-bold text-brand-600 hover:text-brand-700 hover:underline">
               View All Orders
               <ArrowRight className="h-4 w-4" />
           </Link>

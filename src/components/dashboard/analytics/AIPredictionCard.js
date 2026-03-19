@@ -52,7 +52,7 @@ export default function AIPredictionCard({ websiteId }) {
         <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
           AI Insights
         </h3>
-        <span className="text-xs bg-purple-50 text-[#8A63D2] px-2 py-1 rounded-full font-medium border border-purple-100">Monthly AI</span>
+        <span className="text-xs bg-brand-50 text-[#8A63D2] px-2 py-1 rounded-full font-medium border border-brand-100">Monthly AI</span>
       </div>
 
       {loading ? (
@@ -84,7 +84,7 @@ export default function AIPredictionCard({ websiteId }) {
                 <div 
                    key={idx} 
                    onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                   className="flex flex-col bg-purple-50/40 p-3 rounded-xl border border-purple-50 hover:bg-purple-50/80 hover:border-purple-100 transition-all cursor-pointer w-full group overflow-hidden"
+                   className="flex flex-col bg-brand-50/40 p-3 rounded-xl border border-brand-50 hover:bg-brand-50/80 hover:border-brand-100 transition-all cursor-pointer w-full group overflow-hidden"
                 >
                   <div className="flex items-start gap-3 w-full">
                     <div className="mt-0.5 p-1.5 bg-white rounded-lg shadow-sm border border-gray-50 flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -106,7 +106,7 @@ export default function AIPredictionCard({ websiteId }) {
                            transition={{ duration: 0.2 }}
                            className="overflow-hidden"
                         >
-                           <div className="mt-3 ml-12 pr-2 pt-3 border-t border-purple-100/50">
+                           <div className="mt-3 ml-12 pr-2 pt-3 border-t border-brand-100/50">
                               <p className="text-xs text-gray-600 leading-relaxed font-medium italic">
                                  "{rec.detailed_insight || rec.description}"
                               </p>

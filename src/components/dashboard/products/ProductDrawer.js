@@ -67,7 +67,7 @@ export default function ProductDrawer({ product, isOpen, onClose }) {
                  <div className={`text-xs font-medium ${
                    product.stockStatus === 'Out Of Stock' ? 'text-red-600' :
                    product.stockStatus === 'Low Stock' ? 'text-orange-600' : 
-                   product.stockStatus === 'Unlimited' ? 'text-purple-600' : 'text-green-600'
+                   product.stockStatus === 'Unlimited' ? 'text-brand-600' : 'text-green-600'
                  }`}>
                    {product.stockStatus}
                  </div>

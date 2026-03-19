@@ -109,7 +109,7 @@ function WebsiteDashboardContent() {
   if (loading) {
     return (
         <div className="flex items-center justify-center h-full min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
         </div>
     );
   }
@@ -118,7 +118,7 @@ function WebsiteDashboardContent() {
     return (
         <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
             <h2 className="text-xl font-semibold text-gray-800">{error}</h2>
-            <Link href="/templates" className="px-6 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition">
+            <Link href="/templates" className="px-6 py-2 bg-brand-600 text-white rounded-full hover:bg-brand-700 transition">
                 Create a Website
             </Link>
         </div>
@@ -140,7 +140,7 @@ export default function WebsiteDashboardPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
       </div>
     }>
       <WebsiteDashboardContent />

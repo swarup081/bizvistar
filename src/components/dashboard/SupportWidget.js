@@ -183,7 +183,7 @@ export default function SupportWidget() {
             {msg.action && (
                 <button
                     onClick={() => handleActionClick(msg.action)}
-                    className="flex items-center gap-2 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-md transition-colors w-fit border border-purple-100 mt-2"
+                    className="flex items-center gap-2 text-xs font-medium text-brand-600 bg-brand-50 hover:bg-brand-100 px-3 py-2 rounded-md transition-colors w-fit border border-brand-100 mt-2"
                 >
                     {msg.action.url?.includes('http') ? <ExternalLink size={14} /> : <LogIn size={14} />}
                     {msg.action.label}

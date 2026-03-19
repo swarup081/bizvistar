@@ -16,7 +16,7 @@ function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" />
                 <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 z-[70] border border-white/20 focus:outline-none animate-in fade-in zoom-in duration-200">
                      <Dialog.Title className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                         {type === 'danger' ? <AlertCircle className="text-red-500" size={20}/> : <CheckCircle className="text-purple-600" size={20}/>}
+                         {type === 'danger' ? <AlertCircle className="text-red-500" size={20}/> : <CheckCircle className="text-brand-600" size={20}/>}
                          {title}
                      </Dialog.Title>
                      <Dialog.Description className="text-sm text-gray-600 mb-6 leading-relaxed">
@@ -425,7 +425,7 @@ We will keep you updated!`;
                             <button 
                                 onClick={() => triggerStatusUpdate('delivered')}
                                 disabled={isUpdating}
-                                className="flex items-center justify-center gap-2 bg-purple-50 text-purple-700 border border-purple-200 py-2.5 rounded-xl font-bold text-xs hover:bg-purple-100 transition-colors"
+                                className="flex items-center justify-center gap-2 bg-brand-50 text-brand-700 border border-brand-200 py-2.5 rounded-xl font-bold text-xs hover:bg-brand-100 transition-colors"
                             >
                                 <Package size={14} /> Mark Delivered
                             </button>

@@ -17,7 +17,7 @@ export default function LandingPage() {
         <section className="relative pt-20 pb-32 overflow-hidden bg-[#Fdfdfd]">
            {/* Background Decorations */}
            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-              <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-100/40 rounded-full blur-[120px]"></div>
+              <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-brand-100/40 rounded-full blur-[120px]"></div>
               <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-blue-100/40 rounded-full blur-[100px]"></div>
            </div>
 
@@ -66,7 +66,7 @@ export default function LandingPage() {
               <div className="relative mx-auto max-w-[1400px] perspective-1000">
                  
                  {/* Glow effect behind editor */}
-                 <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-3xl rounded-[3rem] -z-10"></div>
+                 <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/20 to-brand-400/20 blur-3xl rounded-[3rem] -z-10"></div>
                  
                  {/* The Actual Real Editor Demo Component */}
                  <LandingEditor />

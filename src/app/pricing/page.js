@@ -432,7 +432,7 @@ function PricingContent() {
           {/* h2 is removed and now inside FaqSection */}
 
 
-          <FaqSection />
+          <FaqSection pageType="pricing" />
         </div>
 
       </div>
@@ -508,7 +508,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
               className={cn(
                 'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
                 plan.isRecommended
-                  ? 'bg-purple-600 text-white hover:bg-[purple-700] shadow-md hover:shadow-lg'
+                  ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-md hover:shadow-lg'
                   : 'bg-gray-900 text-white hover:bg-gray-800'
               )}
             >
@@ -543,7 +543,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
           <ul className="space-y-4">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start text-left">
-                <Check className={cn("w-6 h-6 mt-0.5 mr-3 flex-shrink-0", plan.isRecommended ? "text-purple-600" : "text-green-500")} strokeWidth={2.5} />
+                <Check className={cn("w-6 h-6 mt-0.5 mr-3 flex-shrink-0", plan.isRecommended ? "text-brand-600" : "text-green-500")} strokeWidth={2.5} />
                 <span className="text-gray-700 font-medium text-[15px] leading-snug">{feature}</span>
               </li>
             ))}
@@ -583,7 +583,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                     price: '299'
                 }
             }}>
-              <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
+              <button className="px-10 py-2 text-base font-semibold text-brand-700 rounded-full border-2 border-brand-700 hover:bg-brand-50 transition-colors mt-4">
                 Select
               </button>
             </Link>
@@ -593,7 +593,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
           <div className="p-6 text-center border-l border-gray-200 relative bg-white shadow-lg z-10 flex flex-col justify-between h-full">
             <div>
               <div className="absolute top-0 left-0 right-0 flex justify-center">
-                <div className="inline-block bg-purple-600 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
+                <div className="inline-block bg-brand-600 text-white text-sm font-semibold px-6 py-1 rounded-b-lg">
                   Recommended
                 </div>
               </div>
@@ -612,7 +612,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                     price: '799'
                 }
             }}>
-              <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-purple-600 hover:bg-purple-700 transition-colors mt-4">
+              <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-brand-600 hover:bg-brand-700 transition-colors mt-4">
                 Select
               </button>
             </Link>
@@ -636,7 +636,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                     price: '1499'
                 }
             }}>
-              <button className="px-10 py-2 text-base font-semibold text-purple-700 rounded-full border-2 border-purple-700 hover:bg-purple-50 transition-colors mt-4">
+              <button className="px-10 py-2 text-base font-semibold text-brand-700 rounded-full border-2 border-brand-700 hover:bg-brand-50 transition-colors mt-4">
                 Select
               </button>
             </Link>
@@ -679,7 +679,7 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
     const renderCell = (value, isProCol) => { 
         if (value === true) return <CheckMark />;
         if (value === false) return <Dash />;
-        return <span className={cn("font-semibold", isProCol ? "text-purple-700" : "text-gray-900")}>{value}</span>;
+        return <span className={cn("font-semibold", isProCol ? "text-brand-700" : "text-gray-900")}>{value}</span>;
     };
 
     const isObject = typeof feature === 'object' && feature !== null;
@@ -694,7 +694,7 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
               {featureInfo && <InfoTooltip info={featureInfo} />}
             </div>
             <div className="p-5 flex items-center justify-center border-l border-gray-200">{renderCell(starter, false)}</div>
-            <div className="p-5 flex items-center justify-center border-l border-gray-200 bg-purple-50/30">{renderCell(pro, true)}</div>
+            <div className="p-5 flex items-center justify-center border-l border-gray-200 bg-brand-50/30">{renderCell(pro, true)}</div>
             <div className="p-5 flex items-center justify-center border-l border-gray-200">{renderCell(growth, false)}</div>
         </div>
     );
@@ -716,9 +716,9 @@ const ComparisonTable = () => (
                   <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Local Agencies<br/>
                   <span className="text-sm font-normal text-gray-500">(Freelancers)</span>
                   </th>
-                  <th className="text-center text-lg font-bold text-purple-700 p-6 border-l border-gray-200 bg-purple-50">
+                  <th className="text-center text-lg font-bold text-brand-700 p-6 border-l border-gray-200 bg-brand-50">
                     BizVistar<br />
-                    <span className="text-sm font-normal text-purple-600">(Your Partner)</span>
+                    <span className="text-sm font-normal text-brand-600">(Your Partner)</span>
                   </th>
                 </tr>
               </thead>
@@ -732,7 +732,7 @@ const ComparisonTable = () => (
                   <td className="text-center p-6 text-gray-600 border-l border-gray-100">
                     <strong>They Do 100%</strong><br />A full-service, hands-off experience.
                   </td>
-                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30">
+                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-brand-50/30">
                     <strong>We Do It Together</strong><br />Our AI builds the site in 60s. You do the fun edits.
                   </td>
                 </tr>
@@ -740,25 +740,25 @@ const ComparisonTable = () => (
             <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br />They give you a tool, but you do all the work.</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br />They create and post for you.</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>We Do It (on Pro+)</strong><br />Our plan includes "done-for-you" posts.</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-brand-50/30"><strong>We Do It (on Pro+)</strong><br />Our plan includes "done-for-you" posts.</td>
           </tr>
           <tr>
             <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br />You wait in a queue to talk to a stranger.</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br />Great support for a very high price.</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>A WhatsApp Partner</strong><br />Priority support from a local expert.</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-brand-50/30"><strong>A WhatsApp Partner</strong><br />Priority support from a local expert.</td>
           </tr>
           <tr>
             <td className="font-semibold p-6 text-gray-700">The Price</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br />(₹800 - ₹2,300/mo)</td>
             <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br />(₹10,000 - ₹20,000/mo)</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-purple-50/30"><strong>Simple, Affordable Price</strong><br />(Just ₹26 a day!)</td>
+            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-brand-50/30"><strong>Simple, Affordable Price</strong><br />(Just ₹26 a day!)</td>
           </tr>
           <tr>
             <td className="font-bold p-6 text-gray-900">The Verdict</td>
             <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
             <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
-            <td className="text-center p-6 text-purple-700 font-bold border-l border-gray-100 bg-purple-50/50">Cost-Effective, High Service</td>
+            <td className="text-center p-6 text-brand-700 font-bold border-l border-gray-100 bg-brand-50/50">Cost-Effective, High Service</td>
           </tr>
         </tbody>
       </table>
@@ -805,57 +805,109 @@ const FaqItem = ({ q, a }) => {
   );
 };
 
-const FaqSection = () => {
-  // NEW faqs based on screenshot
-  const faqs = [
-    {
-      q: 'What is a Premium plan?',
-      a: 'A Premium plan is a subscription that gives you access to all of BizVistar\'s advanced features, including custom domain connection, removal of BizVistar branding, increased storage, and access to our "Done-for-You" services.'
-    },
-    {
-      q: 'Can I get a refund for a Premium plan?',
-      a: 'Yes, we offer a 14-day money-back guarantee on all our annual Premium plans. If you are not satisfied for any reason, you can cancel within 14 days of purchase and receive a full refund, no questions asked.'
-    },
-    {
-      q: 'How do I get my free domain?',
-      a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistar dashboard.'
-    },
-    {
-      q: 'Why do I need a custom domain?',
-      a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistar.in).'
-    },
-    {
-      q: 'How can I get my own personalized email address?',
-      a: 'Once you have a custom domain, you can set up a personalized email address (e.g., info@yourbusiness.com) through our integration with Google Workspace or other third-party email providers.'
-    },
-    {
-      q: 'Where can I find my billing information?',
-      a: 'You can find all your billing information, including invoices and subscription details, in the "Billing & Payments" section of your account dashboard after you sign in.'
-    },
-    {
-      q: 'What online payments are accepted?',
-      a: 'We accept all major credit cards (Visa, MasterCard, American Express) as well as UPI, Net Banking, and other popular payment methods for our Indian customers.'
-    },
-    {
-      q: 'How do I know if the Enterprise plan is right for my business?',
-      a: 'Our Enterprise plan is designed for large-scale businesses with specific needs for custom features, dedicated support, and advanced security. If you have multiple locations or require custom integrations, our Enterprise team can help. Contact us for a consultation.'
-    },
-    {
-      q: 'How do I contact the Enterprise team?',
-      a: 'You can contact our Enterprise team by filling out the contact form on our "Enterprise" page or by reaching out to your dedicated account manager if you are an existing customer.'
-    },
-    {
-      q: 'How does BizVistar handle security assessments/questionnaires?',
-      // Pass JSX to support links
-      a: (
-        <p>
-          For information on how BizVistar protects your data, compliance, certifications, GDPR and more, check out our{' '}
-          <a href="#" className="text-blue-600 hover:underline">white paper</a>. 
-          For security questions specific to your business, contact the Enterprise team using the form above.
-        </p>
-      )
-    },
-  ];
+const FaqSection = ({ pageType = 'default' }) => {
+  const allFaqs = {
+    checkout: [
+      {
+        q: 'Is my payment information secure?',
+        a: 'Yes, all payments are processed securely. We use industry-standard encryption to protect your personal and payment information.'
+      },
+      {
+        q: 'What payment methods do you accept?',
+        a: 'We accept major credit cards, debit cards, UPI, and net banking depending on your location and the store\'s preferences.'
+      },
+      {
+        q: 'When will my order be processed?',
+        a: 'Orders are typically processed within 24-48 hours. You will receive a confirmation email once your order is confirmed and another when it ships.'
+      },
+      {
+        q: 'How can I track my order?',
+        a: 'Once your order is shipped, you will receive a tracking link via email to monitor its delivery status.'
+      },
+      {
+        q: 'Can I change my shipping address after placing an order?',
+        a: 'If you need to change your shipping address, please contact the store owner immediately. Address changes are only possible before the order has been dispatched.'
+      }
+    ],
+    pricing: [
+      {
+        q: 'What is a Premium plan?',
+        a: 'A Premium plan is a subscription that gives you access to all of BizVistar\'s advanced features, including custom domain connection, removal of BizVistar branding, increased storage, and access to our "Done-for-You" services.'
+      },
+      {
+        q: 'Can I get a refund for a Premium plan?',
+        a: 'Yes, we offer a 14-day money-back guarantee on all our annual Premium plans. If you are not satisfied for any reason, you can cancel within 14 days of purchase and receive a full refund, no questions asked.'
+      },
+      {
+        q: 'How do I get my free domain?',
+        a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistar dashboard.'
+      },
+      {
+        q: 'Why do I need a custom domain?',
+        a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistar.in).'
+      },
+      {
+        q: 'How can I get my own personalized email address?',
+        a: 'Once you have a custom domain, you can set up a personalized email address (e.g., info@yourbusiness.com) through our integration with Google Workspace or other third-party email providers.'
+      },
+      {
+        q: 'Where can I find my billing information?',
+        a: 'You can find all your billing information, including invoices and subscription details, in the "Billing & Payments" section of your account dashboard after you sign in.'
+      },
+      {
+        q: 'What online payments are accepted?',
+        a: 'We accept all major credit cards (Visa, MasterCard, American Express) as well as UPI, Net Banking, and other popular payment methods for our Indian customers.'
+      },
+      {
+        q: 'How do I know if the Enterprise plan is right for my business?',
+        a: 'Our Enterprise plan is designed for large-scale businesses with specific needs for custom features, dedicated support, and advanced security. If you have multiple locations or require custom integrations, our Enterprise team can help. Contact us for a consultation.'
+      },
+      {
+        q: 'How do I contact the Enterprise team?',
+        a: 'You can contact our Enterprise team by filling out the contact form on our "Enterprise" page or by reaching out to your dedicated account manager if you are an existing customer.'
+      },
+      {
+        q: 'How does BizVistar handle security assessments/questionnaires?',
+        // Pass JSX to support links
+        a: (
+          <p>
+            For information on how BizVistar protects your data, compliance, certifications, GDPR and more, check out our{' '}
+            <a href="#" className="text-blue-600 hover:underline">white paper</a>.
+            For security questions specific to your business, contact the Enterprise team using the form above.
+          </p>
+        )
+      },
+    ],
+    default: [
+      {
+        q: 'What is BizVistar?',
+        a: 'BizVistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
+      },
+      {
+        q: 'How do I get started?',
+        a: 'Simply sign up, choose a template that fits your business, customize it in our easy-to-use editor, and launch your site!'
+      },
+      {
+        q: 'Do I need technical skills to use BizVistar?',
+        a: 'Not at all! Our intuitive drag-and-drop editor and pre-designed templates make it easy for anyone to build a professional website without writing a single line of code.'
+      }
+    ]
+  };
+
+  const faqs = allFaqs[pageType] || allFaqs['default'];
+
+  // Handle opening the chatbot
+  const handleHelpCenterClick = (e) => {
+    e.preventDefault();
+    // Dispatch a custom event that the SupportWidget can listen to, or simply focus it if it exists
+    const chatButton = document.querySelector('button[aria-label="Open Chat"]') || document.querySelector('.bg-gradient-to-r.from-\\[\\#8A63D2\\]');
+    if (chatButton) {
+        chatButton.click();
+    } else {
+        // Fallback or custom event
+        window.dispatchEvent(new CustomEvent('open-support-widget'));
+    }
+  };
 
   return (
     // NEW 2-column layout
@@ -867,9 +919,18 @@ const FaqSection = () => {
         </h2>
         <p className="text-lg text-gray-600">
           Haven't found what you're looking for? Try the{' '}
-          <a href="#" className="text-blue-600 hover:underline">BizVistar Help Center</a>{' '}
+          <button onClick={handleHelpCenterClick} className="text-brand-600 hover:underline font-medium text-left">
+            BizVistar Help Center
+          </button>{' '}
           or{' '}
-          <a href="#" className="text-blue-600 hover:underline">contact us</a>.
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US || '919013063854'}?text=Hi!%20I%20have%20a%20question%20from%20the%20FAQ%20page.`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-600 hover:underline font-medium"
+          >
+            contact us
+          </a>.
         </p>
       </div>
       

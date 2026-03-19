@@ -42,51 +42,78 @@ const FaqItem = ({ q, a }) => {
   );
 };
 
-export default function FaqSection() {
-  const faqs = [
-    {
-      q: 'What is a Premium plan?',
-      a: 'A Premium plan is a subscription that gives you access to all of BizVistar\'s advanced features, including custom domain connection, removal of BizVistar branding, increased storage, and access to our "Done-for-You" services.'
-    },
-    {
-      q: 'How do I get my free domain?',
-      a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistar dashboard.'
-    },
-    {
-      q: 'Why do I need a custom domain?',
-      a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistar.in).'
-    },
-    {
-      q: 'How can I get my own personalized email address?',
-      a: 'Once you have a custom domain, you can set up a personalized email address (e.g., info@yourbusiness.com) through our integration with Google Workspace or other third-party email providers.'
-    },
-    {
-      q: 'Where can I find my billing information?',
-      a: 'You can find all your billing information, including invoices and subscription details, in the "Billing & Payments" section of your account dashboard after you sign in.'
-    },
-    {
-      q: 'What online payments are accepted?',
-      a: 'We accept all major credit cards (Visa, MasterCard, American Express) as well as UPI, Net Banking, and other popular payment methods for our Indian customers.'
-    },
-    {
-      q: 'How do I know if the Enterprise plan is right for my business?',
-      a: 'Our Enterprise plan is designed for large-scale businesses with specific needs for custom features, dedicated support, and advanced security. If you have multiple locations or require custom integrations, our Enterprise team can help. Contact us for a consultation.'
-    },
-    {
-      q: 'How do I contact the Enterprise team?',
-      a: 'You can contact our Enterprise team by filling out the contact form on our "Enterprise" page or by reaching out to your dedicated account manager if you are an existing customer.'
-    },
-    {
-      q: 'How does BizVistar handle security assessments/questionnaires?',
-      a: (
-        <p>
-          For information on how BizVistar protects your data, compliance, certifications, GDPR and more, check out our{' '}
-          <a href="#" className="text-blue-600 hover:underline">white paper</a>. 
-          For security questions specific to your business, contact the Enterprise team using the form above.
-        </p>
-      )
-    },
-  ];
+export default function FaqSection({ pageType = 'default' }) {
+  const allFaqs = {
+    checkout: [
+      {
+        q: 'Is my payment information secure?',
+        a: 'Yes, all payments are processed securely. We use industry-standard encryption to protect your personal and payment information.'
+      },
+      {
+        q: 'What payment methods do you accept?',
+        a: 'We accept major credit cards, debit cards, UPI, and net banking depending on your location and the store\'s preferences.'
+      },
+      {
+        q: 'When will my order be processed?',
+        a: 'Orders are typically processed within 24-48 hours. You will receive a confirmation email once your order is confirmed and another when it ships.'
+      },
+      {
+        q: 'How can I track my order?',
+        a: 'Once your order is shipped, you will receive a tracking link via email to monitor its delivery status.'
+      },
+      {
+        q: 'Can I change my shipping address after placing an order?',
+        a: 'If you need to change your shipping address, please contact the store owner immediately. Address changes are only possible before the order has been dispatched.'
+      }
+    ],
+    pricing: [
+      {
+        q: 'Can I cancel my subscription at any time?',
+        a: 'Yes, you can cancel your subscription at any time from your dashboard. Your plan will remain active until the end of the current billing cycle.'
+      },
+      {
+        q: 'Do you offer a free trial?',
+        a: 'We offer a free tier with basic features so you can try out our platform before committing to a paid plan.'
+      },
+      {
+        q: 'What happens if I exceed my plan limits?',
+        a: 'If you exceed your plan limits, you will be notified and given the option to upgrade to a higher tier. Your store will remain active, but certain features may be restricted until you upgrade.'
+      },
+      {
+        q: 'Are there any hidden fees?',
+        a: 'No, we believe in transparent pricing. The price you see is the price you pay, plus any applicable taxes. We do not charge commission on your sales.'
+      }
+    ],
+    default: [
+      {
+        q: 'What is BizVistar?',
+        a: 'BizVistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
+      },
+      {
+        q: 'How do I get started?',
+        a: 'Simply sign up, choose a template that fits your business, customize it in our easy-to-use editor, and launch your site!'
+      },
+      {
+        q: 'Do I need technical skills to use BizVistar?',
+        a: 'Not at all! Our intuitive drag-and-drop editor and pre-designed templates make it easy for anyone to build a professional website without writing a single line of code.'
+      }
+    ]
+  };
+
+  const faqs = allFaqs[pageType] || allFaqs['default'];
+
+  // Handle opening the chatbot
+  const handleHelpCenterClick = (e) => {
+    e.preventDefault();
+    // Dispatch a custom event that the SupportWidget can listen to, or simply focus it if it exists
+    const chatButton = document.querySelector('button[aria-label="Open Chat"]') || document.querySelector('.bg-gradient-to-r.from-\\[\\#8A63D2\\]');
+    if (chatButton) {
+        chatButton.click();
+    } else {
+        // Fallback or custom event
+        window.dispatchEvent(new CustomEvent('open-support-widget'));
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
@@ -96,9 +123,18 @@ export default function FaqSection() {
         </h2>
         <p className="text-lg text-gray-600">
           Haven't found what you're looking for? Try the{' '}
-          <a href="#" className="text-blue-600 hover:underline">BizVistar Help Center</a>{' '}
+          <button onClick={handleHelpCenterClick} className="text-brand-600 hover:underline font-medium text-left">
+            BizVistar Help Center
+          </button>{' '}
           or{' '}
-          <a href="#" className="text-blue-600 hover:underline">contact us</a>.
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_CONTACT_US || '919013063854'}?text=Hi!%20I%20have%20a%20question%20from%20the%20FAQ%20page.`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-600 hover:underline font-medium"
+          >
+            contact us
+          </a>.
         </p>
       </div>
       

@@ -274,7 +274,7 @@ export default function ExportModal({ isOpen, onClose }) {
               <p className="text-sm text-gray-500 font-sans mb-2">Choose a format to export your data.</p>
               <button 
                 onClick={() => handleFormatSelect("excel")}
-                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-purple-200 hover:bg-purple-50 transition-all group text-left"
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-200 hover:bg-brand-50 transition-all group text-left"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 text-green-600 group-hover:bg-white group-hover:shadow-sm">
                   <FileSpreadsheet size={24} />
@@ -287,7 +287,7 @@ export default function ExportModal({ isOpen, onClose }) {
 
               <button 
                 onClick={() => handleFormatSelect("csv")}
-                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-purple-200 hover:bg-purple-50 transition-all group text-left"
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-200 hover:bg-brand-50 transition-all group text-left"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-white group-hover:shadow-sm">
                   <FileText size={24} />
@@ -300,7 +300,7 @@ export default function ExportModal({ isOpen, onClose }) {
 
               <button 
                 onClick={() => handleFormatSelect("pdf")}
-                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-purple-200 hover:bg-purple-50 transition-all group text-left"
+                className="flex items-center gap-4 rounded-xl border border-gray-200 p-4 hover:border-brand-200 hover:bg-brand-50 transition-all group text-left"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100 text-red-600 group-hover:bg-white group-hover:shadow-sm">
                   <FileText size={24} />
@@ -324,7 +324,7 @@ export default function ExportModal({ isOpen, onClose }) {
                         <label 
                         key={type.id} 
                         className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
-                            reportType === type.id ? "border-purple-500 bg-purple-50" : "border-gray-200 hover:border-gray-300"
+                            reportType === type.id ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-gray-300"
                         }`}
                         >
                         <input 
@@ -333,12 +333,12 @@ export default function ExportModal({ isOpen, onClose }) {
                             value={type.id} 
                             checked={reportType === type.id} 
                             onChange={(e) => setReportType(e.target.value)}
-                            className="mt-1 h-4 w-4 text-purple-600 accent-purple-600"
+                            className="mt-1 h-4 w-4 text-brand-600 accent-brand-600"
                         />
                         <div>
                             <span className="block text-sm font-bold text-gray-900 font-sans flex items-center gap-2">
                                 {type.label}
-                                {type.id === "all" && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold uppercase">Pro</span>}
+                                {type.id === "all" && <span className="text-[10px] bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded font-bold uppercase">Pro</span>}
                             </span>
                             <span className="block text-xs text-gray-500 font-sans mt-0.5">{type.description}</span>
                         </div>
@@ -354,7 +354,7 @@ export default function ExportModal({ isOpen, onClose }) {
                 <select 
                   value={timeRange} 
                   onChange={(e) => setTimeRange(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 >
                   {TIME_RANGES.map(range => (
                     <option key={range.id} value={range.id}>{range.label}</option>
@@ -389,7 +389,7 @@ export default function ExportModal({ isOpen, onClose }) {
             <button 
               onClick={handleDownload}
               disabled={loading}
-              className="flex items-center gap-2 rounded-full bg-[#8A63D2] px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-200 hover:bg-[#7a54bf] disabled:opacity-50 transition-all font-sans"
+              className="flex items-center gap-2 rounded-full bg-[#8A63D2] px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand-200 hover:bg-[#7a54bf] disabled:opacity-50 transition-all font-sans"
             >
               {loading ? (
                 <span>Generating...</span>

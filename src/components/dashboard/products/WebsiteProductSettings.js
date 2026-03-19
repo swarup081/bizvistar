@@ -157,7 +157,7 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
 
           <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
              {dataLoading ? (
-                 <div className="flex justify-center py-10"><Loader2 className="animate-spin text-purple-600" /></div>
+                 <div className="flex justify-center py-10"><Loader2 className="animate-spin text-brand-600" /></div>
              ) : (
                  <div className="space-y-8">
                      
@@ -167,14 +167,14 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
                          <div className="grid grid-cols-2 gap-4">
                              <button 
                                 onClick={() => setSettings(s => ({ ...s, mode: 'auto' }))}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${settings.mode === 'auto' ? 'border-[#8A63D2] bg-purple-50' : 'border-gray-100 hover:border-purple-200'}`}
+                                className={`p-4 rounded-xl border-2 text-left transition-all ${settings.mode === 'auto' ? 'border-[#8A63D2] bg-brand-50' : 'border-gray-100 hover:border-brand-200'}`}
                              >
                                  <div className="font-bold text-gray-900 mb-1">Auto (Smart)</div>
                                  <p className="text-xs text-gray-500">Automatically shows best-selling categories and products. Handles out-of-stock items intelligently.</p>
                              </button>
                              <button 
                                 onClick={() => setSettings(s => ({ ...s, mode: 'manual' }))}
-                                className={`p-4 rounded-xl border-2 text-left transition-all ${settings.mode === 'manual' ? 'border-[#8A63D2] bg-purple-50' : 'border-gray-100 hover:border-purple-200'}`}
+                                className={`p-4 rounded-xl border-2 text-left transition-all ${settings.mode === 'manual' ? 'border-[#8A63D2] bg-brand-50' : 'border-gray-100 hover:border-brand-200'}`}
                              >
                                  <div className="font-bold text-gray-900 mb-1">Manual</div>
                                  <p className="text-xs text-gray-500">You explicitly choose which products or categories appear on the landing page.</p>
@@ -279,7 +279,7 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
              <button 
                 onClick={handleSave} 
                 disabled={loading}
-                className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-200"
+                className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-brand-200"
             >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                 Save Settings

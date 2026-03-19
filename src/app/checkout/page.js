@@ -576,7 +576,7 @@ function CheckoutContent() {
   if (isCheckingAuth) {
       return (
           <div className="min-h-screen flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
           </div>
       );
   }
@@ -609,7 +609,7 @@ function CheckoutContent() {
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.firstName ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none transition-all", fieldErrors.firstName ? "border-red-500" : "border-gray-300")}
                                 required 
                             />
                             {fieldErrors.firstName && <p className="text-xs text-red-500">{fieldErrors.firstName}</p>}
@@ -621,7 +621,7 @@ function CheckoutContent() {
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.lastName ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none transition-all", fieldErrors.lastName ? "border-red-500" : "border-gray-300")}
                                 required 
                             />
                             {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
@@ -636,7 +636,7 @@ function CheckoutContent() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none transition-all", fieldErrors.email ? "border-red-500" : "border-gray-300")}
+                            className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none transition-all", fieldErrors.email ? "border-red-500" : "border-gray-300")}
                             required 
                         />
                         {fieldErrors.email && <p className="text-xs text-red-500">{fieldErrors.email}</p>}
@@ -659,7 +659,7 @@ function CheckoutContent() {
                         <div className="flex">
                             <div className="relative w-1/3 sm:w-1/4">
                                 <select 
-                                    className="w-full p-3 border border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-purple-500 outline-none"
+                                    className="w-full p-3 border border-gray-300 rounded-l-md appearance-none bg-white focus:ring-1 focus:ring-brand-500 outline-none"
                                     value={formData.phoneCode}
                                     onChange={handleChange}
                                     name="phoneCode"
@@ -672,7 +672,7 @@ function CheckoutContent() {
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border border-l-0 rounded-r-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.phoneNumber ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border border-l-0 rounded-r-md focus:ring-1 focus:ring-brand-500 outline-none", fieldErrors.phoneNumber ? "border-red-500" : "border-gray-300")}
                                 placeholder="0000000000"
                             />
                         </div>
@@ -687,7 +687,7 @@ function CheckoutContent() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.address ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none", fieldErrors.address ? "border-red-500" : "border-gray-300")}
                                 required
                             />
                              {fieldErrors.address && <p className="text-xs text-red-500">{fieldErrors.address}</p>}
@@ -699,7 +699,7 @@ function CheckoutContent() {
                                 name="city"
                                 value={formData.city}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.city ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none", fieldErrors.city ? "border-red-500" : "border-gray-300")}
                                 required
                             />
                              {fieldErrors.city && <p className="text-xs text-red-500">{fieldErrors.city}</p>}
@@ -732,7 +732,7 @@ function CheckoutContent() {
                                 name="zip"
                                 value={formData.zip}
                                 onChange={handleChange}
-                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-purple-500 outline-none", fieldErrors.zip ? "border-red-500" : "border-gray-300")}
+                                className={cn("w-full p-3 border rounded-md focus:ring-1 focus:ring-brand-500 outline-none", fieldErrors.zip ? "border-red-500" : "border-gray-300")}
                                 required
                             />
                              {fieldErrors.zip && <p className="text-xs text-red-500">{fieldErrors.zip}</p>}
@@ -746,7 +746,7 @@ function CheckoutContent() {
                                     type="checkbox" 
                                     checked={addCompanyDetails}
                                     onChange={(e) => setAddCompanyDetails(e.target.checked)}
-                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-purple-500 checked:bg-purple-600 checked:border-purple-600"
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-brand-500 checked:bg-brand-600 checked:border-brand-600"
                                 />
                                 <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} />
                              </div>
@@ -769,7 +769,7 @@ function CheckoutContent() {
                                         name="companyName"
                                         value={formData.companyName}
                                         onChange={handleChange}
-                                        className="w-full p-3  border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                        className="w-full p-3  border border-gray-300 rounded-md focus:ring-1 focus:ring-brand-500 outline-none"
                                     />
                                 </div>
                                 <div className="space-y-2 py-2">
@@ -779,7 +779,7 @@ function CheckoutContent() {
                                         name="gstNumber"
                                         value={formData.gstNumber}
                                         onChange={handleChange}
-                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 outline-none"
+                                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-brand-500 outline-none"
                                     />
                                 </div>
                              </motion.div>
@@ -789,7 +789,7 @@ function CheckoutContent() {
                     <button 
                         type="submit"
                         disabled={isProcessing}
-                        className="w-full sm:w-auto px-9 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-9 py-3 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <>
@@ -884,7 +884,7 @@ function CheckoutContent() {
 
                     {/* Founder Plan Note */}
                     {isFounder && (
-                        <div className="mt-2 p-3 bg-purple-50 border border-purple-100 rounded-md text-sm text-purple-700">
+                        <div className="mt-2 p-3 bg-brand-50 border border-brand-100 rounded-md text-sm text-brand-700">
                              <strong>Founder Access:</strong> Valid for 1 year. Subscription ends after 1 year and requires re-registration.
                         </div>
                     )}
@@ -895,7 +895,7 @@ function CheckoutContent() {
                     <button
                         type="button"
                         onClick={() => setShowPromo(!showPromo)}
-                        className="flex items-center gap-2 text-purple-600 font-semibold hover:text-purple-700 transition-colors w-full"
+                        className="flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-700 transition-colors w-full"
                     >
                         <Tag className="w-4 h-4" />
                         <span>Have a coupon code?</span>
@@ -922,7 +922,7 @@ function CheckoutContent() {
                                         <div className="flex gap-2 items-center">
                                             <input 
                                                 type="text" 
-                                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-purple-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
+                                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-brand-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
                                                 placeholder="Code"
                                                 value={promoCode}
                                                 onChange={(e) => {
@@ -933,7 +933,7 @@ function CheckoutContent() {
                                             <button 
                                                 onClick={handleApplyCoupon}
                                                 disabled={couponStatus === 'loading' || !promoCode}
-                                                className="px-6 py-3 border border-purple-600 text-purple-600 font-semibold rounded-md hover:bg-purple-50 disabled:opacity-50"
+                                                className="px-6 py-3 border border-brand-600 text-brand-600 font-semibold rounded-md hover:bg-brand-50 disabled:opacity-50"
                                             >
                                                 {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
                                             </button>
@@ -955,7 +955,7 @@ function CheckoutContent() {
 
       {/* --- FAQ SECTION --- */}
       <div className="mt-20 border-t border-gray-200 pt-16">
-         <FaqSection />
+         <FaqSection pageType="checkout" />
       </div>
       
       {/* Error Dialog */}
@@ -974,7 +974,62 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50/50 pb-20">
+                <div className="max-w-4xl mx-auto px-4 md:px-0 pt-8 pb-12 animate-pulse">
+                    {/* Header Skeleton */}
+                    <div className="text-center mb-12 flex flex-col items-center">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full mb-4"></div>
+                        <div className="h-8 w-48 bg-gray-200 rounded mb-2"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 relative items-start">
+                        {/* Left Side: Order Summary Skeleton */}
+                        <div className="md:col-span-5 md:sticky md:top-8 w-full order-1 md:order-none">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8 relative">
+                                <div className="h-6 w-32 bg-gray-200 rounded mb-6"></div>
+                                <div className="space-y-4 mb-6">
+                                    {[1, 2].map((i) => (
+                                        <div key={i} className="flex gap-4">
+                                            <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                                            <div className="flex-1 space-y-2">
+                                                <div className="h-4 w-full bg-gray-200 rounded"></div>
+                                                <div className="h-3 w-16 bg-gray-100 rounded"></div>
+                                            </div>
+                                            <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="border-t border-gray-100 pt-4 space-y-3">
+                                    <div className="flex justify-between"><div className="h-4 w-16 bg-gray-200 rounded"></div><div className="h-4 w-12 bg-gray-200 rounded"></div></div>
+                                    <div className="flex justify-between"><div className="h-4 w-16 bg-gray-200 rounded"></div><div className="h-4 w-12 bg-gray-200 rounded"></div></div>
+                                    <div className="border-t border-gray-100 mt-2 pt-4 flex justify-between"><div className="h-5 w-20 bg-gray-200 rounded"></div><div className="h-5 w-16 bg-gray-200 rounded"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Side: Details Form Skeleton */}
+                        <div className="md:col-span-7 space-y-8 order-2 md:order-none">
+                            <div className="space-y-4">
+                                <div className="h-6 w-32 bg-gray-200 rounded"></div>
+                                <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                                <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                                <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="h-6 w-32 bg-gray-200 rounded"></div>
+                                <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                                    <div className="h-12 w-full bg-gray-200 rounded-md"></div>
+                                </div>
+                            </div>
+                            <div className="h-14 w-full bg-gray-300 rounded-lg mt-8"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
             <CheckoutContent />
         </Suspense>
     );

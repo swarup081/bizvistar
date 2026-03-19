@@ -74,7 +74,7 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0,
                          <button
                             key={key}
                             onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-brand-600 font-medium' : 'text-gray-700'}`}
                          >
                              {labels[key]}
                          </button>
@@ -87,7 +87,7 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0,
       <div className="flex-1 flex flex-col items-center justify-center relative">
         {isLoading ? (
             <div className="h-[200px] w-full flex items-center justify-center">
-                <Loader2 className="h-8 w-8 text-purple-200 animate-spin" />
+                <Loader2 className="h-8 w-8 text-brand-200 animate-spin" />
             </div>
         ) : (
         <>
@@ -131,7 +131,7 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0,
 
          {/* Total Visitors Section */}
          <div className="flex items-center gap-2 md:gap-4 mt-2 p-2 md:p-3 pr-4 md:pr-7 rounded-2xl md:rounded-full bg-gray-50 border border-gray-100 w-full max-w-[90%]">
-            <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-purple-100">
+            <div className="flex h-8 w-8 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#8A63D2] shadow-sm border border-brand-100">
                 <Globe className="h-4 w-4 md:h-5 md:w-5" />
             </div>
             <div className="flex flex-col md:flex-row md:items-center min-w-0"> 

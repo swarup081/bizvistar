@@ -338,7 +338,7 @@ export default function DashboardPage() {
                                 <button
                                     key={opt.val}
                                     onClick={() => { setTimeFilter(opt.val); setIsFilterOpen(false); }}
-                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${timeFilter === opt.val ? 'text-purple-600 font-bold bg-purple-50' : 'text-gray-700'}`}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${timeFilter === opt.val ? 'text-brand-600 font-bold bg-brand-50' : 'text-gray-700'}`}
                                 >
                                     {opt.label}
                                 </button>

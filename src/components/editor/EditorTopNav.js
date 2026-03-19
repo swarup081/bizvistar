@@ -249,7 +249,7 @@ export default function EditorTopNav({
                     <Tooltip title="AI Writer" description="Rewrite your website content instantly.">
                         <button 
                             onClick={() => setIsAIModalOpen(true)}
-                            className="flex items-center gap-2 text-sm font-medium text-[#8A63D2] px-3 py-2 rounded-full transition-colors hover:bg-purple-50 "
+                            className="flex items-center gap-2 text-sm font-medium text-[#8A63D2] px-3 py-2 rounded-full transition-colors hover:bg-brand-50 "
                         >
                             <img src="/aiicon.png" alt="AI" className="w-5 h-5 object-contain" />
                             AI Writer
@@ -315,7 +315,7 @@ export default function EditorTopNav({
           {mode !== 'dashboard' && (
              <button
                onClick={() => setIsAIModalOpen(true)}
-               className="lg:hidden flex items-center justify-center p-2 rounded-full hover:bg-purple-50 transition-colors"
+               className="lg:hidden flex items-center justify-center p-2 rounded-full hover:bg-brand-50 transition-colors"
              >
                 <img src="/aiicon.png" alt="AI" className="w-6 h-6 object-contain" />
              </button>
@@ -339,7 +339,7 @@ export default function EditorTopNav({
               <Link 
                 href="#"
                 onClick={onLandingDummyClick}
-                className="hidden lg:flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
+                className="hidden lg:flex items-center gap-2 text-sm font-medium text-brand-600 px-3 py-2 rounded-full transition-colors cursor-default hover:bg-transparent"
               >
                 Preview
               </Link>
@@ -354,7 +354,7 @@ export default function EditorTopNav({
                 href={`/preview/site/${siteSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden lg:flex items-center gap-2 text-sm font-medium text-purple-600 px-3 py-2 rounded-full transition-colors hover:bg-purple-50"
+                className="hidden lg:flex items-center gap-2 text-sm font-medium text-brand-600 px-3 py-2 rounded-full transition-colors hover:bg-brand-50"
               >
                 Preview
               </Link>
@@ -451,7 +451,7 @@ export default function EditorTopNav({
           >
             <div className={`bg-gray-50 border border-gray-300 rounded-4xl px-3 py-2 text-sm text-gray-700 overflow-hidden text-ellipsis whitespace-nowrap ${isLandingMode ? 'cursor-default' : 'cursor-pointer'}`}>
               {siteUrl}
-              {!isLandingMode && <span className="text-purple-600 ml-2 font-medium">Connect Your Domain</span>}
+              {!isLandingMode && <span className="text-brand-600 ml-2 font-medium">Connect Your Domain</span>}
             </div>
           </Tooltip>
         </div>

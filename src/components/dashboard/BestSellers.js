@@ -81,7 +81,7 @@ export default function BestSellers({ orderItems = [] }) {
                          <button
                             key={key}
                             onClick={() => { setTimeFilter(key); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-purple-600 font-medium' : 'text-gray-700'}`}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${timeFilter === key ? 'text-brand-600 font-medium' : 'text-gray-700'}`}
                          >
                              {labels[key]}
                          </button>

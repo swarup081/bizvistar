@@ -93,7 +93,7 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="e.g. Summer Collection"
                                     required
-                                    className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                    className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                                     autoFocus
                                 />
                             </div>
@@ -107,13 +107,13 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
                                         value={productSearch}
                                         onChange={(e) => setProductSearch(e.target.value)}
                                         placeholder="Search products..."
-                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-purple-500"
+                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-brand-500"
                                     />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto p-2">
                                 {productsLoading ? (
-                                    <div className="flex justify-center py-8"><Loader2 className="animate-spin text-purple-500" /></div>
+                                    <div className="flex justify-center py-8"><Loader2 className="animate-spin text-brand-500" /></div>
                                 ) : filteredProducts.length === 0 ? (
                                     <div className="text-center py-8 text-gray-400 text-sm">No products found.</div>
                                 ) : (
@@ -122,9 +122,9 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
                                             <div 
                                                 key={p.id} 
                                                 onClick={() => toggleProduct(p.id)}
-                                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${selectedProducts.has(p.id) ? 'bg-purple-50 border border-purple-100' : 'hover:bg-gray-50 border border-transparent'}`}
+                                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${selectedProducts.has(p.id) ? 'bg-brand-50 border border-brand-100' : 'hover:bg-gray-50 border border-transparent'}`}
                                             >
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedProducts.has(p.id) ? 'bg-purple-600 border-purple-600' : 'border-gray-300 bg-white'}`}>
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selectedProducts.has(p.id) ? 'bg-brand-600 border-brand-600' : 'border-gray-300 bg-white'}`}>
                                                     {selectedProducts.has(p.id) && <Check size={12} className="text-white" />}
                                                 </div>
                                                 <div className="h-8 w-8 rounded bg-gray-100 overflow-hidden shrink-0">
@@ -153,7 +153,7 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
                         <button 
                             onClick={step === 1 ? handleNext : handleSubmit}
                             disabled={loading || !name.trim()}
-                            className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-200"
+                            className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-brand-200"
                         >
                             {loading && <Loader2 size={18} className="animate-spin" />}
                             {categoryToEdit ? 'Save Changes' : (step === 1 ? 'Next' : `Create & Add (${selectedProducts.size})`)}
@@ -401,7 +401,7 @@ export default function CategoryManager({
                                        <div className="flex items-center justify-end gap-2">
                                            <button 
                                                onClick={() => { setCategoryToEdit(cat); setIsEditOpen(true); }}
-                                               className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                               className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                                            >
                                                <Edit size={16} />
                                            </button>

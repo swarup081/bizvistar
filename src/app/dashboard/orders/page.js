@@ -277,7 +277,7 @@ function OrdersContent() {
                                 <DropdownMenu.Item 
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
-                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-brand-50 text-brand-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
                                 >
                                     <span className="capitalize">{status}</span>
                                     {statusFilter === status && <CheckCircle size={14} />}
@@ -327,7 +327,7 @@ function OrdersContent() {
                                 <DropdownMenu.Item 
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
-                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${statusFilter === status ? 'bg-brand-50 text-brand-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}
                                 >
                                     <span className="capitalize">{status}</span>
                                     {statusFilter === status && <CheckCircle size={14} />}
@@ -368,9 +368,29 @@ function OrdersContent() {
                 <tbody className="divide-y divide-gray-50">
                     {loading ? (
                         [1, 2, 3, 4, 5].map((i) => (
-                            <tr key={i}>
-                                <td colSpan="7" className="p-4 md:px-6">
-                                    <div className="h-12 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+                            <tr key={i} className="hover:bg-gray-50/50 transition-colors animate-pulse">
+                                <td className="hidden md:table-cell py-4 px-6 text-sm">
+                                    <div className="h-5 w-20 bg-gray-200 rounded-md"></div>
+                                </td>
+                                <td className="py-4 pl-4 md:px-6 text-sm">
+                                    <div className="h-4 w-24 bg-gray-200 rounded-md mb-2"></div>
+                                    <div className="h-3 w-16 bg-gray-100 rounded-md"></div>
+                                </td>
+                                <td className="py-4 px-2 md:px-6 text-sm">
+                                    <div className="h-4 w-32 bg-gray-200 rounded-md mb-2"></div>
+                                    <div className="h-3 w-20 bg-gray-100 rounded-md"></div>
+                                </td>
+                                <td className="py-4 px-2 md:px-6 text-sm">
+                                    <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
+                                </td>
+                                <td className="hidden md:table-cell py-4 px-6 text-sm">
+                                    <div className="h-5 w-16 bg-gray-200 rounded-md"></div>
+                                </td>
+                                <td className="hidden md:table-cell py-4 px-6 text-sm">
+                                    <div className="h-5 w-16 bg-gray-200 rounded-md"></div>
+                                </td>
+                                <td className="py-4 pr-4 md:px-6 text-right">
+                                    <div className="h-8 w-20 bg-gray-200 rounded-full ml-auto"></div>
                                 </td>
                             </tr>
                         ))
@@ -382,7 +402,7 @@ function OrdersContent() {
                                 {(searchQuery || statusFilter !== 'all') && (
                                     <button 
                                         onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
-                                        className="text-sm text-purple-600 font-bold hover:underline"
+                                        className="text-sm text-brand-600 font-bold hover:underline"
                                     >
                                         Clear Filters
                                     </button>
@@ -423,7 +443,7 @@ function OrdersContent() {
                                 <td className="py-4 pr-4 md:px-6 text-right align-middle">
                                     <button 
                                         onClick={() => setSelectedOrder(order)}
-                                        className="rounded-full border border-purple-200 bg-purple-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-purple-600 hover:bg-purple-500 hover:text-white transition-colors"
+                                        className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-brand-600 hover:bg-brand-500 hover:text-white transition-colors"
                                     >
                                         Manage
                                     </button>

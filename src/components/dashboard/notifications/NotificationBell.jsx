@@ -71,7 +71,7 @@ const NotificationBell = () => {
                                 {notifications.map((notif) => (
                                     <DropdownMenu.Item 
                                         key={notif.id}
-                                        className={`group relative flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors cursor-pointer outline-none ${!notif.is_read ? 'bg-purple-50/30' : ''}`}
+                                        className={`group relative flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors cursor-pointer outline-none ${!notif.is_read ? 'bg-brand-50/30' : ''}`}
                                         onSelect={(e) => e.preventDefault()}
                                         onClick={() => markRead(notif.id)}
                                     >
@@ -104,7 +104,7 @@ const NotificationBell = () => {
                                             {!notif.is_read && (
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); markRead(notif.id); }}
-                                                    className="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 rounded-full transition-all"
+                                                    className="p-1.5 text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-full transition-all"
                                                     title="Mark as read"
                                                 >
                                                     <CheckCircle size={14} />

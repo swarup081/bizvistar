@@ -75,7 +75,7 @@ export default function PlanManager({ currentPlan, productCount }) {
                 
                 {/* Glow effects */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-blue-500/30 blur-[60px] rounded-full pointer-events-none"></div>
-                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-purple-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-brand-500/20 blur-[60px] rounded-full pointer-events-none"></div>
                 
                 {/* Title & Badge */}
                 <div className="flex items-center justify-center gap-3 mb-3 z-10">

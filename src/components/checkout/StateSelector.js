@@ -43,7 +43,7 @@ export default function StateSelector({ value, onChange, error }) {
     return (
         <div className="relative" ref={dropdownRef}>
             <div 
-                className={`w-full p-3 border rounded-md bg-white cursor-pointer flex justify-between items-center ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-1 focus-within:ring-purple-500`}
+                className={`w-full p-3 border rounded-md bg-white cursor-pointer flex justify-between items-center ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-1 focus-within:ring-brand-500`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={value ? 'text-gray-900' : 'text-gray-500'}>
@@ -77,7 +77,7 @@ export default function StateSelector({ value, onChange, error }) {
                                     onClick={() => handleSelect(state)}
                                 >
                                     {state}
-                                    {value === state && <Check className="w-4 h-4 text-purple-600" />}
+                                    {value === state && <Check className="w-4 h-4 text-brand-600" />}
                                 </div>
                             ))
                         ) : (

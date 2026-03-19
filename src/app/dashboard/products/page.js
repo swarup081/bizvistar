@@ -341,7 +341,7 @@ export default function ProductsPage() {
                             else { setCategoryFilter('all'); setCategorySortBy('date'); }
                             setCurrentPage(1); 
                             setIsFilterOpen(false); 
-                        }} className="text-xs text-purple-600 font-bold">Reset</button>
+                        }} className="text-xs text-brand-600 font-bold">Reset</button>
                     </div>
                     
                     <div className="space-y-4">
@@ -350,7 +350,7 @@ export default function ProductsPage() {
                             <>
                                 <div>
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
-                                    <select value={productSortBy} onChange={(e) => setProductSortBy(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                    <select value={productSortBy} onChange={(e) => setProductSortBy(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="newest">Newest Added</option>
                                         <option value="top">Top Products</option>
                                         <option value="price-asc">Price: Low to High</option>
@@ -362,7 +362,7 @@ export default function ProductsPage() {
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Stock</h4>
                                     <div className="grid grid-cols-2 gap-2">
                                         {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
-                                            <label key={status} className={`flex items-center justify-center px-2 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${stockFilters.includes(status) ? 'bg-purple-50 border-purple-200 text-purple-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
+                                            <label key={status} className={`flex items-center justify-center px-2 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${stockFilters.includes(status) ? 'bg-brand-50 border-brand-200 text-brand-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
                                                 <input type="checkbox" className="hidden" checked={stockFilters.includes(status)} onChange={() => handleStockFilterChange(status)} />
                                                 {status}
                                             </label>
@@ -371,7 +371,7 @@ export default function ProductsPage() {
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Category</h4>
-                                    <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                    <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="all">All Categories</option>
                                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
@@ -385,13 +385,13 @@ export default function ProductsPage() {
                                 <div>
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <button onClick={() => setCategorySortBy('date')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'date' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'border-gray-200'}`}>Date Created</button>
-                                        <button onClick={() => setCategorySortBy('top')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'top' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'border-gray-200'}`}>Top Performing</button>
+                                        <button onClick={() => setCategorySortBy('date')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'date' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'border-gray-200'}`}>Date Created</button>
+                                        <button onClick={() => setCategorySortBy('top')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'top' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'border-gray-200'}`}>Top Performing</button>
                                     </div>
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">View</h4>
-                                    <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-purple-500">
+                                    <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="all">All Categories</option>
                                         <option value="populated">With Products</option>
                                         <option value="empty">Empty Categories</option>
@@ -484,10 +484,10 @@ export default function ProductsPage() {
       {activeTab === 'products' && (
         <>
             {/* Desktop Filter Bar (Products) */}
-            <div className="hidden md:flex flex-wrap items-center justify-between gap-4 bg-purple p-2 rounded-full border border-gray-100 shadow-sm mb-6">
+            <div className="hidden md:flex flex-wrap items-center justify-between gap-4 bg-brand p-2 rounded-full border border-gray-100 shadow-sm mb-6">
                 <div className="relative w-96">
                     <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 text-sm bg-purple-50 border-none rounded-full focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none" />
+                    <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 text-sm bg-brand-50 border-none rounded-full focus:ring-2 focus:ring-[#8A63D2]/20 focus:outline-none" />
                 </div>
                 
                 <div className="flex items-center gap-3 relative">
@@ -508,7 +508,7 @@ export default function ProductsPage() {
                                     {id: 'price-desc', label: 'Price: High to Low'},
                                     {id: 'name-asc', label: 'Name: A-Z'}
                                 ].map(opt => (
-                                    <DropdownMenu.Item key={opt.id} onClick={() => setProductSortBy(opt.id)} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${productSortBy === opt.id ? 'bg-purple-50 text-purple-700' : 'text-gray-700 hover:bg-gray-50'}`}>
+                                    <DropdownMenu.Item key={opt.id} onClick={() => setProductSortBy(opt.id)} className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg cursor-pointer outline-none ${productSortBy === opt.id ? 'bg-brand-50 text-brand-700' : 'text-gray-700 hover:bg-gray-50'}`}>
                                         {opt.label}
                                         {productSortBy === opt.id && <CheckCircle size={14} />}
                                     </DropdownMenu.Item>
@@ -517,9 +517,9 @@ export default function ProductsPage() {
                         </DropdownMenu.Portal>
                     </DropdownMenu.Root>
 
-                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center bg-purple-50 gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all' ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-purple text-gray-600 border-purple-200 hover:bg-purple-50'}`}>
+                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center bg-brand-50 gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${isFilterOpen || stockFilters.length > 0 || selectedCategory !== 'all' ? 'bg-brand-50 text-brand-600 border-brand-100' : 'bg-brand text-gray-600 border-brand-200 hover:bg-brand-50'}`}>
                         <Filter size={16} /> Filter
-                        {(stockFilters.length > 0 || selectedCategory !== 'all') && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-[10px] text-white">{stockFilters.length + (selectedCategory !== 'all' ? 1 : 0)}</span>}
+                        {(stockFilters.length > 0 || selectedCategory !== 'all') && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[10px] text-white">{stockFilters.length + (selectedCategory !== 'all' ? 1 : 0)}</span>}
                     </button>
                     {isFilterOpen && (
                         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 p-4 animate-in fade-in zoom-in-95 duration-200">
@@ -577,8 +577,32 @@ export default function ProductsPage() {
                     {loading ? (
                         [...Array(5)].map((_, i) => (
                         <tr key={i} className="animate-pulse">
-                            <td colSpan="6" className="p-4 md:px-6">
-                                <div className="h-12 w-full bg-gray-100 rounded-xl"></div>
+                            <td className="py-4 pl-4 md:px-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                        <div className="h-3 w-16 bg-gray-100 rounded"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="hidden md:table-cell py-4 px-6">
+                                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                            </td>
+                            <td className="py-4 px-2 md:px-6">
+                                <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
+                            </td>
+                            <td className="py-4 px-2 md:px-6">
+                                <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                            </td>
+                            <td className="hidden md:table-cell py-4 px-6">
+                                <div className="h-8 w-24 bg-gray-200 rounded"></div>
+                            </td>
+                            <td className="hidden md:table-cell py-4 px-6">
+                                <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                            </td>
+                            <td className="py-4 pr-4 md:px-6 text-right">
+                                <div className="h-8 w-20 bg-gray-200 rounded-full ml-auto"></div>
                             </td>
                         </tr>
                         ))
@@ -589,7 +613,7 @@ export default function ProductsPage() {
                                     <Search className="text-gray-300 h-8 w-8" />
                                     <p>No products found matching your filters.</p>
                                     {(searchTerm || stockFilters.length > 0 || selectedCategory !== 'all') && (
-                                        <button onClick={() => { setSearchTerm(''); setStockFilters([]); setSelectedCategory('all'); }} className="text-sm text-purple-600 font-bold hover:underline">Clear Filters</button>
+                                        <button onClick={() => { setSearchTerm(''); setStockFilters([]); setSelectedCategory('all'); }} className="text-sm text-brand-600 font-bold hover:underline">Clear Filters</button>
                                     )}
                                 </div>
                             </td>
@@ -632,7 +656,7 @@ export default function ProductsPage() {
                                     <span className={`hidden md:inline-flex text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                                         product.stockStatus === 'Out Of Stock' ? 'bg-red-50 text-red-600' :
                                         product.stockStatus === 'Low Stock' ? 'bg-orange-50 text-orange-600' :
-                                        product.stockStatus === 'Unlimited' ? 'bg-purple-50 text-purple-600' :
+                                        product.stockStatus === 'Unlimited' ? 'bg-brand-50 text-brand-600' :
                                         'bg-green-50 text-green-600'
                                     }`}>
                                         {product.stockStatus}

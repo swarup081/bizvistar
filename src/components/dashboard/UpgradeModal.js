@@ -20,7 +20,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
       ],
       cta: 'Start Pro',
       isRecommended: true,
-      color: 'purple'
+      color: 'brand'
     },
     {
       name: 'Growth',
@@ -71,7 +71,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
                 key={plan.name}
                 className={cn(
                   "relative flex flex-col rounded-2xl border p-6 transition-all",
-                  plan.isRecommended ? "border-[#8A63D2] shadow-xl bg-purple-50/20" : "border-gray-200 shadow-md hover:shadow-lg bg-white"
+                  plan.isRecommended ? "border-[#8A63D2] shadow-xl bg-brand-50/20" : "border-gray-200 shadow-md hover:shadow-lg bg-white"
                 )}
               >
                 {plan.isRecommended && (

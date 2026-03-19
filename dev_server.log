@@ -1,0 +1,358 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1405ms
+ ○ Compiling /templates ...
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ GET /templates 500 in 6.2s (compile: 5.7s, render: 520ms)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ○ Compiling /templates/flavornest ...
+ GET /templates/flavornest 500 in 3.1s (compile: 2.3s, render: 777ms)
+ GET /templates/blissly 500 in 3.1s (compile: 2.5s, render: 574ms)
+ GET /templates/avenix 500 in 3.1s (compile: 2.7s, render: 395ms)
+ GET /templates/flara 500 in 3.1s (compile: 2.9s, render: 216ms)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ GET /templates/flavornest 500 in 925ms (compile: 66ms, render: 859ms)
+ GET /templates/flara 500 in 894ms (compile: 115ms, render: 780ms)
+ GET /templates/avenix 500 in 913ms (compile: 201ms, render: 712ms)
+ GET /templates/blissly 500 in 918ms (compile: 240ms, render: 678ms)
+ GET /templates/frostify 500 in 4.0s (compile: 3.6s, render: 444ms)
+ GET /templates/aurora 500 in 4.0s (compile: 3.8s, render: 250ms)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ POST /templates 200 in 115ms (compile: 44ms, render: 71ms)
+ GET /templates/frostify 500 in 1882ms (compile: 7ms, render: 1875ms)
+ GET /templates/aurora 500 in 1882ms (compile: 29ms, render: 1853ms)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ GET /blissly/valentin-ciccarone-YMihlfY0wcE-unsplash.jpg 500 in 1143ms (compile: 838ms, render: 305ms)
+ GET /blissly/hero_image.png 500 in 1148ms (compile: 861ms, render: 287ms)
+ GET /flavournestImage/flavornest_logo.jpeg 500 in 1163ms (compile: 912ms, render: 251ms)
+ GET /flavournestImage/modak_productimage.jpeg 500 in 1159ms (compile: 887ms, render: 272ms)
+ GET /flavournestImage/shahi_mava_rolls_productimage.jpeg 500 in 1024ms (compile: 687ms, render: 337ms)
+ GET /checkout 500 in 3.1s (compile: 2.2s, render: 897ms)
+ POST /checkout 200 in 1563ms (compile: 10ms, render: 1553ms)
+ GET /sign-in?redirect=%2Fcheckout 200 in 886ms (compile: 841ms, render: 45ms)
+ ⨯ Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at SupportWidget (src/components/dashboard/SupportWidget.js:26:39)
+  24 |
+  25 |   // Create client-side supabase instance
+> 26 |   const supabase = createBrowserClient(
+     |                                       ^
+  27 |     process.env.NEXT_PUBLIC_SUPABASE_URL,
+  28 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  29 |   ); {
+  digest: '3247864480'
+}
+ GET /pricing 500 in 1261ms (compile: 965ms, render: 297ms)
+ POST /pricing 200 in 18ms (compile: 7ms, render: 11ms)

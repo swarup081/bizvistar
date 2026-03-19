@@ -27,14 +27,14 @@ export default function ErrorDialog({ isOpen, onClose, title, message, primaryAc
                 {onPrimaryAction && (
                     <button 
                         onClick={onPrimaryAction}
-                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg bg-purple-600 px-4 font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg bg-brand-600 px-4 font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                     >
                         {primaryActionLabel || 'Confirm'}
                     </button>
                 )}
                 <Dialog.Close asChild>
                     <button 
-                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg border border-gray-300 bg-white px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg border border-gray-300 bg-white px-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                     >
                         Close
                     </button>

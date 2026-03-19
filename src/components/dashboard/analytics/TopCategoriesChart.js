@@ -35,7 +35,7 @@ export default function TopCategoriesChart({ data, totalSales }) {
         <h3 className="font-semibold text-gray-900 text-lg">Top Categories</h3>
         <button 
            onClick={() => setShowAll(!showAll)}
-           className="text-xs text-[#8A63D2] font-medium hover:text-[#7A52C0] flex items-center gap-1 bg-purple-50 px-3 py-1.5 rounded-full"
+           className="text-xs text-[#8A63D2] font-medium hover:text-[#7A52C0] flex items-center gap-1 bg-brand-50 px-3 py-1.5 rounded-full"
         >
            See All <ChevronDown className="w-3 h-3" />
         </button>

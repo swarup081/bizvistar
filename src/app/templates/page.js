@@ -681,14 +681,23 @@ export default function TemplatesPage() {
   // Logic to determine if a filter is active
   const activeFilter = filter.trim();
 
-  // Logic for filtering templates (A basic example based on the business type/keyword filter)
-  const filteredTemplates = activeFilter 
-    ? templates.filter(template => 
-        template.keywords.some(keyword => 
-            keyword.toLowerCase().includes(activeFilter.toLowerCase())
-        )
-      )
-    : templates;
+  // Logic for prioritizing templates based on the business type/keyword filter
+  const sortedTemplates = [...templates].sort((a, b) => {
+    // If there's an active filter, prioritize templates matching that keyword
+    if (activeFilter) {
+      const aMatches = a.keywords.some(keyword => keyword.toLowerCase().includes(activeFilter.toLowerCase()));
+      const bMatches = b.keywords.some(keyword => keyword.toLowerCase().includes(activeFilter.toLowerCase()));
+
+      if (aMatches && !bMatches) return -1;
+      if (!aMatches && bMatches) return 1;
+    }
+
+    // As a secondary priority (or primary if no filter), prioritize recommended templates
+    if (a.isRecommended && !b.isRecommended) return -1;
+    if (!a.isRecommended && b.isRecommended) return 1;
+
+    return 0; // Keep original order if both are equal
+  });
 
 
   return (
@@ -721,22 +730,22 @@ export default function TemplatesPage() {
 
             {/* Template Grid Container */}
             <div className="mt-12 grid grid-cols-1 xl:grid-cols-2 justify-items-center gap-x-16 gap-y-12 lg:justify-items-start lg:gap-y-28 lg:pl-6">
-              {filteredTemplates.map((template, index) => (
-                <TemplateCard key={`${template.title}-${index}`} {...template} />
-              ))}
-
-              {filteredTemplates.length === 0 && (
-                <div className="lg:col-span-2 text-center py-20">
-                    <p className="text-2xl text-gray-600">No templates found for: <span className="font-bold">"{activeFilter}"</span></p>
-                    <p className="text-gray-500 mt-2">Try a different search term or view all templates.</p>
-                    {activeFilter && (
-                       <button 
-                          onClick={() => setFilter('')}
-                          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                       >
-                         View All Templates
-                       </button>
+              {sortedTemplates.map((template, index) => {
+                // Determine if this is a "matched" template based on filter
+                const isMatch = activeFilter ? template.keywords.some(k => k.toLowerCase().includes(activeFilter.toLowerCase())) : true;
+                return (
+                  <div key={`${template.title}-${index}`} className={cn("w-full transition-all duration-300", !isMatch && activeFilter && "opacity-60 scale-95 grayscale-[50%]")}>
+                    <TemplateCard {...template} />
+                    {!isMatch && activeFilter && (
+                      <div className="mt-2 text-center text-sm font-medium text-gray-400">Other Template</div>
                     )}
+                  </div>
+                );
+              })}
+
+              {sortedTemplates.length === 0 && (
+                <div className="lg:col-span-2 text-center py-20">
+                    <p className="text-2xl text-gray-600">No templates found.</p>
                 </div>
               )}
             </div>

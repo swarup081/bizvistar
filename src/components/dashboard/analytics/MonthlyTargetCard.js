@@ -230,7 +230,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       </div>
 
 
-      <div className="flex mt-auto rounded-xl bg-purple-50 overflow-hidden divide-x divide-white h-[60px] relative">
+      <div className="flex mt-auto rounded-xl bg-brand-50 overflow-hidden divide-x divide-white h-[60px] relative">
           <div className="flex-1 py-3 px-2 flex flex-col items-center justify-center relative">
              {isEditing ? (
                  <div className="absolute inset-0 bg-white z-20 flex flex-col justify-center items-center px-1">

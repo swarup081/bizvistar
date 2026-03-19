@@ -386,7 +386,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                   </div>
                   
                   <div className="flex items-start gap-4">
-                      <div className="w-20 h-20 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all shrink-0">
+                      <div className="w-20 h-20 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden hover:border-[#8A63D2] hover:bg-brand-50 transition-all shrink-0">
                             {newProduct.imageUrl ? (
                                 <img src={newProduct.imageUrl} className="w-full h-full object-cover" />
                             ) : (
@@ -595,7 +595,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 <button 
                     onClick={handleNext}
                     disabled={loading || (step === 2 && isAddingProduct)} // Disable next while adding product form is open
-                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
+                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-brand-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
                 >
                     {loading ? <Loader2 size={18} className="animate-spin" /> : null}
                     Next <ChevronRight size={18} />
@@ -604,7 +604,7 @@ export default function WizardModal({ isOpen, onClose, websiteId, initialData, s
                 <button 
                     onClick={handleFinish}
                     disabled={isAiGenerating}
-                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
+                    className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-brand-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none"
                 >
                     {isAiGenerating ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                     {aiDescription.trim() ? (isAiGenerating ? 'Generating...' : 'Generate & Finish') : 'Finish'}

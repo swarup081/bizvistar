@@ -224,7 +224,7 @@ export default function PostPaymentManager() {
                                     onClick={() => setCustomSlug(s)}
                                     className={`text-left px-4 py-3 rounded-lg border transition-all ${
                                         customSlug === s 
-                                            ? 'border-purple-600 bg-purple-50 text-purple-700 ring-1 ring-purple-600' 
+                                            ? 'border-brand-600 bg-brand-50 text-brand-700 ring-1 ring-brand-600'
                                             : 'border-gray-200 hover:border-gray-400 text-gray-700'
                                     }`}
                                   >
@@ -245,7 +245,7 @@ export default function PostPaymentManager() {
                                   setCustomSlug(e.target.value);
                                   setUpdateError('');
                               }}
-                              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none"
                               placeholder="my-awesome-site"
                           />
                       </div>
@@ -281,7 +281,7 @@ export default function PostPaymentManager() {
                       Your website is officially published and live at <span className="font-bold text-gray-900">{website?.site_slug}</span>.
                   </p>
 
-                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8 flex items-center justify-between group cursor-pointer hover:border-purple-300 transition-colors">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8 flex items-center justify-between group cursor-pointer hover:border-brand-300 transition-colors">
                       <div className="flex flex-col text-left">
                           <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Public URL</span>
                           <span className="text-gray-900 font-medium truncate max-w-[250px]">{siteUrl}</span>
@@ -290,7 +290,7 @@ export default function PostPaymentManager() {
                         href={`https://${siteUrl}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="p-2 bg-white rounded-lg border border-gray-200 text-gray-500 group-hover:text-purple-600 transition-colors"
+                        className="p-2 bg-white rounded-lg border border-gray-200 text-gray-500 group-hover:text-brand-600 transition-colors"
                       >
                          <ChevronRight className="w-5 h-5" />
                       </a>
@@ -314,15 +314,15 @@ export default function PostPaymentManager() {
   if (status === 'success-update') {
       return (
           <ModalOverlay>
-              <ModalContent className="p-8 text-center border border-purple-100">
-                  <div className="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-purple-100">
-                      <div className="w-14 h-14 bg-gradient-to-tr from-purple-600 to-purple-400 rounded-full flex items-center justify-center shadow-md">
+              <ModalContent className="p-8 text-center border border-brand-100">
+                  <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-brand-100">
+                      <div className="w-14 h-14 bg-gradient-to-tr from-brand-600 to-brand-400 rounded-full flex items-center justify-center shadow-md">
                         <Check className="w-8 h-8 text-white" strokeWidth={3} />
                       </div>
                   </div>
                   <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">Plan Updated!</h2>
                   <p className="text-gray-600 mb-8 text-lg">
-                      Your subscription has been successfully changed to the <span className="font-bold text-purple-700">{updatedPlanName || 'new'}</span> plan.
+                      Your subscription has been successfully changed to the <span className="font-bold text-brand-700">{updatedPlanName || 'new'}</span> plan.
                   </p>
                   
                   <button 

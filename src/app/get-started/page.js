@@ -37,13 +37,13 @@ const TemplateSkeleton = ({ variant }) => {
         return (
            <div className="flex gap-3 items-center h-48 px-1 mt-4 animate-pulse">
               {/* Subtle Purple */}
-              <div className="w-1/2 h-40 bg-purple-100 rounded-lg border border-purple-200"></div>
+              <div className="w-1/2 h-40 bg-brand-100 rounded-lg border border-brand-200"></div>
               <div className="w-1/2 flex flex-col gap-2">
                   <div className="h-5 w-full bg-gray-200 rounded-md"></div>
                   <div className="h-2 w-full bg-gray-100 rounded-md"></div>
                   <div className="h-2 w-4/5 bg-gray-100 rounded-md"></div>
                   <div className="h-2 w-full bg-gray-100 rounded-md"></div>
-                  <div className="h-8 w-20 bg-purple-100 rounded-md mt-2"></div>
+                  <div className="h-8 w-20 bg-brand-100 rounded-md mt-2"></div>
               </div>
            </div>
         );

@@ -109,7 +109,7 @@ export default function AIContentModal({ isOpen, onClose, onGenerate }) {
             <button 
                 onClick={handleGenerate}
                 disabled={loading || isTooShort}
-                className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-purple-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
+                className="px-8 py-2.5 bg-[#8A63D2] text-white font-bold rounded-xl shadow-lg shadow-brand-200 hover:bg-[#7854bc] transition-all flex items-center gap-2 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
             >
                 {loading ? (
                     <>

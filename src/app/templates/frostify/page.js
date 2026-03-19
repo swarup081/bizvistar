@@ -221,7 +221,7 @@ export default function FrostifyPage() {
 
             {/* --- FAQ SECTION --- */}
             <Editable focusId="faq">
-                <section className="py-10 md:py-20 bg-white border-t border-purple-100">
+                <section className="py-10 md:py-20 bg-white border-t border-brand-100">
                     <div className="container mx-auto px-6 max-w-3xl">
                         <div className="text-center mb-8 md:mb-12">
                             <h2 className="text-[6vw] md:text-3xl font-serif text-[var(--color-primary)]">{businessData.faq?.title}</h2>

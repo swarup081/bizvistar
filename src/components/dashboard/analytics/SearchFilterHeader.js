@@ -119,7 +119,7 @@ export default function SearchFilterHeader({ dateRange, setDateRange }) {
                             key={key}
                             onClick={() => { setDateRange(key); setIsDropdownOpen(false); }}
                             className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                                dateRange === key ? 'text-[#8A63D2] font-medium bg-purple-50' : 'text-gray-700'
+                                dateRange === key ? 'text-[#8A63D2] font-medium bg-brand-50' : 'text-gray-700'
                             }`}
                         >
                             {rangeLabels[key]}

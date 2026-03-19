@@ -51,7 +51,7 @@ function SourceSelector({ value, onChange, error }) {
     return (
         <div className="relative" ref={dropdownRef}>
              <div 
-                className={`w-full p-3 border rounded-md bg-white cursor-pointer flex justify-between items-center ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-1 focus-within:ring-purple-500`}
+                className={`w-full p-3 border rounded-md bg-white cursor-pointer flex justify-between items-center ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-1 focus-within:ring-brand-500`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={value ? 'text-gray-900' : 'text-gray-500 text-sm'}>
@@ -82,7 +82,7 @@ function SourceSelector({ value, onChange, error }) {
                                     onClick={() => handleSelect(opt.value)}
                                 >
                                     {opt.label}
-                                    {value === opt.value && <Check className="w-4 h-4 text-purple-600" />}
+                                    {value === opt.value && <Check className="w-4 h-4 text-brand-600" />}
                                 </div>
                             ))
                         ) : (
@@ -313,7 +313,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         {subStep1 === 1 ? (
                             <div className="space-y-5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><User size={18}/></div>
+                                    <div className="p-2 bg-brand-50 rounded-lg text-brand-600"><User size={18}/></div>
                                     <h3 className="font-bold text-gray-900">Personal Details</h3>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -322,7 +322,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input 
                                             value={formData.firstName} 
                                             onChange={e => updateField('firstName', e.target.value)} 
-                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                             placeholder="Jane" 
                                             autoFocus 
                                         />
@@ -333,7 +333,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input 
                                             value={formData.lastName} 
                                             onChange={e => updateField('lastName', e.target.value)} 
-                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                             placeholder="Doe" 
                                         />
                                         {fieldErrors.lastName && <p className="text-xs text-red-500">{fieldErrors.lastName}</p>}
@@ -344,7 +344,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <input 
                                         value={formData.phone} 
                                         onChange={e => updateField('phone', e.target.value)} 
-                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.phone ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                         placeholder="9876543210" 
                                     />
                                     {fieldErrors.phone && <p className="text-xs text-red-500">{fieldErrors.phone}</p>}
@@ -353,7 +353,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         ) : (
                             <div className="space-y-5">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><MapPin size={18}/></div>
+                                    <div className="p-2 bg-brand-50 rounded-lg text-brand-600"><MapPin size={18}/></div>
                                     <h3 className="font-bold text-gray-900">Address & Source</h3>
                                 </div>
                                 <div className="space-y-1.5">
@@ -361,7 +361,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <input 
                                         value={formData.address} 
                                         onChange={e => updateField('address', e.target.value)} 
-                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.address ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.address ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                         placeholder="Street Address" 
                                         autoFocus 
                                     />
@@ -374,7 +374,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input 
                                             value={formData.city} 
                                             onChange={e => updateField('city', e.target.value)} 
-                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.city ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                            className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.city ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                         />
                                         {fieldErrors.city && <p className="text-xs text-red-500">{fieldErrors.city}</p>}
                                     </div>
@@ -394,7 +394,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                     <input 
                                         value={formData.zipCode} 
                                         onChange={e => updateField('zipCode', e.target.value)} 
-                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.zipCode ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-purple-500'}`} 
+                                        className={`w-full p-3 border rounded-md text-sm outline-none transition-all ${fieldErrors.zipCode ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-1 focus:ring-brand-500'}`}
                                     />
                                     {fieldErrors.zipCode && <p className="text-xs text-red-500">{fieldErrors.zipCode}</p>}
                                 </div>
@@ -411,7 +411,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                         <input 
                                             value={formData.sourceOther} 
                                             onChange={e => updateField('sourceOther', e.target.value)} 
-                                            className="w-full p-3 mt-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all" 
+                                            className="w-full p-3 mt-2 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                                             placeholder="Type source name..." 
                                         />
                                     )}
@@ -430,7 +430,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 value={productSearch}
                                 onChange={e => setProductSearch(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-9 p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                className="w-full pl-9 p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                             />
                             
                             {/* Autocomplete Overlay */}
@@ -462,7 +462,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                                         </div>
                                                         <button 
                                                             disabled={isOutOfStock}
-                                                            className={`p-1.5 rounded-lg transition-colors ${isOutOfStock ? 'bg-gray-200 text-gray-400' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}
+                                                            className={`p-1.5 rounded-lg transition-colors ${isOutOfStock ? 'bg-gray-200 text-gray-400' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}
                                                         >
                                                             <Plus size={16} />
                                                         </button>
@@ -497,8 +497,8 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="mt-3 flex justify-between items-center bg-purple-50 p-3 rounded-xl border border-purple-100">
-                                        <span className="text-purple-900 font-medium text-sm">Total Amount</span>
+                                    <div className="mt-3 flex justify-between items-center bg-brand-50 p-3 rounded-xl border border-brand-100">
+                                        <span className="text-brand-900 font-medium text-sm">Total Amount</span>
                                         <span className="text-lg font-bold text-[#8A63D2]">₹{totalAmount}</span>
                                     </div>
                                 </div>
@@ -531,7 +531,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                                 </div>
                                 <div>
                                     <span className="block text-xs text-gray-500 uppercase mb-0.5">Source</span>
-                                    <span className="text-[#8A63D2] font-bold bg-purple-50 px-2 py-0.5 rounded text-xs inline-block border border-purple-100">
+                                    <span className="text-[#8A63D2] font-bold bg-brand-50 px-2 py-0.5 rounded text-xs inline-block border border-brand-100">
                                         {formData.sourceType === 'other' ? formData.sourceOther : SOURCE_OPTIONS.find(s => s.value === formData.sourceType)?.label}
                                     </span>
                                 </div>
@@ -559,7 +559,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             <textarea 
                                 value={formData.note}
                                 onChange={e => updateField('note', e.target.value)}
-                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
+                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-all"
                                 placeholder="Any special instructions..."
                                 rows={2}
                             />
@@ -589,7 +589,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                     <button 
                         onClick={handleFinalSubmit}
                         disabled={loading}
-                        className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors flex items-center gap-2 shadow-lg shadow-purple-200"
+                        className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors flex items-center gap-2 shadow-lg shadow-brand-200"
                     >
                         {loading ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
                         Create Order

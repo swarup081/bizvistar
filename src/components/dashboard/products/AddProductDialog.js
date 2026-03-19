@@ -265,7 +265,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                       
                       {/* Main Image */}
                       <div className="flex justify-center">
-                          <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-purple-50 transition-all cursor-pointer">
+                          <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-brand-50 transition-all cursor-pointer">
                               {formData.imageUrl ? (
                               <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                               ) : (
@@ -300,7 +300,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                   </div>
                               ))}
                               {formData.additionalImages.length < 9 && (
-                                  <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-colors cursor-pointer">
+                                  <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-brand-50 hover:border-brand-300 transition-colors cursor-pointer">
                                       <Plus size={16} className="text-gray-400" />
                                       <input 
                                           type="file" 
@@ -322,7 +322,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                           onChange={handleChange}
                           required
                           placeholder="e.g. Leather Pouch"
-                          className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                          className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                           />
                       </div>
 
@@ -337,7 +337,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                               onChange={handleChange}
                               required
                               placeholder="0.00"
-                              className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                              className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                               />
                           </div>
                           
@@ -367,7 +367,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                 value={formData.stock}
                                 onChange={handleChange}
                                 placeholder="Qty"
-                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all"
+                                className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all"
                                 />
                             )}
                         </div>
@@ -379,7 +379,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                             value={String(formData.categoryId)} 
                             onValueChange={(val) => setFormData(prev => ({ ...prev, categoryId: val }))}
                         >
-                            <Select.Trigger className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 transition-all bg-white flex justify-between items-center text-left">
+                            <Select.Trigger className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 transition-all bg-white flex justify-between items-center text-left">
                                 <Select.Value placeholder="Select Category">
                                     {categories.find(c => String(c.id) === String(formData.categoryId))?.name || 'Select Category'}
                                 </Select.Value>
@@ -394,11 +394,11 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                             <Select.Item 
                                                 key={c.id} 
                                                 value={String(c.id)} 
-                                                className="relative flex items-center px-8 py-2 text-sm text-gray-700 rounded-md select-none hover:bg-purple-50 hover:text-purple-700 cursor-pointer outline-none data-[highlighted]:bg-purple-50 data-[highlighted]:text-purple-700"
+                                                className="relative flex items-center px-8 py-2 text-sm text-gray-700 rounded-md select-none hover:bg-brand-50 hover:text-brand-700 cursor-pointer outline-none data-[highlighted]:bg-brand-50 data-[highlighted]:text-brand-700"
                                             >
                                                 <Select.ItemText>{c.name}</Select.ItemText>
                                                 <Select.ItemIndicator className="absolute left-2 inline-flex items-center">
-                                                    <CheckCircle size={14} className="text-purple-600"/>
+                                                    <CheckCircle size={14} className="text-brand-600"/>
                                                 </Select.ItemIndicator>
                                             </Select.Item>
                                         ))}
@@ -420,7 +420,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                         key={type.id}
                                         type="button" 
                                         onClick={() => addVariant(type.id)}
-                                        className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-purple-50 hover:text-[#8A63D2] font-medium flex items-center gap-1 transition-colors"
+                                        className="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-brand-50 hover:text-[#8A63D2] font-medium flex items-center gap-1 transition-colors"
                                     >
                                         <type.icon size={12} /> {type.label}
                                     </button>
@@ -456,7 +456,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                     <div className="w-1/3">
                                         <input 
                                             placeholder="Name" 
-                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-brand-500"
                                             value={variant.name}
                                             onChange={(e) => updateVariant(idx, 'name', e.target.value)}
                                         />
@@ -464,7 +464,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                                     <div className="flex-1">
                                         <input 
                                             placeholder={variant.type === 'color' ? "#HEX:Name, #HEX:Name" : "Values (comma separated)"} 
-                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-purple-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md text-xs outline-none focus:ring-1 focus:ring-brand-500"
                                             value={variant.values}
                                             onChange={(e) => updateVariant(idx, 'values', e.target.value)}
                                         />
@@ -485,7 +485,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                             onChange={handleChange}
                             rows={3}
                             placeholder="Product details..."
-                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-purple-500 resize-none transition-all"
+                            className="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:ring-1 focus:ring-brand-500 resize-none transition-all"
                         />
                     </div>
                 </div>
@@ -502,7 +502,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
               <button 
                 type="submit" 
                 disabled={loading}
-                className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-200"
+                className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-brand-200"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                 {productToEdit ? 'Save Changes' : 'Add Product'}
