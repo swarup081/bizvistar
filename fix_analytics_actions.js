@@ -1,30 +1,14 @@
-"use server";
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+const fs = require('fs');
+const file = 'src/app/actions/analyticsActions.js';
+let content = fs.readFileSync(file, 'utf8');
 
-export async function saveMonthlyTarget(websiteId, targetAmount) {
-    if (!websiteId) return { error: "Missing website ID" };
+// The issue is RLS on `monthly_targets`. We need to use service role key for the actual insert/update after verifying ownership.
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
-        {
-            cookies: {
-                getAll() { return cookieStore.getAll() },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {}
-                },
-            },
-        }
-    );
+const adminImport = "import { createServerClient } from '@supabase/ssr';\nimport { createClient } from '@supabase/supabase-js';\nimport { cookies } from 'next/headers';";
 
+content = content.replace(/import \{ createServerClient \} from '@supabase\/ssr';\nimport \{ cookies \} from 'next\/headers';/, adminImport);
 
+const saveLogic = `
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return { error: "Unauthorized" };
 
@@ -40,7 +24,7 @@ export async function saveMonthlyTarget(websiteId, targetAmount) {
 
     try {
         const now = new Date();
-        const monthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const monthString = \`\${now.getFullYear()}-\${String(now.getMonth() + 1).padStart(2, '0')}-01\`;
 
         // Check for existing record
         const { data: existingTarget } = await supabaseAdmin
@@ -68,35 +52,11 @@ export async function saveMonthlyTarget(websiteId, targetAmount) {
         }
 
         return { success: true, targetAmount };
+`;
 
-    } catch (e) {
-        console.error("Save target error:", e);
-        return { error: "Internal error saving target" };
-    }
-}
+content = content.replace(/const \{ data: \{ user \}, error: authError \} = await supabase\.auth\.getUser\(\);\s*if \(authError \|\| !user\) return \{ error: "Unauthorized" \};\s*try \{[\s\S]*?return \{ success: true, targetAmount \};/, saveLogic);
 
-export async function getMonthlyTarget(websiteId) {
-    if (!websiteId) return { error: "Missing website ID" };
-
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
-        {
-            cookies: {
-                getAll() { return cookieStore.getAll() },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {}
-                },
-            },
-        }
-    );
-
-
+const getLogic = `
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return { error: "Unauthorized" };
 
@@ -111,7 +71,7 @@ export async function getMonthlyTarget(websiteId) {
 
     try {
         const now = new Date();
-        const monthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+        const monthString = \`\${now.getFullYear()}-\${String(now.getMonth() + 1).padStart(2, '0')}-01\`;
 
         const { data: targetData, error: fetchError } = await supabaseAdmin
             .from('monthly_targets')
@@ -126,9 +86,10 @@ export async function getMonthlyTarget(websiteId) {
             return { data: Number(targetData.target_revenue) };
         }
         return { data: null }; // no target found
+`;
 
-    } catch (e) {
-        console.error("Get target error:", e);
-        return { error: "Internal error retrieving target" };
-    }
-}
+content = content.replace(/const \{ data: \{ user \}, error: authError \} = await supabase\.auth\.getUser\(\);\s*if \(authError \|\| !user\) return \{ error: "Unauthorized" \};\s*try \{[\s\S]*?return \{ data: null \}; \/\/ no target found/, getLogic);
+
+
+fs.writeFileSync(file, content);
+console.log('Fixed analyticsActions.js to use supabaseAdmin');

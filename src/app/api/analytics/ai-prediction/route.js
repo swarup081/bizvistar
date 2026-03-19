@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 export const runtime = 'edge';
@@ -37,11 +38,23 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+
     const { websiteId } = await req.json();
 
     if (!websiteId) {
       return NextResponse.json({ error: 'Missing websiteId' }, { status: 400 });
     }
+
+    // Verify ownership
+    const { data: website } = await supabase.from('websites').select('id').eq('id', websiteId).eq('user_id', user.id).single();
+    if (!website) return NextResponse.json({ error: "Website not found or access denied" }, { status: 403 });
+
+    // Admin client to bypass RLS on monthly_predictions
+    const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+    );
+
 
     const now = new Date();
     const currentMonth = now.getMonth() + 1;
@@ -55,8 +68,7 @@ export async function POST(req) {
     try {
       const monthString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
 
-      const { data: prediction, error: insightError } = await supabase
-        .from('monthly_predictions')
+      const { data: prediction, error: insightError } = await supabaseAdmin.from('monthly_predictions')
         .select('prediction_data')
         .eq('website_id', websiteId)
         .eq('month', monthString)
@@ -204,22 +216,17 @@ Required JSON format:
         const monthString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
 
         // Check if exists
-        const { data: existing } = await supabase
-            .from('monthly_predictions')
+        const { data: existing } = await supabaseAdmin.from('monthly_predictions')
             .select('id')
             .eq('website_id', websiteId)
             .eq('month', monthString)
             .maybeSingle();
 
         if (existing) {
-            await supabase
-              .from('monthly_predictions')
-              .update({ prediction_data: parsedInsight })
+            await supabaseAdmin.from('monthly_predictions').update({ prediction_data: parsedInsight })
               .eq('id', existing.id);
         } else {
-            await supabase
-              .from('monthly_predictions')
-              .insert({
+            await supabaseAdmin.from('monthly_predictions').insert({
                   website_id: websiteId,
                   month: monthString,
                   prediction_data: parsedInsight
