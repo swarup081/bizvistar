@@ -1,6 +1,6 @@
 export const runtime = 'edge';
 import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
+// Using Web Crypto API instead of Node.js crypto module for Edge Runtime support
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
@@ -28,14 +28,34 @@ export async function POST(req) {
     }
 
     // Verify Signature against any available secret
+    
     let isValid = false;
+    const encoder = new TextEncoder();
+    
     for (const s of secretsToTry) {
-        const shasum = crypto.createHmac('sha256', s);
-        shasum.update(rawBody);
-        const digest = shasum.digest('hex');
-        if (digest === signature) {
-            isValid = true;
-            break;
+        try {
+            const key = await crypto.subtle.importKey(
+              'raw', 
+              encoder.encode(s),
+              { name: 'HMAC', hash: 'SHA-256' },
+              false,
+              ['sign']
+            );
+            const signatureBuffer = await crypto.subtle.sign(
+              'HMAC',
+              key,
+              encoder.encode(rawBody)
+            );
+            const digest = Array.from(new Uint8Array(signatureBuffer))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join('');
+              
+            if (digest === signature) {
+                isValid = true;
+                break;
+            }
+        } catch (e) {
+            console.error('Crypto error verifying signature:', e);
         }
     }
 

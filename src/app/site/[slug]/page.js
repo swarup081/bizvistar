@@ -15,8 +15,8 @@ import BlisslyPage from '@/app/templates/blissly/page';
 import FlavornestPage from '@/app/templates/flavornest/page';
 
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder"
 );
 
 export default async function LiveSitePage(props) {

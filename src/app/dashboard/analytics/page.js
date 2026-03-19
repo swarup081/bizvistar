@@ -1,59 +1,40 @@
-/* TODO: 12%
-vs last period is hardcoded make it correct make the ui better add location data cards something like state wise order top 3 or 5, make ui of cards better */
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  ShoppingBag,
-  Calendar,
-  ArrowUp,
-  ArrowDown,
-  Globe,
-  ChevronDown,
-  AlertCircle,
-  CreditCard,
-  MousePointerClick
-} from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import SearchFilterHeader from "@/components/dashboard/analytics/SearchFilterHeader";
 import AnalyticsOverview from "@/components/dashboard/analytics/AnalyticsOverview";
 import RevenueChart from "@/components/dashboard/analytics/RevenueChart";
-import VisitorsChart from "@/components/dashboard/analytics/VisitorsChart";
-import TopProducts from "@/components/dashboard/analytics/TopProducts";
-import TopPages from "@/components/dashboard/analytics/TopPages";
+import AIPredictionCard from "@/components/dashboard/analytics/AIPredictionCard";
+import TopCategoriesChart from "@/components/dashboard/analytics/TopCategoriesChart";
+import ActiveUsersStateChart from "@/components/dashboard/analytics/ActiveUsersStateChart";
 import FunnelChart from "@/components/dashboard/analytics/FunnelChart";
+import MonthlyTargetCard from "@/components/dashboard/analytics/MonthlyTargetCard";
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("30d");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [websiteId, setWebsiteId] = useState(null);
+  let targetMultiplier = 1;
+  if (dateRange === "7d") targetMultiplier = 7/30;
+  if (dateRange === "90d") targetMultiplier = 3;
+  if (dateRange === "year") targetMultiplier = 12;
 
   const [data, setData] = useState({
     totalRevenue: 0,
+    prevRevenue: 0,
     totalOrders: 0,
+    prevOrders: 0,
     totalVisitors: 0,
-    conversionRate: 0,
-    avgOrderValue: 0,
+    prevVisitors: 0,
     revenueData: [],
-    visitorsData: [],
-    topProducts: [],
-    topPages: [],
+    topCategories: [],
+    totalSales: 0,
+    activeUsersState: [],
+    totalActiveUsers: 0,
     funnelData: []
   });
-
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -77,174 +58,260 @@ export default function AnalyticsPage() {
 
       const { data: website, error: siteError } = await supabase
         .from("websites")
-        .select("id, site_slug")
+        .select("id, site_slug, template_id")
         .eq("user_id", user.id)
         .eq("is_published", true)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (siteError) {
-        console.error("Error fetching website:", JSON.stringify(siteError));
-        setError("Failed to load website data.");
+      if (siteError || !website) {
         setLoading(false);
         return;
       }
+      
+      setWebsiteId(website.id);
 
-      if (!website) {
-        setLoading(false);
-        return;
-      }
-
-      // Date Calculation
+      // Date Calculation (Current Period vs Previous Period)
       const now = new Date();
       let startDate = new Date();
-      if (dateRange === "7d") startDate.setDate(now.getDate() - 7);
-      if (dateRange === "30d") startDate.setDate(now.getDate() - 30);
-      if (dateRange === "90d") startDate.setDate(now.getDate() - 90);
-      if (dateRange === "year") startDate.setFullYear(now.getFullYear(), 0, 1);
+      let prevStartDate = new Date();
+      let prevEndDate = new Date();
+
+      if (dateRange === "7d") {
+        startDate.setDate(now.getDate() - 7);
+        prevStartDate.setDate(startDate.getDate() - 7);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "30d") {
+        startDate.setDate(now.getDate() - 30);
+        prevStartDate.setDate(startDate.getDate() - 30);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "90d") {
+        startDate.setDate(now.getDate() - 90);
+        prevStartDate.setDate(startDate.getDate() - 90);
+        prevEndDate = new Date(startDate);
+      } else if (dateRange === "year") {
+        startDate.setFullYear(now.getFullYear(), 0, 1);
+        prevStartDate.setFullYear(now.getFullYear() - 1, 0, 1);
+        prevEndDate.setFullYear(now.getFullYear(), 0, 1);
+      }
 
       const startDateISO = startDate.toISOString();
+      const prevStartDateISO = prevStartDate.toISOString();
+      const prevEndDateISO = prevEndDate.toISOString();
 
-      const [ordersRes, eventsRes] = await Promise.all([
+      // Fetch ALL orders and events from prevStartDate to now
+      const [allOrdersRes, allEventsRes, customersRes] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, total_amount, created_at")
+          .select("id, total_amount, created_at, status")
           .eq("website_id", website.id)
-          .gte("created_at", startDateISO)
+          .gte("created_at", prevStartDateISO)
           .neq("status", "canceled"),
 
         supabase
           .from("client_analytics")
           .select("event_type, timestamp, location, path")
           .eq("website_id", website.id)
-          .gte("timestamp", startDateISO)
+          .gte("timestamp", prevStartDateISO),
+        supabase
+          .from("customers")
+          .select("id, shipping_address")
+          .eq("website_id", website.id)
       ]);
 
-      const orders = ordersRes.data || [];
-      const events = eventsRes.data || [];
+      const allOrders = allOrdersRes.data || [];
+      const allEvents = allEventsRes.data || [];
+      const allCustomers = customersRes.data || [];
 
-      // Fetch Order Items
+      // Split into Current and Previous Period
+      const currentOrders = allOrders.filter(o => new Date(o.created_at) >= startDate);
+      const prevOrdersList = allOrders.filter(o => new Date(o.created_at) >= prevStartDate && new Date(o.created_at) < prevEndDate);
+
+      const currentEvents = allEvents.filter(e => new Date(e.timestamp) >= startDate);
+      const prevEventsList = allEvents.filter(e => new Date(e.timestamp) >= prevStartDate && new Date(e.timestamp) < prevEndDate);
+
+      // Fetch Order Items for current period only
       let orderItems = [];
-      const orderIds = orders.map(o => o.id);
-      if (orderIds.length > 0) {
+      const currentOrderIds = currentOrders.map(o => o.id);
+      if (currentOrderIds.length > 0) {
         const { data: items } = await supabase
           .from("order_items")
-          .select("quantity, products(name)")
-          .in("order_id", orderIds);
+          .select("quantity, price, products(category_id)")
+          .in("order_id", currentOrderIds);
         orderItems = items || [];
       }
+      
+      const { data: categories } = await supabase
+          .from("categories")
+          .select("id, name")
+          .eq("website_id", website.id);
+      const categoriesMap = {};
+      (categories || []).forEach(c => { categoriesMap[c.id] = c.name; });
 
       // --- Calculations ---
 
       // 1. Totals
-      const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-      const totalOrders = orders.length;
-      const avgOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders) : 0;
+      const totalRevenue = currentOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+      const prevRevenue = prevOrdersList.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+      const totalOrdersCount = currentOrders.length;
+      const prevOrdersCount = prevOrdersList.length;
 
-      // 2. Unique Visitors (Overall)
+      // 2. Visitors
       const uniqueVisitors = new Set();
-      events.forEach(e => {
+      currentEvents.forEach(e => {
         const vid = e.location?.visitor_id || e.location?.ip;
         if (vid) uniqueVisitors.add(vid);
       });
-      const totalVisitors = uniqueVisitors.size || (events.length > 0 ? Math.ceil(events.length / 2) : 0);
-      const conversionRate = totalVisitors > 0 ? ((totalOrders / totalVisitors) * 100).toFixed(1) : "0.0";
+      const totalVisitors = uniqueVisitors.size || (currentEvents.length > 0 ? Math.ceil(currentEvents.length / 2) : 0);
 
+      const prevUniqueVisitors = new Set();
+      prevEventsList.forEach(e => {
+        const vid = e.location?.visitor_id || e.location?.ip;
+        if (vid) prevUniqueVisitors.add(vid);
+      });
+      const prevVisitors = prevUniqueVisitors.size || (prevEventsList.length > 0 ? Math.ceil(prevEventsList.length / 2) : 0);
+
+      
+      
       // 3. Funnel Logic
-      // We need unique visitors for specific paths.
-      // Normalize paths: remove /site/slug prefix if present
       const cleanPath = (p) => {
           if (!p) return '/';
           let cleaned = p;
           if (website.site_slug) {
              cleaned = cleaned.replace(`/site/${website.site_slug}`, '');
-             cleaned = cleaned.replace(`/templates/${website.template_id}`, ''); // Just in case
+             cleaned = cleaned.replace(`/templates/${website.template_id}`, '');
           }
           if (cleaned === '') return '/';
           return cleaned;
       };
 
       const funnelSets = {
-          home: new Set(),
-          shop: new Set(),
+          visitors: new Set(),
+          product: new Set(),
+          addToCart: new Set(),
           checkout: new Set(),
-          purchase: new Set() // Actually purchase count is orders, but unique buyers? Let's use orders count for purchase step simplicity or unique order emails if available.
-          // For simplicity, Purchase count = totalOrders.
       };
 
-      events.forEach(e => {
+      currentEvents.forEach(e => {
           const vid = e.location?.visitor_id || e.location?.ip || 'anon';
+          if (vid === 'anon') return;
+          funnelSets.visitors.add(vid);
           const path = cleanPath(e.path);
-
-          if (path === '/' || path === '') funnelSets.home.add(vid);
-          if (path.includes('shop') || path.includes('product')) funnelSets.shop.add(vid); // Assuming product page counts as shopping intent
+          if (path.includes('shop') || path.includes('product') || e.event_type === 'product_view') funnelSets.product.add(vid);
+          if (e.event_type === 'add_to_cart') funnelSets.addToCart.add(vid);
           if (path.includes('checkout')) funnelSets.checkout.add(vid);
       });
+      
+      const rawVisitors = funnelSets.visitors.size;
+      const rawProductViews = funnelSets.product.size;
+      const rawAddCarts = funnelSets.addToCart.size;
+      const rawCheckouts = funnelSets.checkout.size;
+      const purchases = totalOrdersCount;
+
+      // Waterfall Enforce: Each step must be at least as big as the next step
+      const checkouts = Math.max(rawCheckouts, purchases);
+      const addCarts = Math.max(rawAddCarts, checkouts);
+      const productViews = Math.max(rawProductViews, addCarts);
+      const visitors = Math.max(rawVisitors, productViews, totalVisitors);
+      
+      // Abandoned carts: users who added to cart but didn't purchase.
+      // E.g. addCarts = 10, purchases = 2 -> abandoned = 8
+      const abandonedEstimate = Math.max(0, addCarts - purchases);
 
       const funnelData = [
-          { name: 'Home View', value: funnelSets.home.size, fill: '#8A63D2' },
-          { name: 'Product/Shop', value: funnelSets.shop.size, fill: '#A0C4FF' },
-          { name: 'Checkout', value: funnelSets.checkout.size, fill: '#FFB74D' },
-          { name: 'Purchase', value: totalOrders, fill: '#4CAF50' }
+          { name: 'Total Visitors', value: visitors, fill: '#F5F3FF' },
+          { name: 'Product Views', value: productViews, fill: '#EDE9FE' },
+          { name: 'Add to Cart', value: addCarts, fill: '#DDD6FE' },
+          { name: 'Proceed to Checkout', value: checkouts, fill: '#C4B5FD' },
+          { name: 'Completed Purchases', value: purchases, fill: '#A78BFA' }
       ];
+      
+      const abandonedCartData = abandonedEstimate;
 
       // 4. Grouping for Charts
-      const groupByDate = (items, dateKey, valueKey = null, count = false) => {
+
+
+      // 4. Grouping for Charts (Revenue AND Orders)
+      const getRevenueAndOrdersByDate = (ordersList) => {
         const map = {};
         const d = new Date(startDate);
         const end = new Date();
         while (d <= end) {
-            const key = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            map[key] = 0;
+            const key = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            map[key] = { value: 0, orderCount: 0 };
             d.setDate(d.getDate() + 1);
         }
-        items.forEach(item => {
-            const itemDate = new Date(item[dateKey]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            if (map[itemDate] !== undefined) {
-                if (count) map[itemDate] += 1;
-                else map[itemDate] += (Number(item[valueKey]) || 0);
+        ordersList.forEach(order => {
+            const itemDate = new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            if (map[itemDate]) {
+                map[itemDate].value += (Number(order.total_amount) || 0);
+                map[itemDate].orderCount += 1;
             }
         });
-        return Object.keys(map).map(date => ({ date, value: map[date] }));
+        return Object.keys(map).map(date => ({ date, ...map[date] }));
       };
 
-      const revenueData = groupByDate(orders, 'created_at', 'total_amount');
-      const visitorsData = groupByDate(events, 'timestamp', null, true);
+      const revenueData = getRevenueAndOrdersByDate(currentOrders);
 
-      // 5. Top Products
-      const productMap = {};
+      // 5. Top Categories
+      const catSales = {};
+      let totalSalesCalculated = 0;
       orderItems.forEach(item => {
-        const name = item.products?.name || "Unknown Product";
-        productMap[name] = (productMap[name] || 0) + item.quantity;
+          const catId = item.products?.category_id;
+          const catName = catId ? categoriesMap[catId] || 'Uncategorized' : 'Uncategorized';
+          const salesVal = item.quantity * item.price;
+          catSales[catName] = (catSales[catName] || 0) + salesVal;
+          totalSalesCalculated += salesVal;
       });
-      const topProducts = Object.entries(productMap)
-        .map(([name, sales]) => ({ name, sales }))
-        .sort((a, b) => b.sales - a.sales)
-        .slice(0, 5);
+      
+      let topCategories = Object.entries(catSales)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value);
 
-      // 6. Top Pages (Cleaned)
-      const pageMap = {};
-      events.forEach(e => {
-         const path = cleanPath(e.path);
-         pageMap[path] = (pageMap[path] || 0) + 1;
+      
+      // 6. Active Users by State (from Customers table)
+      const stateMap = {};
+      let totalStateUsers = 0;
+      allCustomers.forEach(c => {
+         const state = c.shipping_address?.state;
+         if (state) {
+             stateMap[state] = (stateMap[state] || 0) + 1;
+             totalStateUsers++;
+         }
       });
-      const topPages = Object.entries(pageMap)
-        .map(([path, views]) => ({ path, views }))
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 5);
+      
+      let sortedStates = Object.entries(stateMap)
+         .map(([state, users]) => ({ state, users }))
+         .sort((a, b) => b.users - a.users);
+
+      let activeUsersState = [];
+      if (sortedStates.length > 4) {
+          activeUsersState = sortedStates.slice(0, 4);
+          const otherUsers = sortedStates.slice(4).reduce((sum, s) => sum + s.users, 0);
+          if (otherUsers > 0) {
+              activeUsersState.push({ state: 'Other', users: otherUsers });
+          }
+      } else {
+          activeUsersState = sortedStates;
+      }
+
 
       setData({
         totalRevenue,
-        totalOrders,
+        prevRevenue,
+        totalOrders: totalOrdersCount,
+        prevOrders: prevOrdersCount,
         totalVisitors,
-        conversionRate,
-        avgOrderValue,
+        prevVisitors,
         revenueData,
-        visitorsData,
-        topProducts,
-        topPages,
-        funnelData
+        topCategories,
+        totalSales: totalSalesCalculated,
+        activeUsersState,
+        totalActiveUsers: totalStateUsers,
+        funnelData,
+        abandonedCartData,
+        targetMultiplier
       });
 
     } catch (err) {
@@ -255,93 +322,77 @@ export default function AnalyticsPage() {
     }
   };
 
-  const rangeLabels = {
-    '7d': 'Last 7 Days',
-    '30d': 'Last 30 Days',
-    '90d': 'Last 90 Days',
-    'year': 'This Year'
-  };
-
   return (
-    <div className="flex flex-col gap-8 font-sans text-[#333] pb-12">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-500 mt-1">Monitor your store's performance and visitor stats.</p>
-        </div>
-
-        <div className="relative" ref={dropdownRef}>
-            <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-            >
-               <Calendar size={16} className="text-gray-500"/>
-               {rangeLabels[dateRange]}
-               <ChevronDown className="h-4 w-4 text-gray-500" />
-            </button>
-            {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-10 overflow-hidden">
-                    {Object.keys(rangeLabels).map((key) => (
-                        <button
-                            key={key}
-                            onClick={() => { setDateRange(key); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                                dateRange === key ? 'text-[#8A63D2] font-medium bg-purple-50' : 'text-gray-700'
-                            }`}
-                        >
-                            {rangeLabels[key]}
-                        </button>
-                    ))}
-                </div>
-            )}
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 font-sans text-[#333] pb-12 w-full max-w-[1600px] mx-auto px-4 md:px-8 mt-4">
+      <SearchFilterHeader dateRange={dateRange} setDateRange={setDateRange} />
 
       {error ? (
-         <div className="rounded-2xl bg-red-50 p-6 flex items-center gap-4 text-red-700 border border-red-100">
+         <div className="rounded-2xl bg-red-50 p-6 flex items-center gap-4 text-red-700 border border-red-100 w-full">
             <AlertCircle />
             <p>{error}</p>
          </div>
       ) : loading ? (
-        <div className="h-64 flex flex-col items-center justify-center text-gray-400 gap-3">
-             <div className="w-8 h-8 border-4 border-purple-200 border-t-[#8A63D2] rounded-full animate-spin"></div>
-             <p className="text-sm font-medium">Loading analytics...</p>
+        
+        <div className="flex flex-col gap-6 w-full overflow-hidden animate-pulse">
+             {/* Overview Cards Skeleton */}
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                 {[1,2,3].map(i => (
+                   <div key={i} className="h-32 bg-gray-100 rounded-2xl w-full"></div>
+                 ))}
+             </div>
+             
+             {/* Row 2 Skeleton */}
+             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                 <div className="lg:col-span-2 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+             </div>
+             
+             {/* Row 3 Skeleton */}
+             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                 <div className="lg:col-span-1 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-2 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+             </div>
         </div>
       ) : (
-        <>
+        <div className="flex flex-col gap-6 w-full overflow-hidden">
            <AnalyticsOverview
              revenue={data.totalRevenue}
+             prevRevenue={data.prevRevenue}
              orders={data.totalOrders}
+             prevOrders={data.prevOrders}
              visitors={data.totalVisitors}
-             conversion={data.conversionRate}
-             aov={data.avgOrderValue}
+             prevVisitors={data.prevVisitors}
+             dateRange={dateRange}
            />
 
-           {/* Charts Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <RevenueChart data={data.revenueData} />
-              <VisitorsChart data={data.visitorsData} />
+           {/* Second Row Grid: Revenue (2), Monthly Target (1), Top Categories (1) */}
+           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-2 min-w-0">
+                 <RevenueChart data={data.revenueData} />
+              </div>
+              <div className="lg:col-span-1 min-w-0">
+                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} prevRevenue={data.prevRevenue} targetMultiplier={data.targetMultiplier} />
+              </div>
+              <div className="lg:col-span-1 min-w-0">
+                 <TopCategoriesChart data={data.topCategories} totalSales={data.totalSales} />
+              </div>
            </div>
 
-           {/* Funnel & Lists Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               <div className="lg:col-span-3">
-                    <FunnelChart data={data.funnelData} />
+           {/* Third Row Grid: Active Users (1), Funnel (2), AI Card (1) */}
+           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+               <div className="lg:col-span-1 min-w-0">
+                    <ActiveUsersStateChart data={data.activeUsersState} totalUsers={data.totalActiveUsers} />
                </div>
-               <div className="lg:col-span-1.5">
-                    <TopProducts products={data.topProducts} />
+               <div className="lg:col-span-2 min-w-0">
+                    <FunnelChart data={data.funnelData} abandonedCarts={data.abandonedCartData} />
                </div>
-               <div className="lg:col-span-1.5">
-                    <TopPages pages={data.topPages} />
+               <div className="lg:col-span-1 min-w-0">
+                    <AIPredictionCard websiteId={websiteId} />
                </div>
            </div>
-           {/* Adjusted layout: Funnel full width, lists below? Or Funnel side?
-               Let's make funnel full width or 2/3.
-               Actually user asked for "more analytics".
-               Let's put Funnel on its own row.
-           */}
-        </>
+        </div>
       )}
     </div>
   );
