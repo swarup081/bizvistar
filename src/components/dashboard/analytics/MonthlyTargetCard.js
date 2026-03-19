@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { saveMonthlyTarget, getMonthlyTarget } from '@/app/actions/analyticsActions';
+import { supabase } from '@/lib/supabaseClient';
 import { MoreHorizontal, Edit2, Check, X, RefreshCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-export default function MonthlyTargetCard({ websiteId, currentRevenue, prevRevenue = 0 }) {
+export default function MonthlyTargetCard({ websiteId, currentRevenue, prevRevenue = 0, targetMultiplier = 1 }) {
   const [target, setTarget] = useState(600000); // Default placeholder
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -44,6 +45,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   }, []);
 
 
+
   const handleSave = async (e) => {
       e.preventDefault();
       e.stopPropagation(); // Stop event bubbling
@@ -55,12 +57,21 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       setLoading(true);
 
       try {
-          const res = await saveMonthlyTarget(websiteId, newTarget);
-          if (res && res.success) {
+          const { data: website } = await supabase.from('websites').select('website_data').eq('id', websiteId).single();
+          let websiteData = website?.website_data || {};
+          if (!websiteData.analytics) websiteData.analytics = {};
+          if (!websiteData.analytics.monthly_targets) websiteData.analytics.monthly_targets = {};
+
+          const key = `${currentYear}-${currentMonth}`;
+          websiteData.analytics.monthly_targets[key] = newTarget;
+
+          const { error } = await supabase.from('websites').update({ website_data: websiteData }).eq('id', websiteId);
+
+          if (!error) {
              setTarget(newTarget);
              setIsEditing(false);
           } else {
-             console.error("Error saving target:", res.error);
+             console.error("Error saving target:", error.message);
           }
       } catch (err) {
           console.error("Error saving target:", err);
@@ -70,11 +81,22 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
 
 
 
+
+
   const handleReset = async () => {
       setLoading(true);
       try {
-          const res = await saveMonthlyTarget(websiteId, 600000); // 6L is default placeholder visually
-          if (res && res.success) {
+          const { data: website } = await supabase.from('websites').select('website_data').eq('id', websiteId).single();
+          let websiteData = website?.website_data || {};
+          if (!websiteData.analytics) websiteData.analytics = {};
+          if (!websiteData.analytics.monthly_targets) websiteData.analytics.monthly_targets = {};
+
+          const key = `${currentYear}-${currentMonth}`;
+          websiteData.analytics.monthly_targets[key] = 600000;
+
+          const { error } = await supabase.from('websites').update({ website_data: websiteData }).eq('id', websiteId);
+
+          if (!error) {
               setTarget(600000); // Reset to default visual
               setIsDropdownOpen(false);
           }
@@ -85,7 +107,11 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   };
 
 
-  const percentage = Math.min(100, (currentRevenue / target) * 100);
+
+
+  const scaledTarget = target * targetMultiplier;
+  const percentage = Math.min(100, (currentRevenue / scaledTarget) * 100);
+
   const pieData = [
     { name: 'Revenue', value: percentage },
     { name: 'Remaining', value: Math.max(0, 100 - percentage) }
@@ -162,13 +188,15 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
         </div>
       </div>
 
-      <div className="text-center mt-6 mb-4">
+
+      <div className="text-center mt-auto mb-6">
           <p className="text-sm font-bold text-gray-800">Great Progress! 🎉</p>
-          <p className="text-xs text-gray-500 mt-1 leading-relaxed px-2">
+          <p className="text-xs text-gray-500 mt-1.5 leading-relaxed px-2">
               Our achievement <span className="text-[#8A63D2] font-semibold">{growthText}</span>;
               let's reach 100% next month.
           </p>
       </div>
+
 
       <div className="flex mt-auto rounded-xl bg-purple-50 overflow-hidden divide-x divide-white h-[60px] relative">
           <div className="flex-1 py-3 px-2 flex flex-col items-center justify-center relative">
@@ -197,7 +225,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
              ) : (
                  <>
                     <span className="text-[11px] text-gray-500 font-medium mb-1 uppercase tracking-wide">Target</span>
-                    <span className="text-sm font-bold text-gray-900">₹{target.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-gray-900">₹{scaledTarget.toLocaleString()}</span>
                  </>
              )}
           </div>

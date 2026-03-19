@@ -16,6 +16,10 @@ export default function AnalyticsPage() {
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("30d");
   const [websiteId, setWebsiteId] = useState(null);
+  let targetMultiplier = 1;
+  if (dateRange === "7d") targetMultiplier = 7/30;
+  if (dateRange === "90d") targetMultiplier = 3;
+  if (dateRange === "year") targetMultiplier = 12;
 
   const [data, setData] = useState({
     totalRevenue: 0,
@@ -97,7 +101,7 @@ export default function AnalyticsPage() {
       const prevEndDateISO = prevEndDate.toISOString();
 
       // Fetch ALL orders and events from prevStartDate to now
-      const [allOrdersRes, allEventsRes] = await Promise.all([
+      const [allOrdersRes, allEventsRes, customersRes] = await Promise.all([
         supabase
           .from("orders")
           .select("id, total_amount, created_at, status")
@@ -109,11 +113,16 @@ export default function AnalyticsPage() {
           .from("client_analytics")
           .select("event_type, timestamp, location, path")
           .eq("website_id", website.id)
-          .gte("timestamp", prevStartDateISO)
+          .gte("timestamp", prevStartDateISO),
+        supabase
+          .from("customers")
+          .select("id, shipping_address")
+          .eq("website_id", website.id)
       ]);
 
       const allOrders = allOrdersRes.data || [];
       const allEvents = allEventsRes.data || [];
+      const allCustomers = customersRes.data || [];
 
       // Split into Current and Previous Period
       const currentOrders = allOrders.filter(o => new Date(o.created_at) >= startDate);
@@ -260,11 +269,12 @@ export default function AnalyticsPage() {
           .map(([name, value]) => ({ name, value }))
           .sort((a, b) => b.value - a.value);
 
-      // 6. Active Users by State
+
+      // 6. Active Users by State (from Customers table)
       const stateMap = {};
       let totalStateUsers = 0;
-      currentEvents.forEach(e => {
-         const state = e.location?.region;
+      allCustomers.forEach(c => {
+         const state = c.shipping_address?.state;
          if (state) {
              stateMap[state] = (stateMap[state] || 0) + 1;
              totalStateUsers++;
@@ -275,7 +285,6 @@ export default function AnalyticsPage() {
          .map(([state, users]) => ({ state, users }))
          .sort((a, b) => b.users - a.users);
 
-      // Top 4 states, group the rest into "Other"
       let activeUsersState = [];
       if (sortedStates.length > 4) {
           activeUsersState = sortedStates.slice(0, 4);
@@ -286,6 +295,7 @@ export default function AnalyticsPage() {
       } else {
           activeUsersState = sortedStates;
       }
+
 
       setData({
         totalRevenue,
@@ -300,7 +310,8 @@ export default function AnalyticsPage() {
         activeUsersState,
         totalActiveUsers: totalStateUsers,
         funnelData,
-        abandonedCartData
+        abandonedCartData,
+        targetMultiplier
       });
 
     } catch (err) {
@@ -321,9 +332,26 @@ export default function AnalyticsPage() {
             <p>{error}</p>
          </div>
       ) : loading ? (
-        <div className="h-64 flex flex-col items-center justify-center text-gray-400 gap-3 w-full">
-             <div className="w-8 h-8 border-4 border-purple-200 border-t-[#8A63D2] rounded-full animate-spin"></div>
-             <p className="text-sm font-medium">Loading analytics...</p>
+
+        <div className="flex flex-col gap-6 w-full overflow-hidden animate-pulse">
+             {/* Overview Cards Skeleton */}
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                 {[1,2,3,4].map(i => <div key={i} className="h-32 bg-gray-100 rounded-2xl w-full"></div>)}
+             </div>
+
+             {/* Row 2 Skeleton */}
+             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                 <div className="lg:col-span-2 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[350px] bg-gray-100 rounded-2xl w-full"></div>
+             </div>
+
+             {/* Row 3 Skeleton */}
+             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                 <div className="lg:col-span-1 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-2 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+                 <div className="lg:col-span-1 h-[300px] bg-gray-100 rounded-2xl w-full"></div>
+             </div>
         </div>
       ) : (
         <div className="flex flex-col gap-6 w-full overflow-hidden">
@@ -343,7 +371,7 @@ export default function AnalyticsPage() {
                  <RevenueChart data={data.revenueData} />
               </div>
               <div className="lg:col-span-1 min-w-0">
-                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} prevRevenue={data.prevRevenue} />
+                 <MonthlyTargetCard websiteId={websiteId} currentRevenue={data.totalRevenue} prevRevenue={data.prevRevenue} targetMultiplier={data.targetMultiplier} />
               </div>
               <div className="lg:col-span-1 min-w-0">
                  <TopCategoriesChart data={data.topCategories} totalSales={data.totalSales} />

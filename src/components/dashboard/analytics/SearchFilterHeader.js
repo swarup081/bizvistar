@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, Calendar } from 'lucide-react';
+import { Search, ChevronDown, Filter } from 'lucide-react';
 
 export default function SearchFilterHeader({ dateRange, setDateRange }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -107,7 +107,7 @@ export default function SearchFilterHeader({ dateRange, setDateRange }) {
                 className="flex items-center justify-center gap-2 w-auto rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
             >
                <div className="flex items-center gap-2 whitespace-nowrap">
-                   <Calendar size={16} className="text-[#8A63D2] hidden sm:block"/>
+                   <Filter size={16} className="text-[#8A63D2] hidden sm:block"/>
                    {rangeLabels[dateRange]}
                </div>
                <ChevronDown className="h-4 w-4 text-gray-500" />

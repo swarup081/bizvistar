@@ -1,4 +1,8 @@
+const fs = require('fs');
+const file = 'src/components/dashboard/analytics/TopCategoriesChart.js';
+let content = fs.readFileSync(file, 'utf8');
 
+const replacement = `
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -72,11 +76,11 @@ export default function TopCategoriesChart({ data, totalSales }) {
               cornerRadius={6}
             >
               {processedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell key={\`cell-\${index}\`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip
-               formatter={(value) => `₹${Number(value).toLocaleString()}`}
+               formatter={(value) => \`₹\${Number(value).toLocaleString()}\`}
                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', padding: '8px 12px' }}
             />
           </PieChart>
@@ -104,7 +108,7 @@ export default function TopCategoriesChart({ data, totalSales }) {
            <div className="text-center text-gray-400 text-sm py-4">No category data</div>
         )}
       </div>
-      <style jsx>{`
+      <style jsx>{\`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
@@ -112,7 +116,11 @@ export default function TopCategoriesChart({ data, totalSales }) {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
-      `}</style>
+      \`}</style>
     </div>
   );
 }
+`;
+
+fs.writeFileSync(file, replacement);
+console.log('Fixed Top Categories');
