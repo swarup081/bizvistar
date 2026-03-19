@@ -11,6 +11,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   const [editValue, setEditValue] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const dropdownRef = useRef(null);
 
   const now = new Date();
@@ -18,9 +19,11 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
   const currentYear = now.getFullYear();
 
 
+
   useEffect(() => {
      async function fetchTarget() {
          if (!websiteId) return;
+         setInitialLoading(true);
          try {
              const res = await getMonthlyTarget(websiteId);
              if (res && res.data) {
@@ -28,10 +31,13 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
              }
          } catch (e) {
              console.error("Failed to load target", e);
+         } finally {
+             setInitialLoading(false);
          }
      }
      fetchTarget();
   }, [websiteId]);
+
 
 
   useEffect(() => {
@@ -114,8 +120,29 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       percentageGrowth = 100;
   }
 
+
+  if (initialLoading) {
+     return (
+        <div id="monthly-target" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative animate-pulse">
+           <div className="flex justify-between items-center mb-4">
+               <div className="h-5 bg-gray-200 rounded w-1/2"></div>
+               <div className="h-5 w-5 bg-gray-200 rounded-full"></div>
+           </div>
+           <div className="relative h-32 w-full mt-2 overflow-hidden flex items-end justify-center">
+               <div className="h-24 w-48 bg-gray-100 rounded-t-full"></div>
+           </div>
+           <div className="text-center mt-auto mb-6 flex flex-col items-center gap-2">
+               <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+               <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+           </div>
+           <div className="h-[60px] bg-gray-100 rounded-xl w-full"></div>
+        </div>
+     );
+  }
+
   return (
     <div id="monthly-target" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
+
       <div className="flex justify-between items-center mb-4 relative" ref={dropdownRef}>
         <h3 className="font-semibold text-gray-900 text-lg">Monthly Target</h3>
 
