@@ -50,23 +50,25 @@ export async function POST(req) {
     // Check if an insight already exists for this month. We handle errors gracefully just in case the table doesn't exist
 
 
+
     let existingInsight = null;
     try {
-      const { data: website, error: insightError } = await supabase
-        .from('websites')
-        .select('website_data')
-        .eq('id', websiteId)
-        .single();
+      const monthString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
 
-      const websiteData = website?.website_data || {};
-      const key = `${currentYear}-${currentMonth}`;
+      const { data: prediction, error: insightError } = await supabase
+        .from('monthly_predictions')
+        .select('prediction_data')
+        .eq('website_id', websiteId)
+        .eq('month', monthString)
+        .maybeSingle();
 
-      if (websiteData.analytics?.ai_insights && websiteData.analytics.ai_insights[key]) {
-          existingInsight = { insights: websiteData.analytics.ai_insights[key] };
+      if (prediction && prediction.prediction_data) {
+          existingInsight = { insights: prediction.prediction_data };
       }
     } catch (e) {
       console.warn("Could not check existing insights:", e);
     }
+
 
 
     if (existingInsight && existingInsight.insights && Object.keys(existingInsight.insights).length > 0) {
@@ -196,29 +198,37 @@ Required JSON format:
     }
 
 
-    // Attempt to save to website_data
+
+    // Attempt to save to monthly_predictions
     try {
-        const { data: website } = await supabase
-          .from('websites')
-          .select('website_data')
-          .eq('id', websiteId)
-          .single();
+        const monthString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
 
-        let websiteData = website?.website_data || {};
-        if (!websiteData.analytics) websiteData.analytics = {};
-        if (!websiteData.analytics.ai_insights) websiteData.analytics.ai_insights = {};
+        // Check if exists
+        const { data: existing } = await supabase
+            .from('monthly_predictions')
+            .select('id')
+            .eq('website_id', websiteId)
+            .eq('month', monthString)
+            .maybeSingle();
 
-        const key = `${currentYear}-${currentMonth}`;
-        websiteData.analytics.ai_insights[key] = parsedInsight;
-
-        await supabase
-          .from('websites')
-          .update({ website_data: websiteData })
-          .eq('id', websiteId);
-
+        if (existing) {
+            await supabase
+              .from('monthly_predictions')
+              .update({ prediction_data: parsedInsight })
+              .eq('id', existing.id);
+        } else {
+            await supabase
+              .from('monthly_predictions')
+              .insert({
+                  website_id: websiteId,
+                  month: monthString,
+                  prediction_data: parsedInsight
+              });
+        }
     } catch(e) {
-        console.warn("Could not save insight:", e);
+        console.warn("Could not save insight to monthly_predictions:", e);
     }
+
 
 
     return NextResponse.json({ data: parsedInsight });

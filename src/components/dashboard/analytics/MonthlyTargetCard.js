@@ -46,6 +46,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
 
 
 
+
   const handleSave = async (e) => {
       e.preventDefault();
       e.stopPropagation(); // Stop event bubbling
@@ -57,21 +58,12 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       setLoading(true);
 
       try {
-          const { data: website } = await supabase.from('websites').select('website_data').eq('id', websiteId).single();
-          let websiteData = website?.website_data || {};
-          if (!websiteData.analytics) websiteData.analytics = {};
-          if (!websiteData.analytics.monthly_targets) websiteData.analytics.monthly_targets = {};
-
-          const key = `${currentYear}-${currentMonth}`;
-          websiteData.analytics.monthly_targets[key] = newTarget;
-
-          const { error } = await supabase.from('websites').update({ website_data: websiteData }).eq('id', websiteId);
-
-          if (!error) {
+          const res = await saveMonthlyTarget(websiteId, newTarget);
+          if (res && res.success) {
              setTarget(newTarget);
              setIsEditing(false);
           } else {
-             console.error("Error saving target:", error.message);
+             console.error("Error saving target:", res.error);
           }
       } catch (err) {
           console.error("Error saving target:", err);
@@ -83,20 +75,13 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
 
 
 
+
+
   const handleReset = async () => {
       setLoading(true);
       try {
-          const { data: website } = await supabase.from('websites').select('website_data').eq('id', websiteId).single();
-          let websiteData = website?.website_data || {};
-          if (!websiteData.analytics) websiteData.analytics = {};
-          if (!websiteData.analytics.monthly_targets) websiteData.analytics.monthly_targets = {};
-
-          const key = `${currentYear}-${currentMonth}`;
-          websiteData.analytics.monthly_targets[key] = 600000;
-
-          const { error } = await supabase.from('websites').update({ website_data: websiteData }).eq('id', websiteId);
-
-          if (!error) {
+          const res = await saveMonthlyTarget(websiteId, 600000); // 6L is default placeholder visually
+          if (res && res.success) {
               setTarget(600000); // Reset to default visual
               setIsDropdownOpen(false);
           }
@@ -105,6 +90,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
       }
       setLoading(false);
   };
+
 
 
 

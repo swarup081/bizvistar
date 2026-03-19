@@ -27,37 +27,34 @@ export async function saveMonthlyTarget(websiteId, targetAmount) {
     if (authError || !user) return { error: "Unauthorized" };
 
     try {
-        // Fetch current website data to merge
-        const { data: website, error: fetchError } = await supabase
-            .from('websites')
-            .select('website_data')
-            .eq('id', websiteId)
-            .eq('user_id', user.id)
-            .single();
-
-        if (fetchError || !website) return { error: "Website not found or access denied" };
-
-        let websiteData = website.website_data || {};
-        if (!websiteData.analytics) websiteData.analytics = {};
-
         const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
-        const key = `${currentYear}-${currentMonth}`;
+        // Create YYYY-MM-01 format string
+        const monthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
-        if (!websiteData.analytics.monthly_targets) {
-             websiteData.analytics.monthly_targets = {};
+        // Check for existing record
+        const { data: existingTarget } = await supabase
+            .from('monthly_targets')
+            .select('id')
+            .eq('website_id', websiteId)
+            .eq('month', monthString)
+            .maybeSingle();
+
+        if (existingTarget) {
+            const { error: updateError } = await supabase
+                .from('monthly_targets')
+                .update({ target_revenue: targetAmount, updated_at: new Date().toISOString() })
+                .eq('id', existingTarget.id);
+            if (updateError) return { error: updateError.message };
+        } else {
+            const { error: insertError } = await supabase
+                .from('monthly_targets')
+                .insert({
+                    website_id: websiteId,
+                    month: monthString,
+                    target_revenue: targetAmount
+                });
+            if (insertError) return { error: insertError.message };
         }
-
-        websiteData.analytics.monthly_targets[key] = targetAmount;
-
-        const { error: updateError } = await supabase
-            .from('websites')
-            .update({ website_data: websiteData })
-            .eq('id', websiteId)
-            .eq('user_id', user.id);
-
-        if (updateError) return { error: updateError.message };
 
         return { success: true, targetAmount };
     } catch (e) {
@@ -91,23 +88,20 @@ export async function getMonthlyTarget(websiteId) {
     if (authError || !user) return { error: "Unauthorized" };
 
     try {
-        const { data: website, error: fetchError } = await supabase
-            .from('websites')
-            .select('website_data')
-            .eq('id', websiteId)
-            .eq('user_id', user.id)
-            .single();
-
-        if (fetchError || !website) return { error: "Website not found" };
-
-        const websiteData = website.website_data || {};
         const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentYear = now.getFullYear();
-        const key = `${currentYear}-${currentMonth}`;
+        const monthString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
 
-        if (websiteData.analytics?.monthly_targets && websiteData.analytics.monthly_targets[key]) {
-            return { data: websiteData.analytics.monthly_targets[key] };
+        const { data: targetData, error: fetchError } = await supabase
+            .from('monthly_targets')
+            .select('target_revenue')
+            .eq('website_id', websiteId)
+            .eq('month', monthString)
+            .maybeSingle();
+
+        if (fetchError) return { error: fetchError.message };
+
+        if (targetData && targetData.target_revenue) {
+            return { data: Number(targetData.target_revenue) };
         }
         return { data: null }; // no target found
     } catch (e) {

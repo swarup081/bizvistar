@@ -2,38 +2,61 @@ const fs = require('fs');
 const file = 'src/app/api/analytics/ai-prediction/route.js';
 let content = fs.readFileSync(file, 'utf8');
 
-// The issue might be that the DB `ai_insights` table doesn't exist, and `maybeSingle()` throws an error or fails.
-// Also, when `websiteId` is missing, it returns a 400, but if OpenAI API key is missing, it skips saving.
+// Replace website_data storage with public.monthly_predictions table
 
-content = content.replace(/let existingInsight = null;[\s\S]*?if \(existingInsight && existingInsight\.insights\)/, `
+const existingCheckBlock = `
     let existingInsight = null;
     try {
-      const { data, error: insightError } = await supabase
-        .from('ai_insights')
-        .select('*')
+      const monthString = \`\${currentYear}-\${String(currentMonth).padStart(2, '0')}-01\`;
+
+      const { data: prediction, error: insightError } = await supabase
+        .from('monthly_predictions')
+        .select('prediction_data')
         .eq('website_id', websiteId)
-        .eq('month', currentMonth)
-        .eq('year', currentYear)
+        .eq('month', monthString)
         .maybeSingle();
 
-      if (data) existingInsight = data;
+      if (prediction && prediction.prediction_data) {
+          existingInsight = { insights: prediction.prediction_data };
+      }
     } catch (e) {
-      console.warn("Table ai_insights might not exist yet:", e);
+      console.warn("Could not check existing insights:", e);
     }
+`;
+content = content.replace(/let existingInsight = null;[\s\S]*?catch \(e\) \{\s*console\.warn\("Could not check existing insights:", e\);\s*\}/, existingCheckBlock);
 
-    if (existingInsight && existingInsight.insights && Object.keys(existingInsight.insights).length > 0)`);
+const newSaveBlock = `
+    // Attempt to save to monthly_predictions
+    try {
+        const monthString = \`\${currentYear}-\${String(currentMonth).padStart(2, '0')}-01\`;
 
-// ensure fallback is ALWAYS returned if OpenAI fails, so it never returns an empty response.
-content = content.replace(/} else \{\s*console\.error\("OpenAI API returned non-ok status:", await openaiRes\.text\(\)\);\s*\}/, `} else {
-            console.error("OpenAI API returned non-ok status:", await openaiRes.text());
-            parsedInsight = fallbackInsight;
-        }`);
+        // Check if exists
+        const { data: existing } = await supabase
+            .from('monthly_predictions')
+            .select('id')
+            .eq('website_id', websiteId)
+            .eq('month', monthString)
+            .maybeSingle();
 
-// Fix error catch
-content = content.replace(/catch \(e\) \{\s*console\.error\("Failed to parse or fetch OpenAI response:", e\);\s*\}/, `catch (e) {
-        console.error("Failed to parse or fetch OpenAI response:", e);
-        parsedInsight = fallbackInsight;
-    }`);
+        if (existing) {
+            await supabase
+              .from('monthly_predictions')
+              .update({ prediction_data: parsedInsight })
+              .eq('id', existing.id);
+        } else {
+            await supabase
+              .from('monthly_predictions')
+              .insert({
+                  website_id: websiteId,
+                  month: monthString,
+                  prediction_data: parsedInsight
+              });
+        }
+    } catch(e) {
+        console.warn("Could not save insight to monthly_predictions:", e);
+    }
+`;
+content = content.replace(/\/\/ Attempt to save to website_data[\s\S]*?catch\(e\) \{\s*console\.warn\("Could not save insight:", e\);\s*\}/, newSaveBlock);
 
 fs.writeFileSync(file, content);
-console.log('Fixed AI API route');
+console.log('Fixed AI API route to use monthly_predictions table');
