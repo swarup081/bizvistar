@@ -367,7 +367,7 @@ function OrdersContent() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                     {loading ? (
-                        [1, 2, 3, 4, 5].map((i) => (
+                        [...Array(10)].map((_, i) => (
                             <tr key={i} className="hover:bg-gray-50/50 transition-colors animate-pulse">
                                 <td className="hidden md:table-cell py-4 px-6 text-sm">
                                     <div className="h-5 w-20 bg-gray-200 rounded-md"></div>

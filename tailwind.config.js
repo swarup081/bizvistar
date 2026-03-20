@@ -9,6 +9,7 @@ module.exports = {
       extend: {
         colors: {
           brand: {
+            DEFAULT: '#8A63D2', // Allows usage like bg-brand, text-brand
             50: '#f4f1fa',
             100: '#e8e2f5',
             200: '#d1c5eb',

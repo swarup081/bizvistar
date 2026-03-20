@@ -734,7 +734,7 @@ export default function TemplatesPage() {
                 // Determine if this is a "matched" template based on filter
                 const isMatch = activeFilter ? template.keywords.some(k => k.toLowerCase().includes(activeFilter.toLowerCase())) : true;
                 return (
-                  <div key={`${template.title}-${index}`} className={cn("w-full transition-all duration-300", !isMatch && activeFilter && "opacity-60 scale-95 grayscale-[50%]")}>
+                  <div key={`${template.title}-${index}`} className="w-full transition-all duration-300">
                     <TemplateCard {...template} />
                     {!isMatch && activeFilter && (
                       <div className="mt-2 text-center text-sm font-medium text-gray-400">Other Template</div>

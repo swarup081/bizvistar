@@ -12,15 +12,17 @@ const FaqItem = ({ q, a }) => {
     <div className="border-b border-gray-200 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-5 text-left text-gray-900"
+        className="flex w-full items-center justify-between py-5 text-left group transition-colors"
       >
-        <span className="text-lg font-medium text-gray-900">{q}</span>
-        <ChevronDown
-          className={cn(
-            'h-5 w-5 text-gray-400 transition-transform duration-300',
-            isOpen ? 'rotate-180' : ''
-          )}
-        />
+        <span className={cn("text-lg font-medium transition-colors", isOpen ? "text-brand-600" : "text-gray-900 group-hover:text-brand-600")}>{q}</span>
+        <div className={cn("flex items-center justify-center w-8 h-8 rounded-full transition-colors", isOpen ? "bg-brand-50" : "bg-gray-50 group-hover:bg-brand-50")}>
+          <ChevronDown
+            className={cn(
+              'h-5 w-5 transition-transform duration-300',
+              isOpen ? 'rotate-180 text-brand-600' : 'text-gray-400 group-hover:text-brand-600'
+            )}
+          />
+        </div>
       </button>
 
       <AnimatePresence>

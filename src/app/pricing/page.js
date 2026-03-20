@@ -775,15 +775,17 @@ const FaqItem = ({ q, a }) => {
     <div className="border-b border-gray-200 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-5 text-left text-gray-900" // STYLE CHANGED
+        className="flex w-full items-center justify-between py-5 text-left group transition-colors"
       >
-        <span className="text-lg font-medium text-gray-900">{q}</span> {/* STYLE CHANGED */}
-        <ChevronDown
-          className={cn(
-            'h-5 w-5 text-gray-400 transition-transform duration-300', // STYLE CHANGED
-            isOpen ? 'rotate-180' : ''
-          )}
-        />
+        <span className={cn("text-lg font-medium transition-colors", isOpen ? "text-brand-600" : "text-gray-900 group-hover:text-brand-600")}>{q}</span>
+        <div className={cn("flex items-center justify-center w-8 h-8 rounded-full transition-colors", isOpen ? "bg-brand-50" : "bg-gray-50 group-hover:bg-brand-50")}>
+          <ChevronDown
+            className={cn(
+              'h-5 w-5 transition-transform duration-300',
+              isOpen ? 'rotate-180 text-brand-600' : 'text-gray-400 group-hover:text-brand-600'
+            )}
+          />
+        </div>
       </button>
 
       <AnimatePresence>
@@ -795,7 +797,7 @@ const FaqItem = ({ q, a }) => {
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="pb-5 pr-10 text-base text-gray-600 leading-relaxed"> {/* STYLE CHANGED, SUPPORT JSX */}
+            <div className="pb-5 pr-10 text-base text-gray-600 leading-relaxed">
               {typeof a === 'string' ? <p>{a}</p> : a}
             </div>
           </motion.div>
@@ -951,7 +953,29 @@ const FaqSection = ({ pageType = 'default' }) => {
 
 export default function PricingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center pt-24 pb-12 px-6">
+            <div className="w-full max-w-4xl text-center mb-16 animate-pulse">
+                 <div className="h-12 w-3/4 max-w-lg mx-auto bg-gray-200 rounded-md mb-6"></div>
+                 <div className="h-6 w-1/2 max-w-md mx-auto bg-gray-200 rounded-md"></div>
+            </div>
+            <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8 animate-pulse">
+                 {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-[500px] flex flex-col">
+                        <div className="h-8 w-1/3 bg-gray-200 rounded-md mb-4"></div>
+                        <div className="h-6 w-2/3 bg-gray-200 rounded-md mb-8"></div>
+                        <div className="h-16 w-1/2 bg-gray-200 rounded-md mb-8"></div>
+                        <div className="space-y-4 flex-1">
+                            <div className="h-4 w-full bg-gray-100 rounded-md"></div>
+                            <div className="h-4 w-full bg-gray-100 rounded-md"></div>
+                            <div className="h-4 w-3/4 bg-gray-100 rounded-md"></div>
+                        </div>
+                        <div className="h-12 w-full bg-gray-200 rounded-full mt-auto"></div>
+                    </div>
+                 ))}
+            </div>
+        </div>
+    }>
       <PricingContent />
     </Suspense>
   );

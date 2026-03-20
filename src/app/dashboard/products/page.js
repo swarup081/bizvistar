@@ -575,7 +575,7 @@ export default function ProductsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                     {loading ? (
-                        [...Array(5)].map((_, i) => (
+                        [...Array(10)].map((_, i) => (
                         <tr key={i} className="animate-pulse">
                             <td className="py-4 pl-4 md:px-6">
                                 <div className="flex items-center gap-4">
