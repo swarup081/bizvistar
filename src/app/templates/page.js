@@ -638,8 +638,10 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 };
 
 
+import { Suspense } from 'react';
+
 // --- Main Page (Container and Logic) ---
-export default function TemplatesPage() {
+function TemplatesContent() {
   const [storeName, setStoreName] = useState("Your Business");
   const [session, setSession] = useState(null);
   const [filter, setFilter] = useState(''); // State for the search/filter input
@@ -732,13 +734,15 @@ export default function TemplatesPage() {
             <div className="mt-12 grid grid-cols-1 xl:grid-cols-2 justify-items-center gap-x-16 gap-y-12 lg:justify-items-start lg:gap-y-28 lg:pl-6">
               {sortedTemplates.map((template, index) => {
                 // Determine if this is a "matched" template based on filter
-                const isMatch = activeFilter ? template.keywords.some(k => k.toLowerCase().includes(activeFilter.toLowerCase())) : true;
+                const isMatch = activeFilter ? template.keywords.some(k => k.toLowerCase().includes(activeFilter.toLowerCase())) : false;
+
+                // Dynamically assign "Recommended" status:
+                // If filtering, top matches become recommended. If not filtering, fall back to global default.
+                const dynamicIsRecommended = activeFilter ? isMatch : template.isRecommended;
+
                 return (
                   <div key={`${template.title}-${index}`} className="w-full transition-all duration-300">
-                    <TemplateCard {...template} />
-                    {!isMatch && activeFilter && (
-                      <div className="mt-2 text-center text-sm font-medium text-gray-400">Other Template</div>
-                    )}
+                    <TemplateCard {...template} isRecommended={dynamicIsRecommended} />
                   </div>
                 );
               })}
@@ -754,5 +758,26 @@ export default function TemplatesPage() {
 
        
     </div>
+  );
+}
+
+export default function TemplatesPage() {
+  return (
+    <Suspense fallback={
+        <div className="bg-gray-50 min-h-screen">
+          <div className="h-[65px] bg-white border-b border-gray-200"></div>
+          <div className="h-14 bg-white border-b border-gray-200 mb-16"></div>
+          <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+            <div className="h-12 w-96 bg-gray-200 rounded-md animate-pulse mb-10"></div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 justify-items-center gap-x-16 gap-y-12 lg:justify-items-start lg:gap-y-28 lg:pl-6">
+                {[...Array(4)].map((_, i) => (
+                   <div key={i} className="w-[500px] h-[350px] bg-white rounded-3xl shadow-sm border border-gray-200 animate-pulse"></div>
+                ))}
+            </div>
+          </div>
+        </div>
+    }>
+      <TemplatesContent />
+    </Suspense>
   );
 }

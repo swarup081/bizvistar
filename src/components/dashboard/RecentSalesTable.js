@@ -129,7 +129,7 @@ export default function RecentSalesTable({ orders = [], isSearching = false }) {
                 <td className="py-5 text-right align-middle">
                    <button 
                      onClick={() => handleManage(row.id)}
-                     className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-brand-600 hover:bg-brand-500 hover:text-white transition-colors"
+                     className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 md:px-4 text-[10px] md:text-xs font-bold text-brand-600 hover:bg-[#8A63D2] hover:text-white transition-colors"
                    >
                      Manage
                    </button>

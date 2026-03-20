@@ -746,7 +746,7 @@ function CheckoutContent() {
                                     type="checkbox" 
                                     checked={addCompanyDetails}
                                     onChange={(e) => setAddCompanyDetails(e.target.checked)}
-                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-brand-500 checked:bg-brand-600 checked:border-brand-600"
+                                    className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm transition-all hover:border-[#8A63D2] checked:bg-[#8A63D2] checked:border-[#8A63D2]"
                                 />
                                 <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} />
                              </div>
@@ -789,7 +789,7 @@ function CheckoutContent() {
                     <button 
                         type="submit"
                         disabled={isProcessing}
-                        className="w-full sm:w-auto px-9 py-3 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto px-9 py-3 bg-brand-600 hover:bg-[#7554b3] disabled:bg-brand-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <>

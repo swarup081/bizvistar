@@ -508,7 +508,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
               className={cn(
                 'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
                 plan.isRecommended
-                  ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-md hover:shadow-lg'
+                  ? 'bg-brand-600 text-white hover:bg-[#7554b3] shadow-md hover:shadow-lg'
                   : 'bg-gray-900 text-white hover:bg-gray-800'
               )}
             >
@@ -612,7 +612,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                     price: '799'
                 }
             }}>
-              <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-brand-600 hover:bg-brand-700 transition-colors mt-4">
+              <button className="px-10 py-2 text-base font-semibold text-white rounded-full bg-brand-600 hover:bg-[#7554b3] transition-colors mt-4">
                 Select
               </button>
             </Link>

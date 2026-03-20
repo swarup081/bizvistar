@@ -27,7 +27,7 @@ export default function ErrorDialog({ isOpen, onClose, title, message, primaryAc
                 {onPrimaryAction && (
                     <button 
                         onClick={onPrimaryAction}
-                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg bg-brand-600 px-4 font-medium text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+                        className="flex-1 inline-flex h-[40px] items-center justify-center rounded-lg bg-brand-600 px-4 font-medium text-white hover:bg-[#7554b3] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
                     >
                         {primaryActionLabel || 'Confirm'}
                     </button>
