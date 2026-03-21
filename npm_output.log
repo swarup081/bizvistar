@@ -1,0 +1,66 @@
+
+> bizvistar@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1774ms
+ ○ Compiling /sign-in ...
+ GET /sign-in?redirect=%2Feditor%2Ffaketemplate 200 in 6.3s (compile: 5.9s, render: 444ms)
+ POST /sign-in?redirect=%2Feditor%2Ffaketemplate 200 in 45ms (compile: 8ms, render: 37ms)
+Error: Invalid UTF-8 sequence
+    at ignore-listed frames {
+
+}
+ ⨯ Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+ ⨯ unhandledRejection: Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+ ⨯ unhandledRejection:  Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+ ⨯ unhandledRejection: Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+ ⨯ unhandledRejection:  Error: Invalid UTF-8 sequence
+    at ignore-listed frames
+ GET /editor/faketemplate 404 in 2.1s (compile: -177647µs, proxy.ts: 2.1s, render: 183ms)
+ GET /sign-in?redirect=%2Fdashboard%2Fwebsite 200 in 117ms (compile: 9ms, render: 108ms)
+ POST /sign-in?redirect=%2Fdashboard%2Fwebsite 200 in 23ms (compile: 7ms, render: 16ms)
+ GET /test-skeleton 404 in 80ms (compile: 9ms, render: 72ms)
+ POST /test-skeleton 404 in 19ms (compile: 8ms, render: 11ms)
+ ⨯ ./src/app/test-skeleton
+Module not found: Can't resolve './home/jules/verification/SkeletonTestComponent'
+server relative imports are not implemented yet. Please try an import relative to the file you are importing from.
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./src/app/test-skeleton/page.js:1:1
+Module not found: Can't resolve '/home/jules/verification/SkeletonTestComponent'
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m [33mSkeletonTestComponent[39m [36mfrom[39m [32m'/home/jules/verification/SkeletonTestComponent'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m [36mexport[39m [36mdefault[39m [36mfunction[39m [33mTestSkeletonPage[39m() {
+ [90m 4 |[39m     [36mreturn[39m [33m<[39m[33mSkeletonTestComponent[39m [33m/[39m[33m>[39m[33m;[39m[0m
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ GET /test-skeleton 500 in 1066ms (compile: 1028ms, render: 38ms)
+ ✓ Compiled in 123ms
+ GET /test-skeleton 200 in 468ms (compile: 213ms, render: 255ms)
+ GET /loadingofeditorBackgroundRemover.mp4 404 in 115ms (compile: 51ms, render: 64ms)
+ POST /test-skeleton 200 in 24ms (compile: 5ms, render: 19ms)

@@ -166,20 +166,20 @@ function WebsiteDashboardContent() {
           </main>
         </div>
 
-        {/* Column 2: Sidebar Skeleton (Hidden on mobile) */}
-        <aside className="hidden lg:flex w-[380px] bg-white border-l border-gray-200 h-full flex-col z-30 shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+        {/* Column 2: Sidebar Skeleton (Right on desktop, Bottom fixed on mobile) */}
+        <aside className="bg-white border-t lg:border-t-0 lg:border-l border-gray-200 w-full lg:w-[320px] xl:w-[380px] h-[35vh] lg:h-full fixed lg:static bottom-0 left-0 z-40 lg:z-30 flex flex-col shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none">
           {/* Sidebar Tabs */}
-          <div className="h-[65px] border-b border-gray-200 flex items-center justify-around px-2">
-             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
-             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
-             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="h-[60px] lg:h-[65px] border-b border-gray-200 flex items-center justify-around px-2 shrink-0">
+             <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
+             <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
+             <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
           </div>
           {/* Sidebar Content Items */}
-          <div className="p-6 space-y-4">
-             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
+          <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex-1">
+             <div className="h-12 lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="h-12 lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="hidden lg:block h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
           </div>
         </aside>
       </div>
