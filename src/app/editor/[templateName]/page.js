@@ -41,12 +41,13 @@ export default function EditorPage() {
                 </div>
 
                 {/* Progress Bar (Animated) */}
-                <div className="absolute bottom-0 left-0 h-[2px] bg-[#8A63D2] w-full animate-[progress_2s_ease-in-out_infinite]" style={{ transformOrigin: 'left' }}></div>
+                <div className="absolute bottom-0 left-0 h-[2px] bg-[#8A63D2] w-full animate-[progress_3s_ease-out_forwards]" style={{ transformOrigin: 'left' }}></div>
                 <style dangerouslySetInnerHTML={{__html: `
                   @keyframes progress {
                     0% { transform: scaleX(0); opacity: 1; }
-                    50% { transform: scaleX(0.5); opacity: 1; }
-                    100% { transform: scaleX(1); opacity: 0; }
+                    40% { transform: scaleX(0.4); opacity: 1; }
+                    80% { transform: scaleX(0.8); opacity: 1; }
+                    100% { transform: scaleX(0.95); opacity: 1; }
                   }
                 `}} />
              </header>
@@ -61,14 +62,14 @@ export default function EditorPage() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-48 h-48 md:w-64 md:h-64 object-contain opacity-80"
                  />
              </div>
           </main>
         </div>
 
-        {/* Column 2: Sidebar Skeleton */}
-        <aside className="w-full lg:w-[380px] bg-white border-l border-gray-200 h-[50vh] lg:h-full flex flex-col z-30 shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+        {/* Column 2: Sidebar Skeleton (Hidden on mobile) */}
+        <aside className="hidden lg:flex w-[380px] bg-white border-l border-gray-200 h-full flex-col z-30 shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
           {/* Sidebar Tabs */}
           <div className="h-[65px] border-b border-gray-200 flex items-center justify-around px-2">
              <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>

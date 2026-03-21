@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -638,7 +639,6 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 };
 
 
-import { Suspense } from 'react';
 
 // --- Main Page (Container and Logic) ---
 function TemplatesContent() {
