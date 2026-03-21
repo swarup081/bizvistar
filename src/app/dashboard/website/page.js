@@ -175,9 +175,11 @@ function WebsiteDashboardContent() {
              <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
           </div>
           {/* Sidebar Content Items */}
-          <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex-1">
-             <div className="h-12 lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="h-12 lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex-1 flex flex-col">
+             {/* Mobile: One large card. Desktop: First small card */}
+             <div className="flex-1 lg:flex-none lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             {/* Desktop only cards */}
+             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
              <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
              <div className="hidden lg:block h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
           </div>
