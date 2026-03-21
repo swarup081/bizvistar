@@ -62,7 +62,7 @@ export default function PlanManager({ currentPlan, productCount }) {
     const { plan: nextPlan, isYearlyUpsell } = nextPlanInfo;
     const isStarter = currentPlan?.name === 'Starter';
     // Match inspiration title exactly or adapt based on tier
-    const displayTitle = isStarter ? "Bizvistar" : "Vision"; 
+    const displayTitle = isStarter ? "Bizvistar" : "Bizvistar"; 
 
     return (
         <div className="w-full mt-6 space-y-4">

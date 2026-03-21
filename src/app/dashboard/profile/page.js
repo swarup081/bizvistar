@@ -432,7 +432,7 @@ export default function ProfilePage() {
       )}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Profile <span className="text-gray-400 font-light italic">Management</span></h1>
+        <h1 className="text-3xl font-bold text-gray-900">Profile Management</h1>
         <p className="text-gray-500 mt-2">Manage your personal information, business settings, and subscription plan.</p>
       </div>
 
