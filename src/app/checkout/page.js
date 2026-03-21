@@ -789,7 +789,7 @@ function CheckoutContent() {
                     <button 
                         type="submit"
                         disabled={isProcessing}
-                        className="w-full sm:w-auto px-9 py-3 bg-brand-600 hover:bg-[#7554b3] disabled:bg-brand-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
+                        className="w-full bg-[#7554b3] sm:w-auto px-9 py-3 bg-brand-600 hover:bg-[#8a63d2] disabled:bg-brand-400 text-white text-lg font-bold rounded-lg shadow-md transition-colors flex items-center justify-center gap-2"
                     >
                         {isProcessing ? (
                             <>
@@ -855,7 +855,7 @@ function CheckoutContent() {
                      {discountAmount > 0 && appliedCoupon && (
                         <div className="flex justify-between items-center mb-4 text-emerald-600 font-medium">
                             <div className="flex items-center gap-2">
-                                <Tag className="w-4 h-4" />
+                                <Tag className={cn("w-4 h-4 transition-colors", showPromo ? "text-[#8A63D2]" : "text-gray-700 group-hover:text-[#8A63D2]")} />
                                 <span>{appliedCoupon.code} -{appliedCoupon.percentOff}%</span>
                             </div>
                             <span>-{formattedDiscount}</span>
@@ -895,10 +895,12 @@ function CheckoutContent() {
                     <button
                         type="button"
                         onClick={() => setShowPromo(!showPromo)}
-                        className="flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-700 transition-colors w-full"
+                        className="group flex items-center gap-2 font-semibold transition-colors w-full"
                     >
                         <Tag className="w-4 h-4" />
-                        <span>Have a coupon code?</span>
+                        <span className={cn("transition-colors", showPromo ? "text-[#8A63D2]" : "text-[#a28ad6] group-hover:text-[#8A63D2]")}>
+                          Have a coupon code?
+                        </span>
                         <ChevronDown className={cn("w-4 h-4 transition-transform ml-auto", showPromo ? "rotate-180" : "")} />
                     </button>
                     
@@ -922,7 +924,7 @@ function CheckoutContent() {
                                         <div className="flex gap-2 items-center">
                                             <input 
                                                 type="text" 
-                                                className={cn("w-full p-3 border rounded-md focus:outline-none focus:border-brand-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
+                                                className={cn("w-full p-3 border rounded-md focus:outline-[#8a63d2] focus:border-brand-500 transition-colors", couponStatus === 'invalid' ? "border-red-500 bg-red-50" : "border-gray-300")}
                                                 placeholder="Code"
                                                 value={promoCode}
                                                 onChange={(e) => {
@@ -933,7 +935,7 @@ function CheckoutContent() {
                                             <button 
                                                 onClick={handleApplyCoupon}
                                                 disabled={couponStatus === 'loading' || !promoCode}
-                                                className="px-6 py-3 border border-brand-600 text-brand-600 font-semibold rounded-md hover:bg-brand-50 disabled:opacity-50"
+                                                className="px-6 py-3 bg-[#8a63d2]  border-brand-600 text-[#fff] font-semibold rounded-md hover:bg-brand-50 "
                                             >
                                                 {couponStatus === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
                                             </button>
@@ -1034,3 +1036,4 @@ export default function CheckoutPage() {
         </Suspense>
     );
 }
+

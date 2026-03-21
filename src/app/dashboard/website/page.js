@@ -121,11 +121,7 @@ function WebsiteDashboardContent() {
                        <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
                        <div className="hidden lg:block h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
                     </div>
-                    {/* Center: Device toggles (desktop) */}
-                    <div className="hidden lg:flex items-center gap-2">
-                       <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
-                       <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
-                    </div>
+                  
                     {/* Right: Actions */}
                     <div className="flex gap-2">
                         <div className="h-8 w-8 lg:w-20 bg-gray-200 rounded-full animate-pulse"></div>
@@ -152,8 +148,8 @@ function WebsiteDashboardContent() {
           </div>
 
           {/* Iframe Area Skeleton (Video) */}
-          <main className="flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-4 lg:p-0">
-             <div className="w-full h-full lg:w-[1024px] lg:h-[100%] bg-white rounded-3xl lg:rounded-md shadow-lg border border-gray-300 flex items-center justify-center overflow-hidden relative">
+          <main className="flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-0 lg:p-0">
+             <div className="w-full h-full lg:w-[1024px] lg:h-[100%] bg-white shadow-lg border border-gray-300 flex items-center justify-center overflow-hidden relative">
                  <video
                     src="/loadingofeditorBackgroundRemover.mp4"
                     autoPlay
@@ -167,21 +163,23 @@ function WebsiteDashboardContent() {
         </div>
 
         {/* Column 2: Sidebar Skeleton (Right on desktop, Bottom fixed on mobile) */}
-        <aside className="bg-white border-t lg:border-t-0 lg:border-l border-gray-200 w-full lg:w-[320px] xl:w-[380px] h-[35vh] lg:h-full fixed lg:static bottom-0 left-0 z-40 lg:z-30 flex flex-col shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none">
+        <aside className="bg-white border-t lg:border-t-0 lg:border-l border-gray-200 w-full lg:w-[320px] xl:w-[380px] h-[10vh] lg:h-full fixed lg:static bottom-0 left-0 z-40 lg:z-30 flex flex-col shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none">
           {/* Sidebar Tabs */}
-          <div className="h-[60px] lg:h-[65px] border-b border-gray-200 flex items-center justify-around px-2 shrink-0">
+         <div className="border-b border-gray-200 flex items-center justify-around px-2 py-2">
              <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
              <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
              <div className="h-10 w-20 lg:w-24 bg-gray-200 rounded-md animate-pulse"></div>
           </div>
           {/* Sidebar Content Items */}
-          <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex-1 flex flex-col">
-             {/* Mobile: One large card. Desktop: First small card */}
-             <div className="flex-1 lg:flex-none lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+          <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex flex-col">
              {/* Desktop only cards */}
              <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="hidden lg:block h-80 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
              <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="hidden lg:block h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
+             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+
+
           </div>
         </aside>
       </div>
