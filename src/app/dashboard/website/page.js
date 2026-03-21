@@ -113,40 +113,72 @@ function WebsiteDashboardContent() {
         <div className="flex flex-col overflow-hidden relative h-full">
           {/* Topbar Skeleton (Two rows to match EditorTopNav) */}
           <div className="flex-shrink-0 z-20 relative">
-             <header className="w-full bg-white shadow-sm">
+             <header className="w-full bg-white shadow-sm relative">
+                {/* Row 1: Logo & Actions */}
                 <div className="w-full h-[65px] border-b border-gray-200 px-4 flex items-center justify-between">
-                    <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="flex gap-3 hidden lg:flex">
-                        <div className="h-8 w-24 bg-gray-200 rounded-full animate-pulse"></div>
-                        <div className="h-8 w-24 bg-gray-200 rounded-full animate-pulse"></div>
+                    {/* Left: Logo and Dashboard Link */}
+                    <div className="flex items-center gap-4">
+                       <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
+                       <div className="hidden lg:block h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    {/* Center: Device toggles (desktop) */}
+                    <div className="hidden lg:flex items-center gap-2">
+                       <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
+                       <div className="h-8 w-8 bg-gray-200 rounded-md animate-pulse"></div>
+                    </div>
+                    {/* Right: Actions */}
+                    <div className="flex gap-2">
+                        <div className="h-8 w-8 lg:w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="h-8 w-8 lg:w-24 bg-gray-200 rounded-full animate-pulse"></div>
                     </div>
                 </div>
+                {/* Row 2: Page Selector */}
                 <div className="w-full h-[50px] border-b border-gray-200 px-4 flex items-center">
-                    <div className="h-6 w-48 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-6 w-12 bg-gray-200 rounded animate-pulse mr-2"></div>
+                    <div className="h-8 w-32 bg-gray-200 rounded-md animate-pulse"></div>
                 </div>
+
+                {/* Progress Bar (Animated) */}
+                <div className="absolute bottom-0 left-0 h-[2px] bg-[#8A63D2] w-full animate-[progress_2s_ease-in-out_infinite]" style={{ transformOrigin: 'left' }}></div>
+                <style dangerouslySetInnerHTML={{__html: `
+                  @keyframes progress {
+                    0% { transform: scaleX(0); opacity: 1; }
+                    50% { transform: scaleX(0.5); opacity: 1; }
+                    100% { transform: scaleX(1); opacity: 0; }
+                  }
+                `}} />
              </header>
           </div>
-          {/* Iframe Area Skeleton */}
+
+          {/* Iframe Area Skeleton (Video) */}
           <main className="flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] p-4 lg:p-0">
-             <div className="w-full h-full lg:w-[1024px] lg:h-[100%] bg-white rounded-3xl lg:rounded-md shadow-lg border border-gray-300 flex items-center justify-center animate-pulse transition-all duration-300">
-                 <div className="flex flex-col items-center gap-4 text-gray-400">
-                    <div className="w-12 h-12 border-4 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
-                    <p className="text-sm font-medium">Loading Editor...</p>
-                 </div>
+             <div className="w-full h-full lg:w-[1024px] lg:h-[100%] bg-white rounded-3xl lg:rounded-md shadow-lg border border-gray-300 flex items-center justify-center overflow-hidden relative">
+                 <video
+                    src="/loadingofeditorBackgroundRemover.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover opacity-80"
+                 />
              </div>
           </main>
         </div>
 
         {/* Column 2: Sidebar Skeleton */}
         <aside className="w-full lg:w-[380px] bg-white border-l border-gray-200 h-[50vh] lg:h-full flex flex-col z-30 shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
-          <div className="h-16 border-b border-gray-200 flex items-center px-6">
-             <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+          {/* Sidebar Tabs */}
+          <div className="h-[65px] border-b border-gray-200 flex items-center justify-around px-2">
+             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+             <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
           </div>
+          {/* Sidebar Content Items */}
           <div className="p-6 space-y-4">
-             <div className="h-12 w-full bg-gray-100 rounded-lg animate-pulse"></div>
-             <div className="h-12 w-full bg-gray-100 rounded-lg animate-pulse"></div>
-             <div className="h-12 w-full bg-gray-100 rounded-lg animate-pulse"></div>
-             <div className="h-32 w-full bg-gray-100 rounded-lg animate-pulse"></div>
+             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+             <div className="h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
           </div>
         </aside>
       </div>
