@@ -45,21 +45,40 @@ export default function CheckoutPage() {
 
     const handleApplyCoupon = (codeToApply = couponInput) => {
         setCouponError('');
-        const upperCode = codeToApply.toUpperCase();
-        const offer = activeOffers.find(o => o.code === upperCode);
+        const cleanCode = codeToApply.trim().toUpperCase();
+
+        // Find offer matching the cleaned code
+        const offer = activeOffers.find(o => o.code.trim().toUpperCase() === cleanCode);
 
         if (!offer) {
             setCouponError('Invalid coupon code');
             setAppliedCoupon(null);
             return;
         }
-        if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
-            setCouponError(`Minimum order value of 5${offer.min_order_value} required`);
+
+        // Check expiration
+        if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
+            setCouponError('This coupon code has expired');
             setAppliedCoupon(null);
             return;
         }
+
+        // Check usage limits
+        if (offer.usage_limit && offer.used_count >= offer.usage_limit) {
+            setCouponError('This coupon has reached its usage limit');
+            setAppliedCoupon(null);
+            return;
+        }
+
+        // Check minimum order value
+        if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
+            setCouponError(`Minimum order value of $${offer.min_order_value} required`);
+            setAppliedCoupon(null);
+            return;
+        }
+
         setAppliedCoupon(offer);
-        setCouponInput(upperCode);
+        setCouponInput(cleanCode);
     };
 
     const removeCoupon = () => {

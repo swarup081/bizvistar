@@ -77,7 +77,9 @@ export default function BoostAppPage() {
       ...currentOffer,
       value: parseFloat(currentOffer.value),
       min_order_value: parseFloat(currentOffer.min_order_value) || 0,
-      usage_limit: currentOffer.usage_limit ? parseInt(currentOffer.usage_limit) : null
+      max_discount: parseFloat(currentOffer.max_discount) || null,
+      usage_limit: currentOffer.usage_limit ? parseInt(currentOffer.usage_limit) : null,
+      expires_at: currentOffer.expires_at || null
     };
 
     let result;
@@ -255,7 +257,7 @@ export default function BoostAppPage() {
                             className="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 uppercase font-mono"
                             placeholder="e.g. SUMMER20"
                             value={currentOffer?.code || ''}
-                            onChange={e => setCurrentOffer({...currentOffer, code: e.target.value.toUpperCase()})}
+                            onChange={e => setCurrentOffer({...currentOffer, code: e.target.value.toUpperCase().replace(/\s/g, '')})}
                         />
                     </div>
 
@@ -309,6 +311,32 @@ export default function BoostAppPage() {
                             />
                         </div>
                     </div>
+
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (₹)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                className="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 bg-gray-50 focus:bg-white transition-colors"
+                                placeholder="Leave blank for none"
+                                value={currentOffer?.max_discount || ''}
+                                onChange={e => setCurrentOffer({...currentOffer, max_discount: e.target.value})}
+                                disabled={currentOffer?.type !== 'percentage'}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
+                            <input
+                                type="datetime-local"
+                                className="w-full border border-gray-300 rounded-lg p-2.5 text-gray-900 bg-white"
+                                value={currentOffer?.expires_at ? currentOffer.expires_at.slice(0, 16) : ''}
+                                onChange={e => setCurrentOffer({...currentOffer, expires_at: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
 
                     <div className="pt-4 mt-4 border-t border-gray-100 flex justify-end gap-3">
                         <button
