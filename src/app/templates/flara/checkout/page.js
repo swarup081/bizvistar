@@ -178,7 +178,10 @@ export default function CheckoutPage() {
                 siteSlug,
                 cartDetails,
                 customerDetails: formData, // Contains phone, note, etc.
-                totalAmount: total
+                totalAmount: finalTotal,
+                discount: discountAmount,
+                delivery: deliveryAmount,
+                couponCode: appliedCoupon ? appliedCoupon.code : null
             });
 
             if (result.success) {

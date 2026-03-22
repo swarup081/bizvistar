@@ -19,7 +19,7 @@ export async function verifyWebsiteOwnership(websiteId) {
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' || 'https://placeholder.supabase.co',
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
-        { cookies: { get(name) { return cookieStore.get(name)?.value; } } }
+        { cookies: { getAll() { return cookieStore.getAll(); }, setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch(e) {} } } }
     );
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();

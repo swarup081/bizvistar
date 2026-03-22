@@ -100,7 +100,7 @@ export default function CheckoutPage() {
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
         const currentTotal = finalTotal;
-        const result = await submit();
+        const result = await submit({ finalTotal, discountAmount, deliveryAmount, couponCode: appliedCoupon ? appliedCoupon.code : null });
         if (result && result.success && isUPI) {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
