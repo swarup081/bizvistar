@@ -15,10 +15,11 @@ const openai = new OpenAI({
 });
 
 export async function verifyWebsiteOwnership(websiteId) {
+    const cookieStore = await cookies();
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' || 'https://placeholder.supabase.co',
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
-        { cookies: { get(name) { return cookies().get(name)?.value; } } }
+        { cookies: { get(name) { return cookieStore.get(name)?.value; } } }
     );
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();

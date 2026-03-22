@@ -4,8 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { verifyWebsiteOwnership } from '@/app/actions/onboardingActions';
 
-const createClient = () => {
-    const cookieStore = cookies();
+const createClient = async () => {
+    const cookieStore = await cookies();
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
@@ -33,7 +33,7 @@ export async function getCustomersWithMetrics(websiteId) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1. Get all customers
   const { data: customers, error: custError } = await supabase

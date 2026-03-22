@@ -4,8 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { verifyWebsiteOwnership } from '@/app/actions/onboardingActions';
 
-const createClient = () => {
-    const cookieStore = cookies();
+const createClient = async () => {
+    const cookieStore = await cookies();
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
@@ -32,7 +32,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function getOffers(websiteId) {
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('offers')
     .select('*')
@@ -51,7 +51,7 @@ export async function createOffer(websiteId, offerData) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // If making featured, unfeature others
   if (offerData.is_featured) {
@@ -82,7 +82,7 @@ export async function updateOffer(offerId, websiteId, updates) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // If making featured, unfeature others first
   if (updates.is_featured) {
@@ -110,7 +110,7 @@ export async function deleteOffer(offerId, websiteId) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from('offers')
     .delete()
@@ -130,7 +130,7 @@ export async function updateWebsiteOffersConfig(websiteId, offersConfig) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Fetch existing website_data
   const { data: website, error: fetchError } = await supabase
@@ -168,7 +168,7 @@ export async function updateWebsiteOffersConfig(websiteId, offersConfig) {
 
 export async function recordOfferClaim(websiteId, offerId, phoneNumber) {
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from('offer_claims')
       .insert([{ website_id: websiteId, offer_id: offerId, phone_number: phoneNumber }]);
