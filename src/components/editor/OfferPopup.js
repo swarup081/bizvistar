@@ -68,74 +68,79 @@ export default function OfferPopup({ websiteId, websiteData }) {
 
     if (!featuredOffer || !isOpen) return null;
 
-    // Use website theme colors if available
-    const themeColor = websiteData?.theme?.primary || '#8A63D2';
+    // Extract template colors so the popup perfectly matches the website
+    // Fallbacks to default dashboard colors if running standalone
+    const bgColor = 'var(--color-bg, #ffffff)';
+    const textColor = 'var(--color-text, #111827)';
+    const textLightColor = 'var(--color-text-light, #6b7280)';
+    const btnColor = 'var(--color-dark, #111827)';
+
+    // Some templates use the primary/gold theme color for accents
+    const accentColor = websiteData?.theme?.primary || 'var(--color-gold, #8A63D2)';
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+            <div
+                className="rounded-2xl w-full max-w-sm shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-black/5"
+                style={{ backgroundColor: bgColor }}
+            >
                 {/* Close Button */}
                 <button
                     onClick={() => setIsOpen(false)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 z-10 p-1 bg-white/50 rounded-full"
+                    className="absolute top-4 right-4 z-10 p-1 rounded-full opacity-60 hover:opacity-100 transition-opacity"
+                    style={{ color: textColor }}
                 >
-                    <X size={20} />
+                    <X size={20} strokeWidth={1.5} />
                 </button>
 
-                {/* Header Graphic */}
-                <div
-                    className="h-32 flex items-center justify-center relative overflow-hidden"
-                    style={{ backgroundColor: themeColor }}
-                >
-                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                    <Gift size={48} className="text-white relative z-10 animate-bounce" />
-                </div>
-
-                <div className="p-8 text-center">
+                <div className="p-8 text-center mt-2">
                     {!isClaimed ? (
                         <>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Special Offer!</h2>
-                            <p className="text-gray-600 mb-6">
-                                Get <strong style={{ color: themeColor }}>{featuredOffer.type === 'percentage' ? `${featuredOffer.value}% OFF` : `₹${featuredOffer.value} OFF`}</strong> your next order. Enter your phone number to reveal the coupon code.
+                            <h2 className="text-2xl font-bold mb-2 tracking-tight" style={{ color: textColor }}>Special Offer</h2>
+                            <p className="mb-6 text-sm" style={{ color: textLightColor }}>
+                                Unlock <strong style={{ color: accentColor }}>{featuredOffer.type === 'percentage' ? `${featuredOffer.value}% OFF` : `₹${featuredOffer.value} OFF`}</strong> your next order. Enter your phone number below to reveal the code.
                             </p>
 
                             <form onSubmit={handleClaim} className="space-y-4">
                                 <div>
                                     <input
                                         type="tel"
-                                        placeholder="Phone Number (10 digits)"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 text-center text-lg focus:ring-2 focus:border-transparent outline-none transition-all"
-                                        style={{ '--tw-ring-color': themeColor }}
+                                        placeholder="Phone Number"
+                                        className="w-full border rounded-xl px-4 py-3 text-center text-base outline-none transition-all placeholder:text-gray-400 bg-white border-black/10 focus:border-black/30 shadow-sm"
+                                        style={{ color: '#111827' }} // Explicitly forced to dark gray/black as requested
                                         value={phoneNumber}
                                         onChange={e => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     />
                                 </div>
-                                {error && <p className="text-red-500 text-sm">{error}</p>}
+                                {error && <p className="text-red-500 text-xs font-medium">{error}</p>}
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-70"
-                                    style={{ backgroundColor: themeColor }}
+                                    className="w-full text-white font-semibold py-3.5 rounded-xl transition-opacity disabled:opacity-70 text-sm tracking-wide"
+                                    style={{ backgroundColor: btnColor }}
                                 >
                                     {loading ? 'Claiming...' : 'Reveal Code'}
                                 </button>
                             </form>
-                            <p className="text-xs text-gray-400 mt-4">By claiming, you agree to receive order updates.</p>
+                            <p className="text-[10px] mt-5 uppercase tracking-widest opacity-60" style={{ color: textLightColor }}>
+                                By claiming, you agree to receive updates.
+                            </p>
                         </>
                     ) : (
-                        <div className="animate-in slide-in-from-bottom-4">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">You're In!</h2>
-                            <p className="text-gray-600 mb-6">Use the code below at checkout.</p>
+                        <div className="animate-in slide-in-from-bottom-4 pt-4">
+                            <h2 className="text-2xl font-bold mb-2" style={{ color: textColor }}>It's yours!</h2>
+                            <p className="text-sm mb-6" style={{ color: textLightColor }}>Use this code at checkout to claim your discount.</p>
 
-                            <div className="bg-gray-50 border-2 border-dashed rounded-xl p-4 mb-6 relative group" style={{ borderColor: themeColor }}>
-                                <p className="text-3xl font-mono font-black uppercase tracking-widest" style={{ color: themeColor }}>
+                            <div className="border border-dashed rounded-xl p-5 mb-6 relative group bg-black/5" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+                                <p className="text-2xl font-mono font-bold uppercase tracking-widest" style={{ color: textColor }}>
                                     {featuredOffer.code}
                                 </p>
                             </div>
 
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl shadow-md hover:bg-gray-800 transition-colors"
+                                className="w-full text-white font-semibold py-3.5 rounded-xl transition-opacity text-sm tracking-wide"
+                                style={{ backgroundColor: btnColor }}
                             >
                                 Continue Shopping
                             </button>
