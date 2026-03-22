@@ -1,6 +1,8 @@
 'use client';
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
+import { getOffers } from '@/app/actions/boostActions';
+import { Tag } from 'lucide-react';
 import { useCart } from '../cartContext.js';
 import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
@@ -11,7 +13,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
-    const { businessData } = useContext(TemplateContext);
+    const { businessData, websiteId } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
@@ -19,14 +21,85 @@ export default function CheckoutPage() {
     } = useCheckout(cart);
     
     const [showUpi, setShowUpi] = useState(false);
+
+    const [activeOffers, setActiveOffers] = useState([]);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponInput, setCouponInput] = useState('');
+    const [couponError, setCouponError] = useState('');
+    const [showOffersList, setShowOffersList] = useState(false);
+
     const [finalAmount, setFinalAmount] = useState(0);
+
+    useEffect(() => {
+        if (!businessData || !websiteId) return;
+        const showOff = businessData?.offersConfig?.showOffers ?? false;
+        setShowOffersList(showOff);
+        getOffers(websiteId).then(res => {
+            if (res.success) setActiveOffers(res.data.filter(o => o.is_active));
+        });
+    }, [businessData, websiteId]);
 
     const isUPI = businessData?.payment?.mode === 'UPI';
     const upiId = businessData?.payment?.upiId;
 
+
+    const handleApplyCoupon = (codeToApply = couponInput) => {
+        setCouponError('');
+        const upperCode = codeToApply.toUpperCase();
+        const offer = activeOffers.find(o => o.code === upperCode);
+
+        if (!offer) {
+            setCouponError('Invalid coupon code');
+            setAppliedCoupon(null);
+            return;
+        }
+        if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
+            setCouponError(`Minimum order value of 5${offer.min_order_value} required`);
+            setAppliedCoupon(null);
+            return;
+        }
+        setAppliedCoupon(offer);
+        setCouponInput(upperCode);
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponInput('');
+        setCouponError('');
+    };
+
+    const calculateDiscount = (sub) => {
+        if (!appliedCoupon) return 0;
+        let discount = 0;
+        if (appliedCoupon.type === 'percentage') {
+            discount = sub * (appliedCoupon.value / 100);
+        } else {
+            discount = appliedCoupon.value;
+        }
+        if (appliedCoupon.max_discount && discount > appliedCoupon.max_discount) {
+            discount = appliedCoupon.max_discount;
+        }
+        return discount;
+    };
+
+    const calculateDelivery = (sub) => {
+        const deliveryConfig = businessData?.delivery || { type: 'fixed', cost: 0, threshold: 0 };
+        if (deliveryConfig.type === 'free_over_threshold' && sub >= deliveryConfig.threshold) {
+            return 0;
+        }
+        return deliveryConfig.cost || 0;
+    };
+
+    const discountAmount = calculateDiscount(subtotal);
+    const deliveryAmount = calculateDelivery(subtotal);
+
+    // OVERRIDE TOTAL FROM CART CONTEXT TO APPLY DISCOUNT
+    const finalTotal = (subtotal || 0) - (discountAmount || 0) + (deliveryAmount || 0);
+
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        const currentTotal = total;
+        const currentTotal = finalTotal;
         const result = await submit();
         if (result && result.success && isUPI) {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -213,7 +286,53 @@ export default function CheckoutPage() {
                     
                     {/* Order Summary */}
                     <div className="bg-brand-primary p-4 md:p-8 rounded-2xl h-fit">
-                        <h2 className="text-[5vw] md:text-2xl font-serif font-medium text-brand-text mb-6">Your Order</h2>
+
+                        {/* Coupon Section */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-6">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Tag size={16} /> Promo Code</h3>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Enter code"
+                                    className="flex-grow border border-gray-200 p-3 outline-none rounded-lg text-sm uppercase bg-white"
+                                    value={couponInput}
+                                    onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                                    disabled={!!appliedCoupon}
+                                />
+                                {appliedCoupon ? (
+                                    <button type="button" onClick={removeCoupon} className="px-4 py-2 bg-red-50 text-red-600 font-bold text-xs rounded-lg hover:bg-red-100 transition-colors">Remove</button>
+                                ) : (
+                                    <button type="button" onClick={() => handleApplyCoupon(couponInput)} className="px-4 py-2 bg-gray-900 text-white font-bold text-xs rounded-lg hover:bg-gray-800 transition-colors">Apply</button>
+                                )}
+                            </div>
+                            {couponError && <p className="text-red-500 text-xs mt-2 font-medium">{couponError}</p>}
+
+                            {showOffersList && !appliedCoupon && activeOffers.length > 0 && (
+                                <div className="mt-4 space-y-2">
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Available Offers</p>
+                                    {activeOffers.map(offer => (
+                                        <div key={offer.id} className="flex justify-between items-center p-3 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+                                            <div>
+                                                <p className="font-bold text-gray-800 text-sm">{offer.code}</p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `$${offer.value} OFF`}
+                                                    {offer.min_order_value > 0 ? ` on orders above $${offer.min_order_value}` : ''}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleApplyCoupon(offer.code)}
+                                                className="text-[10px] font-bold uppercase tracking-widest bg-gray-900 text-white px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                                            >
+                                                Apply
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                            <h2 className="text-[5vw] md:text-2xl font-serif font-medium text-brand-text mb-6">Your Order</h2>
                         
                         <div className="space-y-4 border-b border-brand-text/10 pb-4">
                             {cartDetails.map(item => (
@@ -233,15 +352,23 @@ export default function CheckoutPage() {
                                 <span>Subtotal</span>
                                 <span>${subtotal.toFixed(2)}</span>
                             </div>
+                                {/* Discount Line */}
+                                {appliedCoupon && (
+                                    <div className="flex justify-between items-center text-sm mb-3 text-green-600">
+                                        <span className="flex items-center gap-1"><Tag size={14}/> Discount ({appliedCoupon.code})</span>
+                                        <span>-${discountAmount.toFixed(2)}</span>
+                                    </div>
+                                )}
+
                              <div className="flex justify-between text-brand-text/80 text-[3vw] md:text-base">
                                 <span>Shipping</span>
-                                <span>${shipping.toFixed(2)}</span>
+                                <span>${typeof deliveryAmount !== 'undefined' ? deliveryAmount.toFixed(2) : 0}</span>
                             </div>
                         </div>
                         
                          <div className="flex justify-between text-brand-text font-bold text-[4vw] md:text-xl py-4">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>${finalTotal.toFixed(2)}</span>
                         </div>
                         
                         {message && !message.includes('fix') && (

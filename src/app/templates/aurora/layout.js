@@ -10,6 +10,7 @@ import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker'
 import { X } from 'lucide-react';
 import { colorPalettes } from '@/components/editor/EditorSidebar';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import OfferPopup from '@/components/editor/OfferPopup';
 
 const fontMap = {
     'Poppins': { url: 'family=Poppins:wght@300;400;500;600;700', family: "'Poppins', sans-serif" },
@@ -159,6 +160,7 @@ function AuroraContent({ children }) {
             `}</style>
 
             <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
             
             {/* Nav is ALWAYS visible, even in Landing Mode */}
             <Header />

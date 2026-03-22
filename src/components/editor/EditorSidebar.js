@@ -36,7 +36,7 @@ import {
   Megaphone, // Added for CTA
   MessageSquare, // Added for Reviews/Testimonials
   Menu, // Added Menu Icon
-} from 'lucide-react';
+Truck } from 'lucide-react';
 
 // Hook to detect mobile view
 const useIsMobile = () => {
@@ -3089,6 +3089,55 @@ export default function EditorSidebar({
 
             <section className="mt-6 pt-6 border-t border-gray-100">
               <SectionTitle label="Payment & Delivery" />
+
+              <div className="mt-6 mb-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"><Truck size={16} className="text-[#8A63D2]" /> Delivery Rules</h4>
+
+                <div className="space-y-3">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Delivery Type</label>
+                        <select
+                            value={getSafe(businessData, 'delivery.type') || 'fixed'}
+                            onChange={(e) => handleDataChange('delivery.type', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A63D2] transition-colors bg-white"
+                        >
+                            <option value="fixed">Fixed Cost (Always)</option>
+                            <option value="free_over_threshold">Free over specific amount</option>
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Base Cost (₹)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={getSafe(businessData, 'delivery.cost') || 0}
+                                onChange={(e) => handleDataChange('delivery.cost', parseFloat(e.target.value) || 0)}
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A63D2] transition-colors"
+                            />
+                        </div>
+                        {getSafe(businessData, 'delivery.type') === 'free_over_threshold' && (
+                            <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Threshold (₹)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={getSafe(businessData, 'delivery.threshold') || 0}
+                                    onChange={(e) => handleDataChange('delivery.threshold', parseFloat(e.target.value) || 0)}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#8A63D2] transition-colors"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                        {getSafe(businessData, 'delivery.type') === 'free_over_threshold'
+                            ? `Customers pay ₹${getSafe(businessData, 'delivery.cost') || 0} for delivery, but it's FREE if they spend over ₹${getSafe(businessData, 'delivery.threshold') || 0}.`
+                            : `Customers always pay ₹${getSafe(businessData, 'delivery.cost') || 0} for delivery.`}
+                    </p>
+                </div>
+              </div>
+
               
               <div className="grid grid-cols-2 gap-3 mb-4">
                   <button 

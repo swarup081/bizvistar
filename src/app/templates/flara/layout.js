@@ -8,6 +8,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import OfferPopup from '@/components/editor/OfferPopup';
 
 function FlaraContent({ children }) {
     const { businessData, basePath, websiteId } = useContext(TemplateContext);
@@ -63,6 +64,7 @@ function FlaraContent({ children }) {
             style={fontVariables}
         >
             <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
             <Editable focusId="global">
                 {businessData.announcementBar && (
                     <div className="text-center py-2 text-sm bg-brand-primary text-brand-text">

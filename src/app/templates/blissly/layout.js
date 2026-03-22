@@ -8,6 +8,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import OfferPopup from '@/components/editor/OfferPopup';
 
 function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
@@ -129,6 +130,7 @@ function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverDa
               style={fontVariables}
             >
                 <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
                 <Header 
                     business={{ 
                         logoText: businessData.logoText, 
@@ -334,6 +336,7 @@ function BlisslyContent({ children }) {
             style={fontVariables}
         >
             <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
             <Header 
                 business={{ 
                     logoText: businessData.logoText, 

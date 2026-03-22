@@ -10,6 +10,7 @@ import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker'
 import { X, Minus, Plus } from 'lucide-react'; // Added icons
 import { colorPalettes } from '@/components/editor/EditorSidebar';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import OfferPopup from '@/components/editor/OfferPopup';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
@@ -240,6 +241,7 @@ function FrostifyContent({ children }) {
             `}</style>
 
             <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
             <Header />
             <main className="flex-grow pt-24">{children}</main>
             <Editable focusId="footer"><Footer /></Editable>
