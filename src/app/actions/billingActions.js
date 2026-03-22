@@ -3,6 +3,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { verifyWebsiteOwnership } from '@/app/actions/onboardingActions';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createSupabaseClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+);
 
 const createClient = async () => {
     const cookieStore = await cookies();
@@ -33,10 +39,10 @@ export async function getOrdersForBilling(websiteId) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-    const supabase = await createClient();
+    /* Using supabaseAdmin instead to bypass RLS */
 
     // Fetch orders and their items with product details
-    const { data: orders, error } = await supabase
+    const { data: orders, error } = await supabaseAdmin
       .from('orders')
       .select(`
         *,

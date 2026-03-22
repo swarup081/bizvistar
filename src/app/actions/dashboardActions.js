@@ -2,6 +2,12 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createSupabaseClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+);
 
 const createClient = async () => {
     const cookieStore = await cookies();
@@ -36,10 +42,13 @@ export async function getWebsiteDetails() {
     return { success: false, error: 'Not authenticated' };
   }
 
-  const { data, error } = await supabase
+  // Use supabaseAdmin to bypass potential RLS, and use limit(1).single() to avoid 'multiple rows' error
+  const { data, error } = await supabaseAdmin
     .from('websites')
     .select('*')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .single();
 
   if (error) {

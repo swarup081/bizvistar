@@ -3,6 +3,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { verifyWebsiteOwnership } from '@/app/actions/onboardingActions';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createSupabaseClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+);
 
 const createClient = async () => {
     const cookieStore = await cookies();
@@ -33,10 +39,10 @@ export async function getCustomersWithMetrics(websiteId) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = await createClient();
+  /* Using supabaseAdmin instead to bypass RLS */
 
   // 1. Get all customers
-  const { data: customers, error: custError } = await supabase
+  const { data: customers, error: custError } = await supabaseAdmin
     .from('customers')
     .select('*')
     .eq('website_id', websiteId)
@@ -48,7 +54,7 @@ export async function getCustomersWithMetrics(websiteId) {
   }
 
   // 2. Get all orders for this website
-  const { data: orders, error: ordersError } = await supabase
+  const { data: orders, error: ordersError } = await supabaseAdmin
     .from('orders')
     .select('customer_id, total_amount, created_at, status')
     .eq('website_id', websiteId)

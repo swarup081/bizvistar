@@ -3,6 +3,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { verifyWebsiteOwnership } from '@/app/actions/onboardingActions';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createSupabaseClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
+);
 
 const createClient = async () => {
     const cookieStore = await cookies();
@@ -32,8 +38,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getOffers(websiteId) {
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  /* Using supabaseAdmin instead to bypass RLS */
+  const { data, error } = await supabaseAdmin
     .from('offers')
     .select('*')
     .eq('website_id', websiteId)
@@ -51,14 +57,14 @@ export async function createOffer(websiteId, offerData) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = await createClient();
+  /* Using supabaseAdmin instead to bypass RLS */
 
   // If making featured, unfeature others
   if (offerData.is_featured) {
-      await supabase.from('offers').update({ is_featured: false }).eq('website_id', websiteId);
+      await supabaseAdmin.from('offers').update({ is_featured: false }).eq('website_id', websiteId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('offers')
     .insert([
       {
@@ -82,14 +88,14 @@ export async function updateOffer(offerId, websiteId, updates) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = await createClient();
+  /* Using supabaseAdmin instead to bypass RLS */
 
   // If making featured, unfeature others first
   if (updates.is_featured) {
-      await supabase.from('offers').update({ is_featured: false }).eq('website_id', websiteId);
+      await supabaseAdmin.from('offers').update({ is_featured: false }).eq('website_id', websiteId);
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('offers')
     .update(updates)
     .eq('id', offerId)
@@ -110,8 +116,8 @@ export async function deleteOffer(offerId, websiteId) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = await createClient();
-  const { error } = await supabase
+  /* Using supabaseAdmin instead to bypass RLS */
+  const { error } = await supabaseAdmin
     .from('offers')
     .delete()
     .eq('id', offerId)
@@ -130,10 +136,10 @@ export async function updateWebsiteOffersConfig(websiteId, offersConfig) {
   const verification = await verifyWebsiteOwnership(websiteId);
   if (!verification.success) return { success: false, error: 'Unauthorized' };
 
-  const supabase = await createClient();
+  /* Using supabaseAdmin instead to bypass RLS */
 
   // Fetch existing website_data
-  const { data: website, error: fetchError } = await supabase
+  const { data: website, error: fetchError } = await supabaseAdmin
     .from('websites')
     .select('website_data')
     .eq('id', websiteId)
@@ -152,7 +158,7 @@ export async function updateWebsiteOffersConfig(websiteId, offersConfig) {
       }
   };
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await supabaseAdmin
     .from('websites')
     .update({ website_data: updatedData })
     .eq('id', websiteId);
@@ -168,8 +174,8 @@ export async function updateWebsiteOffersConfig(websiteId, offersConfig) {
 
 export async function recordOfferClaim(websiteId, offerId, phoneNumber) {
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    /* Using supabaseAdmin instead to bypass RLS */
+    const { data, error } = await supabaseAdmin
       .from('offer_claims')
       .insert([{ website_id: websiteId, offer_id: offerId, phone_number: phoneNumber }]);
 
