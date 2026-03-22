@@ -25,11 +25,12 @@ export async function verifyWebsiteOwnership(websiteId) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return { success: false };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('websites')
         .select('id')
         .eq('id', websiteId)
         .eq('user_id', user.id)
+        .limit(1)
         .single();
 
     if (error || !data) return { success: false };

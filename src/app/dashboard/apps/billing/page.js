@@ -12,6 +12,7 @@ export default function BillGeneratorPage() {
     const [loading, setLoading] = useState(true);
 
     // Invoice State
+    const [businessInfo, setBusinessInfo] = useState({ name: '', address: '', email: '', phone: '' });
     const [invoiceNo, setInvoiceNo] = useState(`INV-${Math.floor(Math.random() * 10000)}`);
     const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0]);
     const [dueDate, setDueDate] = useState('');
