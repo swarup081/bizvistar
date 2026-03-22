@@ -32,6 +32,16 @@ export default function BillGeneratorPage() {
                 const { success: webSuccess, data: webData } = await getWebsiteDetails();
                 if (webSuccess && webData) {
                     setWebsite(webData);
+
+                    // Auto-fill business info
+                    const bData = webData.website_data?.business || {};
+                    setBusinessInfo({
+                        name: bData.name || 'Your Store Name',
+                        address: bData.address || '',
+                        email: bData.contact?.email || '',
+                        phone: bData.contact?.phone || ''
+                    });
+
                     const { success: ordSuccess, data: ordData } = await getOrdersForBilling(webData.id);
                     if (ordSuccess) setOrders(ordData);
                 }
@@ -160,7 +170,17 @@ export default function BillGeneratorPage() {
                     )}
                 </div>
 
+
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <h2 className="font-semibold text-gray-900 mb-2">Your Business Info</h2>
+                    <div className="space-y-3">
+                        <input type="text" placeholder="Business Name" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.name} onChange={e=>setBusinessInfo({...businessInfo, name: e.target.value})} />
+                        <textarea placeholder="Business Address" rows="2" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2] resize-none" value={businessInfo.address} onChange={e=>setBusinessInfo({...businessInfo, address: e.target.value})} />
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+
                     <h2 className="font-semibold text-gray-900 mb-2">Invoice Details</h2>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -218,10 +238,11 @@ export default function BillGeneratorPage() {
                         <div className="max-w-[50%]">
                             {businessData?.business?.logo && <img src={businessData.business.logo} alt="Logo" className="max-h-16 mb-4 object-contain" />}
                             <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase mb-1">
-                                {businessData?.business?.name || 'Your Store Name'}
+                                {businessInfo.name}
                             </h2>
-                            {businessData?.business?.contact?.email && <p className="text-gray-500 flex items-center gap-1"><Mail size={12}/> {businessData.business.contact.email}</p>}
-                            {businessData?.business?.contact?.phone && <p className="text-gray-500 flex items-center gap-1"><Phone size={12}/> {businessData.business.contact.phone}</p>}
+                            {businessInfo.address && <p className="text-gray-500 text-sm max-w-xs whitespace-pre-wrap mt-1 mb-2">{businessInfo.address}</p>}
+                            {businessInfo.email && <p className="text-gray-500 flex items-center gap-1"><Mail size={12}/> {businessInfo.email}</p>}
+                            {businessInfo.phone && <p className="text-gray-500 flex items-center gap-1"><Phone size={12}/> {businessInfo.phone}</p>}
                         </div>
                         <div className="text-right">
                             <h1 className="text-4xl font-black text-[#8A63D2] tracking-widest uppercase mb-4">INVOICE</h1>
