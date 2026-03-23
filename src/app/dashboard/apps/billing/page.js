@@ -68,7 +68,7 @@ export default function BillGeneratorPage() {
                         : '';
 
                     setBusinessInfo({
-                        name: wData.name || wData.businessName || wData.business?.name || billingProfile.companyName || 'Your Store Name',
+                        name: wData.name || wData.businessName || wData.business?.name || billingProfile.companyName || billingProfile.fullName || 'Your Store Name',
                         address: wData.business?.address || fallbackAddress || '',
                         email: wData.contact?.email || billingProfile.email || userEmail || '',
                         phone: wData.whatsappNumber || wData.contact?.phone || wData.contact?.whatsapp || billingProfile.phoneNumber || ''

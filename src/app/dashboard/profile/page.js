@@ -126,7 +126,7 @@ export default function ProfilePage() {
         ...prev,
         fullName: profile?.full_name || billing.fullName || '',
         email: user.email || '',
-        businessName: businessName,
+        businessName: businessName || billing.companyName || '',
         upiId: upiId,
         logoUrl: logoUrl,
         phoneNumber: billing.phoneNumber || '',
