@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock } from 'lucide-react';
+import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock, Truck } from 'lucide-react';
 import { updateProfileDataAction } from '@/app/actions/profileActions';
 import PlanManager from '@/components/dashboard/PlanManager';
 
@@ -24,7 +24,13 @@ export default function ProfilePage() {
     zipCode: '',
     country: 'India',
     companyName: '',
-    gstNumber: ''
+    gstNumber: '',
+    deliveryType: 'fixed',
+    deliveryCost: 0,
+    deliveryThreshold: 0,
+    deliveryType: 'fixed',
+    deliveryCost: 100,
+    deliveryThreshold: 0
   });
 
   const [message, setMessage] = useState({ type: '', text: '' });

@@ -27,6 +27,8 @@ export default function CheckoutPage() {
     const [couponInput, setCouponInput] = useState('');
     const [couponError, setCouponError] = useState('');
     const [showOffersList, setShowOffersList] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
 
     const [finalAmount, setFinalAmount] = useState(0);
 
@@ -79,6 +81,8 @@ export default function CheckoutPage() {
 
         setAppliedCoupon(offer);
         setCouponInput(cleanCode);
+        setShowSuccessPopup(true);
+        setTimeout(() => setShowSuccessPopup(false), 2500);
     };
 
     const removeCoupon = () => {
@@ -326,7 +330,7 @@ export default function CheckoutPage() {
                             {couponError && <p className="text-red-500 text-xs mt-2 font-medium">{couponError}</p>}
 
                             {showOffersList && !appliedCoupon && activeOffers.length > 0 && (
-                                <div className="mt-4 space-y-2">
+                                <div className="mt-4 space-y-2 max-h-48 overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
                                     <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Available Offers</p>
                                     {activeOffers.map(offer => (
                                         <div key={offer.id} className="flex justify-between items-center p-3 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
@@ -419,7 +423,19 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 )}
-            </div>
+
+            {showSuccessPopup && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-300 max-w-sm w-full mx-4">
+                        <div className="w-32 h-32 mb-4">
+                            <iframe src="/Gift.lottie" className="w-full h-full pointer-events-none" frameBorder="0" scrolling="no"></iframe>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">Coupon Applied!</h3>
+                        <p className="text-gray-500 font-medium">You saved <span className="text-[#8A63D2] font-bold">₹{discountAmount.toFixed(2)}</span></p>
+                    </div>
+                </div>
+            )}
+</div>
         </div>
     );
 }
