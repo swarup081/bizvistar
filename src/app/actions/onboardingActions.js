@@ -6,20 +6,43 @@ import { cookies } from 'next/headers';
 import OpenAI from 'openai';
 
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export async function verifyWebsiteOwnership(websiteId) {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' || 'https://placeholder.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
+        { cookies: { getAll() { return cookieStore.getAll(); }, setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch(e) {} } } }
+    );
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return { success: false };
+
+    const { data, error } = await supabaseAdmin
+        .from('websites')
+        .select('id')
+        .eq('id', websiteId)
+        .eq('user_id', user.id)
+        .limit(1)
+        .single();
+
+    if (error || !data) return { success: false };
+    return { success: true };
+}
+
 // --- HELPER: Get Current Website ID ---
 async function getWebsiteId() {
   const cookieStore = await cookies();
   
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {

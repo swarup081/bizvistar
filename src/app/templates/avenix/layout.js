@@ -8,6 +8,7 @@ import { TemplateContext } from './templateContext.js';
 import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import OfferPopup from '@/components/editor/OfferPopup';
 
 function AvenixContent({ children }) {
     const { businessData, websiteId } = useContext(TemplateContext);
@@ -57,6 +58,7 @@ function AvenixContent({ children }) {
             style={fontVariables}
         >
             <AnalyticsTracker websiteId={websiteId} />
+            <OfferPopup websiteId={websiteId} websiteData={businessData} />
             <Header 
                 business={{ logoText: businessData.logoText, navigation: businessData.navigation }} 
                 cartCount={cartCount}
