@@ -128,7 +128,32 @@ export default function BoostAppPage() {
       }
   };
 
-  if (loading) return <div className="p-8 flex justify-center"><Activity className="animate-spin text-gray-400" /></div>;
+  if (loading) {
+      return (
+          <div className="max-w-6xl mx-auto pb-20 animate-pulse">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                  <div className="h-10 bg-gray-200 rounded w-48"></div>
+                  <div className="h-12 bg-gray-200 rounded-full w-40"></div>
+              </div>
+              <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8">
+                  <div className="space-y-2">
+                      <div className="h-6 bg-gray-200 rounded w-32"></div>
+                      <div className="h-4 bg-gray-200 rounded w-64"></div>
+                  </div>
+                  <div className="h-8 bg-gray-200 rounded-full w-14"></div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3].map(i => (
+                      <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
+                          <div className="h-10 bg-gray-200 rounded w-full"></div>
+                          <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="max-w-6xl mx-auto pb-20">

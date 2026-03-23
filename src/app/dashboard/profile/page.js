@@ -81,9 +81,11 @@ export default function ProfilePage() {
         const websiteId = websites[0].id;
         const websiteData = websites[0].website_data || {};
         
-        businessName = websiteData.businessName || '';
+        businessName = websiteData.businessName || websiteData.business?.name || '';
         upiId = websiteData.payment?.upiId || '';
         logoUrl = websiteData.logo || '';
+
+        const delivery = websiteData.delivery || {};
 
         const { data: onboarding } = await supabase
           .from('onboarding_data')
@@ -95,6 +97,16 @@ export default function ProfilePage() {
             if (!businessName) businessName = onboarding.owner_name || '';
             if (!upiId) upiId = onboarding.upi_id || '';
             if (!logoUrl) logoUrl = onboarding.logo_url || '';
+        }
+
+        // Populate delivery rules if present
+        if (delivery.type) {
+           setFormData(prev => ({
+               ...prev,
+               deliveryType: delivery.type,
+               deliveryCost: delivery.cost || 0,
+               deliveryThreshold: delivery.threshold || 0
+           }));
         }
       }
       
@@ -110,7 +122,8 @@ export default function ProfilePage() {
         console.error("Error parsing billing address", e);
       }
 
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         fullName: profile?.full_name || billing.fullName || '',
         email: user.email || '',
         businessName: businessName,
@@ -124,7 +137,7 @@ export default function ProfilePage() {
         country: billing.country || 'India',
         companyName: billing.companyName || '',
         gstNumber: billing.gstNumber || ''
-      });
+      }));
       setInitialUpiId(upiId || '');
 
       // Fetch Active Subscription & Products
