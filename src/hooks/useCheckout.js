@@ -75,7 +75,7 @@ export const useCheckout = (cartContext = {}) => {
         return Object.keys(errors).length === 0;
     };
 
-    const submit = async () => {
+    const submit = async (options = {}) => {
         setMessage('');
         if (!validateForm()) {
             setMessage("Please fix the highlighted errors before continuing.");
@@ -99,11 +99,16 @@ export const useCheckout = (cartContext = {}) => {
                  return { success: false, error: 'Preview Mode' };
             }
 
+            const finalAmount = options.finalTotal !== undefined ? options.finalTotal : total;
+
             const result = await submitOrder({
                 siteSlug,
                 cartDetails,
                 customerDetails: formData,
-                totalAmount: total
+                totalAmount: finalAmount,
+                discount: options.discountAmount || 0,
+                delivery: options.deliveryAmount || 0,
+                couponCode: options.couponCode || null
             });
 
             if (result.success) {

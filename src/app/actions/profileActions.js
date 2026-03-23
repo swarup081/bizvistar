@@ -93,6 +93,14 @@ export async function updateProfileDataAction(formData) {
             if (formData.phoneNumber !== undefined) {
                 updatedData.contact = { ...(updatedData.contact || {}), whatsapp: formData.phoneNumber };
             }
+            if (formData.deliveryType !== undefined) {
+                updatedData.delivery = {
+                    ...(updatedData.delivery || {}),
+                    type: formData.deliveryType || 'fixed',
+                    cost: Number(formData.deliveryCost || 0),
+                    threshold: Number(formData.deliveryThreshold || 0)
+                };
+            }
 
             // Update Draft Data
             const updatedDraft = { ...currentDraft };
@@ -103,6 +111,14 @@ export async function updateProfileDataAction(formData) {
             }
             if (formData.phoneNumber !== undefined) {
                 updatedDraft.contact = { ...(updatedDraft.contact || {}), whatsapp: formData.phoneNumber };
+            }
+            if (formData.deliveryType !== undefined) {
+                updatedDraft.delivery = {
+                    ...(updatedDraft.delivery || {}),
+                    type: formData.deliveryType || 'fixed',
+                    cost: Number(formData.deliveryCost || 0),
+                    threshold: Number(formData.deliveryThreshold || 0)
+                };
             }
 
             const { error: websiteError } = await supabaseAdmin

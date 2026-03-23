@@ -1,6 +1,9 @@
 'use client';
 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
+import { getOffers } from '@/app/actions/boostActions';
+import { Tag, PartyPopper } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useCart } from '../cartContext.js';
 import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
@@ -11,7 +14,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 export default function FrostifyCheckoutPage() {
     const cart = useCart();
-    const { businessData } = useContext(TemplateContext);
+    const { businessData, websiteId } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
@@ -19,15 +22,109 @@ export default function FrostifyCheckoutPage() {
     } = useCheckout(cart);
     
     const [showUpi, setShowUpi] = useState(false);
+
+    const [activeOffers, setActiveOffers] = useState([]);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponInput, setCouponInput] = useState('');
+    const [couponError, setCouponError] = useState('');
+    const [showOffersList, setShowOffersList] = useState(false);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+
     const [finalAmount, setFinalAmount] = useState(0);
+
+    useEffect(() => {
+        if (!businessData || !websiteId) return;
+        const showOff = businessData?.offersConfig?.showOffers ?? false;
+        setShowOffersList(showOff);
+        getOffers(websiteId).then(res => {
+            if (res.success) setActiveOffers(res.data.filter(o => o.is_active));
+        });
+    }, [businessData, websiteId]);
 
     const isUPI = businessData?.payment?.mode === 'UPI';
     const upiId = businessData?.payment?.upiId;
 
+    
+    const handleApplyCoupon = (codeToApply = couponInput) => {
+        setCouponError('');
+        const cleanCode = codeToApply.trim().toUpperCase();
+        
+        // Find offer matching the cleaned code
+        const offer = activeOffers.find(o => o.code.trim().toUpperCase() === cleanCode);
+        
+        if (!offer) {
+            setCouponError('Invalid coupon code');
+            setAppliedCoupon(null);
+            return;
+        }
+
+        // Check expiration
+        if (offer.expires_at && new Date(offer.expires_at) < new Date()) {
+            setCouponError('This coupon code has expired');
+            setAppliedCoupon(null);
+            return;
+        }
+
+        // Check usage limits
+        if (offer.usage_limit && offer.used_count >= offer.usage_limit) {
+            setCouponError('This coupon has reached its usage limit');
+            setAppliedCoupon(null);
+            return;
+        }
+
+        // Check minimum order value
+        if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
+            setCouponError(`Minimum order value of $${offer.min_order_value} required`);
+            setAppliedCoupon(null);
+            return;
+        }
+        
+        setAppliedCoupon(offer);
+        setCouponInput(cleanCode);
+        setShowSuccessPopup(true);
+        setTimeout(() => setShowSuccessPopup(false), 2500);
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponInput('');
+        setCouponError('');
+    };
+
+    const calculateDiscount = (sub) => {
+        if (!appliedCoupon) return 0;
+        let discount = 0;
+        if (appliedCoupon.type === 'percentage') {
+            discount = sub * (appliedCoupon.value / 100);
+        } else {
+            discount = appliedCoupon.value;
+        }
+        if (appliedCoupon.max_discount && discount > appliedCoupon.max_discount) {
+            discount = appliedCoupon.max_discount;
+        }
+        return discount;
+    };
+
+    const calculateDelivery = (sub) => {
+        const deliveryConfig = businessData?.delivery || { type: 'fixed', cost: 0, threshold: 0 };
+        if (deliveryConfig.type === 'free_over_threshold' && sub >= deliveryConfig.threshold) {
+            return 0;
+        }
+        return deliveryConfig.cost || 0;
+    };
+
+    const discountAmount = calculateDiscount(subtotal);
+    const deliveryAmount = calculateDelivery(subtotal);
+
+    // OVERRIDE TOTAL FROM CART CONTEXT TO APPLY DISCOUNT
+    const finalTotal = (subtotal || 0) - (discountAmount || 0) + (deliveryAmount || 0);
+
+
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        const currentTotal = total;
-        const result = await submit();
+        const currentTotal = finalTotal;
+        const result = await submit({ finalTotal, discountAmount, deliveryAmount, couponCode: appliedCoupon ? appliedCoupon.code : null });
         if (result && result.success && isUPI) {
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
@@ -195,6 +292,52 @@ export default function FrostifyCheckoutPage() {
 
                         {/* Order Summary */}
                         <div className="bg-[var(--color-primary)] text-white p-4 md:p-8 rounded-3xl shadow-lg h-fit">
+                            
+                        {/* Coupon Section */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-6">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Tag size={16} /> Promo Code</h3>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter code" 
+                                    className="flex-grow border border-gray-200 p-3 outline-none rounded-lg text-sm uppercase bg-white"
+                                    value={couponInput}
+                                    onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                                    disabled={!!appliedCoupon}
+                                />
+                                {appliedCoupon ? (
+                                    <button type="button" onClick={removeCoupon} className="px-4 py-2 bg-red-50 text-red-600 font-bold text-xs rounded-lg hover:bg-red-100 transition-colors">Remove</button>
+                                ) : (
+                                    <button type="button" onClick={() => handleApplyCoupon(couponInput)} className="px-4 py-2 bg-gray-900 text-white font-bold text-xs rounded-lg hover:bg-gray-800 transition-colors">Apply</button>
+                                )}
+                            </div>
+                            {couponError && <p className="text-red-500 text-xs mt-2 font-medium">{couponError}</p>}
+                            
+                            {showOffersList && !appliedCoupon && activeOffers.length > 0 && (
+                                <div className="mt-4 space-y-2 max-h-48 overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
+                                    <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Available Offers</p>
+                                    {activeOffers.map(offer => (
+                                        <div key={offer.id} className="flex justify-between items-center p-3 bg-gray-50 border border-dashed border-gray-300 rounded-lg">
+                                            <div>
+                                                <p className="font-bold text-gray-800 text-sm">{offer.code}</p>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `$${offer.value} OFF`} 
+                                                    {offer.min_order_value > 0 ? ` on orders above $${offer.min_order_value}` : ''}
+                                                </p>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => handleApplyCoupon(offer.code)}
+                                                className="text-[10px] font-bold uppercase tracking-widest bg-gray-900 text-white px-3 py-2 rounded hover:bg-gray-800 transition-colors"
+                                            >
+                                                Apply
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
                             <h2 className="text-[5vw] md:text-xl font-bold mb-6 uppercase tracking-widest border-b border-white/20 pb-4">Your Order</h2>
                             <div className="space-y-4 mb-6">
                                 {cartDetails.map(item => (
@@ -215,7 +358,7 @@ export default function FrostifyCheckoutPage() {
                             <div className="border-t border-white/20 pt-6 mt-6">
                                 <div className="flex justify-between text-[4vw] md:text-2xl font-serif">
                                     <span>Total</span>
-                                    <span>${total.toFixed(2)}</span>
+                                    <span>${finalTotal.toFixed(2)}</span>
                                 </div>
                                 
                                 {message && !message.includes('fix') && (
@@ -249,7 +392,27 @@ export default function FrostifyCheckoutPage() {
                         </div>
                     </div>
                 )}
-            </div>
+            
+            {showSuccessPopup && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none p-4">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="bg-white rounded-2xl p-6 flex flex-col items-center shadow-2xl max-w-xs w-full pointer-events-auto border border-gray-100"
+                    >
+                        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 text-green-500">
+                            <PartyPopper size={32} />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">Coupon Applied!</h3>
+                        <p className="text-gray-500 text-sm text-center">
+                            You saved <span className="text-[#8A63D2] font-bold">₹{discountAmount.toFixed(2)}</span>
+                        </p>
+                    </motion.div>
+                </div>
+            )}
+</div>
         </div>
     );
 }

@@ -28,7 +28,7 @@ export default async function LiveCheckoutPage(props) {
 
   const { data: site, error } = await supabaseAdmin
     .from('websites')
-    .select(`is_published, website_data, template:templates ( name )`)
+    .select(`id, is_published, website_data, template:templates ( name )`)
     .eq('site_slug', slug)
     .single();
 
@@ -42,13 +42,13 @@ export default async function LiveCheckoutPage(props) {
   // Render the correct template's checkout page
   switch (templateName) {
     case 'flara':
-      return <FlaraLayout serverData={websiteData}><FlaraCheckoutPage /></FlaraLayout>;
+      return <FlaraLayout serverData={websiteData} websiteId={site.id}><FlaraCheckoutPage /></FlaraLayout>;
     case 'avenix':
-      return <AvenixLayout serverData={websiteData}><AvenixCheckoutPage /></AvenixLayout>;
+      return <AvenixLayout serverData={websiteData} websiteId={site.id}><AvenixCheckoutPage /></AvenixLayout>;
     case 'blissly':
-      return <BlisslyLayout serverData={websiteData}><BlisslyCheckoutPage /></BlisslyLayout>;
+      return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyCheckoutPage /></BlisslyLayout>;
     case 'flavornest':
-      return <FlavornestLayout serverData={websiteData}><FlavornestCheckoutPage /></FlavornestLayout>;
+      return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestCheckoutPage /></FlavornestLayout>;
     default:
       return <div>Checkout not found for this template.</div>;
   }
