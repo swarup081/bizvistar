@@ -2,7 +2,8 @@
 
 import { useContext, useState, useEffect } from 'react';
 import { getOffers } from '@/app/actions/boostActions';
-import { Tag } from 'lucide-react';
+import { Tag, PartyPopper } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useCart } from '../cartContext.js';
 import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
