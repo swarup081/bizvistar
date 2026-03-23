@@ -29,6 +29,9 @@ export default function ProfilePage() {
     deliveryCost: 0,
     deliveryThreshold: 0,
     deliveryType: 'fixed',
+    deliveryCost: 0,
+    deliveryThreshold: 0,
+    deliveryType: 'fixed',
     deliveryCost: 100,
     deliveryThreshold: 0
   });
@@ -665,6 +668,154 @@ export default function ProfilePage() {
             </form>
           </div>
 
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-8">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-[#8A63D2]" />
+                    Delivery Rules
+                </h3>
+            </div>
+
+            <div className="p-6 space-y-6">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Delivery Type</label>
+                    <select
+                        name="deliveryType"
+                        value={formData.deliveryType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none bg-white"
+                    >
+                        <option value="fixed">Fixed Cost (Always apply)</option>
+                        <option value="free_over_threshold">Free over specific amount</option>
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Base Cost (₹)</label>
+                        <input
+                            type="number"
+                            name="deliveryCost"
+                            value={formData.deliveryCost}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                            min="0"
+                        />
+                    </div>
+
+                    {formData.deliveryType === 'free_over_threshold' && (
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-2">Free Delivery Threshold (₹)</label>
+                            <input
+                                type="number"
+                                name="deliveryThreshold"
+                                value={formData.deliveryThreshold}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                                min="0"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-[#8A63D2]/5 p-4 rounded-xl border border-[#8A63D2]/20 flex items-start gap-3">
+                    <Truck className="text-[#8A63D2] shrink-0 mt-0.5" size={18} />
+                    <p className="text-sm text-[#8A63D2]/80 font-medium">
+                        {formData.deliveryType === 'free_over_threshold'
+                            ? `Customers will be charged ₹${formData.deliveryCost} for shipping, unless their cart subtotal exceeds ₹${formData.deliveryThreshold}.`
+                            : `Customers will always be charged a flat rate of ₹${formData.deliveryCost} for shipping.`}
+                    </p>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-gray-100">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving}
+                        className="px-6 py-3 bg-[#8A63D2] hover:bg-[#7b57be] text-white rounded-xl font-medium transition-colors flex items-center gap-2 disabled:opacity-70"
+                    >
+                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                        {saving ? 'Saving...' : 'Save Delivery Rules'}
+                    </button>
+                </div>
+            </div>
+          </div>
+
+
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-[#8A63D2]" />
+                    Delivery Rules
+                </h3>
+            </div>
+
+            <div className="p-6 space-y-6">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Delivery Type</label>
+                    <select
+                        name="deliveryType"
+                        value={formData.deliveryType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none bg-white"
+                    >
+                        <option value="fixed">Fixed Cost (Always apply)</option>
+                        <option value="free_over_threshold">Free over specific amount</option>
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Base Cost (₹)</label>
+                        <input
+                            type="number"
+                            name="deliveryCost"
+                            value={formData.deliveryCost}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                            min="0"
+                        />
+                    </div>
+
+                    {formData.deliveryType === 'free_over_threshold' && (
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-2">Free Delivery Threshold (₹)</label>
+                            <input
+                                type="number"
+                                name="deliveryThreshold"
+                                value={formData.deliveryThreshold}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                                min="0"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-[#8A63D2]/5 p-4 rounded-xl border border-[#8A63D2]/20 flex items-start gap-3">
+                    <Truck className="text-[#8A63D2] shrink-0 mt-0.5" size={18} />
+                    <p className="text-sm text-[#8A63D2]/80 font-medium">
+                        {formData.deliveryType === 'free_over_threshold'
+                            ? `Customers will be charged ₹${formData.deliveryCost} for shipping, unless their cart subtotal exceeds ₹${formData.deliveryThreshold}.`
+                            : `Customers will always be charged a flat rate of ₹${formData.deliveryCost} for shipping.`}
+                    </p>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-gray-100">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving}
+                        className="px-6 py-3 bg-[#8A63D2] hover:bg-[#7b57be] text-white rounded-xl font-medium transition-colors flex items-center gap-2 disabled:opacity-70"
+                    >
+                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                        {saving ? 'Saving...' : 'Save Delivery Rules'}
+                    </button>
+                </div>
+            </div>
+          </div>
+
+
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -711,6 +862,80 @@ export default function ProfilePage() {
                 </div>
             </form>
           </div>
+
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-8">
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-[#8A63D2]" />
+                    Delivery Rules
+                </h3>
+            </div>
+
+            <div className="p-6 space-y-6">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 block mb-2">Delivery Type</label>
+                    <select
+                        name="deliveryType"
+                        value={formData.deliveryType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none bg-white"
+                    >
+                        <option value="fixed">Fixed Cost (Always apply)</option>
+                        <option value="free_over_threshold">Free over specific amount</option>
+                    </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Base Cost (₹)</label>
+                        <input
+                            type="number"
+                            name="deliveryCost"
+                            value={formData.deliveryCost}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                            min="0"
+                        />
+                    </div>
+
+                    {formData.deliveryType === 'free_over_threshold' && (
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-2">Free Delivery Threshold (₹)</label>
+                            <input
+                                type="number"
+                                name="deliveryThreshold"
+                                value={formData.deliveryThreshold}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
+                                min="0"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-[#8A63D2]/5 p-4 rounded-xl border border-[#8A63D2]/20 flex items-start gap-3">
+                    <Truck className="text-[#8A63D2] shrink-0 mt-0.5" size={18} />
+                    <p className="text-sm text-[#8A63D2]/80 font-medium">
+                        {formData.deliveryType === 'free_over_threshold'
+                            ? `Customers will be charged ₹${formData.deliveryCost} for shipping, unless their cart subtotal exceeds ₹${formData.deliveryThreshold}.`
+                            : `Customers will always be charged a flat rate of ₹${formData.deliveryCost} for shipping.`}
+                    </p>
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-gray-100">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={saving}
+                        className="px-6 py-3 bg-[#8A63D2] hover:bg-[#7b57be] text-white rounded-xl font-medium transition-colors flex items-center gap-2 disabled:opacity-70"
+                    >
+                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                        {saving ? 'Saving...' : 'Save Delivery Rules'}
+                    </button>
+                </div>
+            </div>
+          </div>
+
           
         </div>
       </div>

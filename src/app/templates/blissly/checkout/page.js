@@ -425,14 +425,22 @@ export default function CheckoutPage() {
                 )}
 
             {showSuccessPopup && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-300 max-w-sm w-full mx-4">
-                        <div className="w-32 h-32 mb-4">
-                            <iframe src="/Gift.lottie" className="w-full h-full pointer-events-none" frameBorder="0" scrolling="no"></iframe>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="bg-white rounded-2xl p-6 flex flex-col items-center shadow-2xl max-w-xs w-full pointer-events-auto border border-gray-100"
+                    >
+                        <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 text-green-500">
+                            <PartyPopper size={32} />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">Coupon Applied!</h3>
-                        <p className="text-gray-500 font-medium">You saved <span className="text-[#8A63D2] font-bold">₹{discountAmount.toFixed(2)}</span></p>
-                    </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">Coupon Applied!</h3>
+                        <p className="text-gray-500 text-sm text-center">
+                            You saved <span className="text-[#8A63D2] font-bold">₹{discountAmount.toFixed(2)}</span>
+                        </p>
+                    </motion.div>
                 </div>
             )}
 </div>
