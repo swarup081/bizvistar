@@ -5,6 +5,7 @@ import { ReceiptText, Printer, Plus, Trash2, Search, ChevronDown, Building2, Map
 import { getWebsiteDetails } from '@/app/actions/dashboardActions';
 import { getOrdersForBilling } from '@/app/actions/billingActions';
 import toast, { Toaster } from 'react-hot-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function BillGeneratorPage() {
     const [website, setWebsite] = useState(null);
@@ -31,16 +32,46 @@ export default function BillGeneratorPage() {
         async function init() {
             try {
                 const { success: webSuccess, data: webData } = await getWebsiteDetails();
+                let billingProfile = {};
+                let userEmail = '';
+
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        userEmail = user.email;
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', user.id)
+                            .maybeSingle();
+                        
+                        if (profile && profile.billing_address) {
+                            if (typeof profile.billing_address === 'string') {
+                                billingProfile = JSON.parse(profile.billing_address);
+                            } else {
+                                billingProfile = profile.billing_address;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching profile for billing", err);
+                }
+
                 if (webSuccess && webData) {
                     setWebsite(webData);
                     
                     // Auto-fill business info
-                    const bData = webData.website_data?.business || {};
+                    const wData = webData.website_data || {};
+
+                    const fallbackAddress = billingProfile.address 
+                        ? `${billingProfile.address}${billingProfile.city ? `, ${billingProfile.city}` : ''}${billingProfile.state ? `, ${billingProfile.state}` : ''}${billingProfile.zipCode ? ` - ${billingProfile.zipCode}` : ''}`
+                        : '';
+
                     setBusinessInfo({
-                        name: bData.name || 'Your Store Name',
-                        address: bData.address || '',
-                        email: bData.contact?.email || '',
-                        phone: bData.contact?.phone || ''
+                        name: wData.name || wData.businessName || wData.business?.name || billingProfile.companyName || billingProfile.fullName || 'Your Store Name',
+                        address: wData.business?.address || fallbackAddress || '',
+                        email: wData.contact?.email || billingProfile.email || userEmail || '',
+                        phone: wData.whatsappNumber || wData.contact?.phone || wData.contact?.whatsapp || billingProfile.phoneNumber || ''
                     });
 
                     const { success: ordSuccess, data: ordData } = await getOrdersForBilling(webData.id);
@@ -120,7 +151,55 @@ export default function BillGeneratorPage() {
         document.head.removeChild(printStyles);
     };
 
-    if (loading) return <div className="p-8 flex justify-center"><Activity className="animate-spin text-gray-400" /></div>;
+    if (loading) {
+        return (
+            <div className="max-w-7xl mx-auto pb-20 flex flex-col lg:flex-row gap-8 animate-pulse">
+                {/* Skeleton Controls */}
+                <div className="w-full lg:w-1/3 space-y-6">
+                    <div className="h-10 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-6"></div>
+                    
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+                            <div className="h-10 bg-gray-200 rounded w-full"></div>
+                            <div className="h-16 bg-gray-200 rounded w-full"></div>
+                        </div>
+                    ))}
+                </div>
+                
+                {/* Skeleton Invoice View */}
+                <div className="w-full lg:w-2/3 flex flex-col min-h-[800px]">
+                    <div className="flex justify-end mb-4">
+                        <div className="h-10 bg-gray-200 rounded w-32"></div>
+                    </div>
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 flex-grow p-10 space-y-8">
+                        <div className="flex justify-between">
+                            <div className="space-y-2 w-1/3">
+                                <div className="h-8 bg-gray-200 rounded w-full"></div>
+                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                            <div className="space-y-2 text-right">
+                                <div className="h-10 bg-gray-200 rounded w-32 ml-auto"></div>
+                                <div className="h-4 bg-gray-200 rounded w-24 ml-auto"></div>
+                            </div>
+                        </div>
+                        <div className="w-1/4 space-y-2">
+                             <div className="h-6 bg-gray-200 rounded w-full"></div>
+                             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                             <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                        <div className="space-y-4">
+                             <div className="h-8 bg-gray-200 rounded w-full"></div>
+                             <div className="h-8 bg-gray-200 rounded w-full"></div>
+                             <div className="h-8 bg-gray-200 rounded w-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const businessData = website?.website_data;
 
@@ -177,6 +256,10 @@ export default function BillGeneratorPage() {
                     <div className="space-y-3">
                         <input type="text" placeholder="Business Name" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.name} onChange={e=>setBusinessInfo({...businessInfo, name: e.target.value})} />
                         <textarea placeholder="Business Address" rows="2" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2] resize-none" value={businessInfo.address} onChange={e=>setBusinessInfo({...businessInfo, address: e.target.value})} />
+                        <div className="grid grid-cols-2 gap-3">
+                            <input type="email" placeholder="Email" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.email} onChange={e=>setBusinessInfo({...businessInfo, email: e.target.value})} />
+                            <input type="tel" placeholder="Phone" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.phone} onChange={e=>setBusinessInfo({...businessInfo, phone: e.target.value})} />
+                        </div>
                     </div>
                 </div>
 
