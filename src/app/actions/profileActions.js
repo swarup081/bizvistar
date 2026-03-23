@@ -48,11 +48,11 @@ export async function updateProfileDataAction(formData) {
 
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
-            .update({ 
+            .upsert({
+                id: user.id,
                 full_name: formData.fullName,
                 billing_address: billingAddress
-            })
-            .eq('id', user.id);
+            });
 
         if (profileError) throw profileError;
 

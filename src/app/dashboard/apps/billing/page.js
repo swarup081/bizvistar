@@ -68,10 +68,10 @@ export default function BillGeneratorPage() {
                         : '';
 
                     setBusinessInfo({
-                        name: wData.name || billingProfile.companyName || 'Your Store Name',
-                        address: fallbackAddress || '',
-                        email: billingProfile.email || userEmail || '',
-                        phone: wData.whatsappNumber || billingProfile.phoneNumber || ''
+                        name: wData.name || wData.businessName || wData.business?.name || billingProfile.companyName || 'Your Store Name',
+                        address: wData.business?.address || fallbackAddress || '',
+                        email: wData.contact?.email || billingProfile.email || userEmail || '',
+                        phone: wData.whatsappNumber || wData.contact?.phone || wData.contact?.whatsapp || billingProfile.phoneNumber || ''
                     });
 
                     const { success: ordSuccess, data: ordData } = await getOrdersForBilling(webData.id);
@@ -256,6 +256,10 @@ export default function BillGeneratorPage() {
                     <div className="space-y-3">
                         <input type="text" placeholder="Business Name" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.name} onChange={e=>setBusinessInfo({...businessInfo, name: e.target.value})} />
                         <textarea placeholder="Business Address" rows="2" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2] resize-none" value={businessInfo.address} onChange={e=>setBusinessInfo({...businessInfo, address: e.target.value})} />
+                        <div className="grid grid-cols-2 gap-3">
+                            <input type="email" placeholder="Email" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.email} onChange={e=>setBusinessInfo({...businessInfo, email: e.target.value})} />
+                            <input type="tel" placeholder="Phone" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.phone} onChange={e=>setBusinessInfo({...businessInfo, phone: e.target.value})} />
+                        </div>
                     </div>
                 </div>
 
