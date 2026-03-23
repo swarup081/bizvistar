@@ -48,7 +48,50 @@ export default function PatronAppPage() {
   const repeatCustomersCount = customers.filter(c => c.order_count >= 2).length;
   const vipCount = customers.filter(c => c.total_spend >= 5000).length;
 
-  if (loading) return <div className="p-8 flex justify-center"><Activity className="animate-spin text-gray-400" /></div>;
+  if (loading) {
+      return (
+          <div className="max-w-7xl mx-auto pb-20 space-y-8 animate-pulse">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="space-y-2">
+                      <div className="h-10 bg-gray-200 rounded w-48"></div>
+                      <div className="h-4 bg-gray-200 rounded w-64"></div>
+                  </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                          <div className="h-10 bg-gray-200 rounded-full w-10"></div>
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      </div>
+                  ))}
+              </div>
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                      <div className="h-6 bg-gray-200 rounded w-48"></div>
+                      <div className="h-10 bg-gray-200 rounded w-64"></div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                      {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className="flex justify-between items-center pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                              <div className="flex items-center gap-4">
+                                  <div className="h-10 bg-gray-200 rounded-full w-10"></div>
+                                  <div className="space-y-2">
+                                      <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                      <div className="h-3 bg-gray-200 rounded w-24"></div>
+                                  </div>
+                              </div>
+                              <div className="space-y-2 text-right">
+                                  <div className="h-4 bg-gray-200 rounded w-20 ml-auto"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-16 ml-auto"></div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="max-w-7xl mx-auto pb-20">

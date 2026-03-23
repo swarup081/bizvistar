@@ -48,11 +48,11 @@ export async function updateProfileDataAction(formData) {
 
         const { error: profileError } = await supabaseAdmin
             .from('profiles')
-            .update({ 
+            .upsert({
+                id: user.id,
                 full_name: formData.fullName,
                 billing_address: billingAddress
-            })
-            .eq('id', user.id);
+            });
 
         if (profileError) throw profileError;
 
@@ -85,13 +85,16 @@ export async function updateProfileDataAction(formData) {
 
             // Update Live Data
             const updatedData = { ...currentData };
-            if (formData.businessName !== undefined) updatedData.businessName = formData.businessName;
+            if (formData.businessName !== undefined) {
+                updatedData.name = formData.businessName;
+                updatedData.logoText = formData.businessName;
+            }
             if (formData.logoUrl !== undefined) updatedData.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedData.payment = { ...(updatedData.payment || {}), upiId: formData.upiId };
             }
             if (formData.phoneNumber !== undefined) {
-                updatedData.contact = { ...(updatedData.contact || {}), whatsapp: formData.phoneNumber };
+                updatedData.whatsappNumber = formData.phoneNumber;
             }
             if (formData.deliveryType !== undefined) {
                 updatedData.delivery = {
@@ -104,13 +107,16 @@ export async function updateProfileDataAction(formData) {
 
             // Update Draft Data
             const updatedDraft = { ...currentDraft };
-            if (formData.businessName !== undefined) updatedDraft.businessName = formData.businessName;
+            if (formData.businessName !== undefined) {
+                updatedDraft.name = formData.businessName;
+                updatedDraft.logoText = formData.businessName;
+            }
             if (formData.logoUrl !== undefined) updatedDraft.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedDraft.payment = { ...(updatedDraft.payment || {}), upiId: formData.upiId };
             }
             if (formData.phoneNumber !== undefined) {
-                updatedDraft.contact = { ...(updatedDraft.contact || {}), whatsapp: formData.phoneNumber };
+                updatedDraft.whatsappNumber = formData.phoneNumber;
             }
             if (formData.deliveryType !== undefined) {
                 updatedDraft.delivery = {
