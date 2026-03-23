@@ -81,7 +81,7 @@ export default function ProfilePage() {
         const websiteId = websites[0].id;
         const websiteData = websites[0].website_data || {};
         
-        businessName = websiteData.businessName || websiteData.business?.name || '';
+        businessName = websiteData.name || '';
         upiId = websiteData.payment?.upiId || '';
         logoUrl = websiteData.logo || '';
 

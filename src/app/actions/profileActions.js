@@ -86,21 +86,15 @@ export async function updateProfileDataAction(formData) {
             // Update Live Data
             const updatedData = { ...currentData };
             if (formData.businessName !== undefined) {
-                updatedData.businessName = formData.businessName;
-                updatedData.business = { ...(updatedData.business || {}), name: formData.businessName };
-            }
-            if (formData.address !== undefined) {
-                updatedData.business = { ...(updatedData.business || {}), address: formData.address };
+                updatedData.name = formData.businessName;
+                updatedData.logoText = formData.businessName;
             }
             if (formData.logoUrl !== undefined) updatedData.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedData.payment = { ...(updatedData.payment || {}), upiId: formData.upiId };
             }
             if (formData.phoneNumber !== undefined) {
-                updatedData.contact = { ...(updatedData.contact || {}), whatsapp: formData.phoneNumber, phone: formData.phoneNumber };
-            }
-            if (formData.email !== undefined) {
-                updatedData.contact = { ...(updatedData.contact || {}), email: formData.email };
+                updatedData.whatsappNumber = formData.phoneNumber;
             }
             if (formData.deliveryType !== undefined) {
                 updatedData.delivery = {
@@ -114,21 +108,15 @@ export async function updateProfileDataAction(formData) {
             // Update Draft Data
             const updatedDraft = { ...currentDraft };
             if (formData.businessName !== undefined) {
-                updatedDraft.businessName = formData.businessName;
-                updatedDraft.business = { ...(updatedDraft.business || {}), name: formData.businessName };
-            }
-            if (formData.address !== undefined) {
-                updatedDraft.business = { ...(updatedDraft.business || {}), address: formData.address };
+                updatedDraft.name = formData.businessName;
+                updatedDraft.logoText = formData.businessName;
             }
             if (formData.logoUrl !== undefined) updatedDraft.logo = formData.logoUrl;
             if (formData.upiId !== undefined) {
                 updatedDraft.payment = { ...(updatedDraft.payment || {}), upiId: formData.upiId };
             }
             if (formData.phoneNumber !== undefined) {
-                updatedDraft.contact = { ...(updatedDraft.contact || {}), whatsapp: formData.phoneNumber, phone: formData.phoneNumber };
-            }
-            if (formData.email !== undefined) {
-                updatedDraft.contact = { ...(updatedDraft.contact || {}), email: formData.email };
+                updatedDraft.whatsappNumber = formData.phoneNumber;
             }
             if (formData.deliveryType !== undefined) {
                 updatedDraft.delivery = {

@@ -62,18 +62,16 @@ export default function BillGeneratorPage() {
                     
                     // Auto-fill business info
                     const wData = webData.website_data || {};
-                    const bData = wData.business || {};
-                    const contactData = wData.contact || {};
 
                     const fallbackAddress = billingProfile.address
                         ? `${billingProfile.address}${billingProfile.city ? `, ${billingProfile.city}` : ''}${billingProfile.state ? `, ${billingProfile.state}` : ''}${billingProfile.zipCode ? ` - ${billingProfile.zipCode}` : ''}`
                         : '';
 
                     setBusinessInfo({
-                        name: wData.businessName || bData.name || billingProfile.companyName || 'Your Store Name',
-                        address: bData.address || fallbackAddress || '',
-                        email: contactData.email || billingProfile.email || userEmail || '',
-                        phone: contactData.phone || contactData.whatsapp || billingProfile.phoneNumber || ''
+                        name: wData.name || billingProfile.companyName || 'Your Store Name',
+                        address: fallbackAddress || '',
+                        email: billingProfile.email || userEmail || '',
+                        phone: wData.whatsappNumber || billingProfile.phoneNumber || ''
                     });
 
                     const { success: ordSuccess, data: ordData } = await getOrdersForBilling(webData.id);
