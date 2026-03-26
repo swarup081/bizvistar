@@ -55,7 +55,7 @@ export default function TemplateCarousel() {
   };
 
   return (
-    <div className="w-full py-20 bg-white overflow-hidden relative group">
+    <div className="w-full py-0 bg-[#fdfdfd] overflow-hidden relative group">
       <div className="max-w-7xl mx-auto px-6 relative">
         
         {/* Header */}
