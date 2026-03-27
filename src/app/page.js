@@ -15,7 +15,7 @@ import FaqSection from '@/components/checkout/FaqSection';
 
 export default function LandingPage() {
   return (
-    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col overflow-x-hidden relative">
+    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col">
       <NewHeader />
       
       <main className="flex-grow pt-0">
