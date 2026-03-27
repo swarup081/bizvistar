@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { Marquee } from "@/components/ui/marquee"
+import { Marquee } from "@/components/marquee"
 
 // 1. UNIQUE B2B SAAS & WEBSITE BUILDER REVIEWS
 const reviews = [
