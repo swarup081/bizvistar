@@ -108,9 +108,12 @@ export default function LandingPage() {
               {/* --- NEW BENEFITS SECTION INSERTED HERE --- */}
         <BenefitsSection />
 
-         
-
-        
+        {/* --- FAQ SECTION --- */}
+        <section className="bg-white py-24">
+          <div className="container mx-auto px-6 max-w-7xl">
+            <FaqSection pageType="landing" />
+          </div>
+        </section>
 
       </main>
 
