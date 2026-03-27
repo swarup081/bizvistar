@@ -15,7 +15,7 @@ import FaqSection from '@/components/checkout/FaqSection';
 
 export default function LandingPage() {
   return (
-    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col overflow-x-hidden relative">
+    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col">
       <NewHeader />
       
       <main className="flex-grow pt-0">
@@ -79,38 +79,49 @@ export default function LandingPage() {
         <StickySubNav />
 
         {/* --- PRICING SECTION --- */}
-        <PricingSection />
+        <section id="pricing">
+          <PricingSection />
+        </section>
 
         {/* --- Carousel Section --- */}
-        <TemplateCarousel />
+        <section id="templates">
+          <TemplateCarousel />
 
-        <div className="flex justify-center">
-          <Link href="/templates">
-            <button className="px-8 py-6 bg-[#000] mb-10 text-white text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
-            Browse All Templates
-              <motion.span
-                animate={{ x: [0, 10, 0] }}
-                transition={{ duration: 0.9, ease: 'easeInOut', repeat: Infinity, repeatDelay: 3 }}
-                className="inline-block text-xl"
-              >
-                →
-              </motion.span>
-            </button>
-          </Link>
-        </div>
+          <div className="flex justify-center">
+            <Link href="/templates">
+              <button className="px-8 py-6 bg-[#000] mb-10 text-white text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
+              Browse All Templates
+                <motion.span
+                  animate={{ x: [0, 10, 0] }}
+                  transition={{ duration: 0.9, ease: 'easeInOut', repeat: Infinity, repeatDelay: 3 }}
+                  className="inline-block text-xl"
+                >
+                  →
+                </motion.span>
+              </button>
+            </Link>
+          </div>
+        </section>
 
         {/* --- HOW IT WORKS SECTION --- */}
-        <HowItWorks />
+        <section id="how-it-works">
+          <HowItWorks />
+        </section>
 
               {/* --- THRIVING WITH WIX (HORIZONTAL SCROLL) --- */}
               <MarqueeDemo />
 
               {/* --- NEW BENEFITS SECTION INSERTED HERE --- */}
-        <BenefitsSection />
+        <section id="benefits">
+          <BenefitsSection />
+        </section>
 
-         
-
-        
+        {/* --- FAQ SECTION --- */}
+        <section id="faq" className="bg-white py-24">
+          <div className="container mx-auto px-6 max-w-7xl">
+            <FaqSection pageType="landing" />
+          </div>
+        </section>
 
       </main>
 

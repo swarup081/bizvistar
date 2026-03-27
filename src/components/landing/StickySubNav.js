@@ -7,19 +7,19 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 export default function StickySubNav() {
-  const [activeSection, setActiveSection] = useState('pricing'); // Defaulting to pricing initially based on placement
+  const [activeSection, setActiveSection] = useState('overview');
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['overview', 'templates', 'pricing', 'faq'];
+      const sections = ['overview', 'pricing', 'templates', 'how-it-works', 'benefits', 'faq'];
       let currentSection = '';
 
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
           const rect = element.getBoundingClientRect();
-          // Adjust threshold to detect which section is currently focused
-          if (rect.top <= window.innerHeight / 2 && rect.bottom >= 100) {
+          // Check if element is in the upper middle part of the screen
+          if (rect.top <= window.innerHeight * 0.4 && rect.bottom >= window.innerHeight * 0.2) {
             currentSection = section;
           }
         }
@@ -30,35 +30,43 @@ export default function StickySubNav() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Trigger once on mount
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Trigger once on mount to set initial state correctly
+    handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const navItems = [
+    { id: 'overview', label: 'Overview' },
     { id: 'pricing', label: 'Pricing' },
     { id: 'templates', label: 'Templates' },
-    { id: 'overview', label: 'How It Works' },
-    { id: 'testimonials', label: 'Testimonials' },
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'features', label: 'Features' },
-    { id: 'faq', label: 'Faq' },
+    { id: 'how-it-works', label: 'How It Works' },
+    { id: 'benefits', label: 'Benefits' },
+    { id: 'faq', label: 'FAQ' },
   ];
 
   return (
-    // FIX: Removed "h-0" and used a negative margin "-mb-[64px]" instead.
-    // This gives the sticky engine a real height to track (which fixes the stickiness), 
-    // but visually pulls the Pricing section UP by 64px to completely eliminate the gap!
-    <div className="sticky top-8 z-[100] hidden lg:block w-full max-w-[1440px] mx-auto pointer-events-none -mb-[64px]">
+    <div className="sticky top-6 z-[100] hidden lg:block w-full max-w-[1440px] mx-auto pointer-events-none mb-4 transition-all duration-300">
       
-      <div className="w-max ml-6 xl:ml-10 pointer-events-auto inline-flex flex-row items-center gap-2 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl rounded-full p-2">
+      {/* Container aligned to center or a bit left depending on preference. ml-6 to mx-auto centers it */}
+      <div className="w-max mx-auto pointer-events-auto inline-flex flex-row items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 shadow-lg rounded-full p-1.5 transition-all">
         
         {navItems.map((item) => (
           <Link 
             key={item.id}
             href={`#${item.id}`} 
-            className="relative px-6 py-2.5 rounded-full text-sm font-bold outline-none group"
+            className="relative px-4 py-1.5 rounded-full text-[13px] font-semibold tracking-wide outline-none group transition-all"
+            onClick={(e) => {
+              e.preventDefault();
+              const element = document.getElementById(item.id);
+              if (element) {
+                // Offset calculation (top position - sticky nav height roughly)
+                const y = element.getBoundingClientRect().top + window.scrollY - 100;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+                setActiveSection(item.id);
+              }
+            }}
           >
             {/* Ultra-Smooth Sliding Background Pill */}
             {activeSection === item.id && (
