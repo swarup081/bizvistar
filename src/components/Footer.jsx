@@ -1,53 +1,78 @@
 import React from 'react';
 import Link from 'next/link';
+import Logo from '@/lib/logo/logoOfBizVistar';
 
 const footerData = [
   {
     title: "Product",
     links: [
-      "Website Templates", "Website Builder", "Website Design", "Wix Features",
-      "App Market", "Web Hosting", "Domain Names", "Website Accessibility",
-      "Mobile App Builder", "AI Website Builder"
+      { name: "Website Templates", href: "#" },
+      { name: "Website Builder", href: "#" },
+      { name: "E-Commerce", href: "#" },
+      { name: "AI Features", href: "#" },
+      { name: "Integrations", href: "#" },
+      { name: "Hosting", href: "#" },
+      { name: "Domain Names", href: "#" },
+      { name: "Mobile App Builder", href: "#" }
     ]
   },
   {
     title: "Solutions",
     links: [
-      "Online Store", "Online Booking", "Point of Sale", "Blog Website",
-      "Portfolio Website", "eCommerce Website", "Wix Studio", "Enterprise Solutions",
-      "Wix University", "Professional Tools", "Logo Maker", "Landing Page Builder"
+      { name: "Online Store", href: "#" },
+      { name: "Portfolio Website", href: "#" },
+      { name: "Blog Website", href: "#" },
+      { name: "Service Business", href: "#" },
+      { name: "Agencies", href: "#" },
+      { name: "Enterprise", href: "#" },
+      { name: "Creators", href: "#" }
     ]
   },
   {
-    title: "Learn",
+    title: "Resources",
     links: [
-      "Wix Blog", "Privacy and Security Hub", "SEO Learning Hub", "Wix Encyclopedia"
+      { name: "Blog", href: "#" },
+      { name: "Help Center", href: "#" },
+      { name: "Community", href: "#" },
+      { name: "Guides & Tutorials", href: "#" },
+      { name: "API Documentation", href: "#" },
+      { name: "Marketplace", href: "#" }
     ]
   },
   {
     title: "Support",
     links: [
-      "Help Center", "Hire a Professional", "Report Abuse", 
-      { name: "System Status", highlight: true }
+      { name: "Contact Support", href: "#" },
+      { name: "Hire an Expert", href: "#" },
+      { name: "Report Abuse", href: "#" },
+      { name: "System Status", href: "#", highlight: true }
     ]
   },
   {
     title: "Company",
     links: [
-      "Channel Partnerships", "Press & Media", "Investor Relations", "Wix Ventures",
-      "Accessibility Statement", "Patent Notice", "Sitemap", "Careers"
+      { name: "About Us", href: "#" },
+      { name: "Careers", href: "#" },
+      { name: "Partners", href: "#" },
+      { name: "Affiliate Program", href: "#" },
+      { name: "Press & Media", href: "#" },
+      { name: "Contact Us", href: "#" }
     ]
   }
 ];
 
 const BrandSection = () => (
   <div className="flex flex-col text-sm text-gray-800">
-    <h2 className="text-3xl font-medium tracking-tight mb-6">WIX</h2>
+    <div className="mb-6 hover:opacity-80 transition-opacity">
+      <Link href="/">
+        <Logo className="text-3xl" />
+      </Link>
+    </div>
     <p className="leading-relaxed mb-6">
-      Wix is a website builder that lets any business or individual build their own professional website. By combining design tools and business solutions in one AI-powered platform, Wix makes it easy for anyone to create without limits and scale confidently online.
+      BizVistar is a powerful platform that empowers businesses and individuals to build professional websites effortlessly. With intelligent design tools and comprehensive business solutions, BizVistar provides everything you need to create, manage, and scale your online presence.
     </p>
     <div className="flex flex-col gap-4">
-      <Link href="#" className="hover:text-black transition-colors">About</Link>
+      <Link href="#" className="hover:text-black transition-colors">About Us</Link>
       <Link href="#" className="hover:text-black transition-colors">Contact Us</Link>
     </div>
   </div>
@@ -90,15 +115,15 @@ export default function Footer() {
                 
                 <ul className="pb-5 lg:pb-0 lg:pt-6 flex flex-col gap-3.5 text-[14px] text-gray-600">
                   {section.links.map((link, linkIdx) => {
-                    const isObj = typeof link === 'object';
-                    const linkName = isObj ? link.name : link;
-                    const isHighlight = isObj ? link.highlight : false;
+                    const linkName = link.name;
+                    const linkHref = link.href || "#";
+                    const isHighlight = link.highlight || false;
 
                     return (
                       <li key={linkIdx}>
                         <Link 
-                          href="#" 
-                          className={`hover:text-black transition-colors ${isHighlight ? 'text-blue-600 hover:text-blue-700' : ''}`}
+                          href={linkHref}
+                          className={`hover:text-black transition-colors ${isHighlight ? 'text-blue-600 hover:text-blue-700 font-medium' : ''}`}
                         >
                           {linkName}
                         </Link>
@@ -140,10 +165,11 @@ export default function Footer() {
           {/* Legal Links & Copyright */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 text-sm text-gray-500">
             <div className="flex gap-6">
-              <Link href="#" className="hover:text-black transition-colors">Terms of Use</Link>
+              <Link href="#" className="hover:text-black transition-colors">Terms of Service</Link>
               <Link href="#" className="hover:text-black transition-colors">Privacy Policy</Link>
+              <Link href="#" className="hover:text-black transition-colors">Refund Policy</Link>
             </div>
-            <span>© 2006-2026 Wix.com, Inc</span>
+            <span>© {new Date().getFullYear()} BizVistar. All rights reserved.</span>
           </div>
 
         </div>
