@@ -121,7 +121,7 @@ export default function ThrivingSection() {
     <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
          {/* Header */}
          <div className="text-center m-20">
-           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4">
+           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4 leading-[1.1] tracking-tight">
            Customer are our valuable <br/>assest for you & us
            </h2>
            <p className="text-lg text-gray-600 max-w-2xl mx-auto">

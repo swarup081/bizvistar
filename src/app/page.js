@@ -11,6 +11,7 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import MarqueeDemo from '@/components/landing/MarqueeDemo'; 
 import BenefitsSection from '@/components/landing/BenefitsSection';
 import FaqSection from '@/components/checkout/FaqSection';
+import Footer from '@/components/Footer';
 
 
 export default function LandingPage() {
@@ -36,8 +37,8 @@ export default function LandingPage() {
               />
            </div>
            
-           <div className="container mx-auto px-6 max-w-7xl relative z-10 text-center">
-              <h1 className="text-5xl not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
+           <div className="container mx-auto font-times px-6 max-w-7xl relative z-10 text-center">
+              <h1 className="text-5xl font-times not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
                  Don&apos;t sell your dreams, <br/>
                  <span className="text-transparent not-italic bg-clip-text bg-black">
                     Sell your products
@@ -79,10 +80,14 @@ export default function LandingPage() {
         <StickySubNav />
 
         {/* --- PRICING SECTION --- */}
-        <PricingSection />
+        <section id="pricing" >
+          <PricingSection />
+        </section>
 
         {/* --- Carousel Section --- */}
-        <TemplateCarousel />
+        <section id="templates" >
+          <TemplateCarousel />
+        </section>
 
         <div className="flex justify-center">
           <Link href="/templates">
@@ -100,13 +105,25 @@ export default function LandingPage() {
         </div>
 
         {/* --- HOW IT WORKS SECTION --- */}
-        <HowItWorks />
+        <section id="how-it-works" >
+          <HowItWorks />
+        </section>
 
               {/* --- THRIVING WITH WIX (HORIZONTAL SCROLL) --- */}
-              <MarqueeDemo />
+        <section id="testimonial" >
+                <MarqueeDemo />
+         </section>
 
               {/* --- NEW BENEFITS SECTION INSERTED HERE --- */}
-        <BenefitsSection />
+        <section id="benefits" >
+          <BenefitsSection />
+        </section>
+          {/* --- FAQ SECTION --- */}
+          <section id="faq" >
+          <div className="container my-25 mt-40 mx-auto px-6 max-w-7xl">
+            <FaqSection pageType="landing" />
+          </div>
+        </section>
 
          
 
@@ -115,18 +132,8 @@ export default function LandingPage() {
       </main>
 
       {/* --- Simple Footer --- */}
-      <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
-         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0 flex items-center gap-2">
-               <span className="text-2xl font-bold tracking-tight">BizVistar</span>
-               <p className="text-gray-400 text-sm ml-4 border-l border-gray-700 pl-4">© {new Date().getFullYear()} BizVistar Inc.</p>
-            </div>
-            <div className="flex gap-8 text-sm text-gray-400 font-medium">
-               <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-               <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
-               <Link href="#" className="hover:text-white transition-colors">Contact Support</Link>
-            </div>
-         </div>
+      <footer >
+       <Footer/>
       </footer>
     </div>
   );
