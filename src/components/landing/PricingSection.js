@@ -225,20 +225,24 @@ function PricingContent() {
         </div>
 
         {/* --- PRICING CARDS --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end max-w-6xl mx-auto">
+        <div className="flex overflow-x-auto lg:grid lg:grid-cols-3 gap-6 lg:gap-8 items-end max-w-6xl mx-auto snap-x snap-mandatory pb-8 lg:pb-0 no-scrollbar px-4 lg:px-0">
             {activePlans.map((plan, index) => {
               const currentCycle = isYearly ? 'yearly' : 'monthly';
               const isCurrentPlan = currentPlan?.name === plan.name && currentPlan?.cycle === currentCycle;
 
+              // On mobile, the recommended plan (index 1) should be shown first, followed by others
+              const orderClass = index === 1 ? 'order-first lg:order-none' : '';
+
               return (
-                <PlanCard
-                  key={plan.name}
-                  plan={plan}
-                  isYearly={isYearly}
-                  isUpdateFlow={isUpdateFlow}
-                  isCurrentPlan={isCurrentPlan}
-                  className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
-                />
+                <div key={plan.name} className={`min-w-[85vw] md:min-w-[350px] lg:min-w-0 snap-center lg:snap-align-none ${orderClass}`}>
+                  <PlanCard
+                    plan={plan}
+                    isYearly={isYearly}
+                    isUpdateFlow={isUpdateFlow}
+                    isCurrentPlan={isCurrentPlan}
+                    className={index === 1 ? 'lg:scale-110 lg:-translate-y-4 z-10' : 'lg:scale-100'}
+                  />
+                </div>
               );
             })}
         </div>

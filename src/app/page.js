@@ -12,7 +12,7 @@ import MarqueeDemo from '@/components/landing/MarqueeDemo';
 import BenefitsSection from '@/components/landing/BenefitsSection';
 import FaqSection from '@/components/checkout/FaqSection';
 import Footer from '@/components/Footer';
-
+import GetStartedSection from '@/components/landing/GetStartedSection';
 
 export default function LandingPage() {
   return (
@@ -29,11 +29,11 @@ export default function LandingPage() {
            </div>
 
            {/* Wavy Background Texture */}
-           <div className="absolute top-104 scale-0.5 right-0 w-full h-[80%] pointer-events-none z-0">
+           <div className="absolute top-[10rem] right-0 w-full h-full pointer-events-none z-0 flex justify-center items-start overflow-hidden">
               <img 
                 src="/landing/bgwaveytexture.png" 
                 alt="Background Texture" 
-                className="w-full h-[80%] object-cover opacity-15" 
+                className="w-full max-w-[1920px] h-auto object-cover opacity-15 scale-150 md:scale-100"
               />
            </div>
            
@@ -74,10 +74,22 @@ export default function LandingPage() {
            </div>
         </section>
 
-  
+        {/* --- NEW GET STARTED SECTION --- */}
+        <div className="block lg:hidden">
+          <GetStartedSection />
+        </div>
 
         {/* --- STICKY NAV COMES EXACTLY HERE AFTER CAROUSEL --- */}
         <StickySubNav />
+
+        {/* --- MOBILE STICKY GET STARTED --- */}
+        <div className="lg:hidden sticky bottom-4 w-full px-4 z-50 pointer-events-none flex justify-center">
+          <Link href="/get-started" className="w-full pointer-events-auto">
+            <button className="w-full py-4 bg-[#000] text-white text-lg font-bold rounded-full shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
+              Get Started <span className="text-xl">→</span>
+            </button>
+          </Link>
+        </div>
 
         {/* --- PRICING SECTION --- */}
         <section id="pricing" >
