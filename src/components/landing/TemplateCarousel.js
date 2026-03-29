@@ -54,22 +54,30 @@ export default function TemplateCarousel() {
     setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
   };
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <div className="w-full py-0 bg-[#fdfdfd] overflow-hidden relative group">
       <div className="max-w-7xl mx-auto px-6 relative">
         
         {/* Header */}
         <div className="text-center mb-20">
-           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4">
+           <h2 className="text-4xl md:text-6xl not-italic font-bold text-gray-900 mb-4">
               Stunning Designs <br/> for Every Business possible
            </h2>
-           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
               Choose from our professionally designed templates. Fully customizable and optimized for conversion.
            </p>
         </div>
 
         {/* Carousel Container */}
-        <div className="relative h-[650px] flex items-center justify-center perspective-1000">
+        <div className="relative h-[550px] md:h-[650px] flex items-center justify-center perspective-1000">
            <AnimatePresence initial={false} mode="popLayout">
               {templates.map((template, index) => {
                  const offset = (index - currentIndex + templates.length) % templates.length;
@@ -85,30 +93,62 @@ export default function TemplateCarousel() {
                  const isActive = position === 0;
                  const details = templateDetailsMap[index] || templateDetailsMap.default;
 
+                 // Adjust calculations for mobile views to show current item centered and next item peeking from right
+                 let animationProps = {
+                   initial: {
+                      opacity: 0,
+                      x: position === 1 ? 900 : -900,
+                      scale: 0.8,
+                      zIndex: 0
+                   },
+                   animate: {
+                      opacity: isActive ? 1 : 0.4,
+                      x: isActive ? 0 : (position === -1 ? -850 : 850),
+                      y: isActive ? 0 : 30,
+                      scale: isActive ? 1 : 0.85,
+                      zIndex: isActive ? 10 : 1,
+                      filter: isActive ? 'blur(0px)' : 'blur(0px)'
+                   },
+                   exit: {
+                      opacity: 0,
+                      scale: 0.8,
+                      x: position === -1 ? 900 : -900
+                   }
+                 };
+
+                 if (isMobile) {
+                    animationProps = {
+                      initial: {
+                         opacity: 0,
+                         x: position === 1 ? 300 : -300, // Reduced translation for smaller screens
+                         scale: 0.8,
+                         zIndex: 0
+                      },
+                      animate: {
+                         opacity: isActive ? 1 : 0.8,
+                         // Center the active one, push the previous out to the left entirely, bring the next one partially into view
+                         x: isActive ? 0 : (position === -1 ? -400 : 280),
+                         y: isActive ? 0 : 20,
+                         scale: isActive ? 1 : 0.9,
+                         zIndex: isActive ? 10 : 1,
+                         filter: isActive ? 'blur(0px)' : 'blur(0px)'
+                      },
+                      exit: {
+                         opacity: 0,
+                         scale: 0.8,
+                         x: position === -1 ? -400 : 300
+                      }
+                    }
+                 }
+
                  return (
                     <motion.div
                        key={template.title}
                        // ADDED: Added 'group' to detect hover on the entire active card
-                       className="absolute top-0 w-[680px] cursor-pointer group"
-                       initial={{ 
-                          opacity: 0, 
-                          x: position === 1 ? 900 : -900,
-                          scale: 0.8,
-                          zIndex: 0 
-                       }}
-                       animate={{ 
-                          opacity: isActive ? 1 : 0.4,
-                          x: isActive ? 0 : (position === -1 ? -850 : 850),
-                          y: isActive ? 0 : 30,
-                          scale: isActive ? 1 : 0.85,
-                          zIndex: isActive ? 10 : 1,
-                          filter: isActive ? 'blur(0px)' : 'blur(0px)'
-                       }}
-                       exit={{ 
-                          opacity: 0,
-                          scale: 0.8,
-                          x: position === -1 ? 900 : -900 
-                       }}
+                       className="absolute top-0 w-[90vw] max-w-[680px] cursor-pointer group"
+                       initial={animationProps.initial}
+                       animate={animationProps.animate}
+                       exit={animationProps.exit}
                        transition={{ duration: 0.6, ease: "easeInOut" }}
                        onClick={() => {
                           if (position === -1) handlePrev();

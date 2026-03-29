@@ -53,6 +53,21 @@ export default function LandingEditor() {
   const [containerHeight, setContainerHeight] = useState(800); 
   const mainContainerRef = useRef(null);
 
+  // Handle Mobile detection for general logic (e.g. sidebar stacking)
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setView('mobile');
+      }
+    };
+    handleResize(); // Init
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // --- RESIZE LOGIC ---
   useEffect(() => {
     const handleResize = () => {
@@ -67,6 +82,8 @@ export default function LandingEditor() {
       const baseMobileWidth = 375;
       const baseMobileHeight = 812;
 
+      // Ensure that if container width is small (like mobile), it scales the desktop view down properly.
+      // We also need to factor in padding if any.
       if (view === 'desktop') {
         const newScale = Math.min(1, cWidth / baseDesktopWidth);
         setScale(newScale);
@@ -81,6 +98,8 @@ export default function LandingEditor() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [view]);
+
+  // Adjust container height dynamically based on screen size for mobile responsiveness
 
   // Initial Data
   const defaultData = useMemo(() => {
@@ -390,7 +409,7 @@ export default function LandingEditor() {
   return (
     <div 
       ref={containerRef}
-      className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
+      className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 ${isMobile ? 'h-[500px]' : 'h-[850px]'} rounded-xl overflow-hidden shadow-2xl relative border border-gray-200`}
       onMouseEnter={() => { 
         isHoveredRef.current = true; 
         setIsHovered(true); 
@@ -424,7 +443,7 @@ export default function LandingEditor() {
           />
         </div>
 
-        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] px-4 pb-10`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-start justify-center overflow-hidden relative bg-[#F3F4F6] px-4 pb-10 pt-4`}>
           <div
             className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
               ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''} 
@@ -433,7 +452,7 @@ export default function LandingEditor() {
               width: view === 'desktop' ? '1440px' : '375px', 
               height: view === 'desktop' ? `${containerHeight / scale}px` : '812px', 
               transform: `scale(${scale})`, 
-              marginTop: view === 'desktop' ? '465px' : '40px', 
+              marginTop: view === 'desktop' ? (isMobile ? '0px' : '465px') : '40px',
               overflow: 'hidden', 
             }}
           >
