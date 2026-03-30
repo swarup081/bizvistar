@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info, Smartphone, Wand2, LayoutGrid, Phone } from 'lucide-react';
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info, Smartphone, Wand2, LayoutGrid, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -421,7 +421,7 @@ const plans = {
             </div>
             
             {/* Right Features Grid */}
-            <div className="xl:w-[72%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
+            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
               <div className="flex flex-col">
                 <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
@@ -439,11 +439,17 @@ const plans = {
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</span>
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
               </div>
+
+              <div className="flex flex-col">
+                <Mail className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Free professional email</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Get a free trial email that matches your domain.</p>
+              </div>
               
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our GoDaddy Guides are always here to help.</p>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
               </div>
             </div>
 
