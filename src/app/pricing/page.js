@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react'; 
+import TemplatesShowcaseUI from '@/components/templatemarquee';
 
 // --- Reusable Icons ---
 const CheckMark = ({ isRecommended = false }) => (
@@ -150,6 +151,7 @@ function PricingContent() {
   const [currentPlan, setCurrentPlan] = useState(null);
   const searchParams = useSearchParams();
   const isUpdateFlow = searchParams.get('update') === 'true';
+  const siteId = searchParams.get('site_id');
 
   useEffect(() => {
     const fetchCurrentPlan = async () => {
@@ -329,7 +331,7 @@ const plans = {
         {/* --- Header & Toggle --- */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
-            Your Website Looks Amazing!
+            {siteId ? "Your Website Looks Amazing!" : "Find the right plan for you"}
           </h1>
           <p className="text-xl text-gray-600 mb-10">
             Choose a plan to go live and start growing your business. All plans are risk-free. Cancel anytime.
@@ -398,7 +400,7 @@ const plans = {
         </div>
         
         {/* --- "Compare Plan Features" Button --- */}
-        <div className="mt-20 text-center">
+        <div className="mt-20 text-center hidden lg:block">
            <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
              Compare Plan Features
            </Link>
@@ -449,7 +451,7 @@ const plans = {
         </div>
 
         {/* --- "Compare Plan Features" Section --- */}
-        <div id="compare" className="mt-32 scroll-mt-20">
+        <div id="compare" className="mt-32 scroll-mt-20 hidden lg:block">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
             Compare Plan Features
           </h2>
@@ -457,11 +459,19 @@ const plans = {
         </div>
 
         {/* --- "Why Choose BizVistar?" Section --- */}
-        <div className="mt-32">
+        <div className="mt-32 hidden lg:block">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
             Why Choose BizVistar?
           </h2>
           <ComparisonTable />
+        </div>
+
+        {/* --- Mobile Only Marquee Section --- */}
+        <div className="mt-24 block lg:hidden">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8 px-4">
+            Whatever website you'll build, it'll look good
+          </h2>
+          <TemplatesShowcaseUI />
         </div>
 
         {/* --- FAQ Section --- */}
