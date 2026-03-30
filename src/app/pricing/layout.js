@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
+import Footer from '@/components/Footer';
+
 
 // Reusable Checkmark Icon
 const CheckIcon = () => (
@@ -39,13 +41,7 @@ export default function PricingLayout({ children }) {
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
-        <div className="container mx-auto px-6 py-12 text-center text-gray-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} BizVistar. All rights reserved.</p>
-          <div className="flex justify-center gap-4 mt-4">
-            <Link href="/terms"><span className="hover:underline cursor-pointer">Terms of Use</span></Link>
-            <Link href="/privacy"><span className="hover:underline cursor-pointer">Privacy Policy</span></Link>
-          </div>
-        </div>
+        <Footer/>
       </footer>
     </div>
   );

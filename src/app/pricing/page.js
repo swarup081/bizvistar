@@ -1,16 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info } from 'lucide-react'; // Added Info icon
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info, Smartphone, Wand2, LayoutGrid, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react'; // Added AnimatePresence
+import { useEffect } from 'react'; 
 
 // --- Reusable Icons ---
-const CheckMark = () => <div className="flex justify-center"><Check className="w-5 h-5 text-blue-600" strokeWidth={2.5} /></div>;
+const CheckMark = ({ isRecommended = false }) => (
+  <div className="flex justify-center">
+    <Check
+      className={cn(
+        "w-5 h-5",
+        isRecommended ? "text-[#8a63d2]" : "text-gray-900"
+      )}
+      strokeWidth={2.5}
+    />
+  </div>
+);
 const Dash = () => <div className="flex justify-center"><Minus className="w-5 h-5 text-gray-300" strokeWidth={2.5} /></div>;
 
 // --- Payment Icons (Professional SVGs) ---
@@ -50,7 +60,7 @@ const SslShieldIcon = () => (
     </svg>
 );
 
-// --- NEW: Info Tooltip Component (Light theme) ---
+// --- Info Tooltip Component (Light theme) ---
 const InfoTooltip = ({ info }) => {
   const [isVisible, setIsVisible] = useState(false);
   return (
@@ -67,11 +77,11 @@ const InfoTooltip = ({ info }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-20 w-64 bg-white text-gray-600 text-sm p-4 rounded-lg shadow-xl ring-1 ring-gray-900/5"
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-20 w-64 bg-white text-gray-600 text-sm p-4 rounded-lg shadow-xl ring-1 ring-gray-900/5"
           >
-            {/* Arrow (pointing down) */}
+            {/* Arrow (pointing up) */}
             <svg 
-              className="absolute top-full left-1/2 -translate-x-1/2 w-4 h-4 text-white"
+              className="absolute bottom-full left-1/2 -translate-x-1/2 w-4 h-4 text-white rotate-180"
               style={{ filter: 'drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))' }}
               viewBox="0 0 16 8" 
               fill="currentColor"
@@ -86,49 +96,51 @@ const InfoTooltip = ({ info }) => {
   );
 };
 
-// --- NEW: Tooltip Data ---
+// --- Tooltip Data ---
 const featureTooltips = {
-  'AI-Powered Website Builder': 'Our AI instantly generates a professional website with text and images based on your business type, so you don\'t have to start from scratch.',
-  'Easy-to-Use Editor': 'Our simple editor allows you to click on any text or image on your site and change it instantly, no code required.',
-  'Secure Web Hosting': 'We handle all the technical details, providing fast and secure hosting for your website, included in your plan.',
-  'Professional Subdomain': 'Get a website address like "yourname.bizvistar.in" to share with your customers instantly.',
-  'Free Custom Domain (1st Year)': 'Get a professional domain like "yourname.com" for free for the first year (with annual Growth plan).',
-  'Products': 'The number of products (like t-shirts, cakes, or services) you can list on your e-commerce store.',
-  'Business Tools': 'Tools to help you run your business, such as an Appointment Booker, Order Manager, or Contact Form.',
-  'Order Dashboard': 'A central place to view and manage all your incoming orders from customers.',
-  'Visitor Analytics': 'See how many people visit your site. Advanced analytics show where they come from and what pages they view.',
-  'Order Confirmation Emails': 'Your customers will automatically receive a confirmation email every time they place an order.',
-  'Dashboard Order Sound': 'Get an audible "cha-ching" or notification sound in your dashboard when a new order arrives.',
-  'WhatsApp Notifications': 'Receive an instant notification on your WhatsApp number as soon as a new order comes in.',
-  'Email Support': 'Get help from our support team via email.',
-  'WhatsApp Support': 'Get priority help directly via a dedicated WhatsApp chat number.',
-  'Social Media Posts': 'Our team will design and write professional posts for your social media (like Instagram or Facebook) every month.',
-  'Google Maps Management': 'We will set up and optimize your Google My Business profile to help you get found in local searches.',
-  'Priority Onboarding Call': 'A dedicated 1-on-1 call with our team to help you get your site and store set up perfectly.',
+  'AI-Powered Website Builder': 'Instantly generate a complete, professional website using AI tailored to your business with ready-made text and images.',
+  'Easy-to-Use Editor': 'Edit any text, image, or section on your website in seconds with a simple click no coding required.',
+  'Secure Web Hosting': 'Fast, reliable, and secure hosting is fully managed by us—no technical setup needed.',
+  'Professional Subdomain': 'Get a ready to use website link like "yourname.bizvistar.in" to start sharing instantly.',
+  'Free Custom Domain': 'Get a custom domain like "yourbusiness.com" free for the first year with the annual Growth plan.',
+  'Products': 'The number of items or services you can list and sell on your online store.',
+  'Business Tools': 'Built-in tools like order management, appointment booking, and contact forms to run your business smoothly.',
+  'Order Dashboard': 'View, track, and manage all your customer orders from one central dashboard.',
+  'Visitor Analytics': 'Track how many people visit your site, where they come from, and how they interact with your pages.',
+  'Order Confirmation': 'Automatically notify customers after every order with confirmation details.',
+  'Dashboard Order': 'Get an instant alert in your dashboard whenever a new order is placed.',
+  'WhatsApp Notifications': 'Receive real time order alerts directly on your WhatsApp for faster response.',
+  'Email Support': 'Get reliable support via email whenever you need help.',
+  'WhatsApp Support': 'Get faster, priority support directly on WhatsApp from our team.',
+  'Social Media Posts': 'Receive professionally designed and written social media posts every month to grow your online presence.',
+  'Google Maps Management': 'We set up and optimize your Google Business profile to help customers find you easily.',
+  'Priority Onboarding Call': 'Get a 1 on 1 setup call with our team to launch your website smoothly and correctly.',
 };
 
-// --- NEW: Features List Structure ---
+// --- Features List Structure ---
 const featureList = [
   { category: 'CORE PLATFORM' },
   { name: 'AI-Powered Website Builder', starter: true, pro: true, growth: true },
   { name: 'Easy-to-Use Editor', starter: true, pro: true, growth: true },
   { name: 'Secure Web Hosting', starter: true, pro: true, growth: true },
   { name: 'Professional Subdomain', starter: true, pro: true, growth: true },
-  { name: 'Free Custom Domain (1st Year)', starter: false, pro: false, growth: true },
+  { name: 'Free Custom Domain', starter: false, pro: false, growth: true },
   { category: 'BUSINESS & E-COMMERCE' },
-  { name: 'sms for user authentication', starter: false, pro: 500, growth: 1000 },
+  { name: 'Authentication', starter: false, pro: 500, growth: 1000 },
   { name: 'Products', starter: '25', pro: 'Unlimited', growth: 'Unlimited' },
-  { name: 'Business Tools', starter: '1Tool', pro: '2 Tools', growth: 'All Tools' },
+  { name: 'Business Tools', starter: 'Limited Business Tool', pro: 'Limited Advanced Business Tools', growth: 'Advanced Business Tools' },
   { name: 'Order Dashboard', starter: true, pro: true, growth: true },
-  { name: 'Visitor Analytics', starter: false, pro: 'Basic', growth: 'Advanced' },
+  { name: 'Visitor Analytics', starter: 'Basic', pro: 'Advanced', growth: 'Advanced' },
+  { name: 'AI Insights', starter: false, pro: 'Basic', growth: 'Advanced' },
   { category: 'AUTOMATION' },
-  { name: 'Order Confirmation Emails', starter: true, pro: true, growth: true },
-  { name: 'Dashboard Order Sound', starter: true, pro: true, growth: true },
+  { name: 'Order Confirmation', starter: true, pro: true, growth: true },
+  { name: 'Dashboard Order', starter: true, pro: true, growth: true },
   { name: 'WhatsApp Notifications', starter: false, pro: true, growth: true },
-  { category: 'DONE-FOR-YOU SERVICES' },
+  { category: 'Website' },
   { name: 'Email Support', starter: 'Standard', pro: 'Priority', growth: 'Priority' },
-  { name: 'WhatsApp Support', starter: false, pro: true, growth: true },
-  { name: 'Google Maps Management', starter: false, pro: false, growth: true },
+  { name: 'WhatsApp Support', starter: true, pro: true, growth: true },
+  { name: 'Web Management', starter: true, pro: true, growth: true },
+  { name: 'SEO', starter: false, pro: true, growth: true },
   { name: 'Priority Onboarding Call', starter: false, pro: false, growth: true },
 ];
 
@@ -167,113 +179,145 @@ function PricingContent() {
     };
     fetchCurrentPlan();
   }, []);
-  const plans = {
-    monthly: [
-      {
-        name: 'Starter',
-        subtitle: 'The Digital Business Card',
-        price: '299',
-        dailyRate: 'Just ₹10 a day',
-        cta: 'Get Started',
-        isRecommended: false,
-        features: [
-          'Professional Website',
-          'Easy-to-Use Editor',
-          'Secure Hosting & Subdomain',
-          '1 Business Tool ',
-          'Automated Order Emails',
-          'Standard Email Support',
-        ],
-      },
-      {
-        name: 'Pro',
-        subtitle: 'The "Done-with-You" Partner',
-        price: '799',
-        dailyRate: 'Just ₹26 a day',
-        cta: 'Start Your Pro Plan',
-        isRecommended: true,
-        features: [
-          '500 sms for user authentication',
-          'Instant WhatsApp Order Notifications',
-          'Priority WhatsApp Support',
-          '2 Advanced Business Tools',
-          'Basic Website Analytics',
-        ],
-      },
-      {
-        name: 'Growth',
-        subtitle: 'The "Done-for-You" Service',
-        price: '1499',
-        dailyRate: 'Just ₹50 a day',
-        cta: 'Go for Growth',
-        isRecommended: false,
-        features: [
-          '1000 sms for user authentication',
-          'Google Maps Management',
-          'Access to All Business Tools',
-          'Free Custom Domain (First Year)',
-          'Priority Onboarding Call',
-          'AI Website Analytics',
-        ],
-      },
-    ],
-    yearly: [
-      {
-        name: 'Starter',
-        subtitle: 'The Digital Business Card',
-        price: '249',
-        originalPrice: '299',
-        yearlyTotal: 'Billed as ₹2,990 / year',
-        savings: 'Save ₹600',
-        cta: 'Get Started',
-        isRecommended: false,
-        features: [
-          'Professional Website',
-          'Easy-to-Use Editor',
-          'Secure Hosting & Subdomain',
-          '1 Business Tool ',
-          'Automated Order Emails',
-          'Standard Email Support',
-        ],
-      },
-      {
-        name: 'Pro',
-        subtitle: 'The "Done-with-You" Partner',
-        price: '666',
-        originalPrice: '799',
-        yearlyTotal: 'Billed as ₹7,990 / year',
-        savings: 'Save ₹1,600',
-        cta: 'Start Your Pro Plan',
-        isRecommended: true,
-        features: [
-            '500 sms for user authentication',
-            'Instant WhatsApp Order Notifications',
-          'Priority WhatsApp Support',
-          '2 Advanced Business Tools',
-          'Website Analytics',
-        ],
-      },
-      {
-        name: 'Growth',
-        subtitle: 'The "Done-for-You" Service',
-        price: '1249',
-        originalPrice: '1499',
-        yearlyTotal: 'Billed as ₹14,990 / year',
-        savings: 'Save ₹3,000',
-        cta: 'Go for Growth',
-        isRecommended: false,
-        features: [
-            '1000 sms for user authentication',
-            'Google Maps Management',
-          'Access to All Business Tools',
-          'Free Custom Domain (First Year)',
-          'Priority Onboarding Call',
-          'AI Website Analytics',
-        ],
-      },
-    ],
-  };
 
+const plans = {
+  monthly: [
+    {
+      name: 'Starter',
+      subtitle: 'Best for hobbyists and individual creators testing a side-hustle with a basic item catalog',
+      originalPrice: '499',
+      price: '299',
+      discount: '40% off',
+      dailyRate: 'Billed monthly. Total freedom to pause or cancel anytime.',
+      cta: 'Choose plan',
+      isRecommended: false,
+      features: [
+        'Professional Website',
+        'Free Subdomain',
+        'Secure Hosting',
+        '25 Products',
+        'Standard Support',
+        'Basic Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Generate & Send Invoices Instantly',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Basic Analytics',
+      ],
+    },
+    {
+      name: 'Pro',
+      subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
+      originalPrice: '1599',
+      price: '799',
+      discount: '51% off',
+      dailyRate: 'Billed monthly. Zero long-term commitment. Switch to yearly anytime.',
+      cta: 'Choose plan',
+      isRecommended: true,
+      features: [
+        'Professional Website',
+        'Free Subdomain',
+        'Unlimited Products',
+        'Priority Support',
+        'Advanced Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Generate & Send Invoices Instantly',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Advanced Analytics',
+      ],
+    },
+    {
+      name: 'Growth',
+      subtitle: 'Best for established enterprises with high-volume multi-channel operations.',
+      originalPrice: '1999',
+      price: '1499',
+      discount: '24% off',
+      dailyRate: 'Billed monthly. Enterprise power with total flexibility. Cancel whenever you want.',
+      cta: 'Choose plan',
+      isRecommended: false,
+      features: [
+        'Professional Website',
+        'Free Custom Domain',
+        'Secure Hosting',
+        'Unlimited Products',
+        'Priority Support',
+        'Advanced Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Priority Onboarding Call',
+        'Advanced Analytics',
+      ],
+    },
+  ],
+  yearly: [
+    {
+      name: 'Starter',
+      subtitle: 'Best for hobbyists and individual creators testing a side-hustle with a basic item catalog',
+      originalPrice: '499',
+      price: '249',
+      discount: '51% off',
+      yearlyTotal: 'Get 12 months for ₹2,990 (regularly ₹5,988). Includes 2 months free. Cancel anytime.',
+      cta: 'Choose plan',
+      isRecommended: false,
+      features: [
+        'Professional Website',
+        'Free Subdomain',
+        'Secure Hosting',
+        'Unlimited Edits',
+        '25 Products',
+        'Standard Support',
+        'Basic Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Generate & Send Invoices Instantly',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Basic Analytics',
+      ],
+    },
+    {
+      name: 'Pro',
+      subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
+      originalPrice: '1599',
+      price: '666',
+      discount: '60% off',
+      yearlyTotal: 'Get 12 months for ₹7,990 (regularly ₹19,188). Includes 2 months free. Cancel anytime.',
+      cta: 'Choose plan',
+      isRecommended: true,
+      features: [
+        'Professional Website',
+        'Free Subdomain',
+        'Secure Hosting',
+        'Unlimited Products',
+        'Priority Support',
+        'Advanced Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Generate & Send Invoices Instantly',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Advanced Analytics',
+      ],
+    },
+    {
+      name: 'Growth',
+      subtitle: 'Best for established enterprises with high-volume multi-channel operations.',
+      originalPrice: '1999',
+      price: '1249',
+      discount: '38% off',
+      yearlyTotal: 'Get 12 months for ₹14,990 (regularly ₹23,988). Includes 2 months free. Cancel anytime.',
+      cta: 'Choose plan',
+      isRecommended: false,
+      features: [
+        'Professional Website',
+        'Free Custom Domain',
+        'Secure Hosting',
+        'Unlimited Products',
+        'Priority Support',
+        'Advanced Business Tools',
+        'Edit Your Website Anytime from Mobile',
+        'Accept Payments via UPI, Cards & Wallets',
+        'Priority Onboarding Call',
+        'Advanced Analytics',
+      ],
+    },
+  ],
+};
   const [isYearly, setIsYearly] = useState(false); // Default to Monthly
   const activePlans = isYearly ? plans.yearly : plans.monthly;
   const maxSavings = 17; // Hardcoded based on your request "SAVE 17%"
@@ -292,7 +336,7 @@ function PricingContent() {
           </p>
 
           {/* --- ANIMATED Toggle --- */}
-          <div className="relative inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
+          <div className="relative inline-flex mb-15 items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
              <button
                 onClick={() => setIsYearly(false)}
                 className={cn(
@@ -300,9 +344,7 @@ function PricingContent() {
                   !isYearly ? 'text-gray-900' : 'text-gray-500 hover:text-gray-900'
                 )}
               >
-                {/* --- FIX: Added relative z-10 span --- */}
                 <span className="relative z-10">Billed monthly</span>
-                {/* --- End Fix --- */}
                 {!isYearly && (
                   <motion.div
                     layoutId="active-pill"
@@ -335,7 +377,7 @@ function PricingContent() {
           </div>
         </div>
 
-        {/* --- PRICING CARDS (Pro is LARGER) --- */}
+        {/* --- PRICING CARDS --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-end max-w-6xl mx-auto">
             {activePlans.map((plan, index) => {
               const currentCycle = isYearly ? 'yearly' : 'monthly';
@@ -354,7 +396,7 @@ function PricingContent() {
               );
             })}
         </div>
-
+        
         {/* --- "Compare Plan Features" Button --- */}
         <div className="mt-20 text-center">
            <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
@@ -362,57 +404,52 @@ function PricingContent() {
            </Link>
         </div>
 
-        {/* --- NEW SECTION: Enterprise & Trust (matches screenshot) --- */}
-        <div className="max-w-7xl mx-auto mt-24">
-
-
-
-          {/* Disclaimer Text */}
-          <div className="px-6 mt-0">
-            <p className="text-xs text-gray-500">
-              Prices shown do not include applicable taxes. Taxes will be automatically calculated based on your billing address and local regulations. You’ll always see the complete and final amount on the checkout page before you confirm your payment.
-            </p>
-          </div>  
-
-          {/* Trust Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 px-6">
-              {/* 1. Accepted Payments */}
-              <div>
-                  <h5 className="text-sm font-bold text-gray-400 tracking-widest uppercase mb-4">ACCEPTED PAYMENT METHODS</h5>
-                  <div className="flex items-center gap-4 opacity-70 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                      <VisaIcon />
-                      <MasterCardIcon />
-                      <AmexIcon />
-                      <span className="text-gray-500 font-medium">+ More</span>
-                  </div>
+        {/* --- INCLUDED IN EVERY PLAN SECTION --- */}
+        <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-10 lg:p-16 mx-auto max-w-7xl">
+          <div className="flex flex-col xl:flex-row gap-16 lg:gap-12 items-start">
+            
+            {/* Left Header Area */}
+            <div className="xl:w-[28%] flex flex-col shrink-0">
+              <span className="bg-[#a28ad6] text-white text-xs font-bold px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-6">
+                Plus
+              </span>
+              <h2 className="text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
+                Included in <br className="hidden xl:block" /> every Website <br className="hidden xl:block" /> Builder plan
+              </h2>
+            </div>
+            
+            {/* Right Features Grid */}
+            <div className="xl:w-[72%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
+              <div className="flex flex-col">
+                <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Easily reach customers wherever they are.</p>
               </div>
-
-              {/* 2. Cancel Anytime*/}
-              <div className="flex gap-4 items-start">
-                  <MoneyBackIcon />
-                  <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">Cancel Anytime                      </h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">End your plan anytime, no questions asked — full control, zero hassle.</p>
-                  </div>
+              
+              <div className="flex flex-col">
+                <Wand2 className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">100+ beautiful templates</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Dazzle customers with our professional templates.</p>
               </div>
-
-              {/* 3. SSL Secure Payment */}
-              <div className="flex gap-4 items-start">
-                  <SslShieldIcon />
-                  <div>
-                      <h4 className="text-base font-semibold text-gray-900 mb-1">Smart Business Insights</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">Understand what’s working. Get real-time visitor data and performance insights to grow faster</p>
-                  </div>
+              
+              <div className="flex flex-col">
+                <LayoutGrid className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
               </div>
+              
+              <div className="flex flex-col">
+                <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our GoDaddy Guides are always here to help.</p>
+              </div>
+            </div>
+
           </div>
-
         </div>
-        {/* --- END OF NEW SECTION --- */}
-
 
         {/* --- "Compare Plan Features" Section --- */}
         <div id="compare" className="mt-32 scroll-mt-20">
-          {/* This h2 is now hidden, as the title is in the table header */}
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
             Compare Plan Features
           </h2>
@@ -429,9 +466,6 @@ function PricingContent() {
 
         {/* --- FAQ Section --- */}
         <div className="mt-32 max-w-7xl mx-auto">
-          {/* h2 is removed and now inside FaqSection */}
-
-
           <FaqSection />
         </div>
 
@@ -440,121 +474,134 @@ function PricingContent() {
   );
 }
 
-// --- Sub-component: PlanCard (ENHANCED) ---
-const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => (
-  <div 
-    className={cn(
-      'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
-      plan.isRecommended 
-        ? 'border-[3px] border-[#8A63D2] shadow-2xl relative' // Highlighted Pro Plan
-        : 'border border-gray-200 shadow-lg hover:shadow-xl',
-      className
-    )}
-  >
-    {plan.isRecommended && (
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#8A63D2] text-white px-6 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">
-        Recommended
-      </div>
-    )}
-
-    <div className="p-10 text-center flex-grow flex flex-col">
-      <h3 className="text-5xl font-bold text-gray-900">{plan.name}</h3>
-      <p className="text-gray-500 font-medium mt-2">{plan.subtitle}</p>
-
-      {/* --- THIS IS THE UPDATED PRICE SECTION --- */}
-      <div className="my-8">
-        {isYearly && plan.originalPrice && (
-          <p className="text-lg font-medium text-gray-400 line-through">
-            ₹{plan.originalPrice}/mo
-          </p>
-        )}
-
-        {/* This is the new one-line price */}
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-3xl font-bold text-gray-900">₹</span>
-          <span className="text-6xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-          <span className="text-xl font-medium text-gray-500">/month</span>
+// --- Sub-component: PlanCard (UPDATED FOR SCREENSHOT LAYOUT) ---
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => {
+  
+  // Create the inner content blocks to reuse, matching the exact flow of the screenshot
+  const innerCardContent = (
+    <div className="flex flex-col h-full text-left">
+      <div className="px-8 pt-8 pb-6 flex-grow flex flex-col relative">
+        
+        {/* Top row: Title and Badge (Savings or Promos aligned to right) */}
+        <div className="flex justify-between items-start mb-3 gap-4">
+          <span className="text-3xl font-bold text-gray-900 leading-tight">{plan.name}</span>
+          {plan.discount && (
+            <div className="inline-flex bg-[#f4f1fa] text-[#7554b3] text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap mt-1">
+              {plan.discount}
+            </div>
+          )}
         </div>
 
-        {/* Yearly Savings Pill (no change) */}
-         {isYearly && plan.savings && (
-             <div className="mt-4 inline-block bg-green-100 text-green-700 text-sm font-bold px-4 py-1 rounded-full">
-                 {plan.savings}
-             </div>
-         )}
-      </div>
-      {/* --- END OF UPDATED PRICE SECTION --- */}
+        {/* Price Section */}
+        <div className="mb-6 flex flex-col">
+          {plan.originalPrice ? (
+            <p className="text-lg font-medium text-gray-400 line-through mb-1">
+              ₹{plan.originalPrice}/mo
+            </p>
+          ) : (
+            // Placeholder for alignment when not yearly
+            <p className="text-lg font-medium text-transparent mb-1 select-none" aria-hidden="true">-</p> 
+          )}
+          <div className="flex items-baseline gap-1">
+            <span className="text-[44px] font-extrabold text-gray-900 tracking-tight leading-none">₹{plan.price}</span>
+            <span className="text-lg font-medium text-gray-500">/mo</span>
+          </div>
+        </div>
 
-      {isCurrentPlan ? (
-          <button 
-            disabled
-            className={cn(
-              'w-full py-4 rounded-full text-xl font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
-            )}
-          >
-            Current Plan
-          </button>
-      ) : (
-          <Link href={{
-                pathname: '/checkout',
-                query: {
-                    plan: plan.name,
-                    billing: isYearly ? 'yearly' : 'monthly',
-                    price: plan.price,
-                    ...(isUpdateFlow ? { update: 'true' } : {})
-                }
-            }} className="w-full">
+        {/* CTA Button */}
+        <div className="mb-4 w-full">
+          {isCurrentPlan ? (
             <button 
+              disabled
               className={cn(
-                'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
-                plan.isRecommended
-                  ? 'bg-[#7554b3] text-white hover:bg-[#5c428c] shadow-md hover:shadow-lg'
-                  : 'bg-gray-900 text-white hover:bg-gray-800'
+                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
               )}
             >
-              {plan.cta}
+              Current Plan
             </button>
-          </Link>
-      )}
-
-       {!isYearly && (
-         <p className="text-base font-semibold text-blue-600 mt-4">{plan.dailyRate}</p>
-      )}
-      {isYearly && (
-           <p className="text-sm font-medium text-gray-500 mt-4">{plan.yearlyTotal}</p>
-      )}
-
-    </div>
-
-    {/* Features List */}
-    <div className="p-10 pt-0">
-       <div className="border-t border-gray-100 pt-8">
-          {/* --- Dynamic Feature Heading --- */}
-          {plan.name === 'Starter' && (
-            <h4 className="text-base font-semibold text-gray-800 mb-4">Includes:</h4>
+          ) : (
+            <Link href={{
+                  pathname: '/checkout',
+                  query: {
+                      plan: plan.name,
+                      billing: isYearly ? 'yearly' : 'monthly',
+                      price: plan.price,
+                      ...(isUpdateFlow ? { update: 'true' } : {})
+                  }
+              }} className="w-full">
+              <button 
+                className={cn(
+                  'w-full py-3.5 rounded-xl text-[17px] font-bold transition-all duration-200',
+                  plan.isRecommended
+                    ? 'bg-[#8a63d2] text-white hover:bg-[#7554b3] shadow-md hover:shadow-lg'
+                    : 'bg-white border-2 hover:bg-[#8a63d2] hover:text-white border-[#8a63d2] text-[#7554b3] hover:border-[#8a63d2]'
+                )}
+              >
+                {plan.cta}
+              </button>
+            </Link>
           )}
-          {plan.name === 'Pro' && (
-            <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Starter, plus:</h4>
-          )}
-          {plan.name === 'Growth' && (
-            <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Pro, plus:</h4>
-          )}
-          {/* --- END: Dynamic Feature Heading --- */}
-          <ul className="space-y-4">
+        </div>
+
+        {/* Subtext (Renewals / Rate) placed under the button */}
+        <p className="text-[12px] font-medium text-gray-600 mb-6">
+          {!isYearly ? plan.dailyRate : plan.yearlyTotal}
+        </p>
+
+        {/* Highlighted "Best for" Box */}
+        <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl p-5 mt-auto">
+          <span className="font-bold text-gray-900 text-[16px] mb-2">Best for</span>
+          <p className="text-gray-600 text-[14px] leading-relaxed">{plan.subtitle}</p>
+        </div>
+      </div>
+
+      {/* Features List */}
+      <div className="px-8 pb-8 pt-2">
+          <span className="text-[17px] font-bold text-gray-900 mb-5">
+            {plan.name === 'Starter' && "Included:"}
+            {plan.name === 'Pro' && "Included:"}
+            {plan.name === 'Growth' && "Included:"}
+          </span>
+          <ul className="space-y-3.5 mt-5">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start text-left">
-                <Check className={cn("w-6 h-6 mt-0.5 mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-green-500")} strokeWidth={2.5} />
+                <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-black-900")} strokeWidth={2.5} />
                 <span className="text-gray-700 font-medium text-[15px] leading-snug">{feature}</span>
               </li>
             ))}
           </ul>
-       </div>
+      </div>
     </div>
-  </div>
-);
+  );
 
-// --- Sub-component: AllFeaturesTable (Scroll-linked sticky header section) ---
-// --- UPDATED to match the screenshot style ---
+  return (
+    <div 
+      className={cn(
+        'flex flex-col rounded-[24px] transition-all duration-300 ease-out overflow-hidden', 
+        plan.isRecommended 
+          ? 'bg-[#8A63D2] shadow-2xl px-[3px] pb-[3px]' 
+          : 'bg-white border border-gray-200 shadow-lg hover:shadow-xl',
+        className
+      )}
+    >
+      {plan.isRecommended && (
+        <div className="py-2.5 text-center text-white text-sm font-bold tracking-wider uppercase">
+          Most Popular
+        </div>
+      )}
+
+      {plan.isRecommended ? (
+        <div className="bg-white rounded-[20px] flex flex-col flex-grow">
+          {innerCardContent}
+        </div>
+      ) : (
+        innerCardContent
+      )}
+    </div>
+  );
+};
+
+// --- Sub-component: AllFeaturesTable ---
 const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
   <div className="border border-gray-200  bg-white ">
     <div className="relative">
@@ -671,13 +718,11 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
     </div>
   </div>
 );
-// --- END OF MODIFIED COMPONENT ---
 
-
-// --- FIX: Helper for Feature Rows --- (Added justify-between)
+// --- Helper for Feature Rows --- 
 const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
     const renderCell = (value, isProCol) => { 
-        if (value === true) return <CheckMark />;
+        if (value === true) return <CheckMark isRecommended={isProCol} />;
         if (value === false) return <Dash />;
         return <span className={cn("font-semibold", isProCol ? "text-[#7554b3]" : "text-gray-900")}>{value}</span>;
     };
@@ -688,7 +733,6 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
 
     return (
         <div className="grid grid-cols-4 hover:bg-gray-50 transition-colors">
-            {/* --- FIX: Added justify-between and w-full --- */}
             <div className="p-5 pl-8 font-medium text-gray-700 flex items-center justify-between w-full">
               <span>{featureName}</span>
               {featureInfo && <InfoTooltip info={featureInfo} />}
@@ -700,10 +744,9 @@ const FeatureRow = ({ feature, starter, pro, growth, InfoTooltip }) => {
     );
 };
 
-// --- Sub-component: ComparisonTable (Sticky header like AllFeaturesTable) ---
+// --- Sub-component: ComparisonTable ---
 const ComparisonTable = () => (
         <div className="border border-gray-300 bg-white">
-          {/* Outer wrapper handles horizontal overflow, not vertical */}
           <div className="relative">
             <table className="min-w-full border-collapse">
               <thead className="sticky top-0 z-200 bg-white shadow-sm">
@@ -725,49 +768,84 @@ const ComparisonTable = () => (
 
               <tbody className="divide-y divide-gray-300">
                 <tr>
-                  <td className="font-semibold p-6 text-gray-700">Who Builds the Site?</td>
+                  <td className="font-semibold p-6 text-gray-700">Website Creation Experience</td>
                   <td className="text-center p-6 text-gray-600 border-l border-gray-100">
-                    <strong>You Do 100%</strong><br />You spend 40+ hours learning complex tools.
+                    <strong>Do-It-Yourself</strong><br />
+                    Spend hours learning tools and building everything from scratch.
                   </td>
                   <td className="text-center p-6 text-gray-600 border-l border-gray-100">
-                    <strong>They Do 100%</strong><br />A full-service, hands-off experience.
+                    <strong>Fully Outsourced</strong><br />
+                    Experts build it for you, but with less flexibility and higher cost.
                   </td>
                   <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30">
-                    <strong>We Do It Together</strong><br />Our AI builds the site in 60s. You do the fun edits.
+                    <strong>AI + You</strong><br />
+                    Launch instantly with AI and customize easily anytime.
                   </td>
                 </tr>
-          <tr>
-            <td className="font-semibold p-6 text-gray-700">Who Manages Socials?</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>You Do 100%</strong><br />They give you a tool, but you do all the work.</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>They Do It</strong><br />They create and post for you.</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30"><strong>We Do It (on Pro+)</strong><br />Our plan includes "done-for-you" posts.</td>
-          </tr>
-          <tr>
-            <td className="font-semibold p-6 text-gray-700">Who Provides Support?</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Call Center</strong><br />You wait in a queue to talk to a stranger.</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>A Dedicated Manager</strong><br />Great support for a very high price.</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30"><strong>A WhatsApp Partner</strong><br />Priority support from a local expert.</td>
-          </tr>
-          <tr>
-            <td className="font-semibold p-6 text-gray-700">The Price</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>High Cost + Your Time</strong><br />(₹800 - ₹2,300/mo)</td>
-            <td className="text-center p-6 text-gray-600 border-l border-gray-100"><strong>Extremely High Cost</strong><br />(₹10,000 - ₹20,000/mo)</td>
-            <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30"><strong>Simple, Affordable Price</strong><br />(Just ₹26 a day!)</td>
-          </tr>
-          <tr>
-            <td className="font-bold p-6 text-gray-900">The Verdict</td>
-            <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Effort, Low Support</td>
-            <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">High Cost, High Service</td>
-            <td className="text-center p-6 text-[#7554b3] font-bold border-l border-gray-100 bg-[#f4f1fa]/50">Cost-Effective, High Service</td>
-          </tr>
+                <tr>
+                  <td className="font-semibold p-6 text-gray-700">Sales & Order Management</td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Manual Setup</strong><br />
+                    Connect multiple tools and manage everything separately.
+                  </td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Agency Managed</strong><br />
+                    Setup is done for you, but changes take time and extra cost.
+                  </td>
+                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30">
+                    <strong>All-in-One Dashboard</strong><br />
+                    Manage orders, payments, and invoices from one place.
+                  </td>
+                </tr>
+                <tr>
+                  <td className="font-semibold p-6 text-gray-700">Support Experience</td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Generic Support</strong><br />
+                    Long wait times and limited personalized help.
+                  </td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Dedicated Manager</strong><br />
+                    High-touch support but comes at a premium cost.
+                  </td>
+                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30">
+                    <strong>WhatsApp Support</strong><br />
+                    Fast, direct support from real experts when you need it.
+                  </td>
+                </tr>
+                <tr>
+                  <td className="font-semibold p-6 text-gray-700">Pricing & Value</td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Pay + Your Time</strong><br />
+                    Monthly fees plus hours of your own effort.
+                  </td>
+                  <td className="text-center p-6 text-gray-600 border-l border-gray-100">
+                    <strong>Very Expensive</strong><br />
+                    High upfront and ongoing costs.
+                  </td>
+                  <td className="text-center p-6 text-gray-900 border-l border-gray-100 bg-[#f4f1fa]/30">
+                    <strong>Affordable & Scalable</strong><br />
+                    Simple pricing designed to grow with your business.
+                  </td>
+                </tr>
+                <tr>
+                  <td className="font-bold p-6 text-gray-900">Final Verdict</td>
+                  <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">
+                    High effort, limited support
+                  </td>
+                  <td className="text-center p-6 text-gray-500 font-medium border-l border-gray-100">
+                    Powerful but expensive
+                  </td>
+                  <td className="text-center p-6 text-[#7554b3] font-bold border-l border-gray-100 bg-[#f4f1fa]/50">
+                    Best balance of cost, control & support
+                  </td>
+                </tr>
         </tbody>
       </table>
     </div>
   </div>
 );
 
-// --- Sub-component: FaqSection (Clean Accordion) ---
-// --- THIS IS THE START OF THE CHANGED SECTION ---
+// --- Sub-component: FaqSection ---
 const FaqItem = ({ q, a }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -775,12 +853,12 @@ const FaqItem = ({ q, a }) => {
     <div className="border-b border-gray-200 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between py-5 text-left text-gray-900" // STYLE CHANGED
+        className="flex w-full items-center justify-between py-5 text-left text-gray-900" 
       >
-        <span className="text-lg font-medium text-gray-900">{q}</span> {/* STYLE CHANGED */}
+        <span className="text-lg font-medium text-gray-900">{q}</span> 
         <ChevronDown
           className={cn(
-            'h-5 w-5 text-gray-400 transition-transform duration-300', // STYLE CHANGED
+            'h-5 w-5 text-gray-400 transition-transform duration-300', 
             isOpen ? 'rotate-180' : ''
           )}
         />
@@ -795,7 +873,7 @@ const FaqItem = ({ q, a }) => {
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="pb-5 pr-10 text-base text-gray-600 leading-relaxed"> {/* STYLE CHANGED, SUPPORT JSX */}
+            <div className="pb-5 pr-10 text-base text-gray-600 leading-relaxed"> 
               {typeof a === 'string' ? <p>{a}</p> : a}
             </div>
           </motion.div>
@@ -806,71 +884,55 @@ const FaqItem = ({ q, a }) => {
 };
 
 const FaqSection = () => {
-  // NEW faqs based on screenshot
   const faqs = [
     {
-      q: 'What is a Premium plan?',
-      a: 'A Premium plan is a subscription that gives you access to all of BizVistar\'s advanced features, including custom domain connection, removal of BizVistar branding, increased storage, and access to our "Done-for-You" services.'
+      q: 'What do I get with a BizVistar plan?',
+      a: 'You get a complete business website with hosting, payments, order management, and analytics — all in one place. You can start selling, managing orders, and growing your business without needing multiple tools.'
     },
     {
-      q: 'Can I get a refund for a Premium plan?',
-      a: 'Yes, we offer a 14-day money-back guarantee on all our annual Premium plans. If you are not satisfied for any reason, you can cancel within 14 days of purchase and receive a full refund, no questions asked.'
+      q: 'Can I upgrade or downgrade my plan anytime?',
+      a: 'Yes, you can switch between plans anytime. Upgrade instantly to unlock more features or downgrade based on your needs — no long-term commitments.'
     },
     {
-      q: 'How do I get my free domain?',
-      a: 'A free custom domain for one year is included with the "Growth" annual plan. After you upgrade, you will receive a voucher to claim your free domain, which you can register directly through your BizVistar dashboard.'
+      q: 'Do I need technical skills to use BizVistar?',
+      a: 'Not at all. Your website is created using AI in seconds, and you can easily edit everything with a simple interface — no coding required.'
     },
     {
-      q: 'Why do I need a custom domain?',
-      a: 'A custom domain (e.g., yourbusiness.com) builds credibility, strengthens your brand, and makes it easier for customers to find you. It looks more professional than a free subdomain (e.g., yourbusiness.bizvistar.in).'
+      q: 'How do payments work on my website?',
+      a: 'You can accept payments via UPI, cards, and wallets directly on your website. All transactions are managed securely and visible in your dashboard.'
     },
     {
-      q: 'How can I get my own personalized email address?',
-      a: 'Once you have a custom domain, you can set up a personalized email address (e.g., info@yourbusiness.com) through our integration with Google Workspace or other third-party email providers.'
+      q: 'How will I manage orders?',
+      a: 'All your orders are managed from a single dashboard. You also get instant alerts and optional WhatsApp notifications so you never miss a sale.'
     },
     {
-      q: 'Where can I find my billing information?',
-      a: 'You can find all your billing information, including invoices and subscription details, in the "Billing & Payments" section of your account dashboard after you sign in.'
+      q: 'What kind of support do I get?',
+      a: 'You get fast and reliable support via email and WhatsApp. On higher plans, you receive priority assistance for quicker resolution.'
     },
     {
-      q: 'What online payments are accepted?',
-      a: 'We accept all major credit cards (Visa, MasterCard, American Express) as well as UPI, Net Banking, and other popular payment methods for our Indian customers.'
+      q: 'Do I get a custom domain?',
+      a: 'Yes, the Growth yearly plan includes a free custom domain for one year. You can also connect your own domain anytime.'
     },
     {
-      q: 'How do I know if the Enterprise plan is right for my business?',
-      a: 'Our Enterprise plan is designed for large-scale businesses with specific needs for custom features, dedicated support, and advanced security. If you have multiple locations or require custom integrations, our Enterprise team can help. Contact us for a consultation.'
+      q: 'Can I use BizVistar for any type of business?',
+      a: 'Yes, BizVistar works for product-based businesses, service providers, and personal brands. You can customize your site based on your needs.'
     },
     {
-      q: 'How do I contact the Enterprise team?',
-      a: 'You can contact our Enterprise team by filling out the contact form on our "Enterprise" page or by reaching out to your dedicated account manager if you are an existing customer.'
-    },
-    {
-      q: 'How does BizVistar handle security assessments/questionnaires?',
-      // Pass JSX to support links
-      a: (
-        <p>
-          For information on how BizVistar protects your data, compliance, certifications, GDPR and more, check out our{' '}
-          <a href="#" className="text-blue-600 hover:underline">white paper</a>. 
-          For security questions specific to your business, contact the Enterprise team using the form above.
-        </p>
-      )
-    },
+      q: 'How fast can I launch my website?',
+      a: 'You can go live in minutes. Our AI builds your website instantly, and you can start sharing and selling right away.'
+    }
   ];
   const handleHelpCenterClick = (e) => {
     e.preventDefault();
-    // Dispatch a custom event that the SupportWidget can listen to, or simply focus it if it exists
     const chatButton = document.querySelector('button[aria-label="Open Chat"]') || document.querySelector('.bg-gradient-to-r.from-\\[\\#8A63D2\\]');
     if (chatButton) {
         chatButton.click();
     } else {
-        // Fallback or custom event
         window.dispatchEvent(new CustomEvent('open-support-widget'));
     }
   };
   return (
-    // NEW 2-column layout
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
-      {/* Left Column: Title & Description */}
       <div className="lg:col-span-1">
         <h2 className="text-4xl font-bold text-gray-900 mb-4">
           Frequently asked questions
@@ -892,9 +954,7 @@ const FaqSection = () => {
         </p>
       </div>
       
-      {/* Right Column: Accordion */}
       <div className="lg:col-span-2">
-        {/* Removed the outer card styling */}
         <div>
           {faqs.map((faq, i) => (
             <FaqItem key={i} q={faq.q} a={faq.a} />
@@ -904,8 +964,6 @@ const FaqSection = () => {
     </div>
   );
 };
-// --- THIS IS THE END OF THE CHANGED SECTION ---
-
 
 export default function PricingPage() {
   return (

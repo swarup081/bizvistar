@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react'; 
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
+import Footer from '@/components/Footer';
 
 
 // --- Primary Header Component (Non-Fixed, Scrolls) ---
@@ -778,6 +779,10 @@ export default function TemplatesPage() {
         </div>
     }>
       <TemplatesContent />
+       {/* Footer */}
+       <footer className="bg-white border-t border-gray-200">
+        <Footer/>
+      </footer>
     </Suspense>
   );
 }

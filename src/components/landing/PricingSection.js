@@ -45,109 +45,144 @@ function PricingContent() {
     monthly: [
       {
         name: 'Starter',
-        subtitle: 'The Digital Business Card',
+        subtitle: 'Best for hobbyists and individual creators testing a side-hustle with a basic item catalog',
+        originalPrice: '499',
         price: '299',
-        dailyRate: 'Just ₹10 a day',
-        cta: 'Get Started',
+        discount: '40% off',
+        dailyRate: 'Billed monthly. Total freedom to pause or cancel anytime.',
+        cta: 'Choose plan',
         isRecommended: false,
         features: [
           'Professional Website',
-          'Easy-to-Use Editor',
-          'Secure Hosting & Subdomain',
-          '1 Business Tool ',
-          'Automated Order Emails',
-          'Standard Email Support',
+          'Free Subdomain',
+          'Secure Hosting ',
+          'unlimited editing',
+          '25 Products ',
+          'Standard  Support',
+          'Limited Business Tool ',
+          'Update your site anytime with mobile editing',
+          'Free invoicing',
+          'Accept payments',
+          'Basic Analytics',
         ],
       },
       {
         name: 'Pro',
-        subtitle: 'The "Done-with-You" Partner',
+        subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
+        originalPrice: '1599',
         price: '799',
-        dailyRate: 'Just ₹26 a day',
-        cta: 'Start Your Pro Plan',
+        discount: '51% off',
+        dailyRate: 'Billed monthly. Zero long-term commitment. Switch to yearly anytime.',
+        cta: 'Choose plan',
         isRecommended: true,
         features: [
-          '500 sms for user authentication',
-          'Instant WhatsApp Order Notifications',
-          'Priority WhatsApp Support',
-          '2 Advanced Business Tools',
-          'Basic Website Analytics',
+          'Professional Website',
+          'Free Subdomain',
+          'Secure Hosting ',
+          'unlimited products',
+          'Priority  Support',
+          'Limited Advanced Business Tools',
+          'Update your site anytime with mobile editing',
+          'Free invoicing',
+          'Accept payments',
+          'Advance Analytics',
         ],
       },
       {
         name: 'Growth',
-        subtitle: 'The "Done-for-You" Service',
+        subtitle: 'Best for established enterprises with high-volume multi-channel operations.',
+        originalPrice: '1999',
         price: '1499',
-        dailyRate: 'Just ₹50 a day',
-        cta: 'Go for Growth',
+        discount: '24% off',
+        dailyRate: 'Billed monthly. Enterprise power with total flexibility. Cancel whenever you want.',
+        cta: 'Choose plan',
         isRecommended: false,
         features: [
-          '1000 sms for user authentication',
-          'Google Maps Management',
-          'Access to All Business Tools',
-          'Free Custom Domain (First Year)',
-          'Priority Onboarding Call',
-          'AI Website Analytics',
+          'Professional Website',
+          'Free Custom Domain ',
+          'Secure Hosting ',
+          'unlimited products',
+          'Priority  Support',
+          'Advanced Business Tools',
+          'Update your site anytime with mobile editing',
+          'Accept payments',
+          'Onboarding Call',
+          'Accept payments',
+          'Advance Analytics',
         ],
       },
     ],
     yearly: [
       {
         name: 'Starter',
-        subtitle: 'The Digital Business Card',
+        subtitle: 'Best for hobbyists and individual creators testing a side-hustle with a basic item catalog',
+        originalPrice: '499',
         price: '249',
-        originalPrice: '299',
-        yearlyTotal: 'Billed as ₹2,990 / year',
-        savings: 'Save ₹600',
-        cta: 'Get Started',
+        discount: '51% off',
+        yearlyTotal: 'Get 12 months for ₹2,990 (regularly ₹5,988). Includes 2 months free. Cancel anytime.',
+        cta: 'Choose plan',
         isRecommended: false,
         features: [
           'Professional Website',
-          'Easy-to-Use Editor',
-          'Secure Hosting & Subdomain',
-          '1 Business Tool ',
-          'Automated Order Emails',
-          'Standard Email Support',
+          'Free Subdomain',
+          'Secure Hosting ',
+          'unlimited editing',
+          '25 Products ',
+          'Standard  Support',
+          'Limited Business Tool ',
+          'Update your site anytime with mobile editing',
+          'Free invoicing',
+          'Accept payments',
+          'Basic Analytics',
         ],
       },
       {
         name: 'Pro',
-        subtitle: 'The "Done-with-You" Partner',
+        subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
+        originalPrice: '1599',
         price: '666',
-        originalPrice: '799',
-        yearlyTotal: 'Billed as ₹7,990 / year',
-        savings: 'Save ₹1,600',
-        cta: 'Start Your Pro Plan',
+        discount: '60% off',
+        yearlyTotal: 'Get 12 months for ₹7,990 (regularly ₹19,188). Includes 2 months free. Cancel anytime.',
+        cta: 'Choose plan',
         isRecommended: true,
         features: [
-            '500 sms for user authentication',
-            'Instant WhatsApp Order Notifications',
-          'Priority WhatsApp Support',
-          '2 Advanced Business Tools',
-          'Website Analytics',
+          'Professional Website',
+          'Free Subdomain',
+          'Secure Hosting ',
+          'unlimited products',
+          'Priority  Support',
+          'Limited Advanced Business Tools',
+          'Update your site anytime with mobile editing',
+          'Free invoicing',
+          'Accept payments',
+          'Advance Analytics',
         ],
       },
       {
         name: 'Growth',
-        subtitle: 'The "Done-for-You" Service',
+        subtitle: 'Best for established enterprises with high-volume multi-channel operations.',
+        originalPrice: '1999',
         price: '1249',
-        originalPrice: '1499',
-        yearlyTotal: 'Billed as ₹14,990 / year',
-        savings: 'Save ₹3,000',
-        cta: 'Go for Growth',
+        discount: '38% off',
+        yearlyTotal: 'Get 12 months for ₹14,990 (regularly ₹23,988). Includes 2 months free. Cancel anytime.',
+        cta: 'Choose plan',
         isRecommended: false,
         features: [
-            '1000 sms for user authentication',
-            'Google Maps Management',
-          'Access to All Business Tools',
-          'Free Custom Domain (First Year)',
-          'Priority Onboarding Call',
-          'AI Website Analytics',
+          'Professional Website',
+          'Free Custom Domain ',
+          'Secure Hosting ',
+          'unlimited products',
+          'Priority  Support',
+          'Advanced Business Tools',
+          'Update your site anytime with mobile editing',
+          'Accept payments',
+          'Onboarding Call',
+          'Accept payments',
+          'Advance Analytics',
         ],
       },
     ],
   };
-
   const [isYearly, setIsYearly] = useState(false);
   const activePlans = isYearly ? plans.yearly : plans.monthly;
   const maxSavings = 17;
@@ -183,7 +218,7 @@ function PricingContent() {
             No credit card required*
           </p>
 
-          <div className="relative inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
+          <div className="relative mb-15 inline-flex items-center p-1 bg-gray-100 rounded-full border border-gray-200 shadow-inner">
              <button
                 onClick={() => setIsYearly(false)}
                 className={cn(
@@ -255,6 +290,7 @@ function PricingContent() {
             </span>
           </Link>
         </div>
+        
         {/* --- INCLUDED IN EVERY PLAN SECTION --- */}
         <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-10 lg:p-16 mx-auto max-w-7xl">
           <div className="flex flex-col xl:flex-row gap-16 lg:gap-12 items-start">
@@ -305,105 +341,131 @@ function PricingContent() {
   );
 }
 
-// --- Sub-component: PlanCard ---
-const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => (
-  <div 
-    className={cn(
-      'flex flex-col rounded-3xl bg-white transition-all duration-300 ease-out', 
-      plan.isRecommended 
-        ? 'border-[3px] border-[#8A63D2] shadow-2xl relative'
-        : 'border border-gray-200 shadow-lg hover:shadow-xl',
-      className
-    )}
-  >
-    {plan.isRecommended && (
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#8A63D2] text-white px-6 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase">
-        Recommended
-      </div>
-    )}
-
-    <div className="p-10 text-center flex-grow flex flex-col">
-      <h3 className="text-5xl font-bold text-gray-900">{plan.name}</h3>
-      <p className="text-gray-500 font-medium mt-2">{plan.subtitle}</p>
-
-      <div className="my-8">
-        {isYearly && plan.originalPrice && (
-          <p className="text-lg font-medium text-gray-400 line-through">
-            ₹{plan.originalPrice}/mo
-          </p>
-        )}
-
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-3xl font-bold text-gray-900">₹</span>
-          <span className="text-6xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-          <span className="text-xl font-medium text-gray-500">/month</span>
+// --- Sub-component: PlanCard (UPDATED WITH NEW STYLES) ---
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => {
+  
+  // Create the inner content blocks to reuse
+  const innerCardContent = (
+    <div className="flex flex-col h-full text-left">
+      <div className="px-8 pt-8 pb-6 flex-grow flex flex-col relative">
+        
+        {/* Top row: Title and Badge (Savings or Promos aligned to right) */}
+        <div className="flex justify-between items-start mb-3 gap-4">
+          <span className="text-3xl font-bold text-gray-900 leading-tight">{plan.name}</span>
+          {isYearly && plan.savings && (
+            <div className="inline-flex bg-[#f4f1fa] text-[#7554b3] text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap mt-1">
+              {plan.savings}
+            </div>
+          )}
         </div>
 
-         {isYearly && plan.savings && (
-             <div className="mt-4 inline-block bg-green-100 text-green-700 text-sm font-bold px-4 py-1 rounded-full">
-                 {plan.savings}
-             </div>
-         )}
-      </div>
+        {/* Price Section */}
+        <div className="mb-6 flex flex-col">
+          {isYearly && plan.originalPrice ? (
+            <p className="text-lg font-medium text-gray-400 line-through mb-1">
+              ₹{plan.originalPrice}/mo
+            </p>
+          ) : (
+            // Placeholder for alignment when not yearly
+            <p className="text-lg font-medium text-transparent mb-1 select-none" aria-hidden="true">-</p> 
+          )}
+          <div className="flex items-baseline gap-1">
+            <span className="text-[44px] font-extrabold text-gray-900 tracking-tight leading-none">₹{plan.price}</span>
+            <span className="text-lg font-medium text-gray-500">/mo</span>
+          </div>
+        </div>
 
-      {isCurrentPlan ? (
-          <button 
-            disabled
-            className={cn(
-              'w-full py-4 rounded-full text-xl font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
-            )}
-          >
-            Current Plan
-          </button>
-      ) : (
-          <Link href={{
-                pathname: '/checkout',
-                query: {
-                    plan: plan.name,
-                    billing: isYearly ? 'yearly' : 'monthly',
-                    price: plan.price,
-                    ...(isUpdateFlow ? { update: 'true' } : {})
-                }
-            }} className="w-full">
+        {/* CTA Button */}
+        <div className="mb-4 w-full">
+          {isCurrentPlan ? (
             <button 
+              disabled
               className={cn(
-                'w-full py-4 rounded-full text-xl font-bold transition-all duration-200 transform hover:-translate-y-1',
-                plan.isRecommended
-                  ? 'bg-[#7554b3] text-white hover:bg-[#5c428c] shadow-md hover:shadow-lg'
-                  : 'bg-gray-900 text-white hover:bg-gray-800'
+                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
               )}
             >
-              {plan.cta}
+              Current Plan
             </button>
-          </Link>
-      )}
+          ) : (
+            <Link href={{
+                  pathname: '/checkout',
+                  query: {
+                      plan: plan.name,
+                      billing: isYearly ? 'yearly' : 'monthly',
+                      price: plan.price,
+                      ...(isUpdateFlow ? { update: 'true' } : {})
+                  }
+              }} className="w-full">
+              <button 
+                className={cn(
+                  'w-full py-3.5 rounded-xl text-[17px] font-bold transition-all duration-200',
+                  plan.isRecommended
+                    ? 'bg-[#8a63d2] text-white hover:bg-[#7554b3] shadow-md hover:shadow-lg'
+                    : 'bg-white border-2 hover:bg-[#8a63d2] hover:text-white border-[#8a63d2] text-[#7554b3] hover:border-[#8a63d2]'
+                )}
+              >
+                {plan.cta}
+              </button>
+            </Link>
+          )}
+        </div>
 
-       {!isYearly && (
-         <p className="text-base font-semibold text-[#8A63D2] mt-4">{plan.dailyRate}</p>
-      )}
-      {isYearly && (
-           <p className="text-sm font-medium text-gray-500 mt-4">{plan.yearlyTotal}</p>
-      )}
-    </div>
+        {/* Subtext (Renewals / Rate) placed under the button */}
+        <p className="text-[12px] font-medium text-gray-600 mb-6 min-h-[18px]">
+          {!isYearly ? plan.dailyRate : plan.yearlyTotal}
+        </p>
 
-    <div className="p-10 pt-0">
-       <div className="border-t border-gray-100 pt-8">
-          {plan.name === 'Starter' && <h4 className="text-base font-semibold text-gray-800 mb-4">Includes:</h4>}
-          {plan.name === 'Pro' && <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Starter, plus:</h4>}
-          {plan.name === 'Growth' && <h4 className="text-base font-semibold text-gray-800 mb-4">Everything in Pro, plus:</h4>}
-          
-          <ul className="space-y-4">
+        {/* Highlighted Title/Subtitle Box */}
+        <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl p-5 mt-auto">
+          <p className="text-gray-900 font-semibold text-[15px] leading-relaxed">{plan.subtitle}</p>
+        </div>
+      </div>
+
+      {/* Features List */}
+      <div className="px-8 pb-8 pt-2">
+          <span className="text-[17px] font-bold text-gray-900 mb-5 block">
+            {plan.name === 'Starter' && "Includes:"}
+            {plan.name === 'Pro' && "Includes:"}
+            {plan.name === 'Growth' && "Includes:"}
+          </span>
+          <ul className="space-y-3.5 mt-5">
             {plan.features.map((feature, i) => (
               <li key={i} className="flex items-start text-left">
-                <Check className={cn("w-6 h-6 mt-0.5 mr-3 flex-shrink-0", plan.isRecommended ? "text-[#8A63D2]" : "text-[#8A63D2]")} strokeWidth={2.5} />
+                <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-[#000]")} strokeWidth={2.5} />
                 <span className="text-gray-700 font-medium text-[15px] leading-snug">{feature}</span>
               </li>
             ))}
           </ul>
-       </div>
+      </div>
     </div>
-  </div>
-);
+  );
+
+  return (
+    <div 
+      className={cn(
+        'flex flex-col rounded-[24px] transition-all duration-300 ease-out overflow-hidden', 
+        plan.isRecommended 
+          ? 'bg-[#8A63D2] shadow-2xl px-[3px] pb-[3px]' 
+          : 'bg-white border border-gray-200 shadow-lg hover:shadow-xl',
+        className
+      )}
+    >
+      {plan.isRecommended && (
+        <div className="py-2.5 text-center text-white text-sm font-bold tracking-wider uppercase">
+          Most Popular
+        </div>
+      )}
+
+      {plan.isRecommended ? (
+        <div className="bg-white rounded-[20px] flex flex-col flex-grow">
+          {innerCardContent}
+        </div>
+      ) : (
+        innerCardContent
+      )}
+    </div>
+  );
+};
 
 export default function PricingSection() {
   return (
