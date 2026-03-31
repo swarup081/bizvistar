@@ -69,7 +69,7 @@ export default function NewHeader() {
       <div className="bg-[#1a1a1a] text-white text-xs md:text-[15px] py-2.5 text-center px-4 font-medium flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 font-sans tracking-wide">
          <span>Don’t miss the limited-time deals!</span>
          {isTimerLoaded ? (
-            <span className="flex items-center gap-1 font-mono text-[16px] md:text-[17px] tracking-tight">
+            <span className="flex items-center gap-1 font-sans font-bold text-[18px] md:text-[20px] text-[#cfff04] tracking-wider">
               {formatTime(timeLeft.days)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">D</span>&nbsp;
               {formatTime(timeLeft.hours)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">H</span>&nbsp;
               {formatTime(timeLeft.minutes)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">M</span>&nbsp;

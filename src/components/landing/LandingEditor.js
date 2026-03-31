@@ -483,14 +483,25 @@ export default function LandingEditor() {
               transformOrigin: 'top center'
             }}
           >
-            <iframe
-              ref={iframeRef}
-              src={`/templates/${templateName}?isLanding=true`} 
-              title="Website Preview"
-              className="w-full h-full border-0 pointer-events-auto" 
-              key={templateName} 
-              style={{ overflow: 'hidden' }}
-            />
+            {isMobileViewport ? (
+              <video
+                src="/loadingofeditorBackgroundRemover.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <iframe
+                ref={iframeRef}
+                src={`/templates/${templateName}?isLanding=true`}
+                title="Website Preview"
+                className="w-full h-full border-0 pointer-events-auto"
+                key={templateName}
+                style={{ overflow: 'hidden' }}
+              />
+            )}
           </div>
         </main>
       </div>
