@@ -86,8 +86,8 @@ export default function StickySubNav() {
     <div 
       ref={navRef} 
       className={cn(
-        "z-[100] hidden lg:block w-full max-w-[1440px] mx-auto pointer-events-none mb-4",
-        isSticky ? "fixed top-6 inset-x-0 flex justify-start pl-6" : "relative flex justify-start pl-6"
+        "z-[100] block w-full max-w-[1440px] mx-auto pointer-events-none mb-4",
+        isSticky ? "fixed top-[135px] lg:top-6 inset-x-0 flex justify-center lg:justify-start lg:pl-6" : "relative flex justify-center lg:justify-start lg:pl-6"
       )}
       // This applies the hardware-accelerated freeze lock
       style={{
@@ -96,14 +96,14 @@ export default function StickySubNav() {
     >
       {/* The inner container keeps the scale and shadow transitions so it still feels smooth */}
       <div className={cn(
-        "w-max pointer-events-auto inline-flex flex-row items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full p-1.5 transition-all duration-300",
+        "max-w-[95vw] lg:max-w-max pointer-events-auto flex flex-row items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full p-1.5 transition-all duration-300 overflow-x-auto no-scrollbar",
         isSticky ? "shadow-xl scale-[1.02]" : "shadow-lg scale-100"
       )}>
         
         {/* Back to Top Arrow */}
         <Link 
           href="#" 
-          className="flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:bg-[#b9a8e0] hover:text-white transition-all duration-300 ml-1" 
+          className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:bg-[#b9a8e0] hover:text-white transition-all duration-300 ml-1"
           title="Back to Top"
           onClick={(e) => {
             e.preventDefault();
@@ -117,7 +117,7 @@ export default function StickySubNav() {
           <Link 
             key={item.id}
             href={`#${item.id}`} 
-            className="relative px-4 py-1.5 rounded-full text-[13px] hover:bg-[#b9a8e0] hover:text-white font-semibold tracking-wide outline-none group transition-all"
+            className="flex-shrink-0 relative px-4 py-1.5 rounded-full text-[13px] hover:bg-[#b9a8e0] hover:text-white font-semibold tracking-wide outline-none group transition-all"
             onClick={(e) => {
               e.preventDefault();
               

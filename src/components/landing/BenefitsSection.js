@@ -58,18 +58,29 @@ export default function BenefitsSection() {
 
           </div>
 
-          {/* Right Column: Screenshot Container (Taking up 7 columns for a wider image) */}
-          <div className="lg:col-span-7 left-30 relative">
-            <div className="w-full relative  overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-white/50 border border-white/60">
-              
-              {/* === PLACE YOUR SCREENSHOT HERE === */}
-              {/* Note: Ensure your image is high-res. The w-full block makes it fill this right container perfectly */}
+          {/* Right Column: Screenshot Container */}
+          <div className="lg:col-span-7 relative flex justify-center lg:block">
+            {/* Desktop Image */}
+            <div className="hidden lg:block w-[130%] relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-white/50 border border-white/60 rounded-xl">
               <img 
                 src="/dashboard.png" 
                 alt="Website Builder Editor Interface" 
                 className="w-full h-auto object-cover block"
               />
-              
+            </div>
+
+            {/* Mobile Image Placeholder */}
+            <div className="block lg:hidden w-[90%] sm:w-[80%] max-w-sm relative overflow-hidden shadow-2xl bg-white border border-gray-200 rounded-[2.5rem] mt-10 p-2">
+              <img
+                src="/mobile-dashboard.png"
+                alt="Mobile Dashboard Interface"
+                className="w-full h-auto object-cover block rounded-[2rem]"
+                onError={(e) => {
+                  // Fallback if the user hasn't added the image yet
+                  e.target.src = '/dashboard.png';
+                  e.target.className = 'w-full h-auto object-cover block rounded-[2rem] object-left-top';
+                }}
+              />
             </div>
           </div>
         </div>
