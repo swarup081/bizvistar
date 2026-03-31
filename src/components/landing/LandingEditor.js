@@ -495,7 +495,7 @@ export default function LandingEditor() {
         </main>
       </div>
 
-      <div className={`bg-white border-t lg:border-t-0 lg:border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 fixed bottom-0 left-0 w-full z-40 lg:z-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+      <div className={`bg-white border-t lg:border-t-0 lg:border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 absolute bottom-0 left-0 w-full z-40 lg:z-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <EditorSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 

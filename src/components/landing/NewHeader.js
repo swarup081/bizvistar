@@ -64,7 +64,7 @@ export default function NewHeader() {
   ];
 
   return (
-    <div className="sticky top-0 left-0 right-0 z-[110] bg-white transition-all duration-300">
+    <div className="sticky top-0 left-0 right-0 z-[110] bg-white transition-all duration-300 shadow-sm">
       {/* Top Banner */}
       <div className="bg-[#1a1a1a] text-white text-xs md:text-[15px] py-2.5 text-center px-4 font-medium flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 font-sans tracking-wide">
          <span>Don’t miss the limited-time deals!</span>
