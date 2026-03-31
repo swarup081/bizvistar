@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { X, FileSpreadsheet, FileText, Download, Calendar, ArrowLeft, Layers } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/lib/supabaseClient";
@@ -201,14 +201,30 @@ export default function ExportModal({ isOpen, onClose }) {
               fetchDataset("analytics", website.id, startDate)
           ]);
 
-          const workbook = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sales.data), "Sales");
-          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(customers.data), "Customers");
-          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(inventory.data), "Inventory");
-          XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(analytics.data), "Analytics");
+          const workbook = new ExcelJS.Workbook();
 
-          XLSX.writeFile(workbook, `${fileName}_FullBackup.xlsx`);
-      } 
+          const addSheet = (name, data) => {
+            const sheet = workbook.addWorksheet(name);
+            if (data.length > 0) {
+              sheet.columns = Object.keys(data[0]).map(key => ({ header: key, key }));
+              data.forEach(row => sheet.addRow(row));
+            }
+          };
+
+          addSheet("Sales", sales.data);
+          addSheet("Customers", customers.data);
+          addSheet("Inventory", inventory.data);
+          addSheet("Analytics", analytics.data);
+
+          const buffer = await workbook.xlsx.writeBuffer();
+          const blob = new Blob([buffer]);
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${fileName}_FullBackup.xlsx`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+      }
       else {
           // Single Report
           const result = await fetchDataset(reportType, website.id, startDate);
@@ -219,13 +235,32 @@ export default function ExportModal({ isOpen, onClose }) {
           }
 
           if (format === "excel" || format === "csv") {
-            const worksheet = XLSX.utils.json_to_sheet(result.data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
-            
-            if (format === "csv") XLSX.writeFile(workbook, `${fileName}.csv`);
-            else XLSX.writeFile(workbook, `${fileName}.xlsx`);
-          } 
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Report");
+
+            worksheet.columns = Object.keys(result.data[0]).map(key => ({ header: key, key }));
+            result.data.forEach(row => worksheet.addRow(row));
+
+            if (format === "csv") {
+              const buffer = await workbook.csv.writeBuffer();
+              const blob = new Blob([buffer]);
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${fileName}.csv`;
+              a.click();
+              window.URL.revokeObjectURL(url);
+            } else {
+              const buffer = await workbook.xlsx.writeBuffer();
+              const blob = new Blob([buffer]);
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${fileName}.xlsx`;
+              a.click();
+              window.URL.revokeObjectURL(url);
+            }
+          }
           else if (format === "pdf") {
             const doc = new jsPDF();
             doc.text(`BizVistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
