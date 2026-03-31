@@ -430,7 +430,7 @@ export default function LandingEditor() {
   return (
     <div 
       ref={containerRef}
-      className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 rounded-xl overflow-hidden shadow-2xl relative border border-gray-200 ${isMobileViewport ? 'h-[70vh]' : 'h-[850px]'}`}
+      className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 rounded-xl overflow-hidden shadow-2xl relative border border-gray-200 ${isMobileViewport ? 'h-[85vh]' : 'h-[850px]'}`}
       onMouseEnter={() => { 
         isHoveredRef.current = true; 
         setIsHovered(true); 
@@ -480,6 +480,7 @@ export default function LandingEditor() {
               transform: isMobileViewport ? 'none' : `scale(${scale})`,
               marginTop: isMobileViewport ? '0' : (view === 'desktop' ? '465px' : '40px'),
               overflow: 'hidden', 
+              transformOrigin: 'top center'
             }}
           >
             <iframe
