@@ -291,22 +291,22 @@ function PricingContent() {
           </Link>
         </div>
         
-        {/* --- INCLUDED IN EVERY PLAN SECTION --- */}
-        <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-10 lg:p-16 mx-auto max-w-7xl">
-          <div className="flex flex-col xl:flex-row gap-16 lg:gap-12 items-start">
+        {/* --- INCLUDED IN EVERY PLAN SECTION (Matches Pricing Page) --- */}
+        <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-6 sm:p-10 lg:p-16 mx-auto max-w-7xl">
+          <div className="flex flex-col xl:flex-row gap-12 lg:gap-12 items-start">
             
             {/* Left Header Area */}
             <div className="xl:w-[28%] flex flex-col shrink-0">
               <span className="bg-[#a28ad6] text-white text-xs font-bold px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-6">
                 Plus
               </span>
-              <h2 className="text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
                 Included in <br className="hidden xl:block" /> every Website <br className="hidden xl:block" /> Builder plan
               </h2>
             </div>
             
             {/* Right Features Grid */}
-            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
+            <div className="xl:w-[72%] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
               <div className="flex flex-col">
                 <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
@@ -325,8 +325,6 @@ function PricingContent() {
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
               </div>
 
-            
-              
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>

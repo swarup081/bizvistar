@@ -53,9 +53,21 @@ export default function LandingEditor() {
   const [containerHeight, setContainerHeight] = useState(800); 
   const mainContainerRef = useRef(null);
 
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+
   // --- RESIZE LOGIC ---
   useEffect(() => {
     const handleResize = () => {
+      const isMobile = window.innerWidth < 1024;
+      setIsMobileViewport(isMobile);
+
+      // Auto-switch view based on viewport for the Landing demo
+      if (isMobile && view !== 'mobile') {
+        setView('mobile');
+      } else if (!isMobile && view !== 'desktop') {
+        setView('desktop');
+      }
+
       const container = mainContainerRef.current;
       if (!container) return;
 
@@ -64,16 +76,14 @@ export default function LandingEditor() {
       setContainerHeight(cHeight);
 
       const baseDesktopWidth = 1440; 
-      const baseMobileWidth = 375;
-      const baseMobileHeight = 812;
 
-      if (view === 'desktop') {
+      if (!isMobile) {
+        // Desktop scaling logic
         const newScale = Math.min(1, cWidth / baseDesktopWidth);
         setScale(newScale);
       } else {
-        const availableHeight = cHeight - 40; 
-        const heightScale = availableHeight / baseMobileHeight;
-        setScale(Math.min(1, heightScale));
+        // Mobile viewport: we don't scale the iframe container itself, it takes full width/height
+        setScale(1);
       }
     };
     
@@ -203,10 +213,52 @@ export default function LandingEditor() {
             if (!container) { await wait(200); continue; }
 
             const w = container.offsetWidth;
-            const sidebarWidth = 320;
-            const sidebarLeftX = w - sidebarWidth; 
-            const sidebarInputX = sidebarLeftX + 100; 
-            const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
+            const h = container.offsetHeight;
+            const isMobile = window.innerWidth < 1024;
+
+            let logoX, logoY, sidebarInputX, nameInputY, titleInputY, imageInputY, themeTabX, themeTabY, strawberryX, strawberryY, publishX, publishY;
+
+            if (isMobile) {
+                // Mobile layout coordinates
+                logoX = w / 2;
+                logoY = 120;
+
+                // Bottom sheet sidebar coordinates
+                sidebarInputX = w / 2;
+                nameInputY = h - 250;
+                titleInputY = h - 180;
+                imageInputY = h - 100;
+
+                themeTabX = w / 2;
+                themeTabY = h - 350; // Approximating tab height on mobile
+                strawberryX = w / 2;
+                strawberryY = h - 200;
+
+                publishX = w - 50;
+                publishY = 30;
+            } else {
+                // Desktop layout coordinates
+                const sidebarWidth = 320;
+                const sidebarLeftX = w - sidebarWidth;
+                sidebarInputX = sidebarLeftX + 100;
+                const sidebarCenterX = sidebarLeftX + (sidebarWidth / 2);
+
+                logoX = w / 2 - 180;
+                logoY = 100 + 20;
+
+                nameInputY = 180;
+                titleInputY = 260;
+                imageInputY = 420;
+
+                themeTabY = 30;
+                themeTabX = sidebarCenterX;
+
+                strawberryX = w - 80;
+                strawberryY = 280;
+
+                publishX = (w - sidebarWidth) - 100;
+                publishY = 30;
+            }
 
             // Helper to break execution if user hovers
             const checkInterrupt = () => {
@@ -220,8 +272,6 @@ export default function LandingEditor() {
             // STEP 1: Click "Business Name" in Preview
             if (checkInterrupt()) continue;
             
-            const logoX = w / 2 - 180; // adjust 60–100 if needed
-            const logoY = 100 + 20; 
             setCursorPos({ x: logoX, y: logoY });
             
             await wait(1000);
@@ -236,7 +286,6 @@ export default function LandingEditor() {
             if (checkInterrupt()) continue;
 
             // STEP 2: Edit Logo Text
-            const nameInputY = 180;
             setCursorPos({ x: sidebarInputX, y: nameInputY });
             await wait(800);
 
@@ -257,10 +306,8 @@ export default function LandingEditor() {
             await wait(1000);
             if (checkInterrupt()) continue;
 
-            // STEP 3: Edit Title (FIXED: Moved further left)
-            const titleInputY = 260;
-            // Subtracting 60 from sidebarInputX makes it click much further left
-            setCursorPos({ x: sidebarInputX - 60, y: titleInputY });
+            // STEP 3: Edit Title
+            setCursorPos({ x: isMobile ? sidebarInputX : sidebarInputX - 60, y: titleInputY });
             await wait(800);
             
             if (checkInterrupt()) continue;
@@ -284,7 +331,6 @@ export default function LandingEditor() {
             if (checkInterrupt()) continue;
 
             // STEP 4: Change Feature Image
-            const imageInputY = 420; 
             setCursorPos({ x: sidebarInputX, y: imageInputY });
             await wait(1000);
 
@@ -304,8 +350,6 @@ export default function LandingEditor() {
             if (checkInterrupt()) continue;
 
             // STEP 5: Switch to Theme Tab
-            const themeTabY = 30; 
-            const themeTabX = sidebarCenterX; 
             setCursorPos({ x: themeTabX, y: themeTabY });
             await wait(800);
 
@@ -319,8 +363,6 @@ export default function LandingEditor() {
             if (checkInterrupt()) continue;
 
             // STEP 6: Palette
-            const strawberryX = w - 80;
-            const strawberryY = 280;
             setCursorPos({ x: strawberryX, y: strawberryY }); 
             await wait(800);
 
@@ -334,8 +376,6 @@ export default function LandingEditor() {
             if (checkInterrupt()) continue;
 
             // STEP 7: Publish
-            const publishX = (w - sidebarWidth) - 100;
-            const publishY = 30;
             setCursorPos({ x: publishX, y: publishY });
             await wait(1000);
             
@@ -390,7 +430,7 @@ export default function LandingEditor() {
   return (
     <div 
       ref={containerRef}
-      className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 h-[850px] rounded-xl overflow-hidden shadow-2xl relative border border-gray-200"
+      className={`flex flex-col lg:grid lg:grid-cols-[1fr_auto] bg-gray-50 rounded-xl overflow-hidden shadow-2xl relative border border-gray-200 ${isMobileViewport ? 'h-[85vh]' : 'h-[850px]'}`}
       onMouseEnter={() => { 
         isHoveredRef.current = true; 
         setIsHovered(true); 
@@ -398,6 +438,10 @@ export default function LandingEditor() {
       onMouseLeave={() => { 
           isHoveredRef.current = false; 
           setIsHovered(false);
+      }}
+      onTouchStart={() => {
+        isHoveredRef.current = true;
+        setIsHovered(true);
       }}
     >
       {!isHovered && <Cursor x={cursorPos.x} y={cursorPos.y} click={isClicking} />}
@@ -424,32 +468,45 @@ export default function LandingEditor() {
           />
         </div>
 
-        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] px-4 pb-10`}>
+        <main ref={mainContainerRef} className={`flex-grow flex items-center justify-center overflow-hidden relative bg-[#F3F4F6] ${isMobileViewport ? 'p-0 pb-20' : 'px-4 pb-10'}`}>
           <div
-            className={`transition-all duration-300 ease-in-out bg-white shadow-lg flex-shrink-0 origin-top
-              ${view === 'mobile' ? 'rounded-3xl border border-gray-300' : ''} 
+            className={`transition-all duration-300 ease-in-out bg-white shadow-lg overflow-hidden flex-shrink-0 origin-top
+              ${view === 'mobile' && !isMobileViewport ? 'rounded-3xl border border-gray-300' : ''}
+              ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
             `}
             style={{
-              width: view === 'desktop' ? '1440px' : '375px', 
-              height: view === 'desktop' ? `${containerHeight / scale}px` : '812px', 
-              transform: `scale(${scale})`, 
-              marginTop: view === 'desktop' ? '465px' : '40px', 
+              width: isMobileViewport ? '100%' : (view === 'desktop' ? '1440px' : '390px'),
+              height: isMobileViewport ? '100%' : (view === 'desktop' ? `${containerHeight / scale}px` : '812px'),
+              transform: isMobileViewport ? 'none' : `scale(${scale})`,
+              marginTop: isMobileViewport ? '0' : (view === 'desktop' ? '465px' : '40px'),
               overflow: 'hidden', 
+              transformOrigin: 'top center'
             }}
           >
-            <iframe
-              ref={iframeRef}
-              src={`/templates/${templateName}?isLanding=true`} 
-              title="Website Preview"
-              className="w-full h-full border-0 pointer-events-auto" 
-              key={templateName} 
-              style={{ overflow: 'hidden' }}
-            />
+            {isMobileViewport ? (
+              <video
+                src="/loadingofeditorBackgroundRemover.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <iframe
+                ref={iframeRef}
+                src={`/templates/${templateName}?isLanding=true`}
+                title="Website Preview"
+                className="w-full h-full border-0 pointer-events-auto"
+                key={templateName}
+                style={{ overflow: 'hidden' }}
+              />
+            )}
           </div>
         </main>
       </div>
 
-      <div className={`bg-white border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 fixed bottom-0 left-0 w-full z-40 lg:z-auto ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+      <div className={`bg-white border-t lg:border-t-0 lg:border-l border-gray-200 lg:overflow-y-auto lg:static lg:h-full lg:w-80 absolute bottom-0 left-0 w-full z-40 lg:z-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:shadow-none ${isHovered ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <EditorSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
@@ -458,7 +515,7 @@ export default function LandingEditor() {
           onPageChange={handlePageChange}
           activeAccordion={activeAccordion}
           onAccordionToggle={handleAccordionToggle} 
-          forceDesktop={true}
+          forceDesktop={false}
           isLandingMode={true}
           templateName={templateName}
         />

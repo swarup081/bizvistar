@@ -33,60 +33,51 @@ export default function HowItWorks() {
 
   return (
     <section className="py-24 bg-[#F4F5F8] relative">
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
-          
-          {/* Left Side: Title and Buttons */}
-          <div className="lg:w-5/12">
-            {/* The sticky class keeps this section in view while the user scrolls down the list */}
-            <div className="sticky top-32">
-              <h2 className="text-4xl lg:text-6xl  font-medium text-gray-900 leading-[1.1] tracking-tight mb-8">
-                How to create a<br />
-                website for free
-              </h2>
-              
-              <p className="text-[20px] lg:text-[22px] text-gray-800 leading-snug mb-10 font-normal max-w-sm">
-                Follow these 5 simple steps to create a website today.
-              </p>
-              
-              <div className="flex items-center gap-6">
-                <Link href="/get-started">
-                  <button className="px-8 py-3.5 bg-black text-white text-[16px] font-medium rounded-full hover:bg-gray-800 transition-colors">
-                    Get Started
-                  </button>
-                </Link>
-                <Link href="/support" className="group flex items-center text-[16px] font-medium text-black">
-              <span className="border-b border-black pb-[1px] mr-1">Contact us</span>
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </Link>
+      <div className="max-w-[800px] mx-auto px-6">
+
+        <div className="flex flex-col lg:flex-row justify-between gap-16 lg:gap-24">
+          {/* Header content centered or left-aligned as per screenshot */}
+          <div className="mb-14 lg:w-1/2 lg:sticky lg:top-40 self-start">
+            <h2 className="text-[44px] lg:text-[56px] font-medium text-gray-900 leading-[1.1] tracking-tight mb-6">
+              How to create a<br />
+              website for free
+            </h2>
+
+            <p className="text-[20px] lg:text-[22px] text-gray-800 leading-snug mb-6 font-normal max-w-md">
+              Follow these 7 simple steps<br/>
+              to create a website today.
+            </p>
+
+            <div className="flex items-center">
+              <Link href="/get-started" className="group flex items-center text-[18px] font-medium text-black">
+                <span className="border-b border-black pb-[1px] mr-1">Learn more</span>
+                <span className="transition-transform group-hover:translate-x-1 ml-1">→</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Steps List matching screenshot design */}
+          <div className="flex flex-col lg:w-1/2">
+          {steps.map((step, index) => (
+            <div
+              key={index}
+              className={`flex gap-4 py-8 ${index === 0 ? 'pt-0' : ''} ${
+                index !== steps.length - 1 ? 'border-b border-gray-400/30' : ''
+              }`}
+            >
+              <div className="text-gray-400 text-xl w-6 flex-shrink-0 font-normal">
+                {step.id}
+              </div>
+              <div className="ml-1">
+                <p className="text-[18px] leading-[1.6] text-gray-900 font-light tracking-wide">
+                  <span className="font-bold text-black">{step.title}</span> {step.description}
+                </p>
               </div>
             </div>
+          ))}
           </div>
-
-          {/* Right Side: The 7 Steps List */}
-          <div className="lg:w-7/12">
-            <div className="flex flex-col">
-              {steps.map((step, index) => (
-                <div 
-                  key={index} 
-                  className={`flex gap-6 py-8 ${index === 0 ? 'pt-0' : ''} ${
-                    index !== steps.length - 1 ? 'border-b border-[#D8D8D8]' : ''
-                  }`}
-                >
-                  <div className="text-gray-500 text-lg w-6 flex-shrink-0 font-light mt-0.5">
-                    {step.id}
-                  </div>
-                  <div>
-                    <p className="text-[17px] leading-relaxed text-[#161616]">
-                      <span className="font-semibold">{step.title}</span> {step.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
+
       </div>
     </section>
   );

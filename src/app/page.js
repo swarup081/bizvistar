@@ -12,11 +12,12 @@ import MarqueeDemo from '@/components/landing/MarqueeDemo';
 import BenefitsSection from '@/components/landing/BenefitsSection';
 import FaqSection from '@/components/checkout/FaqSection';
 import Footer from '@/components/Footer';
+import TemplatesShowcaseUI from '@/components/templatemarquee';
 
 
 export default function LandingPage() {
   return (
-    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col overflow-x-hidden relative">
+    <div className="bg-white font-sans text-gray-900 min-h-screen flex flex-col relative overflow-clip">
       <NewHeader />
       
       <main className="flex-grow pt-0">
@@ -84,14 +85,26 @@ export default function LandingPage() {
           <PricingSection />
         </section>
 
-        {/* --- Carousel Section --- */}
-        <section id="templates" >
-          <TemplateCarousel />
+        {/* --- Templates Section --- */}
+        <section id="templates" className="mt-16 sm:mt-24">
+          <h2 className="text-4xl sm:text-6xl font-bold text-gray-900 text-center mb-6 sm:mb-8 px-4 leading-tight">
+             Stunning Designs <br/> for Every Business possible
+          </h2>
+          <div className="mb-10 w-full overflow-hidden">
+             {/* Mobile / Smaller screens: Marquee */}
+             <div className="flex sm:hidden justify-center transform origin-center">
+                <TemplatesShowcaseUI />
+             </div>
+             {/* Desktop / Larger screens: Carousel */}
+             <div className="hidden sm:block w-full">
+                <TemplateCarousel />
+             </div>
+          </div>
         </section>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-8">
           <Link href="/templates">
-            <button className="px-8 py-6 bg-[#000] mb-10 text-white text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
+            <button className="px-8 py-4 sm:py-6 bg-[#000] mb-10 text-white text-base sm:text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
             Browse All Templates
               <motion.span
                 animate={{ x: [0, 10, 0] }}
