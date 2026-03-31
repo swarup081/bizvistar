@@ -87,7 +87,7 @@ export default function StickySubNav() {
       ref={navRef} 
       className={cn(
         "z-[100] block w-full max-w-[1440px] mx-auto pointer-events-none mb-4",
-        isSticky ? "fixed top-[135px] lg:top-6 inset-x-0 flex justify-center lg:justify-start lg:pl-6" : "relative flex justify-center lg:justify-start lg:pl-6"
+        isSticky ? "fixed top-[88px] lg:top-[88px] inset-x-0 flex justify-center lg:justify-start lg:pl-6" : "relative flex justify-center lg:justify-start lg:pl-6"
       )}
       // This applies the hardware-accelerated freeze lock
       style={{

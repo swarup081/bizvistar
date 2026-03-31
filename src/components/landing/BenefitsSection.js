@@ -70,15 +70,15 @@ export default function BenefitsSection() {
             </div>
 
             {/* Mobile Image Placeholder */}
-            <div className="block lg:hidden w-[90%] sm:w-[80%] max-w-sm relative overflow-hidden shadow-2xl bg-white border border-gray-200 rounded-[2.5rem] mt-10 p-2">
+            <div className="block lg:hidden w-full sm:w-[80%] max-w-md relative overflow-hidden shadow-xl bg-white/50 border border-gray-200 rounded-xl mt-8 mx-auto">
               <img
                 src="/mobile-dashboard.png"
                 alt="Mobile Dashboard Interface"
-                className="w-full h-auto object-cover block rounded-[2rem]"
+                className="w-full h-auto object-cover block rounded-lg"
                 onError={(e) => {
                   // Fallback if the user hasn't added the image yet
                   e.target.src = '/dashboard.png';
-                  e.target.className = 'w-full h-auto object-cover block rounded-[2rem] object-left-top';
+                  e.target.className = 'w-full h-auto object-cover block rounded-lg object-left-top';
                 }}
               />
             </div>

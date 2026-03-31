@@ -66,19 +66,19 @@ export default function NewHeader() {
   return (
     <div className="sticky top-0 left-0 right-0 z-[110] bg-white transition-all duration-300">
       {/* Top Banner */}
-      <div className="bg-[#cfff04] text-[#111827] text-xs md:text-[15px] py-2.5 text-center px-4 font-bold flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 font-sans tracking-wide">
+      <div className="bg-[#1a1a1a] text-white text-xs md:text-[15px] py-2.5 text-center px-4 font-medium flex flex-col md:flex-row items-center justify-center gap-2 md:gap-4 font-sans tracking-wide">
          <span>Don’t miss the limited-time deals!</span>
          {isTimerLoaded ? (
             <span className="flex items-center gap-1 font-mono text-[16px] md:text-[17px] tracking-tight">
-              {formatTime(timeLeft.days)}<span className="text-[11px] md:text-[12px] font-sans font-semibold text-gray-800 -ml-0.5">D</span>&nbsp;
-              {formatTime(timeLeft.hours)}<span className="text-[11px] md:text-[12px] font-sans font-semibold text-gray-800 -ml-0.5">H</span>&nbsp;
-              {formatTime(timeLeft.minutes)}<span className="text-[11px] md:text-[12px] font-sans font-semibold text-gray-800 -ml-0.5">M</span>&nbsp;
-              {formatTime(timeLeft.seconds)}<span className="text-[11px] md:text-[12px] font-sans font-semibold text-gray-800 -ml-0.5">S</span>
+              {formatTime(timeLeft.days)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">D</span>&nbsp;
+              {formatTime(timeLeft.hours)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">H</span>&nbsp;
+              {formatTime(timeLeft.minutes)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">M</span>&nbsp;
+              {formatTime(timeLeft.seconds)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">S</span>
             </span>
          ) : (
             <span className="opacity-0 w-24">00D 00H 00M 00S</span>
          )}
-         <Link href="#pricing" className="underline font-bold hover:text-gray-700 decoration-2 underline-offset-4">
+         <Link href="#pricing" className="underline font-bold hover:text-gray-300 decoration-2 underline-offset-4">
             Explore
          </Link>
       </div>

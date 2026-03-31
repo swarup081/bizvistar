@@ -85,14 +85,19 @@ export default function LandingPage() {
           <PricingSection />
         </section>
 
-        {/* --- Templates Marquee Section --- */}
+        {/* --- Templates Section --- */}
         <section id="templates" className="mt-16 sm:mt-24">
           <h2 className="text-4xl sm:text-6xl font-bold text-gray-900 text-center mb-6 sm:mb-8 px-4 leading-tight">
              Stunning Designs <br/> for Every Business possible
           </h2>
           <div className="mb-10 w-full overflow-hidden">
-             <div className="flex justify-center scale-90 sm:scale-100 transform origin-center">
+             {/* Mobile / Smaller screens: Marquee */}
+             <div className="flex sm:hidden justify-center transform origin-center">
                 <TemplatesShowcaseUI />
+             </div>
+             {/* Desktop / Larger screens: Carousel */}
+             <div className="hidden sm:block w-full">
+                <TemplateCarousel />
              </div>
           </div>
         </section>

@@ -35,28 +35,29 @@ export default function HowItWorks() {
     <section className="py-24 bg-[#F4F5F8] relative">
       <div className="max-w-[800px] mx-auto px-6">
 
-        {/* Header content centered or left-aligned as per screenshot */}
-        <div className="mb-14">
-          <h2 className="text-[44px] lg:text-[56px] font-medium text-gray-900 leading-[1.1] tracking-tight mb-6">
-            How to create a<br />
-            website for free
-          </h2>
-          
-          <p className="text-[20px] lg:text-[22px] text-gray-800 leading-snug mb-6 font-normal max-w-md">
-            Follow these 7 simple steps<br/>
-            to create a website today.
-          </p>
+        <div className="flex flex-col lg:flex-row justify-between gap-16 lg:gap-24">
+          {/* Header content centered or left-aligned as per screenshot */}
+          <div className="mb-14 lg:w-1/2 lg:sticky lg:top-40 self-start">
+            <h2 className="text-[44px] lg:text-[56px] font-medium text-gray-900 leading-[1.1] tracking-tight mb-6">
+              How to create a<br />
+              website for free
+            </h2>
 
-          <div className="flex items-center">
-            <Link href="/get-started" className="group flex items-center text-[18px] font-medium text-black">
-              <span className="border-b border-black pb-[1px] mr-1">Learn more</span>
-              <span className="transition-transform group-hover:translate-x-1 ml-1">→</span>
-            </Link>
+            <p className="text-[20px] lg:text-[22px] text-gray-800 leading-snug mb-6 font-normal max-w-md">
+              Follow these 7 simple steps<br/>
+              to create a website today.
+            </p>
+
+            <div className="flex items-center">
+              <Link href="/get-started" className="group flex items-center text-[18px] font-medium text-black">
+                <span className="border-b border-black pb-[1px] mr-1">Learn more</span>
+                <span className="transition-transform group-hover:translate-x-1 ml-1">→</span>
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Steps List matching screenshot design */}
-        <div className="flex flex-col mt-12">
+          {/* Steps List matching screenshot design */}
+          <div className="flex flex-col lg:w-1/2">
           {steps.map((step, index) => (
             <div
               key={index}
@@ -74,6 +75,7 @@ export default function HowItWorks() {
               </div>
             </div>
           ))}
+          </div>
         </div>
 
       </div>

@@ -475,7 +475,7 @@ export default function LandingEditor() {
               ${view === 'desktop' ? 'rounded-none lg:rounded-md' : ''}
             `}
             style={{
-              width: isMobileViewport ? '100%' : (view === 'desktop' ? '1440px' : '375px'),
+              width: isMobileViewport ? '100%' : (view === 'desktop' ? '1440px' : '390px'),
               height: isMobileViewport ? '100%' : (view === 'desktop' ? `${containerHeight / scale}px` : '812px'),
               transform: isMobileViewport ? 'none' : `scale(${scale})`,
               marginTop: isMobileViewport ? '0' : (view === 'desktop' ? '465px' : '40px'),
