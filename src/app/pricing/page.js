@@ -329,11 +329,11 @@ const plans = {
       <div className="container mx-auto px-6 max-w-7xl">
 
         {/* --- Header & Toggle --- */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
             {siteId ? "Your Website Looks Amazing!" : "Find the right plan for you"}
           </h1>
-          <p className="text-xl text-gray-600 mb-10">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
             Choose a plan to go live and start growing your business. All plans are risk-free. Cancel anytime.
           </p>
 
@@ -411,45 +411,45 @@ const plans = {
           <div className="flex flex-col xl:flex-row gap-16 lg:gap-12 items-start">
             
             {/* Left Header Area */}
-            <div className="xl:w-[28%] flex flex-col shrink-0">
-              <span className="bg-[#a28ad6] text-white text-xs font-bold px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-6">
+            <div className="xl:w-[28%] flex flex-col shrink-0 mb-8 xl:mb-0">
+              <span className="bg-[#a28ad6] text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-4 sm:mb-6">
                 Plus
               </span>
-              <h2 className="text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
+              <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
                 Included in <br className="hidden xl:block" /> every Website <br className="hidden xl:block" /> Builder plan
               </h2>
             </div>
             
             {/* Right Features Grid */}
-            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
-              <div className="flex flex-col">
-                <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Easily reach customers wherever they are.</p>
+            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 xl:gap-8 pt-1">
+              <div className="flex flex-col bg-white p-4 sm:p-0 rounded-xl sm:rounded-none shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent">
+                <Smartphone className="w-6 h-6 mb-3 sm:mb-4 text-[#8a63d2] sm:text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[14px] sm:text-[15px] leading-snug min-h-[40px] sm:min-h-[44px]">Mobile-friendly site</span>
+                <p className="text-gray-600 sm:text-gray-700 text-[12px] sm:text-[13px] xl:text-[14px] leading-relaxed mt-2 sm:mt-3">Easily reach customers wherever they are.</p>
               </div>
               
-              <div className="flex flex-col">
-                <Wand2 className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">100+ beautiful templates</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Dazzle customers with our professional templates.</p>
-              </div>
-              
-              <div className="flex flex-col">
-                <LayoutGrid className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
+              <div className="flex flex-col bg-white p-4 sm:p-0 rounded-xl sm:rounded-none shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent">
+                <Wand2 className="w-6 h-6 mb-3 sm:mb-4 text-[#8a63d2] sm:text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[14px] sm:text-[15px] leading-snug min-h-[40px] sm:min-h-[44px]">100+ templates</span>
+                <p className="text-gray-600 sm:text-gray-700 text-[12px] sm:text-[13px] xl:text-[14px] leading-relaxed mt-2 sm:mt-3">Dazzle customers with our professional templates.</p>
               </div>
 
-              <div className="flex flex-col">
-                <Mail className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Free professional email</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Get a free trial email that matches your domain.</p>
+              <div className="flex flex-col bg-white p-4 sm:p-0 rounded-xl sm:rounded-none shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent">
+                <LayoutGrid className="w-6 h-6 mb-3 sm:mb-4 text-[#8a63d2] sm:text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[14px] sm:text-[15px] leading-snug min-h-[40px] sm:min-h-[44px]">Marketing dashboard</span>
+                <p className="text-gray-600 sm:text-gray-700 text-[12px] sm:text-[13px] xl:text-[14px] leading-relaxed mt-2 sm:mt-3">Real-time tracking of your performance and presence.</p>
               </div>
-              
-              <div className="flex flex-col">
-                <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
+
+              <div className="flex flex-col bg-white p-4 sm:p-0 rounded-xl sm:rounded-none shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent">
+                <Mail className="w-6 h-6 mb-3 sm:mb-4 text-[#8a63d2] sm:text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[14px] sm:text-[15px] leading-snug min-h-[40px] sm:min-h-[44px]">Free professional email</span>
+                <p className="text-gray-600 sm:text-gray-700 text-[12px] sm:text-[13px] xl:text-[14px] leading-relaxed mt-2 sm:mt-3">Get a free trial email that matches your domain.</p>
+              </div>
+
+              <div className="flex flex-col bg-white p-4 sm:p-0 rounded-xl sm:rounded-none shadow-sm sm:shadow-none border border-gray-100 sm:border-transparent col-span-2 md:col-span-1">
+                <Phone className="w-6 h-6 mb-3 sm:mb-4 text-[#8a63d2] sm:text-gray-900" strokeWidth={1.5} />
+                <span className="font-bold text-gray-900 text-[14px] sm:text-[15px] leading-snug min-h-[40px] sm:min-h-[44px]">24/7 expert support</span>
+                <p className="text-gray-600 sm:text-gray-700 text-[12px] sm:text-[13px] xl:text-[14px] leading-relaxed mt-2 sm:mt-3">Our BizVistar Guides are always here to help.</p>
               </div>
             </div>
 
@@ -473,11 +473,13 @@ const plans = {
         </div>
 
         {/* --- Mobile Only Marquee Section --- */}
-        <div className="mt-24 block lg:hidden">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8 px-4">
+        <div className="mt-16 sm:mt-24 block lg:hidden">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8 px-4 leading-tight">
             Whatever website you'll build, it'll look good
           </h2>
-          <TemplatesShowcaseUI />
+          <div className="-mx-6">
+            <TemplatesShowcaseUI />
+          </div>
         </div>
 
         {/* --- FAQ Section --- */}
