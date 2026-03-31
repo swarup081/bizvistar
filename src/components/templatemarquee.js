@@ -3,24 +3,24 @@
 import { cn } from "@/lib/utils"
 import { Marquee } from "@/components/marquee"
 
-// 1. TEMPLATE DATA (Using slugs to build distinct URLs)
+// 1. TEMPLATE DATA
 const templates = [
   { slug: "aurora", isMobile: false },
   { slug: "avenix", isMobile: true },
   { slug: "blissly", isMobile: false },
-  { slug: "flara", isMobile: true },
-  { slug: "flavornest", isMobile: false },
+  { slug: "flara", isMobile: false },
+  { slug: "flavornest", isMobile: true },
   { slug: "frostify", isMobile: false }
 ]
 
 const firstRow = templates.slice(0, 3)
 const secondRow = templates.slice(3, 6)
 
-// 2. TEMPLATE IFRAME CARD COMPONENT
+// 2. TEMPLATE CARD COMPONENT
 const TemplateCard = ({ slug, isMobile }) => {
   
-  // Set the distinct URLs based on the slug
-  const iframeUrl = `/templates/${slug}`;
+  // Dynamically generate the image URL based on slug and mobile status
+  const imageUrl = `/templatemarquee/${slug}${isMobile ? 'mobile' : ''}.png`;
   const redirectUrl = `/preview/${slug}`;
 
   // --- Dynamic Styles based on device type ---
@@ -28,34 +28,26 @@ const TemplateCard = ({ slug, isMobile }) => {
     ? "h-[350px] w-[160px]" 
     : "h-[350px] w-[480px]";
 
-  const iframeStyles = isMobile 
-    ? { width: "320px", height: "700px", transform: "scale(0.5)", transformOrigin: "top left" }
-    : { width: "400%", height: "400%", transform: "scale(0.25)", transformOrigin: "top left" };
-
   // --- Main Card Render ---
   return (
     <div 
-      // Click anywhere on the card to open the /preview/ URL
       onClick={() => window.open(redirectUrl, '_blank', 'noopener,noreferrer')}
-      // The 'group' class ensures hover states only apply to THIS specific card
       className={cn(
         "group relative mx-4 flex-shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-white/10",
         cardDimensions
       )}
     >
-      {/* Invisible layer blocks iframe from stealing mouse events */}
+      {/* Invisible layer to ensure smooth hover states */}
       <div className="absolute inset-0 z-10" />
       
-      {/* HOVER OVERLAY 
-        (Inlined directly here to fix the hover isolation bug) 
-      */}
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 ease-in-out hover:opacity-100">
-        <div className="flex flex-col items-center gap-4 translate-y-4 transition-transform duration-300 ease-in-out hover:translate-y-0">
+      {/* HOVER OVERLAY */}
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+        <div className="flex flex-col items-center gap-4 translate-y-4 transition-transform duration-300 ease-in-out group-hover:translate-y-0">
           
           {/* Start Editing Button */}
           <button 
             onClick={(e) => {
-              e.stopPropagation(); // Stops the card's redirect from firing
+              e.stopPropagation(); 
               console.log("Start editing clicked for", slug);
             }}
             className={cn(
@@ -79,13 +71,12 @@ const TemplateCard = ({ slug, isMobile }) => {
         </div>
       </div>
       
-      {/* Background iframe loading the /template/ URL */}
-      <iframe
-        src={iframeUrl}
-        style={iframeStyles}
-        className="pointer-events-none absolute left-0 top-0 border-0 bg-white"
-        tabIndex="-1"
-        scrolling="no"
+      {/* Template Image Placeholder */}
+      <img
+        src={imageUrl}
+        alt={`${slug} template preview`}
+        className="pointer-events-none absolute left-0 top-0 h-full w-full object-cover object-top"
+        loading="lazy"
       />
     </div>
   )

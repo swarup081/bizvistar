@@ -306,35 +306,36 @@ function PricingContent() {
             </div>
             
             {/* Right Features Grid */}
-            <div className="xl:w-[72%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
+            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
               <div className="flex flex-col">
                 <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <h3 className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</h3>
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Easily reach customers wherever they are.</p>
               </div>
               
               <div className="flex flex-col">
                 <Wand2 className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <h3 className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">100+ beautiful templates</h3>
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">100+ beautiful templates</span>
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Dazzle customers with our professional templates.</p>
               </div>
               
               <div className="flex flex-col">
                 <LayoutGrid className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <h3 className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</h3>
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</span>
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
               </div>
+
+            
               
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
-                <h3 className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</h3>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our GoDaddy Guides are always here to help.</p>
+                <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
               </div>
             </div>
 
           </div>
         </div>
-        {/* --- END INCLUDED SECTION --- */}
 
       </div>
     </div>

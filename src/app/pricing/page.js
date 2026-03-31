@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info, Smartphone, Wand2, LayoutGrid, Phone } from 'lucide-react';
+import { Check, Minus, ChevronDown, Zap, Layers, BarChart2, Headset, Info, Smartphone, Wand2, LayoutGrid, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react'; 
+import TemplatesShowcaseUI from '@/components/templatemarquee';
 
 // --- Reusable Icons ---
 const CheckMark = ({ isRecommended = false }) => (
@@ -150,6 +151,7 @@ function PricingContent() {
   const [currentPlan, setCurrentPlan] = useState(null);
   const searchParams = useSearchParams();
   const isUpdateFlow = searchParams.get('update') === 'true';
+  const siteId = searchParams.get('site_id');
 
   useEffect(() => {
     const fetchCurrentPlan = async () => {
@@ -327,11 +329,11 @@ const plans = {
       <div className="container mx-auto px-6 max-w-7xl">
 
         {/* --- Header & Toggle --- */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
-            Your Website Looks Amazing!
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
+            {siteId ? "Your Website Looks Amazing!" : "Find the right plan for you"}
           </h1>
-          <p className="text-xl text-gray-600 mb-10">
+          <p className="text-sm sm:text-xl  text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
             Choose a plan to go live and start growing your business. All plans are risk-free. Cancel anytime.
           </p>
 
@@ -398,7 +400,7 @@ const plans = {
         </div>
         
         {/* --- "Compare Plan Features" Button --- */}
-        <div className="mt-20 text-center">
+        <div className="mt-20 text-center hidden lg:block">
            <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
              Compare Plan Features
            </Link>
@@ -419,7 +421,7 @@ const plans = {
             </div>
             
             {/* Right Features Grid */}
-            <div className="xl:w-[72%] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
+            <div className="xl:w-[72%] grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 xl:gap-8 pt-1">
               <div className="flex flex-col">
                 <Smartphone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Mobile-friendly site</span>
@@ -437,11 +439,13 @@ const plans = {
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">Marketing dashboard</span>
                 <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Real-time tracking of your performance and presence.</p>
               </div>
+
+            
               
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our GoDaddy Guides are always here to help.</p>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
               </div>
             </div>
 
@@ -449,7 +453,7 @@ const plans = {
         </div>
 
         {/* --- "Compare Plan Features" Section --- */}
-        <div id="compare" className="mt-32 scroll-mt-20">
+        <div id="compare" className="mt-32 scroll-mt-20 hidden lg:block">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
             Compare Plan Features
           </h2>
@@ -457,11 +461,21 @@ const plans = {
         </div>
 
         {/* --- "Why Choose BizVistar?" Section --- */}
-        <div className="mt-32">
+        <div className="mt-32 hidden lg:block">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
             Why Choose BizVistar?
           </h2>
           <ComparisonTable />
+        </div>
+
+        {/* --- Mobile Only Marquee Section --- */}
+        <div className="mt-16 sm:mt-24 block lg:hidden">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8 px-4 leading-tight">
+            Whatever website you'll build, it'll look good
+          </h2>
+          <div className="-mx-6">
+            <TemplatesShowcaseUI />
+          </div>
         </div>
 
         {/* --- FAQ Section --- */}
