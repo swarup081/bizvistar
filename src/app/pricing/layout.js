@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Check } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
 import Footer from '@/components/Footer';
+import NewHeader from '@/components/landing/NewHeader';
+
 
 
 // Reusable Checkmark Icon
@@ -14,24 +16,7 @@ export default function PricingLayout({ children }) {
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <nav className="container mx-5 px-6 py-4 flex justify-between items-center">
-          <Link href="/">
-            <span className="text-3xl  font-bold text-gray-900 cursor-pointer">
-              <Logo/>
-            </span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <span className="hidden sm:flex items-center gap-2 text-sm text-gray-700">
-              <CheckIcon /> Custom domain
-            </span>
-            <span className="hidden md:flex items-center gap-2 text-sm text-gray-700">
-              <CheckIcon /> No BizVistar branding
-            </span>
-            <span className="hidden lg:flex items-center gap-2 text-sm text-gray-700">
-              <CheckIcon /> 24/7 customer care
-            </span>
-          </div>
-        </nav>
+        <NewHeader />
       </header>
 
       {/* Main Content (Your Page) */}

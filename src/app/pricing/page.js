@@ -406,8 +406,8 @@ const plans = {
            </Link>
         </div>
 
-        {/* --- INCLUDED IN EVERY PLAN SECTION --- */}
-        <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-10 lg:p-16 mx-auto max-w-7xl">
+             {/* --- INCLUDED IN EVERY PLAN SECTION --- */}
+             <div className="mt-24 bg-[#F4F5F8] rounded-3xl p-10 lg:p-16 mx-auto max-w-7xl">
           <div className="flex flex-col xl:flex-row gap-16 lg:gap-12 items-start">
             
             {/* Left Header Area */}

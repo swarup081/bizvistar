@@ -8,37 +8,29 @@ import { motion } from 'framer-motion';
 
 export default function StickySubNav() {
   const navRef = useRef(null);
+  const scrollContainerRef = useRef(null); // Ref for the horizontal scroll container
   const isClickScrolling = useRef(false);
   
-  const [offsetTop, setOffsetTop] = useState(0);
   const [isSticky, setIsSticky] = useState(false);
   const [activeSection, setActiveSection] = useState('pricing');
-  
-  // New state to track the physical lock position
   const [freezeOffset, setFreezeOffset] = useState(0);
 
-  useEffect(() => {
-    if (navRef.current) {
-      setOffsetTop(navRef.current.offsetTop);
-    }
-  }, []);
-
+  // 1. Existing Page Scroll & Sticky Logic
   useEffect(() => {
     const handleScroll = () => {
       const sections = ['pricing', 'templates', 'how-it-works', 'testimonial', 'benefits', 'faq'];
       const NAV_OFFSET = navRef.current ? navRef.current.offsetHeight + 40 : 100;
 
-      // 1. Sticky Logic
-      const shouldBeSticky = window.scrollY > offsetTop - 24;
-      setIsSticky(shouldBeSticky);
+      if (navRef.current) {
+        const isDesktop = window.innerWidth >= 1024;
+        // Adjust 64 to match your exact mobile top nav height
+        const stickyThreshold = isDesktop ? 128 : 64; 
+        setIsSticky(navRef.current.getBoundingClientRect().top <= stickyThreshold + 1);
+      }
 
-      // 2. Freeze Logic: Physically dock the navbar when FAQ is active
       const faqElement = document.getElementById('faq');
       if (faqElement) {
         const faqRect = faqElement.getBoundingClientRect();
-        
-        // If the FAQ section goes higher than the nav's resting offset, 
-        // we push the nav up by that exact pixel difference to "freeze" it to the page.
         if (faqRect.top < NAV_OFFSET) {
           setFreezeOffset(faqRect.top - NAV_OFFSET);
         } else {
@@ -46,7 +38,6 @@ export default function StickySubNav() {
         }
       }
 
-      // 3. Scroll Spy Logic
       if (!isClickScrolling.current) {
         let currentSection = '';
 
@@ -54,7 +45,6 @@ export default function StickySubNav() {
           const element = document.getElementById(section);
           if (element) {
             const rect = element.getBoundingClientRect();
-            // Buffer to ensure we catch the section as it hits the nav
             if (rect.top <= NAV_OFFSET + 5) {
               currentSection = section;
             }
@@ -71,7 +61,24 @@ export default function StickySubNav() {
     handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [offsetTop]);
+  }, []);
+
+  // 2. NEW: Auto-scroll the active pill into view
+  useEffect(() => {
+    if (scrollContainerRef.current && activeSection) {
+      // Find the specific DOM element of the active link
+      const activeElement = scrollContainerRef.current.querySelector(`[data-nav-item="${activeSection}"]`);
+      
+      if (activeElement) {
+        // Smoothly scroll the container to center the active item
+        activeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',   // Prevents vertical page jumping
+          inline: 'center',   // Centers the item horizontally
+        });
+      }
+    }
+  }, [activeSection]);
 
   const navItems = [
     { id: 'pricing', label: 'Pricing' },
@@ -86,24 +93,26 @@ export default function StickySubNav() {
     <div 
       ref={navRef} 
       className={cn(
-        "z-[100] hidden lg:block w-full max-w-[1440px] mx-auto pointer-events-none mb-4",
-        isSticky ? "fixed top-6 inset-x-0 flex justify-start pl-6" : "relative flex justify-start pl-6"
+        "z-[100] block w-full max-w-[1440px] mx-auto pointer-events-none",
+        // Removed mb-4 on mobile to prevent bottom gaps, kept on desktop via lg:mb-4
+        // Change top-[64px] to the exact height of your mobile header!
+        "sticky top-[64px] lg:top-[128px] lg:mb-4 inset-x-0 flex justify-center lg:justify-start lg:pl-6 transition-transform"
       )}
-      // This applies the hardware-accelerated freeze lock
       style={{
         transform: `translateY(${freezeOffset}px)`,
       }}
     >
-      {/* The inner container keeps the scale and shadow transitions so it still feels smooth */}
-      <div className={cn(
-        "w-max pointer-events-auto inline-flex flex-row items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 rounded-full p-1.5 transition-all duration-300",
-        isSticky ? "shadow-xl scale-[1.02]" : "shadow-lg scale-100"
-      )}>
+      <div 
+        ref={scrollContainerRef} // Attached the scroll ref here
+        className={cn(
+          "max-w-[100vw] lg:max-w-max pointer-events-auto flex flex-row items-center gap-1 bg-white/90 backdrop-blur-md border border-gray-200 lg:rounded-full p-1.5 transition-all duration-300 overflow-x-auto no-scrollbar",
+          isSticky ? "shadow-xl lg:scale-[1.02]" : "shadow-lg scale-100"
+        )}
+      >
         
-        {/* Back to Top Arrow */}
         <Link 
           href="#" 
-          className="flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:bg-[#b9a8e0] hover:text-white transition-all duration-300 ml-1" 
+          className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-gray-600 hover:bg-[#b9a8e0] hover:text-white transition-all duration-300 ml-1" 
           title="Back to Top"
           onClick={(e) => {
             e.preventDefault();
@@ -116,8 +125,9 @@ export default function StickySubNav() {
         {navItems.map((item) => (
           <Link 
             key={item.id}
-            href={`#${item.id}`} 
-            className="relative px-4 py-1.5 rounded-full text-[13px] hover:bg-[#b9a8e0] hover:text-white font-semibold tracking-wide outline-none group transition-all"
+            href={`#${item.id}`}
+            data-nav-item={item.id} // Added data attribute to target for scrolling
+            className="flex-shrink-0 relative px-4 py-1.5 rounded-full text-[13px] hover:bg-[#b9a8e0] hover:text-white font-semibold tracking-wide outline-none group transition-all"
             onClick={(e) => {
               e.preventDefault();
               

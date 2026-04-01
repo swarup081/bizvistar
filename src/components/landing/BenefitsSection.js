@@ -19,17 +19,17 @@ export default function BenefitsSection() {
           </p>
         </div>
 
-        {/* --- Main Content Grid (Changed to items-start for top alignment) --- */}
+        {/* --- Main Content Grid --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start relative">
           
-          {/* Left Column: Accordion / Features (Taking up 5 columns) */}
+          {/* Left Column: Accordion / Features */}
           <div className="lg:col-span-5 flex flex-col gap-2 pt-1">
             
             {/* Active Card */}
             <div className="bg-white rounded-2xl p-8 shadow-[0_10px_40px_rgba(0,0,0,0.06)]">
               <div className="flex items-center gap-4 mb-4">
                 <GlobeIcon />
-                <h3 className="text-[22px] font-bold text-gray-900">Global customer interaction</h3>
+                <span className="text-[22px] font-bold text-gray-900">Global customer interaction</span>
               </div>
               <p className="text-gray-600 text-[15px] leading-relaxed mb-6">
                 Eget malesuada aliquam, in lacinia habitant gravida bibendum. Commodo vel pretium neque, nulla aenean. Risus velit sit varius justo sit.
@@ -40,30 +40,45 @@ export default function BenefitsSection() {
               </a>
             </div>
 
-            {/* Inactive Items (Padding adjusted to align icons with the active card) */}
-            <div className="flex items-center gap-4 px-8 py-5   rounded-2xl transition-colors cursor-pointer mt-2">
+            {/* Inactive Items (Desktop Only - Hidden on Mobile) */}
+            <div className="hidden lg:flex items-center gap-4 px-8 py-5 rounded-2xl transition-colors cursor-pointer mt-2">
               <UserIcon />
-              <h3 className="text-[20px] font-semibold text-gray-800">Localized benefits</h3>
+              <span className="text-[20px] font-semibold text-gray-800">Localized benefits</span>
             </div>
 
-            <div className="flex items-center gap-2 px-8 py-5   rounded-2xl transition-colors cursor-pointer">
+            <div className="hidden lg:flex items-center gap-2 px-8 py-0 rounded-2xl transition-colors cursor-pointer">
               <MonitorIcon />
-              <h3 className="text-[20px] font-semibold text-gray-800">Money is not beyond boltesi.</h3>
+              <span className="text-[20px] font-semibold text-gray-800">Money is not beyond boltesi.</span>
             </div>
 
-            <div className="flex items-center gap-2 px-8 py-5  rounded-2xl transition-colors cursor-pointer">
+            {/* 3rd Item (Desktop Only - Hidden on Mobile) */}
+            <div className="hidden lg:flex items-center gap-2 px-8 py-5 mt-2 lg:mt-0 rounded-2xl transition-colors cursor-pointer">
               <MapIcon />
-              <h3 className="text-[20px] font-semibold text-gray-800">Multi country payroll</h3>
+              <span className="text-[20px] font-semibold text-gray-800">Multi country payroll</span>
             </div>
 
           </div>
 
-          {/* Right Column: Screenshot Container (Taking up 7 columns for a wider image) */}
-          <div className="lg:col-span-7 left-30 relative">
-            <div className="w-full relative  overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-white/50 border border-white/60">
+          {/* Right Column: Screenshot Container */}
+          {/* Added padding left on mobile to give space for the text, keeping image steady */}
+          <div className="lg:col-span-7 relative pl-12 lg:pl-0 mt-6 lg:mt-0">
+            
+            {/* Rotated text placed to the left of the image (Mobile Only - Hidden on Desktop) */}
+            {/* Shifted higher (top-32) to align with start, and further right (-left-2) */}
+            <div className="flex flex-col lg:hidden absolute top-32 -left-17 origin-center -rotate-90 gap-2 whitespace-nowrap z-20 items-start">
+              <div className="flex items-center gap-1">
+                <UserIcon />
+                <span className="text-[13px] font-semibold text-gray-800 tracking-wide">Localized benefits</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <MonitorIcon />
+                <span className="text-[13px] font-semibold text-gray-800 tracking-wide">Money is not beyond boltesi.</span>
+              </div>
+            </div>
+
+            <div className="w-full relative overflow-hidden left-12 md:left-30 shadow-[0_20px_50px_rgba(0,0,0,0.1)] bg-white/50 border border-white/60">
               
               {/* === PLACE YOUR SCREENSHOT HERE === */}
-              {/* Note: Ensure your image is high-res. The w-full block makes it fill this right container perfectly */}
               <img 
                 src="/dashboard.png" 
                 alt="Website Builder Editor Interface" 
@@ -77,7 +92,7 @@ export default function BenefitsSection() {
         {/* --- Bottom CTA Button --- */}
         <div className="flex justify-center">
           <Link href="/get-started">
-            <button className="px-10 py-4 bg-[#000] text-white mt-10 text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
+            <button className="px-10 py-4 bg-[#000] text-white mt-20 md:mt-10 text-lg font-bold rounded-2xl transition-all hover:scale-105 shadow-xl hover:shadow-2xl flex items-center gap-3 active:scale-95">
             Build your website
               <motion.span
                 animate={{ x: [0, 10, 0] }}
@@ -119,7 +134,7 @@ function GlobeIcon() {
 
 function UserIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900">
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
     </svg>
@@ -128,7 +143,7 @@ function UserIcon() {
 
 function MonitorIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900">
       <rect width="20" height="14" x="2" y="3" rx="2"/>
       <line x1="8" y1="21" x2="16" y2="21"/>
       <line x1="12" y1="17" x2="12" y2="21"/>
