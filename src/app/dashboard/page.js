@@ -291,9 +291,9 @@ export default function DashboardPage() {
         
         {/* 1. Header Section (Title + Controls) */}
         <div className="col-span-1 md:col-span-4 order-1 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-[#111] not-italic">{greeting}, {ownerName || 'Owner'}!</h1>
-            <p className="mt-1 text-sm md:text-base text-gray-500 font-sans not-italic">Here's what's happening with your store today.</p>
+          <div className="text-left mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-2 sm:mb-4">{greeting}, {ownerName || 'Owner'}!</h1>
+            <p className="text-sm sm:text-lg text-gray-600">Here's what's happening with your store today.</p>
           </div>
           
           {/* Controls: Search, Export, Filter */}

@@ -38,13 +38,20 @@ export default function LandingPage() {
               />
            </div>
            
-           <div className="container mx-auto font-times px-6 max-w-7xl relative z-10 text-center">
-              <h1 className="text-5xl font-times not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
-                 Don&apos;t sell your dreams, <br/>
-                 <span className="text-transparent not-italic bg-clip-text bg-black">
-                    Sell your products
-                 </span>
-              </h1>
+           <div className="container mx-auto px-6 max-w-7xl relative z-10 text-center">
+              <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
+                    Don&apos;t sell your dreams, <br/>
+                    <span className="text-transparent not-italic bg-clip-text bg-black">
+                       Sell your products
+                    </span>
+                 </h1>
+
+                 <p className="text-sm sm:text-xl text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
+                   Laoreet tempus vitae eu libero mattis.<br />
+                   Start your journey with us today.
+                 </p>
+              </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-5 text-center sm:text-left">
                 {/* Arrow pointing to editor */}
@@ -59,11 +66,6 @@ export default function LandingPage() {
                     Build website
                   </button>
                 </Link>
-
-                <p className="text-xl text-gray-500 max-w-md leading-relaxed font-light">
-                  Laoreet tempus vitae eu libero mattis.<br />
-                  Start your journey with us today.
-                </p>
               </div>
 
               {/* --- Real Editor Demo (Interactive) --- */}

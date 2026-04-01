@@ -287,7 +287,7 @@ export default function StepTwo() {
             </p>
 
             {/* Heading - Matched to Get Started Page */}
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 leading-snug not-italic">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
               What is the name of your <span className="text-gray-500">{businessType.toLowerCase()} ?</span>
             </h2>
 
