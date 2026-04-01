@@ -327,7 +327,7 @@ export default function StepOne() {
                 </div>
 
                 <div className="flex flex-col justify-center h-full">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 not-italic leading-snug">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-8 not-italic">
                         What type of website do you want to create?
                     </h2>
                     

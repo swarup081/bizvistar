@@ -68,7 +68,7 @@ export default function AnalyticsOverview({
                 </div>
             </div>
             <div className="flex justify-between items-end mt-4">
-                <h3 className="text-4xl font-bold text-gray-900 tracking-tight leading-none">{card.value}</h3>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">{card.value}</h3>
                 <div className="flex flex-col items-end text-xs">
                     <span className={`font-bold ${card.change.startsWith('+') ? 'text-[#4CAF50]' : 'text-red-500'}`}>
                         {card.change}

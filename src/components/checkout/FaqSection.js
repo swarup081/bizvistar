@@ -146,7 +146,7 @@ export default function FaqSection({ pageType = 'default' }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
       <div className="lg:col-span-1">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4">
           Frequently asked questions
         </h2>
         <p className="text-lg text-gray-600">

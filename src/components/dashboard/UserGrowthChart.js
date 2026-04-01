@@ -59,7 +59,7 @@ export default function UserGrowthChart({ visitors = [], totalVisitorsCount = 0,
   return (
     <div className="rounded-2xl bg-white p-3 md:p-6 shadow-sm h-full flex flex-col relative">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm md:text-lg font-bold text-gray-900 font-sans not-italic">Traffic Growth</h3>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold md: text-gray-900 font-sans not-italic">Traffic Growth</h3>
         <div className="relative">
             <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}

@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function VisitorsChart({ data }) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-bold text-gray-900 mb-6 font-sans">Traffic (Page Views)</h3>
+      <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6 font-sans">Traffic (Page Views)</h3>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

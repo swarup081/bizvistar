@@ -66,7 +66,7 @@ export default function BestSellers({ orderItems = [] }) {
   return (
     <div className="rounded-2xl bg-white p-3 md:p-6 shadow-sm h-full flex flex-col">
       <div className="mb-4 md:mb-6 flex items-center justify-between shrink-0">
-         <h3 className="text-sm md:text-lg font-bold text-gray-900 font-sans not-italic">Best Sellers</h3>
+         <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold md: text-gray-900 font-sans not-italic">Best Sellers</h3>
          <div className="relative">
             <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -111,7 +111,7 @@ export default function BestSellers({ orderItems = [] }) {
             </div>
             
             <div className="flex flex-col gap-0.5 md:gap-1 min-w-0 flex-1">
-              <h4 className="text-xs md:text-sm not-italic font-bold text-gray-900 font-sans leading-tight truncate pr-1 md:pr-2 group-hover:text-[#8A63D2] transition-colors">
+              <h4 className="text-lg sm:text-xl font-semibold md: not-italic text-gray-900 font-sans truncate pr-1 md:pr-2 group-hover:text-[#8A63D2] transition-colors">
                 {item.name}
               </h4>
               <p className="text-[10px] md:text-xs font-medium text-gray-500 font-sans flex flex-col md:flex-row md:items-center">

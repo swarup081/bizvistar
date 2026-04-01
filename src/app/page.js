@@ -39,7 +39,7 @@ export default function LandingPage() {
            </div>
            
            <div className="container mx-auto font-times px-6 max-w-7xl relative z-10 text-center">
-              <h1 className="text-5xl font-times not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight font-times not-italic md: text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
                  Don&apos;t sell your dreams, <br/>
                  <span className="text-transparent not-italic bg-clip-text bg-black">
                     Sell your products

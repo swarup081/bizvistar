@@ -409,7 +409,7 @@ export default function ProfilePage() {
       {showUpiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm UPI ID</h3>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Confirm UPI ID</h3>
                 <p className="text-gray-500 text-sm mb-4">You are updating your UPI ID. Please re-enter it to confirm.</p>
                 
                 <div className="space-y-4">
@@ -454,7 +454,7 @@ export default function ProfilePage() {
       )}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Profile Management</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900">Profile Management</h1>
         <p className="text-gray-500 mt-2">Manage your personal information, business settings, and subscription plan.</p>
       </div>
 
@@ -485,7 +485,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900">{formData.businessName || formData.fullName || 'User'}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900">{formData.businessName || formData.fullName || 'User'}</h2>
             <p className="text-sm text-gray-500 mt-1">{formData.businessName || 'Business not set'}</p>
             
             <div className="w-full mt-6 pt-6 border-t border-gray-100 text-left space-y-6">
@@ -502,7 +502,7 @@ export default function ProfilePage() {
                       Active
                     </span>
                   </div>
-                  <h4 className="text-2xl font-extrabold text-gray-900 mb-1">{currentPlan.name}</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">{currentPlan.name}</h4>
                   <p className="text-gray-600 text-sm">
                       Billed {currentPlan.cycle}.
                   </p>
@@ -521,7 +521,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
                     <User className="w-5 h-5 text-gray-400" />
                     Business & Personal Details
                 </h3>
@@ -575,7 +575,7 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                     <div className="space-y-2 md:col-span-2">
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Billing Address</h4>
+                        <h4 className="text-lg sm:text-xl font-semibold text-gray-900 uppercase">Billing Address</h4>
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Phone Number</label>
@@ -644,7 +644,7 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                     <div className="space-y-2 md:col-span-2">
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Company Details (Optional)</h4>
+                        <h4 className="text-lg sm:text-xl font-semibold text-gray-900 uppercase">Company Details (Optional)</h4>
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Company Name</label>
@@ -671,7 +671,7 @@ export default function ProfilePage() {
                 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#8A63D2]" />
                     Delivery Rules
                 </h3>
@@ -745,7 +745,7 @@ export default function ProfilePage() {
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
                     <Lock className="w-5 h-5 text-gray-400" />
                     Security
                 </h3>

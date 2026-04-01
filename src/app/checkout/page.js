@@ -590,7 +590,7 @@ function CheckoutContent() {
         <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-6 sm:p-8 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
-                    <h2 className="text-2xl not-italic font-bold text-gray-900">Billing address</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight not-italic text-gray-900">Billing address</h2>
                 </div>
 
                 {errorMessage && (
@@ -808,8 +808,8 @@ function CheckoutContent() {
         {/* --- RIGHT COLUMN: ORDER SUMMARY --- */}
         <div className="lg:col-span-1">
              <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm sticky top-24">
-                <h3 className="text-2xl not-italic font-bold text-gray-900 mb-2">Order summary</h3>
-                <h4 className="text-lg not-italic font-bold text-gray-700 mb-6">{planName}</h4>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold not-italic text-gray-900 mb-2">Order summary</h3>
+                <h4 className="text-lg sm:text-xl font-semibold not-italic text-gray-700 mb-6">{planName}</h4>
                 
                 <div className="space-y-4 mb-6">
                     {/* Main Plan Row */}

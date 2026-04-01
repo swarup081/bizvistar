@@ -9,7 +9,7 @@ export default function RevenueChart({ data }) {
     <div id="revenue-chart" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="font-semibold text-gray-900 text-lg">Revenue Analytics</h3>
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Revenue Analytics</h3>
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center gap-2">
               <span className="w-4 h-0.5 bg-[#8A63D2]"></span>

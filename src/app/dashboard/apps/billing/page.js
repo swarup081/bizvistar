@@ -210,14 +210,14 @@ export default function BillGeneratorPage() {
             {/* LEFT: Generator Controls */}
             <div className="w-full lg:w-1/3 space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2 mb-2">
+                    <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 flex items-center gap-2 mb-2">
                         <ReceiptText className="text-[#8A63D2]" /> Bill Generator
                     </h1>
                     <p className="text-gray-500">Create, customize, and print invoices.</p>
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative">
-                    <h2 className="font-semibold text-gray-900 mb-4 flex justify-between items-center">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4 flex justify-between items-center">
                         Auto-fill from Order
                         <button 
                             onClick={() => setIsOrderDropdownOpen(!isOrderDropdownOpen)}
@@ -252,7 +252,7 @@ export default function BillGeneratorPage() {
 
                 
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                    <h2 className="font-semibold text-gray-900 mb-2">Your Business Info</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">Your Business Info</h2>
                     <div className="space-y-3">
                         <input type="text" placeholder="Business Name" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={businessInfo.name} onChange={e=>setBusinessInfo({...businessInfo, name: e.target.value})} />
                         <textarea placeholder="Business Address" rows="2" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2] resize-none" value={businessInfo.address} onChange={e=>setBusinessInfo({...businessInfo, address: e.target.value})} />
@@ -265,7 +265,7 @@ export default function BillGeneratorPage() {
 
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
 
-                    <h2 className="font-semibold text-gray-900 mb-2">Invoice Details</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">Invoice Details</h2>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs text-gray-500 mb-1">Invoice No.</label>
@@ -277,7 +277,7 @@ export default function BillGeneratorPage() {
                         </div>
                     </div>
 
-                    <h2 className="font-semibold text-gray-900 mb-2 mt-6">Customer Details</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2 mt-6">Customer Details</h2>
                     <div className="space-y-3">
                         <input type="text" placeholder="Customer Name" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2]" value={customerInfo.name} onChange={e=>setCustomerInfo({...customerInfo, name: e.target.value})} />
                         <div className="grid grid-cols-2 gap-4">
@@ -287,7 +287,7 @@ export default function BillGeneratorPage() {
                         <textarea placeholder="Billing Address" rows="2" className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-[#8A63D2] focus:border-[#8A63D2] resize-none" value={customerInfo.address} onChange={e=>setCustomerInfo({...customerInfo, address: e.target.value})} />
                     </div>
 
-                    <h2 className="font-semibold text-gray-900 mb-2 mt-6">Totals & Notes</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2 mt-6">Totals & Notes</h2>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs text-gray-500 mb-1">Tax (%)</label>
@@ -321,7 +321,7 @@ export default function BillGeneratorPage() {
                     <div className="p-10 border-b border-gray-100 flex justify-between items-start bg-gray-50">
                         <div className="max-w-[50%]">
                             {businessData?.business?.logo && <img src={businessData.business.logo} alt="Logo" className="max-h-16 mb-4 object-contain" />}
-                            <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase mb-1">
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 uppercase mb-1">
                                 {businessInfo.name}
                             </h2>
                             {businessInfo.address && <p className="text-gray-500 text-sm max-w-xs whitespace-pre-wrap mt-1 mb-2">{businessInfo.address}</p>}
@@ -329,7 +329,7 @@ export default function BillGeneratorPage() {
                             {businessInfo.phone && <p className="text-gray-500 flex items-center gap-1"><Phone size={12}/> {businessInfo.phone}</p>}
                         </div>
                         <div className="text-right">
-                            <h1 className="text-4xl font-black text-[#8A63D2] tracking-widest uppercase mb-4">INVOICE</h1>
+                            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-[#8A63D2] uppercase mb-4">INVOICE</h1>
                             <div className="flex gap-4 justify-end">
                                 <div className="text-right">
                                     <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Invoice No</p>
@@ -347,7 +347,7 @@ export default function BillGeneratorPage() {
                     <div className="px-10 py-8">
                         <div className="inline-block border-l-4 border-[#8A63D2] pl-4">
                             <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Billed To</p>
-                            <h3 className="font-bold text-lg">{customerInfo.name || 'Walk-in Customer'}</h3>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold">{customerInfo.name || 'Walk-in Customer'}</h3>
                             {customerInfo.phone && <p className="text-gray-600">{customerInfo.phone}</p>}
                             {customerInfo.email && <p className="text-gray-600">{customerInfo.email}</p>}
                             {customerInfo.address && <p className="text-gray-500 mt-1 max-w-xs">{customerInfo.address}</p>}

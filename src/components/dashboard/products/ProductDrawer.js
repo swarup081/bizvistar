@@ -43,7 +43,7 @@ export default function ProductDrawer({ product, isOpen, onClose }) {
                   className="h-full w-full object-cover rounded-xl"
                 />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h2>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">{product.name}</h2>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 uppercase tracking-wide">
                 {product.categoryName}
               </span>
@@ -77,7 +77,7 @@ export default function ProductDrawer({ product, isOpen, onClose }) {
             {/* Analytics Section - Only show if data exists or placeholder msg */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
                   <TrendingUp size={18} className="text-[#8A63D2]" />
                   Sales Performance
                 </h3>
@@ -125,7 +125,7 @@ export default function ProductDrawer({ product, isOpen, onClose }) {
 
             {/* Description */}
             <div className="space-y-3 pb-6">
-              <h3 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-2">Description</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 border-b border-gray-100 pb-2">Description</h3>
               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
                 {product.description || 'No description available for this product.'}
               </p>

@@ -144,7 +144,7 @@ export default function MonthlyTargetCard({ websiteId, currentRevenue, prevReven
     <div id="monthly-target" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
 
       <div className="flex justify-between items-center mb-4 relative" ref={dropdownRef}>
-        <h3 className="font-semibold text-gray-900 text-lg">Monthly Target</h3>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Monthly Target</h3>
         
         <button 
            onClick={() => setIsDropdownOpen(!isDropdownOpen)}

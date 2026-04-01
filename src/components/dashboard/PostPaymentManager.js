@@ -173,7 +173,7 @@ export default function PostPaymentManager() {
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <AlertCircle className="w-8 h-8 text-red-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">Something went wrong</h2>
                   <p className="text-gray-600 mb-6">
                       We noticed a payment attempt but couldn't verify your subscription or website details immediately.
                   </p>
@@ -206,7 +206,7 @@ export default function PostPaymentManager() {
       return (
           <ModalOverlay>
               <ModalContent className="p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose your link</h2>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">Choose your link</h2>
                   <p className="text-gray-600 mb-6">
                       The name <span className="font-semibold text-gray-900">"{intendedSlug}"</span> is already taken. Please choose an alternative or create your own.
                   </p>
@@ -276,7 +276,7 @@ export default function PostPaymentManager() {
                       <Check className="w-10 h-10 text-green-600" strokeWidth={3} />
                   </div>
                   
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">You're Live!</h2>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-2">You're Live!</h2>
                   <p className="text-gray-600 mb-8 text-lg">
                       Your website is officially published and live at <span className="font-bold text-gray-900">{website?.site_slug}</span>.
                   </p>
@@ -320,7 +320,7 @@ export default function PostPaymentManager() {
                         <Check className="w-8 h-8 text-white" strokeWidth={3} />
                       </div>
                   </div>
-                  <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">Plan Updated!</h2>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-3">Plan Updated!</h2>
                   <p className="text-gray-600 mb-8 text-lg">
                       Your subscription has been successfully changed to the <span className="font-bold text-brand-700">{updatedPlanName || 'new'}</span> plan.
                   </p>

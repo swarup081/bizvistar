@@ -248,7 +248,7 @@ function OrdersContent() {
         <div className="flex md:hidden flex-col w-full gap-3 -px-2 pt-4">
              {/* Row 1: Title (Left) */}
              <div className="flex items-center justify-between w-full">
-                 <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">Orders</h1>
+                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight not-italic text-gray-900 shrink-0">Orders</h1>
              </div>
 
              {/* Row 2: Search (Grow) and Filter (Fixed) with Add Order beside Filter */}
@@ -299,7 +299,7 @@ function OrdersContent() {
         {/* Desktop Layout (Hidden on Mobile) */}
         <div className="hidden md:flex items-center justify-between w-full">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900">Orders</h1>
                 <p className="text-gray-500 mt-1 text-sm md:text-base">Manage and track your customer orders.</p>
             </div>
             

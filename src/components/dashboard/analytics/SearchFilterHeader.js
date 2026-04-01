@@ -84,7 +84,7 @@ export default function SearchFilterHeader({ dateRange, setDateRange }) {
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full mb-6 mt-2">
       <div className="flex-shrink-0">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Analytics</h1>
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900">Analytics</h1>
       </div>
 
       <div className="flex flex-row items-center gap-3 w-full sm:w-auto">

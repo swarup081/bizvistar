@@ -32,7 +32,7 @@ export default function TopCategoriesChart({ data, totalSales }) {
   return (
     <div id="top-categories" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
       <div className="flex justify-between items-center mb-6 relative" ref={dropdownRef}>
-        <h3 className="font-semibold text-gray-900 text-lg">Top Categories</h3>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Top Categories</h3>
         <button 
            onClick={() => setShowAll(!showAll)}
            className="text-xs text-[#8A63D2] font-medium hover:text-[#7A52C0] flex items-center gap-1 bg-brand-50 px-3 py-1.5 rounded-full"
@@ -43,7 +43,7 @@ export default function TopCategoriesChart({ data, totalSales }) {
         {showAll && (
            <div className="absolute top-10 right-0 w-64 bg-white border border-gray-100 shadow-xl rounded-xl z-50 overflow-hidden flex flex-col max-h-64">
               <div className="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
-                  <h4 className="text-sm font-bold text-gray-900">All Categories</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900">All Categories</h4>
               </div>
               <div className="flex-1 overflow-y-auto p-2 hide-scrollbar">
                   {data.map((item, idx) => (
