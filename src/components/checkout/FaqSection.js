@@ -146,10 +146,10 @@ export default function FaqSection({ pageType = 'default' }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
       <div className="lg:col-span-1">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
           Frequently asked questions
         </h2>
-        <p className="text-lg text-gray-600">
+        <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10">
           Haven't found what you're looking for? Try the{' '}
           <button onClick={handleHelpCenterClick} className="text-[#8a63d2] hover:underline hover:text-[#7554b3] font-medium text-left">
             BizVistar Help Center

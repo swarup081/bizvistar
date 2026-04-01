@@ -597,10 +597,10 @@ export default function StepThree() {
             <p className="text-xs font-bold text-gray-400 mb-6 tracking-widest uppercase">
               STEP 3 OF 3
             </p>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-snug not-italic">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
               What features does <span className="text-gray-500">{storeName}</span> need?
             </h2>
-            <p className="text-gray-400 text-sm mb-10">
+            <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10">
               Select the tools you need. We&apos;ll set them up for you.
             </p>
 

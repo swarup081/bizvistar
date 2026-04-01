@@ -718,13 +718,13 @@ function TemplatesContent() {
           <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
             
             {/* Top Content: Title and "Sort by" */}
-            <div className="text-left max-w-screen-2xl mx-auto mb-10">
-                <div className="flex flex-col items-center text-center w-full space-y-3">
-                    <h2 className="text-5xl font-bold tracking-tight not-italic text-gray-900">
+            <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+                <div className="flex flex-col items-center text-center w-full">
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
                         Choose a Template for <span className="text-gray-500">{storeName}</span>
                     </h2>
 
-                    <p className="text-gray-600 text-base mt-1">
+                    <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
                         Pick the perfect starting point for your brand.
                     </p>
                 </div>

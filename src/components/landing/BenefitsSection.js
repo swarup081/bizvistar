@@ -10,11 +10,11 @@ export default function BenefitsSection() {
       <div className="container mx-auto px-6 max-w-[1280px] relative z-10">
         
         {/* --- Header --- */}
-        <div className="text-center mb-20 max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-[3.5rem] font-bold text-[#1a1a1a] mb-6 leading-[1.15] tracking-tight">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
             Make your website and start<br />selling with benefits
           </h2>
-          <p className="text-gray-600 text-[17px] leading-relaxed max-w-2xl mx-auto">
+          <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
             Eget malesuada aliquam, in lacinia habitant gravida bibendum. Commodo vel pretium neque, nulla aenean. Risus velit sit varius justo sit.
           </p>
         </div>

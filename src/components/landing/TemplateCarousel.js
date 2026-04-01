@@ -59,11 +59,11 @@ export default function TemplateCarousel() {
       <div className="max-w-7xl mx-auto px-6 relative">
         
         {/* Header */}
-        <div className="text-center mb-20">
-           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
+           <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
               Stunning Designs <br/> for Every Business possible
            </h2>
-           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+           <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
               Choose from our professionally designed templates. Fully customizable and optimized for conversion.
            </p>
         </div>

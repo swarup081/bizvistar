@@ -39,17 +39,17 @@ export default function HowItWorks() {
           {/* Left Side: Title and Buttons */}
           <div className="lg:w-5/12">
             {/* The sticky class keeps this section in view while the user scrolls down the list */}
-            <div className="sticky top-32">
-              <h2 className="text-4xl lg:text-6xl  font-medium text-gray-900 leading-[1.1] tracking-tight mb-8">
+            <div className="sticky top-32 text-center lg:text-left">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight mb-4 sm:mb-6">
                 How to create a<br />
                 website for free
               </h2>
               
-              <p className="text-[20px] lg:text-[22px] text-gray-800 leading-snug mb-10 font-normal max-w-sm">
+              <p className="text-sm sm:text-lg text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto lg:mx-0">
                 Follow these 5 simple steps to create a website today.
               </p>
               
-              <div className="flex items-center gap-6">
+              <div className="flex items-center justify-center lg:justify-start gap-6">
                 <Link href="/get-started">
                   <button className="px-8 py-3.5 bg-black text-white text-[16px] font-medium rounded-full hover:bg-gray-800 transition-colors">
                     Get Started
