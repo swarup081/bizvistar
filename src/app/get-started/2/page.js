@@ -389,7 +389,7 @@ export default function StepTwo() {
             <p className="text-xs font-bold text-gray-400 mb-6 tracking-widest uppercase">
               STEP 2 OF 3
             </p>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 leading-snug not-italic">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-6 not-italic">
               Which words best describe <span className="text-gray-500">{storeName}?</span>
             </h2>
             <p className="text-gray-400 text-sm mb-12">

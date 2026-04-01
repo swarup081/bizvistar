@@ -13,7 +13,7 @@ export default function ActiveUsersStateChart({ data, totalUsers }) {
     <div id="active-users" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full relative">
       <div className="flex justify-between items-start mb-6">
         <div>
-           <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+           <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
                Active Users
            </h3>
            <div className="flex items-center gap-2 mt-2">

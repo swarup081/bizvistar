@@ -314,7 +314,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             <div className="space-y-5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="p-2 bg-brand-50 rounded-lg text-brand-600"><User size={18}/></div>
-                                    <h3 className="font-bold text-gray-900">Personal Details</h3>
+                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Personal Details</h3>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
@@ -354,7 +354,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                             <div className="space-y-5">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="p-2 bg-brand-50 rounded-lg text-brand-600"><MapPin size={18}/></div>
-                                    <h3 className="font-bold text-gray-900">Address & Source</h3>
+                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Address & Source</h3>
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-gray-500 uppercase">Address</label>
@@ -481,7 +481,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         <div className="flex-1 overflow-y-auto">
                             {cart.length > 0 ? (
                                 <div className="pt-2">
-                                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
+                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-500 uppercase mb-3">Cart ({cart.length})</h3>
                                     <div className="space-y-2">
                                         {cart.map(item => (
                                             <div key={item.id} className="flex items-center justify-between text-sm bg-white p-2 rounded-lg border border-gray-100">
@@ -539,7 +539,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
                         </div>
 
                         <div>
-                            <h3 className="text-xs font-bold text-gray-500 uppercase mb-3">Items</h3>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-500 uppercase mb-3">Items</h3>
                             <div className="space-y-2 border border-gray-100 rounded-xl overflow-hidden">
                                 {cart.map(item => (
                                     <div key={item.id} className="flex justify-between text-sm p-3 bg-white border-b border-gray-50 last:border-0">

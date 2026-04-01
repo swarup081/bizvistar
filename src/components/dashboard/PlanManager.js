@@ -79,7 +79,7 @@ export default function PlanManager({ currentPlan, productCount }) {
                 
                 {/* Title & Badge */}
                 <div className="flex items-center justify-center gap-3 mb-3 z-10">
-                    <h3 className="text-4xl font-extrabold text-white tracking-tight">{displayTitle}</h3>
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">{displayTitle}</h3>
                     <span className="bg-white text-[#0A1128] text-xs font-black uppercase px-2.5 py-1 rounded-md tracking-wider shadow-sm">
                         {isYearlyUpsell ? `${nextPlan.name.toUpperCase()} YEARLY` : (nextPlan.name === 'Pro' ? 'PRO' : nextPlan.name.toUpperCase())}
                     </span>

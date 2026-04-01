@@ -330,7 +330,7 @@ const plans = {
 
         {/* --- Header & Toggle --- */}
         <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight sm: md: mb-4 sm:mb-6">
             {siteId ? "Your Website Looks Amazing!" : "Find the right plan for you"}
           </h1>
           <p className="text-sm sm:text-xl  text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto">
@@ -415,7 +415,7 @@ const plans = {
               <span className="bg-[#a28ad6] text-white text-xs font-bold px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-6">
                 Plus
               </span>
-              <h2 className="text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight lg:text-[42px] text-gray-900 leading-[1.15]">
                 Included in <br className="hidden xl:block" /> every Website <br className="hidden xl:block" /> Builder plan
               </h2>
             </div>
@@ -454,7 +454,7 @@ const plans = {
 
         {/* --- "Compare Plan Features" Section --- */}
         <div id="compare" className="mt-32 scroll-mt-20 hidden lg:block">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16 sr-only">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 text-center mb-16 sr-only">
             Compare Plan Features
           </h2>
           <AllFeaturesTable InfoTooltip={InfoTooltip} featureTooltips={featureTooltips} featureList={featureList} />
@@ -462,7 +462,7 @@ const plans = {
 
         {/* --- "Why Choose BizVistar?" Section --- */}
         <div className="mt-32 hidden lg:block">
-          <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 text-center mb-16">
             Why Choose BizVistar?
           </h2>
           <ComparisonTable />
@@ -470,7 +470,7 @@ const plans = {
 
         {/* --- Mobile Only Marquee Section --- */}
         <div className="mt-16 sm:mt-24 block lg:hidden">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8 px-4 leading-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight sm: text-gray-900 text-center mb-6 sm:mb-8 px-4">
             Whatever website you'll build, it'll look good
           </h2>
           <div className="-mx-6">
@@ -629,7 +629,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
           {/* --- Starter Plan --- */}
           <div className="p-6 text-center border-l border-gray-200 bg-white flex flex-col justify-between h-full">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Starter</h3>
               <div className="flex justify-center items-center gap-1 mb-4">
                 <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
                 <span className="text-4xl font-extrabold text-gray-900 tracking-tight">299</span>
@@ -658,7 +658,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
                   Recommended
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2 mt-8">Pro</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2 mt-8">Pro</h3>
               <div className="flex justify-center items-center gap-1 mb-4">
                 <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
                 <span className="text-4xl font-extrabold text-gray-900 tracking-tight">799</span>
@@ -682,7 +682,7 @@ const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
           {/* --- Growth Plan --- */}
           <div className="p-6 text-center border-l border-gray-200 bg-white flex flex-col justify-between h-full">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Growth</h3>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2">Growth</h3>
               <div className="flex justify-center items-center gap-1 mb-4">
                 <span className="text-xl font-semibold text-gray-600 self-start mt-1">₹</span>
                 <span className="text-4xl font-extrabold text-gray-900 tracking-tight">1499</span>
@@ -948,7 +948,7 @@ const FaqSection = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
       <div className="lg:col-span-1">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4">
           Frequently asked questions
         </h2>
         <p className="text-lg text-gray-600">

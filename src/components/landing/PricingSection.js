@@ -193,7 +193,7 @@ function PricingContent() {
 
         {/* --- Header & Toggle --- */}
         <div className="text-center max-w-3xl  mx-auto mb-16">
-        <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight sm: mb-6">
              Launch your website. Pick your perfect plan
           </h2>
           <p className="text-xl text-gray-600 mb-10">
@@ -300,7 +300,7 @@ function PricingContent() {
               <span className="bg-[#a28ad6] text-white text-xs font-bold px-3 py-1 rounded-[4px] uppercase tracking-widest w-max mb-6">
                 Plus
               </span>
-              <h2 className="text-4xl lg:text-[42px] font-bold text-gray-900 leading-[1.15] tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight lg:text-[42px] text-gray-900 leading-[1.15]">
                 Included in <br className="hidden xl:block" /> every Website <br className="hidden xl:block" /> Builder plan
               </h2>
             </div>

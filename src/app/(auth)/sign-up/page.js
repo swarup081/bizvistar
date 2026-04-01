@@ -86,7 +86,7 @@ function SignUpForm() {
   return (
     <div className="w-full max-w-[480px] bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 sm:p-12 border border-gray-100">
       <div className="mb-8 text-center">
-          <h2 className="text-3xl not-italic font-bold text-gray-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight not-italic text-gray-900">
             Register
           </h2>
       </div>

@@ -161,7 +161,7 @@ export default function BoostAppPage() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
             <Tag className="text-[#8A63D2]" /> Boost Offers
           </h1>
           <p className="text-gray-500 mt-2">Create and manage discount codes and website popups.</p>
@@ -183,7 +183,7 @@ export default function BoostAppPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-800">Your Offers</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-800">Your Offers</h2>
             <button 
                 onClick={() => handleOpenModal()}
                 className="flex items-center gap-2 bg-[#8A63D2] text-white px-4 py-2 rounded-lg hover:bg-[#7a55bd] transition-colors font-medium text-sm"
@@ -265,7 +265,7 @@ export default function BoostAppPage() {
         <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center p-5 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
                         {currentOffer?.id ? 'Edit Offer' : 'Create Offer'}
                     </h3>
                     <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">

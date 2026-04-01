@@ -55,7 +55,7 @@ const BaseCard = ({ colors, title, subtitle, mainContent }) => (
       {/* Content Body - Uses main background color, ensuring uniformity and cleanliness */}
       <div className="p-5 text-center flex flex-col items-center flex-grow" style={{ backgroundColor: colors[0], color: colors[2], minHeight: '230px' }}>
           {/* NEW: Use a distinct font for subtitle, like a bold sans-serif */}
-          <h3 className="text-gray-900 font-bold text-sm mb-2 tracking-wide not-italic">{subtitle}</h3> 
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2 not-italic">{subtitle}</h3>
           {/* Content Wrapper to hold elements and use remaining space */}
           <div className="flex-grow w-full flex flex-col items-center justify-center">
               {mainContent}
@@ -251,7 +251,7 @@ const PromoVisualComp = ({ colors }) => (
           <div className="w-full p-4 rounded-lg shadow-inner" style={{ backgroundColor: colors[1] }}>
                <Tags className="w-8 h-8 mx-auto" style={{ color: colors[2], opacity: 0.8 }} />
               <div className="text-center mt-3">
-                  <h4 className="text-3xl font-bold mb-1 font-serif">CODE15</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold mb-1 font-serif">CODE15</h4>
                   <p className="text-xs text-gray-600">Use this code for 15% off</p>
               </div>
               <div className="h-10 w-full rounded-md mt-3" style={{ backgroundColor: colors[2], opacity: 0.2 }}></div>
@@ -597,7 +597,7 @@ export default function StepThree() {
             <p className="text-xs font-bold text-gray-400 mb-6 tracking-widest uppercase">
               STEP 3 OF 3
             </p>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-snug not-italic">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4 not-italic">
               What features does <span className="text-gray-500">{storeName}</span> need?
             </h2>
             <p className="text-gray-400 text-sm mb-10">

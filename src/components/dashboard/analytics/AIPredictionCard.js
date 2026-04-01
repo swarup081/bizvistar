@@ -49,7 +49,7 @@ export default function AIPredictionCard({ websiteId }) {
   return (
     <div id="ai-insights" className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 flex items-center gap-2">
           AI Insights
         </h3>
         <span className="text-xs bg-brand-50 text-[#8A63D2] px-2 py-1 rounded-full font-medium border border-brand-100">Monthly AI</span>
@@ -91,7 +91,7 @@ export default function AIPredictionCard({ websiteId }) {
                       <IconComponent className="w-4 h-4 text-[#8A63D2]" />
                     </div>
                     <div className="flex-1 min-w-0 pr-2">
-                      <h4 className="text-sm font-semibold text-gray-800 break-words leading-snug">{rec.title}</h4>
+                      <h4 className="text-lg sm:text-xl font-semibold text-gray-800 break-words">{rec.title}</h4>
                       <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{rec.description}</p>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-1 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />

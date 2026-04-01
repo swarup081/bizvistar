@@ -60,7 +60,7 @@ export default function TemplateCarousel() {
         
         {/* Header */}
         <div className="text-center mb-20">
-           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4">
+           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight not-italic text-gray-900 mb-4">
               Stunning Designs <br/> for Every Business possible
            </h2>
            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -168,7 +168,7 @@ export default function TemplateCarousel() {
                             <div className="text-left">
                                 {/* CHANGED: Replaced Link with a div to avoid double-firing events since the parent handles the click */}
                                 <div className="block group/text">
-                                    <h3 className="text-xl font-bold text-gray-900 group-hover/text:text-gray-600 transition-colors">
+                                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 group-hover/text:text-gray-600 transition-colors">
                                         www.{template.title.toLowerCase().replace(/[^a-z0-9]/g, '')}.com
                                     </h3>
                                 </div>

@@ -189,7 +189,7 @@ function WebsiteDashboardContent() {
   if (error) {
     return (
         <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
-            <h2 className="text-xl font-semibold text-gray-800">{error}</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-gray-800">{error}</h2>
             <Link href="/templates" className="px-6 py-2 bg-brand-600 text-white rounded-full hover:bg-[#7554b3] transition">
                 Create a Website
             </Link>

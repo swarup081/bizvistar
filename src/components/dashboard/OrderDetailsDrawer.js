@@ -291,7 +291,7 @@ We will keep you updated!`;
                 <div className="grid grid-cols-2 gap-4">
                     {/* Customer */}
                     <section className="bg-white/40 p-3 rounded-xl border border-gray-100/50">
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[10px] text-gray-400 uppercase mb-2 flex items-center gap-1">
                             <User size={12} /> Customer
                         </h3>
                         <div className="text-xs">
@@ -303,7 +303,7 @@ We will keep you updated!`;
                     
                     {/* Address */}
                     <section className="bg-white/40 p-3 rounded-xl border border-gray-100/50">
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[10px] text-gray-400 uppercase mb-2 flex items-center gap-1">
                             <MapPin size={12} /> Address
                         </h3>
                         <div className="text-xs text-gray-700 leading-snug">
@@ -320,7 +320,7 @@ We will keep you updated!`;
 
                 {/* 2. Logistics */}
                 <section>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-400 uppercase mb-3 flex items-center gap-2">
                         <Truck size={14} /> Logistics
                     </h3>
                     {logistics ? (
@@ -366,7 +366,7 @@ We will keep you updated!`;
                 {/* 3. Note (New Section) */}
                 {customerNote && (
                     <section className="bg-yellow-50/50 p-3 rounded-xl border border-yellow-100">
-                        <h3 className="text-[10px] font-bold text-yellow-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[10px] text-yellow-600 uppercase mb-2 flex items-center gap-1">
                             <StickyNote size={12} /> Note from Customer
                         </h3>
                         <p className="text-xs text-gray-700 italic">
@@ -377,7 +377,7 @@ We will keep you updated!`;
 
                 {/* 4. Order Items */}
                 <section>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-400 uppercase mb-3 flex items-center gap-2">
                         <Package size={14} /> Items
                     </h3>
                     <div className="space-y-3">
@@ -410,7 +410,7 @@ We will keep you updated!`;
 
                 {/* 5. Actions */}
                 <section className="pb-24"> 
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Actions</h3>
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-400 uppercase mb-3">Actions</h3>
                     <div className="grid grid-cols-2 gap-3">
                         {order.status === 'pending' && (
                             <button 

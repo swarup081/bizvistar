@@ -81,7 +81,7 @@ export default function UpgradeModal({ isOpen, onClose }) {
                 )}
                 
                 <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">{plan.name}</h3>
                     <div className="flex justify-center items-baseline gap-1 mt-2">
                         <span className="text-lg font-bold text-gray-900">₹</span>
                         <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>

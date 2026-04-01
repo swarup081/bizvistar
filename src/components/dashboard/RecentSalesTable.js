@@ -68,7 +68,7 @@ export default function RecentSalesTable({ orders = [], isSearching = false }) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm h-full flex flex-col">
       <div className="mb-6 flex items-center justify-between shrink-0">
-        <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 font-sans not-italic">
             {isSearching ? "Search Results" : "Recent Orders"}
         </h3>
         {!isSearching && (

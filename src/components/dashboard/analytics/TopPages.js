@@ -5,7 +5,7 @@ import { Globe } from 'lucide-react';
 export default function TopPages({ pages }) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-bold text-gray-900 mb-6 font-sans">Most Visited Pages</h3>
+      <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-6 font-sans">Most Visited Pages</h3>
       <div className="flex flex-col gap-4">
         {pages.length === 0 ? (
           <p className="text-gray-400 text-sm text-center py-4">No traffic data yet.</p>

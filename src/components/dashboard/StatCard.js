@@ -11,7 +11,7 @@ export default function StatCard({ title, value, change, period, icon: Icon }) {
         <span className="text-base font-bold text-gray-700 font-mona font-medium text-gray-400 not-italic">{title}</span>
       </div>
       <div>
-        <h3 className="text-4xl font-mona font-medium text-gray-700 not-italic tracking-tight">{value}</h3>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold font-mona text-gray-700 not-italic">{value}</h3>
         <div className="mt-3 flex items-center gap-2 text-sm">
           <span className="flex items-center font-bold text-[#4CAF50] font-sans">
             <ArrowUp className="mr-1 h-4 w-4" strokeWidth={3} />

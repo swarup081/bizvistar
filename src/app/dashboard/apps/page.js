@@ -56,7 +56,7 @@ export default function AppsPage() {
     <div className="max-w-7xl mx-auto space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Apps</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900">Apps</h1>
           <p className="text-gray-500 mt-2 text-lg">
             Supercharge your store with powerful tools and features.
           </p>
@@ -82,7 +82,7 @@ export default function AppsPage() {
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#8A63D2] transition-colors">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 mb-2 group-hover:text-[#8A63D2] transition-colors">
                   {app.name}
                 </h3>
                 

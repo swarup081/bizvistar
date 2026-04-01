@@ -98,7 +98,7 @@ export default function PatronAppPage() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
             <Users className="text-[#8A63D2]" /> Patron CRM
           </h1>
           <p className="text-gray-500 mt-2">Track repeat buyers, VIPs, and total customer spend.</p>

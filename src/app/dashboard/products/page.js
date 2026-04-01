@@ -279,7 +279,7 @@ export default function ProductsPage() {
         {/* Mobile Header Layout */}
         <div className="flex md:hidden flex-col w-full gap-3 -px-2 pt-4">
              <div className="flex items-center justify-between w-full">
-                 <h1 className="text-xl not-italic font-bold text-gray-900 shrink-0">
+                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight not-italic text-gray-900 shrink-0">
                     {activeTab === 'products' ? 'Products' : 'Categories'}
                  </h1>
                  
@@ -333,7 +333,7 @@ export default function ProductsPage() {
              {isFilterOpen && (
                 <div className="w-full bg-white rounded-xl shadow-lg border border-gray-100 p-4 animate-in fade-in slide-in-from-top-2 duration-200 mb-2">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold text-gray-900 text-sm">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">
                             {activeTab === 'products' ? 'Product Filters' : 'Category Filters'}
                         </h3>
                         <button onClick={() => { 
@@ -349,7 +349,7 @@ export default function ProductsPage() {
                         {activeTab === 'products' && (
                             <>
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
+                                    <h4 className="text-lg sm:text-xl font-semibold text-gray-400 uppercase mb-2">Sort By</h4>
                                     <select value={productSortBy} onChange={(e) => setProductSortBy(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="newest">Newest Added</option>
                                         <option value="top">Top Products</option>
@@ -359,7 +359,7 @@ export default function ProductsPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Stock</h4>
+                                    <h4 className="text-lg sm:text-xl font-semibold text-gray-400 uppercase mb-2">Stock</h4>
                                     <div className="grid grid-cols-2 gap-2">
                                         {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
                                             <label key={status} className={`flex items-center justify-center px-2 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${stockFilters.includes(status) ? 'bg-brand-50 border-brand-200 text-brand-700 font-medium' : 'border-gray-200 text-gray-600'}`}>
@@ -370,7 +370,7 @@ export default function ProductsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Category</h4>
+                                    <h4 className="text-lg sm:text-xl font-semibold text-gray-400 uppercase mb-2">Category</h4>
                                     <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="all">All Categories</option>
                                         {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -383,14 +383,14 @@ export default function ProductsPage() {
                         {activeTab === 'categories' && (
                             <>
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Sort By</h4>
+                                    <h4 className="text-lg sm:text-xl font-semibold text-gray-400 uppercase mb-2">Sort By</h4>
                                     <div className="grid grid-cols-2 gap-2">
                                         <button onClick={() => setCategorySortBy('date')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'date' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'border-gray-200'}`}>Date Created</button>
                                         <button onClick={() => setCategorySortBy('top')} className={`px-3 py-2 text-xs rounded-lg border ${categorySortBy === 'top' ? 'bg-brand-50 border-brand-200 text-brand-700' : 'border-gray-200'}`}>Top Performing</button>
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">View</h4>
+                                    <h4 className="text-lg sm:text-xl font-semibold text-gray-400 uppercase mb-2">View</h4>
                                     <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full text-sm p-2 border border-gray-200 rounded-lg outline-none focus:border-brand-500">
                                         <option value="all">All Categories</option>
                                         <option value="populated">With Products</option>
@@ -407,7 +407,7 @@ export default function ProductsPage() {
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-between w-full">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">{activeTab === 'products' ? 'Products' : 'Categories'}</h1>
+                <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900">{activeTab === 'products' ? 'Products' : 'Categories'}</h1>
                 <p className="text-gray-500 mt-1 text-sm md:text-base">Manage your {activeTab === 'products' ? 'product catalog' : 'product categories'}.</p>
             </div>
             
@@ -524,12 +524,12 @@ export default function ProductsPage() {
                     {isFilterOpen && (
                         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 p-4 animate-in fade-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-semibold text-gray-900 text-sm not-italic">Filters</h3>
+                                <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 not-italic">Filters</h3>
                                 <button onClick={() => { setStockFilters([]); setSelectedCategory('all'); setCurrentPage(1); setIsFilterOpen(false); }} className="text-xs not-italic text-gray-400 hover:text-gray-600">Reset</button>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                <h4 className="text-xs not-italic font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Stock</h4>
+                                <h4 className="text-lg sm:text-xl font-semibold not-italic text-gray-500 uppercase mb-2">Product Stock</h4>
                                 <div className="space-y-2">
                                     {['Overflow Stock', 'Low Stock', 'Out Of Stock', 'Unlimited'].map(status => (
                                     <label key={status} className="flex items-center gap-2 cursor-pointer group">
@@ -543,7 +543,7 @@ export default function ProductsPage() {
                                 </div>
                                 </div>
                                 <div>
-                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Category</h4>
+                                <h4 className="text-lg sm:text-xl font-semibold text-gray-500 uppercase mb-2">Category</h4>
                                 <select value={selectedCategory} onChange={handleCategoryChange} className="w-full text-sm p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A63D2]/20">
                                     <option value="all">All Categories</option>
                                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}

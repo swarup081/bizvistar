@@ -163,7 +163,7 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
                      
                      {/* Mode Selection */}
                      <div className="space-y-3">
-                         <h3 className="font-bold text-gray-900">Landing Page Strategy</h3>
+                         <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Landing Page Strategy</h3>
                          <div className="grid grid-cols-2 gap-4">
                              <button 
                                 onClick={() => setSettings(s => ({ ...s, mode: 'auto' }))}
@@ -248,7 +248,7 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
                      {settings.mode === 'auto' && (
                          <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
                              <div className="space-y-2">
-                                 <h4 className="font-bold text-gray-900 text-sm">Prioritize Products</h4>
+                                 <h4 className="text-lg sm:text-xl font-semibold text-gray-900">Prioritize Products</h4>
                                  <p className="text-xs text-gray-500">Select products to force to the top of the list, even if they aren't the top sellers.</p>
                                  
                                  <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-2 custom-scrollbar">

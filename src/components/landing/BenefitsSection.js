@@ -11,7 +11,7 @@ export default function BenefitsSection() {
         
         {/* --- Header --- */}
         <div className="text-center mb-20 max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-[3.5rem] font-bold text-[#1a1a1a] mb-6 leading-[1.15] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight md:text-[3.5rem] text-[#1a1a1a] mb-6 leading-[1.15]">
             Make your website and start<br />selling with benefits
           </h2>
           <p className="text-gray-600 text-[17px] leading-relaxed max-w-2xl mx-auto">

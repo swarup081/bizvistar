@@ -40,7 +40,7 @@ export default function HowItWorks() {
           <div className="lg:w-5/12">
             {/* The sticky class keeps this section in view while the user scrolls down the list */}
             <div className="sticky top-32">
-              <h2 className="text-4xl lg:text-6xl  font-medium text-gray-900 leading-[1.1] tracking-tight mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight lg: text-gray-900 leading-[1.1] mb-8">
                 How to create a<br />
                 website for free
               </h2>

@@ -294,7 +294,7 @@ export default function ExportModal({ isOpen, onClose }) {
       <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-          <h3 className="text-lg font-bold text-gray-900 font-sans not-italic">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 font-sans not-italic">
             {step === 1 ? "Export Data" : "Export Settings"}
           </h3>
           <button onClick={onClose} className="rounded-full p-1 hover:bg-gray-100 text-gray-500 transition-colors">
@@ -315,7 +315,7 @@ export default function ExportModal({ isOpen, onClose }) {
                   <FileSpreadsheet size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 font-sans">Excel (.xlsx)</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900 font-sans">Excel (.xlsx)</h4>
                   <p className="text-xs text-gray-500 font-sans">Best for analysis and full backups.</p>
                 </div>
               </button>
@@ -328,7 +328,7 @@ export default function ExportModal({ isOpen, onClose }) {
                   <FileText size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 font-sans">CSV (.csv)</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900 font-sans">CSV (.csv)</h4>
                   <p className="text-xs text-gray-500 font-sans">Single report compatibility.</p>
                 </div>
               </button>
@@ -341,7 +341,7 @@ export default function ExportModal({ isOpen, onClose }) {
                   <FileText size={24} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 font-sans">PDF (.pdf)</h4>
+                  <h4 className="text-lg sm:text-xl font-semibold text-gray-900 font-sans">PDF (.pdf)</h4>
                   <p className="text-xs text-gray-500 font-sans">Best for printing single reports.</p>
                 </div>
               </button>

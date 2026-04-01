@@ -45,7 +45,7 @@ const NotificationBell = () => {
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-50 bg-gray-50/50">
-                        <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Notifications</h3>
                         {notifications.length > 0 && (
                             <button 
                                 onClick={(e) => { e.preventDefault(); clearAll(); }}
