@@ -28,8 +28,11 @@ export default function PwaInstallPopup() {
     const ONE_WEEK_MS = 604800000;
 
     // Only show randomly (e.g. 30% chance on load if eligible)
-    if (now - lastDismissed > ONE_WEEK_MS) {
-        if (Math.random() < 0.3) {
+    // Always show if test-pwa page
+    const isTest = typeof window !== 'undefined' && window.location.pathname === '/test-pwa';
+
+    if (now - lastDismissed > ONE_WEEK_MS || isTest) {
+        if (Math.random() < 0.3 || isTest) {
             // Delay slightly for better UX
             setTimeout(() => {
                 setIsVisible(true);
