@@ -79,7 +79,7 @@ function PricingContent() {
           'Professional Website',
           'Free Subdomain',
           'Secure Hosting ',
-          'unlimited products',
+          'Unlimited products',
           'Priority  Support',
           'Limited Advanced Business Tools',
           'Update your site anytime with mobile editing',
@@ -101,7 +101,7 @@ function PricingContent() {
           'Professional Website',
           'Free Custom Domain ',
           'Secure Hosting ',
-          'unlimited products',
+          'Unlimited products',
           'Priority  Support',
           'Advanced Business Tools',
           'Update your site anytime with mobile editing',
@@ -149,7 +149,7 @@ function PricingContent() {
           'Professional Website',
           'Free Subdomain',
           'Secure Hosting ',
-          'unlimited products',
+          'Unlimited products',
           'Priority  Support',
           'Limited Advanced Business Tools',
           'Update your site anytime with mobile editing',
@@ -171,7 +171,7 @@ function PricingContent() {
           'Professional Website',
           'Free Custom Domain ',
           'Secure Hosting ',
-          'unlimited products',
+          'Unlimited products',
           'Priority  Support',
           'Advanced Business Tools',
           'Update your site anytime with mobile editing',
@@ -196,7 +196,7 @@ function PricingContent() {
         <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
              Launch your website. Pick your perfect plan
           </h2>
-          <p className="text-xl text-gray-600 mb-10">
+          <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light mb-10">
           Get a mobile-friendly website with built-in marketing and 24/7 support <br></br>everything you need to start and grow          </p>
 
         <div className="flex justify-center">
@@ -342,6 +342,7 @@ function PricingContent() {
 }
 
 // --- Sub-component: PlanCard (UPDATED WITH NEW STYLES) ---
+// --- Sub-component: PlanCard (UPDATED WITH NEW STYLES) ---
 const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => {
   
   // Create the inner content blocks to reuse
@@ -352,16 +353,18 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
         {/* Top row: Title and Badge (Savings or Promos aligned to right) */}
         <div className="flex justify-between items-start mb-3 gap-4">
           <span className="text-3xl font-bold text-gray-900 leading-tight">{plan.name}</span>
-          {isYearly && plan.savings && (
+          {/* FIX: Removed 'isYearly' check and changed 'plan.savings' to 'plan.discount' */}
+          {plan.discount && (
             <div className="inline-flex bg-[#f4f1fa] text-[#7554b3] text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap mt-1">
-              {plan.savings}
+              {plan.discount}
             </div>
           )}
         </div>
 
         {/* Price Section */}
         <div className="mb-6 flex flex-col">
-          {isYearly && plan.originalPrice ? (
+          {/* FIX: Removed 'isYearly &&' so the original price shows on monthly too */}
+          {plan.originalPrice ? (
             <p className="text-lg font-medium text-gray-400 line-through mb-1">
               ₹{plan.originalPrice}/mo
             </p>
@@ -415,7 +418,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
           {!isYearly ? plan.dailyRate : plan.yearlyTotal}
         </p>
 
-        {/* Highlighted Title/Subtitle Box */}
+        {/* Highlighted "Best for" Box */}
         <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl p-5 mt-auto">
           <p className="text-gray-900 font-semibold text-[15px] leading-relaxed">{plan.subtitle}</p>
         </div>

@@ -61,7 +61,7 @@ export default function TemplateCarousel() {
         {/* Header */}
         <div className="text-center mb-20">
            <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4">
-              Stunning Designs <br/> for Every Business possible
+              Stunning Designs for<br/>  Every Business possible
            </h2>
            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Choose from our professionally designed templates. Fully customizable and optimized for conversion.

@@ -30,7 +30,7 @@ export default function LandingPage() {
            </div>
 
            {/* Wavy Background Texture */}
-           <div className="absolute top-104 scale-0.5 right-0 w-full h-[80%] pointer-events-none z-0">
+           <div className="absolute md:top-104 md:scale-0.5 md:right-0 md:w-full md:h-[80%] pointer-events-none z-0">
               <img 
                 src="/landing/bgwaveytexture.png" 
                 alt="Background Texture" 
@@ -38,15 +38,15 @@ export default function LandingPage() {
               />
            </div>
            
-           <div className="container mx-auto font-times px-6 max-w-7xl relative z-10 text-center">
-              <h1 className="text-5xl font-times not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-16 leading-[1.15] max-w-4xl mx-auto">
+           <div className="container md:mt-10 mx-auto font-times px-6 md:max-w-7xl relative z-10 text-center">
+              <h1 className="text-4xl font-times not-italic md:text-7xl font-bold tracking-tight text-gray-900 mb-10 md:mb-1 leading-[1.15] md:max-w-4xl mx-auto">
                  Don&apos;t sell your dreams, <br/>
                  <span className="text-transparent not-italic bg-clip-text bg-black">
                     Sell your products
                  </span>
               </h1>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-5 text-center sm:text-left">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-6 mb-10 md:mb-5 text-center sm:text-left">
                 {/* Arrow pointing to editor */}
                 <img
                   src="/landing/arrowdirntoeditor.png"
@@ -60,9 +60,9 @@ export default function LandingPage() {
                   </button>
                 </Link>
 
-                <p className="text-xl text-gray-500 max-w-md leading-relaxed font-light">
-                  Laoreet tempus vitae eu libero mattis.<br />
-                  Start your journey with us today.
+                <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light">
+                Mobile-friendly website for your business<br />
+                Grow fast with built-in marketing
                 </p>
               </div>
 

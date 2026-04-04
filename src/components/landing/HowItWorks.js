@@ -32,14 +32,14 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 bg-[#F4F5F8] relative">
+    <section className="py-34  bg-[#F4F5F8] relative">
       <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
           
           {/* Left Side: Title and Buttons */}
           <div className="lg:w-5/12">
             {/* The sticky class keeps this section in view while the user scrolls down the list */}
-            <div className="sticky top-32">
+            <div className="sticky top-52">
               <h2 className="text-4xl lg:text-6xl  font-medium text-gray-900 leading-[1.1] tracking-tight mb-8">
                 How to create a<br />
                 website for free
@@ -63,7 +63,7 @@ export default function HowItWorks() {
             </div>
           </div>
 
-          {/* Right Side: The 7 Steps List */}
+          {/* Right Side: The 5 Steps List */}
           <div className="lg:w-7/12">
             <div className="flex flex-col">
               {steps.map((step, index) => (

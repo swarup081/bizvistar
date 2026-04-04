@@ -401,7 +401,7 @@ const plans = {
         
         {/* --- "Compare Plan Features" Button --- */}
         <div className="mt-20 text-center hidden lg:block">
-           <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
+           <Link href="#compare" className="inline-flex items-center justify-center px-8 py-4 border border-gray-900 text-lg font-medium rounded-full text-gray-700 bg-white hover:bg-gray-900 hover:text-white transition-colors shadow-sm">
              Compare Plan Features
            </Link>
         </div>
@@ -528,7 +528,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
             <button 
               disabled
               className={cn(
-                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
+                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-400 text-gray-500 bg-gray-100'
               )}
             >
               Current Plan
@@ -564,8 +564,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
 
         {/* Highlighted "Best for" Box */}
         <div className="bg-[#f8f9fa] border border-gray-100 rounded-xl p-5 mt-auto">
-          <span className="font-bold text-gray-900 text-[16px] mb-2">Best for</span>
-          <p className="text-gray-600 text-[14px] leading-relaxed">{plan.subtitle}</p>
+          <p className="text-gray-900 font-semibold text-[15px] leading-relaxed">{plan.subtitle}</p>
         </div>
       </div>
 

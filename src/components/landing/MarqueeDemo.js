@@ -120,11 +120,11 @@ export default function ThrivingSection() {
     // Reduced vertical padding (py-10) to compress the section height
     <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
          {/* Header */}
-         <div className="text-center m-20">
-           <h2 className="text-6xl not-italic font-bold text-gray-900 mb-4 leading-[1.1] tracking-tight">
+         <div className="text-center max-w-3xl  mx-auto mt-10 md:mt-20 mb-16">
+           <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
            Customer are our valuable <br/>assest for you & us
            </h2>
-           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+           <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light mb-10">
            Don’t just take our word for it hear from customers who trusted us, built with us, and saw real growth through their experience.
                       </p>
         </div>
