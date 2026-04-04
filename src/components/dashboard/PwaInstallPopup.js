@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Download, X, Smartphone } from 'lucide-react';
+import { usePwa } from './PwaContext';
 
 export default function PwaInstallPopup() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { deferredPrompt, clearPrompt } = usePwa();
   const [isVisible, setIsVisible] = useState(false);
   const [isPwaInstalled, setIsPwaInstalled] = useState(false);
 
@@ -15,26 +16,22 @@ export default function PwaInstallPopup() {
       return;
     }
 
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      checkAndShowPopup();
-    };
+    if (deferredPrompt) {
+        checkAndShowPopup();
+    }
 
     const handleAppInstalled = () => {
       setIsPwaInstalled(true);
       setIsVisible(false);
-      setDeferredPrompt(null);
+      clearPrompt();
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const checkAndShowPopup = () => {
     const lastDismissedStr = localStorage.getItem('pwa_popup_dismissed_at');
@@ -63,7 +60,7 @@ export default function PwaInstallPopup() {
       setIsPwaInstalled(true);
       setIsVisible(false);
     }
-    setDeferredPrompt(null);
+    clearPrompt();
   };
 
   const handleDismiss = () => {

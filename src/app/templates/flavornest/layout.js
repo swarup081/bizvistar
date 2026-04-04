@@ -14,6 +14,15 @@ import OfferPopup from '@/components/editor/OfferPopup';
 function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
     const router = useRouter();
+    const pathname = usePathname();
+
+    let basePath = '/templates/flavornest';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
     
     const { 
         cartCount, 
@@ -125,7 +134,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             <div 
               className={`antialiased font-sans bg-brand-bg text-brand-text ${themeClassName}`}
               style={fontVariables}

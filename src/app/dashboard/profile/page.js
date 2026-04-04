@@ -5,26 +5,18 @@ import { supabase } from '@/lib/supabaseClient';
 import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock, Truck, Download, Smartphone } from 'lucide-react';
 import { updateProfileDataAction } from '@/app/actions/profileActions';
 import PlanManager from '@/components/dashboard/PlanManager';
+import { usePwa } from '@/components/dashboard/PwaContext';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
+  const { deferredPrompt, clearPrompt } = usePwa();
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setDeferredPrompt(null);
+        clearPrompt();
       }
     }
   };

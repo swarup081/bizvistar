@@ -48,7 +48,7 @@ const ExploreCircle = ({ isLanding }) => {
 };
 
 function AuroraContent() {
-    const { businessData } = useTemplateContext();
+    const { businessData, basePath } = useTemplateContext();
     const searchParams = useSearchParams();
     const isLanding = searchParams.get('isLanding') === 'true';
 
@@ -356,8 +356,6 @@ function AuroraContent() {
 }
 
 export default function AuroraPage() {
-    const { basePath } = useTemplateContext();
-
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <AuroraContent />

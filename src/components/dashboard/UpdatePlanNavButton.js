@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { Download } from 'lucide-react';
+import { usePwa } from './PwaContext';
 
 export default function UpdatePlanNavButton({ isMobile = false }) {
   const [nextPlanText, setNextPlanText] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // PWA State
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { deferredPrompt, clearPrompt } = usePwa();
   const [isPwaInstalled, setIsPwaInstalled] = useState(false);
   const [showPwaInstall, setShowPwaInstall] = useState(false);
 
@@ -20,22 +21,14 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
       setIsPwaInstalled(true);
     }
 
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsPwaInstalled(false);
-    };
-
     const handleAppInstalled = () => {
       setIsPwaInstalled(true);
-      setDeferredPrompt(null);
+      clearPrompt();
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
@@ -111,7 +104,7 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
       if (outcome === 'accepted') {
         setIsPwaInstalled(true);
       }
-      setDeferredPrompt(null);
+      clearPrompt();
     }
   };
 

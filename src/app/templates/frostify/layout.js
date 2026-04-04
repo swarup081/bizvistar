@@ -15,6 +15,7 @@ import OfferPopup from '@/components/editor/OfferPopup';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
+    const { basePath } = useContext(TemplateContext);
     
     // Get data from the NEW context
     const { 

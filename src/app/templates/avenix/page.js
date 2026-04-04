@@ -347,7 +347,7 @@ export default function AvenixPage() {
                                 const isCategory = item.type === 'category';
                                 const href = isCategory 
                                     ? `${basePath}/shop?category=${item.id}`
-                                    : `/templates/avenix/product/${item.id}`;
+                                    : `${basePath}/product/${item.id}`;
                                 const btnText = isCategory ? 'View Collection' : 'Shop Now';
                                 
                                 return (

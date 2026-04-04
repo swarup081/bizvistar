@@ -14,6 +14,15 @@ import OfferPopup from '@/components/editor/OfferPopup';
 function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
     const router = useRouter();
+    const pathname = usePathname();
+
+    let basePath = '/templates/blissly';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
     
     const { 
         cartCount, 
