@@ -14,7 +14,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId, basePath } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
                         "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
                     
-                    <a href="/templates/aurora/shop" className="block mt-8 text-[#0F1C23] underline text-sm hover:text-opacity-70">
+                    <a href={`${basePath}/shop`} className="block mt-8 text-[#0F1C23] underline text-sm hover:text-opacity-70">
                         Return to Shop
                     </a>
                 </div>
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
                     <div className="text-center bg-white p-8 md:p-12 shadow-sm border border-gray-100">
                         <p className="text-[4vw] md:text-xl text-gray-500 mb-6">Your cart is empty.</p>
                         <a 
-                            href="/templates/aurora/shop" 
+                            href={`${basePath}/shop`}
                             className="inline-block bg-[#0F1C23] text-white px-8 py-3 md:px-10 md:py-4 text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[#D4A373] transition-colors"
                         >
                             Return to Shop

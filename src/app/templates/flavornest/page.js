@@ -15,6 +15,8 @@ const getProductsByIds = (allProducts, ids) => {
 
 
 export default function FlavorNestPage() {
+    const { basePath } = useTemplateContext();
+
     
     // --- GET DATA FROM CONTEXT ---
     const { businessData } = useTemplateContext();
@@ -64,7 +66,7 @@ export default function FlavorNestPage() {
                             ))}
                         </div>
                         <div className="text-center mt-12">
-                            <a href="/templates/flavornest/shop" className="mt-8 inline-block btn btn-primary px-8 py-3 rounded-full text-lg">
+                            <a href={`${basePath}/shop`} className="mt-8 inline-block btn btn-primary px-8 py-3 rounded-full text-lg">
                                 View All Products
                             </a>
                         </div>

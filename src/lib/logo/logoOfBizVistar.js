@@ -7,7 +7,7 @@ const Logo = ({ className = '', ...props }) => {
       {...props}
     >
       <span className="md:hidden">B</span>
-      <span className="tracking-wide hidden md:inline">BizVistar</span>
+      <span className="tracking-wide hidden md:inline">Bizvistar</span>
     </div>
   );
 };

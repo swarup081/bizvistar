@@ -52,9 +52,10 @@ const boiling = localFont({
 // --- END FONT DEFINITIONS ---
 
 import SupportWidget from '@/components/dashboard/SupportWidget';
+import PwaRegistration from '@/components/PwaRegistration';
 
 export const metadata = {
-  title: "BizVistaar",
+  title: "Bizvistar",
   description: "Empowering Local Businesses",
 };
 
@@ -63,9 +64,23 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.deferredPwaPrompt = null;
+            window.addEventListener('beforeinstallprompt', (e) => {
+              e.preventDefault();
+              window.deferredPwaPrompt = e;
+              window.dispatchEvent(new Event('pwa-prompt-ready'));
+            });
+          `
+        }} />
+      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${boiling.variable} antialiased`}
       >
+        <PwaRegistration />
         {children}
         <SupportWidget />
       </body>

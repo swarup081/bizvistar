@@ -156,6 +156,7 @@ const getLandingItems = (businessData, requiredCount = 2) => {
 
 // --- Reusable SVG Icons (KEPT HERE, as they are unique to this page) ---
 const HeelsHero = ({ heroData }) => {
+    const { basePath } = useTemplateContext();
     // Splits the bent text ("HIGH") into an array of letters: ['H', 'I', 'G', 'H']
     const bentLetters = heroData.bentText.split('');
 
@@ -202,7 +203,7 @@ const HeelsHero = ({ heroData }) => {
                             </div>
                             </h2>
                             <a 
-                            href="/templates/avenix/shop" // UPDATED LINK
+                            href={`${basePath}/shop`} // UPDATED LINK
                             // UPDATED: Uses the buttonColor prop
                             style={{ backgroundColor: heroData.buttonColor }}
                             className="inline-flex items-center gap-2 md:gap-3 text-brand-bg px-4 py-2 md:px-8 md:py-4 font-sans font-medium text-[2.5vw] md:text-base uppercase tracking-wider rounded-full mt-4 md:mt-10 hover:opacity-80 transition-all"
@@ -233,6 +234,8 @@ const HeelsHero = ({ heroData }) => {
 
 // --- Main Page Component ---
 export default function AvenixPage() {
+    const { basePath } = useTemplateContext();
+
     
     // Get businessData from the context
     const { businessData } = useTemplateContext();
@@ -343,8 +346,8 @@ export default function AvenixPage() {
                             {featuredItems.map((item, i) => {
                                 const isCategory = item.type === 'category';
                                 const href = isCategory 
-                                    ? `/templates/avenix/shop?category=${item.id}` 
-                                    : `/templates/avenix/product/${item.id}`;
+                                    ? `${basePath}/shop?category=${item.id}`
+                                    : `${basePath}/product/${item.id}`;
                                 const btnText = isCategory ? 'View Collection' : 'Shop Now';
                                 
                                 return (
@@ -398,7 +401,7 @@ export default function AvenixPage() {
                                 <p className="text-[2.5vw] md:text-xl font-sans text-brand-text/80 mt-2 md:mt-6 max-w-lg">
                                     {businessData.ctaSection.text}
                                 </p>
-                                <a href="/templates/avenix/shop" className="btn-primary inline-flex items-center gap-2 md:gap-3 bg-brand-secondary text-brand-bg px-4 py-2 md:px-8 md:py-4 font-sans font-medium text-[2vw] md:text-base uppercase tracking-wider rounded-full mt-4 md:mt-10 hover:opacity-80">
+                                <a href={`${basePath}/shop`} className="btn-primary inline-flex items-center gap-2 md:gap-3 bg-brand-secondary text-brand-bg px-4 py-2 md:px-8 md:py-4 font-sans font-medium text-[2vw] md:text-base uppercase tracking-wider rounded-full mt-4 md:mt-10 hover:opacity-80">
                                     <span className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 bg-white rounded-full"></span>
                                     {businessData.ctaSection.cta}
                                 </a>
@@ -452,7 +455,7 @@ export default function AvenixPage() {
                                 <h3 className="text-[4vw] md:text-4xl font-serif font-medium">{feature.title}</h3>
                                 <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-2 md:mt-6">{feature.text}</p>
                                 {feature.cta && (
-                                    <a href="/templates/avenix/shop" className="inline-block text-[2.5vw] md:text-lg font-medium font-sans mt-4 md:mt-8 hover:opacity-80">
+                                    <a href={`${basePath}/shop`} className="inline-block text-[2.5vw] md:text-lg font-medium font-sans mt-4 md:mt-8 hover:opacity-80">
                                         • {feature.cta}
                                     </a>
                                 )}
@@ -487,7 +490,7 @@ export default function AvenixPage() {
                             <div className="text-left">
                                 <h2 className="text-[6vw] md:text-5xl font-serif font-medium text-brand-text">{businessData.stats.title}</h2>
                                 <p className="text-[2.5vw] md:text-xl font-sans text-brand-text/80 mt-2 md:mt-6 max-w-lg">{businessData.stats.text}</p>
-                                <a href="/templates/avenix/shop" className="inline-flex items-center gap-2 text-[2.5vw] md:text-lg font-medium font-sans mt-4 md:mt-8 hover:opacity-80">
+                                <a href={`${basePath}/shop`} className="inline-flex items-center gap-2 text-[2.5vw] md:text-lg font-medium font-sans mt-4 md:mt-8 hover:opacity-80">
                                     <span>{businessData.stats.cta}</span>
                                 </a>
                             </div>

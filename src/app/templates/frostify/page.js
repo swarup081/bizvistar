@@ -15,6 +15,8 @@ const getProductsByIds = (allProducts, ids) => {
 };
 
 export default function FrostifyPage() {
+    const { basePath } = useTemplateContext();
+
     const { businessData } = useTemplateContext();
     const [currentReview, setCurrentReview] = useState(0);
 
@@ -56,7 +58,7 @@ export default function FrostifyPage() {
                                 <p className="text-[2vw] md:text-sm font-medium text-gray-600 mb-3 md:mb-8 leading-relaxed">
                                     {businessData.hero?.subtitle}
                                 </p>
-                                <Link href="/templates/frostify/shop" className="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 md:px-8 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors whitespace-nowrap">
+                                <Link href={`${basePath}/shop`} className="inline-block bg-[var(--color-secondary)] text-white px-3 py-1 md:px-8 md:py-3 rounded-full text-[2vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-colors whitespace-nowrap">
                                     {businessData.hero?.cta}
                                 </Link>
                             </div>
@@ -130,7 +132,7 @@ export default function FrostifyPage() {
                         {/* Explore Full Collection Button */}
                         <div className="mt-8 md:mt-16 text-center">
                             <Link 
-                                href="/templates/frostify/shop"
+                                href={`${basePath}/shop`}
                                 className="inline-block bg-[var(--color-secondary)] text-white px-6 py-3 md:px-10 md:py-4 rounded-full text-[2.5vw] md:text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-primary)] transition-all shadow-lg transform hover:scale-105"
                             >
                                  Explore Full Collection  

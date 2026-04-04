@@ -14,7 +14,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId, basePath } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
                         "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
                     
-                    <a href="/templates/flavornest/shop" className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
+                    <a href={`${basePath}/shop`} className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
                         Return to Shop
                     </a>
                 </div>
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
                 <div className="text-center">
                     <p className="text-xl text-brand-text/80">Your cart is empty.</p>
                     <a 
-                        href="/templates/flavornest/shop"
+                        href={`${basePath}/shop`}
                         className="mt-8 inline-block btn btn-primary px-8 py-3"
                     >
                         Start Shopping

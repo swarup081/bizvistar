@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useContext, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -14,6 +15,7 @@ import OfferPopup from '@/components/editor/OfferPopup';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
+    const { basePath } = useContext(TemplateContext);
     
     // Get data from the NEW context
     const { 
@@ -43,7 +45,7 @@ function CartLayout({ children, serverData, websiteId }) {
     }, [serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             <style jsx global>{`
                 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Quicksand:wght@300;400;500;600;700&display=swap');
                 :root {
@@ -123,7 +125,7 @@ function CartLayout({ children, serverData, websiteId }) {
                                     <span className="text-sm text-gray-500 uppercase tracking-widest font-bold">Total</span>
                                     <span className="text-3xl font-serif text-[var(--color-primary)]">${total.toFixed(2)}</span>
                                 </div>
-                                <a href="/templates/frostify/checkout" className="block w-full bg-[var(--color-primary)] text-white text-center py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-secondary)] transition-colors shadow-lg">
+                                <a href={`${basePath}/checkout`} className="block w-full bg-[var(--color-primary)] text-white text-center py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-secondary)] transition-colors shadow-lg">
                                     Proceed to Checkout
                                 </a>
                             </div>
@@ -148,7 +150,16 @@ export default function FrostifyLayout({ children, serverData, websiteId }) {
 // Wrapper to Provide State & Context
 function FrostifyStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
+
+    const pathname = usePathname();
+    let basePath = '/templates/frostify';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
+const router = useRouter();
 
     useEffect(() => {
         if (serverData) return;
@@ -178,14 +189,14 @@ function FrostifyStateProvider({ children, serverData, websiteId }) {
     }, [router, serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             {children}
         </TemplateContext.Provider>
     );
 }
 
 function FrostifyContent({ children }) {
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId , basePath } = useContext(TemplateContext);
     const { 
         isCartOpen, 
         closeCart, 
@@ -300,7 +311,7 @@ function FrostifyContent({ children }) {
                                 <span className="text-sm text-gray-500 uppercase tracking-widest font-bold">Total</span>
                                 <span className="text-3xl font-serif text-[var(--color-primary)]">${total.toFixed(2)}</span>
                             </div>
-                            <a href="/templates/frostify/checkout" className="block w-full bg-[var(--color-primary)] text-white text-center py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-secondary)] transition-colors shadow-lg">
+                            <a href={`${basePath}/checkout`} className="block w-full bg-[var(--color-primary)] text-white text-center py-4 rounded-full text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-secondary)] transition-colors shadow-lg">
                                 Proceed to Checkout
                             </a>
                         </div>

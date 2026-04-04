@@ -14,7 +14,7 @@ import { QRCodeSVG } from 'qrcode.react';
 
 export default function CheckoutPage() {
     const { cartDetails, subtotal, shipping, total, openCart, clearCart } = useCart();
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId, basePath } = useContext(TemplateContext);
     
     // Swapped fields: No email. Added phone (required). Added note (optional).
     const [formData, setFormData] = useState({

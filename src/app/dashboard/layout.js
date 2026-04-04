@@ -22,6 +22,8 @@ import Logo from '@/lib/logo/logoOfBizVistar';
 import { NotificationManager } from '@/components/dashboard/notifications/NotificationManager';
 import NotificationBell from '@/components/dashboard/notifications/NotificationBell';
 import UpdatePlanNavButton from '@/components/dashboard/UpdatePlanNavButton';
+import PwaInstallPopup from '@/components/dashboard/PwaInstallPopup';
+import { PwaProvider } from '@/components/dashboard/PwaContext';
 // import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {
@@ -72,6 +74,7 @@ export default function DashboardLayout({ children }) {
     // Outer container:
     // - Desktop: Standard padding (p-7)
     // - Mobile: NO padding (p-0) to ensure full edge-to-edge navbar and content
+    <PwaProvider>
     <NotificationManager>
     <div className={`min-h-screen font-sans text-[#333333] bg-[#F3F4F6]
         ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-0 lg:p-7'} 
@@ -190,7 +193,9 @@ export default function DashboardLayout({ children }) {
         {children}
       </main>
 
+      <PwaInstallPopup />
     </div>
     </NotificationManager>
+    </PwaProvider>
   );
 }

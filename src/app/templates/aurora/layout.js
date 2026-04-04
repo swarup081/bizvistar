@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useContext, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -45,7 +46,16 @@ export default function AuroraLayout({ children, serverData, websiteId }) {
 // Wrapper to Provide State & Context
 function AuroraStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
+
+    const pathname = usePathname();
+    let basePath = '/templates/aurora';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
+const router = useRouter();
 
     useEffect(() => {
         if (serverData) return;
@@ -75,14 +85,14 @@ function AuroraStateProvider({ children, serverData, websiteId }) {
     }, [router, serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             {children}
         </TemplateContext.Provider>
     );
 }
 
 function AuroraContent({ children }) {
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId , basePath } = useContext(TemplateContext);
     const { 
         isCartOpen, 
         closeCart, 
@@ -223,7 +233,7 @@ function AuroraContent({ children }) {
                                     <span>Total</span>
                                     <span>${total.toFixed(2)}</span>
                                 </div>
-                                <a href="/templates/aurora/checkout" className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
+                                <a href={`${basePath}/checkout`} className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
                                     Checkout
                                 </a>
                             </div>

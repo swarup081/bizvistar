@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -13,6 +14,15 @@ import OfferPopup from '@/components/editor/OfferPopup';
 function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
     const router = useRouter();
+    const pathname = usePathname();
+
+    let basePath = '/templates/flavornest';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
     
     const { 
         cartCount, 
@@ -124,7 +134,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             <div 
               className={`antialiased font-sans bg-brand-bg text-brand-text ${themeClassName}`}
               style={fontVariables}
@@ -161,7 +171,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
                                 <div className="flex-grow flex flex-col items-center justify-center">
                                     <p className="text-brand-text/70 mt-4 text-center py-8">Your cart is currently empty.</p>
                                     <a 
-                                        href="/templates/flavornest/shop"
+                                        href={`${basePath}/shop`}
                                         onClick={closeCart}
                                         className="w-full text-center inline-block btn btn-primary px-6 py-3"
                                     >
@@ -206,7 +216,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
                                         <p className="text-xs text-brand-text/60">Shipping & taxes calculated at checkout.</p>
                                         
                                         <a 
-                                            href="/templates/flavornest/checkout"
+                                            href={`${basePath}/checkout`}
                                             onClick={closeCart}
                                             className="mt-4 w-full text-center inline-block btn btn-primary px-6 py-3"
                                         >
