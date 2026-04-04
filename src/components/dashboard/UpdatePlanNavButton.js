@@ -11,27 +11,8 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
   const [loading, setLoading] = useState(true);
 
   // PWA State
-  const { deferredPrompt, clearPrompt } = usePwa();
-  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const { deferredPrompt, clearPrompt, isPwaInstalled } = usePwa();
   const [showPwaInstall, setShowPwaInstall] = useState(false);
-
-  useEffect(() => {
-    // Check if PWA is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      setIsPwaInstalled(true);
-    }
-
-    const handleAppInstalled = () => {
-      setIsPwaInstalled(true);
-      clearPrompt();
-    };
-
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -77,18 +58,27 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
     fetchUserPlan();
   }, []);
 
-  // Decide whether to show PWA install or Update Plan randomly, but only if PWA is installable and not installed
+  // Toggle PWA prompt every 15 seconds
   useEffect(() => {
-    if (!loading) {
-      if (!isPwaInstalled && deferredPrompt && nextPlanText) {
-        // Randomize
+    if (loading) return;
+
+    if (!isPwaInstalled && deferredPrompt && !nextPlanText) {
+      // If they are on max plan, always show install if available
+      setShowPwaInstall(true);
+      return;
+    }
+
+    if (!isPwaInstalled && deferredPrompt && nextPlanText) {
+        // Start by randomly assigning it
         setShowPwaInstall(Math.random() > 0.5);
-      } else if (!isPwaInstalled && deferredPrompt && !nextPlanText) {
-        // If they are on max plan, always show install if available
-        setShowPwaInstall(true);
-      } else {
+
+        // Toggle every 15s
+        const interval = setInterval(() => {
+            setShowPwaInstall(prev => !prev);
+        }, 15000);
+        return () => clearInterval(interval);
+    } else {
         setShowPwaInstall(false);
-      }
     }
   }, [loading, isPwaInstalled, deferredPrompt, nextPlanText]);
 
@@ -102,7 +92,7 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setIsPwaInstalled(true);
+        // App installed, context will update via event listener
       }
       clearPrompt();
     }

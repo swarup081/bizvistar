@@ -9,7 +9,7 @@ import { usePwa } from '@/components/dashboard/PwaContext';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
-  const { deferredPrompt, clearPrompt } = usePwa();
+  const { deferredPrompt, clearPrompt, isPwaInstalled } = usePwa();
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -614,7 +614,7 @@ export default function ProfilePage() {
                 
 
 
-          {deferredPrompt && (
+          {!isPwaInstalled && deferredPrompt && (
           <div className="bg-gradient-to-r from-[#8A63D2] to-[#6A43B2] rounded-2xl shadow-lg border border-[#8A63D2]/20 overflow-hidden mb-8 text-white">
             <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-4">

@@ -5,33 +5,19 @@ import { Download, X, Smartphone } from 'lucide-react';
 import { usePwa } from './PwaContext';
 
 export default function PwaInstallPopup() {
-  const { deferredPrompt, clearPrompt } = usePwa();
+  const { deferredPrompt, clearPrompt, isPwaInstalled } = usePwa();
   const [isVisible, setIsVisible] = useState(false);
-  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if PWA is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      setIsPwaInstalled(true);
-      return;
+    if (isPwaInstalled) {
+        setIsVisible(false);
+        return;
     }
 
     if (deferredPrompt) {
         checkAndShowPopup();
     }
-
-    const handleAppInstalled = () => {
-      setIsPwaInstalled(true);
-      setIsVisible(false);
-      clearPrompt();
-    };
-
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, [deferredPrompt]);
+  }, [deferredPrompt, isPwaInstalled]);
 
   const checkAndShowPopup = () => {
     const lastDismissedStr = localStorage.getItem('pwa_popup_dismissed_at');
@@ -57,7 +43,6 @@ export default function PwaInstallPopup() {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      setIsPwaInstalled(true);
       setIsVisible(false);
     }
     clearPrompt();
