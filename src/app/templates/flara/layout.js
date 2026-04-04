@@ -162,14 +162,10 @@ function TemplateStateProvider({ children, serverData, websiteId }) {
     const pathname = usePathname();
 
     let basePath = '/templates/flara';
-    if (serverData) {
-        if (pathname && pathname.startsWith('/site/')) {
-            const parts = pathname.split('/');
-            if (parts.length >= 3) {
-                 basePath = `/${parts[1]}/${parts[2]}`;
-            }
-        } else {
-             basePath = '.';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
         }
     }
 

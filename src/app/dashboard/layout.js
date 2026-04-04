@@ -22,6 +22,7 @@ import Logo from '@/lib/logo/logoOfBizVistar';
 import { NotificationManager } from '@/components/dashboard/notifications/NotificationManager';
 import NotificationBell from '@/components/dashboard/notifications/NotificationBell';
 import UpdatePlanNavButton from '@/components/dashboard/UpdatePlanNavButton';
+import PwaInstallPopup from '@/components/dashboard/PwaInstallPopup';
 // import PostPaymentManager from '@/components/dashboard/PostPaymentManager';
 
 export default function DashboardLayout({ children }) {

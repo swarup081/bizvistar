@@ -14,7 +14,7 @@ import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {
     const cart = useCart();
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId, basePath } = useContext(TemplateContext);
     const { 
         formData, fieldErrors, isSubmitting, message, 
         handleChange, handleStateChange, submit,
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
                         "Payments are processed directly between you and the store owner. The owner may request a payment screenshot for verification. Bizvistar does not facilitate transactions or charge commissions."
                     </p>
                     
-                    <a href="/templates/blissly/shop" className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
+                    <a href={`${basePath}/shop`} className="block mt-8 text-brand-text underline text-sm hover:opacity-70">
                         Return to Shop
                     </a>
                 </div>
@@ -183,7 +183,7 @@ export default function CheckoutPage() {
                     <div className="text-center">
                         <p className="text-[3vw] md:text-xl text-brand-text/80">Your cart is empty.</p>
                         <a 
-                            href="/templates/blissly/shop"
+                            href={`${basePath}/shop`}
                             className="mt-8 inline-block bg-brand-secondary text-brand-bg px-6 py-3 md:px-8 md:py-3 font-medium tracking-wide rounded-lg text-[2.5vw] md:text-base hover:opacity-90 transition-all"
                         >
                             Start Shopping

@@ -19,6 +19,8 @@ const getProductsByIds = (allProducts, ids) => {
 
 // --- Main Page Component ---
 export default function BrewhavenPage() {
+    const { basePath } = useTemplateContext();
+
     
     // --- GET DATA FROM CONTEXT ---
     const { businessData } = useTemplateContext();
@@ -162,7 +164,7 @@ export default function BrewhavenPage() {
                             ))}
                         </div>
                         <div className="text-center mt-6 md:mt-12">
-                            <a href="/templates/blissly/shop" className="font-semibold text-brand-secondary text-[3vw] md:text-lg hover:text-brand-text transition-colors flex items-center justify-center">
+                            <a href={`${basePath}/shop`} className="font-semibold text-brand-secondary text-[3vw] md:text-lg hover:text-brand-text transition-colors flex items-center justify-center">
                                 {businessData.menu.cta} <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 ml-1 md:ml-2" />
                             </a>
                         </div>

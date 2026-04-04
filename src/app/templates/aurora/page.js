@@ -14,6 +14,7 @@ const getProductsByIds = (allProducts, ids) => {
 
 // "Explore All" Rotating Button
 const ExploreCircle = ({ isLanding }) => {
+    const { basePath } = useTemplateContext();
     const content = (
       <div  className="relative w-[25vw] h-[25vw] md:w-32 md:h-32 flex items-center justify-center cursor-pointer group">
         <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
@@ -43,7 +44,7 @@ const ExploreCircle = ({ isLanding }) => {
         );
     }
 
-    return <Link href="/templates/aurora/shop">{content}</Link>;
+    return <Link href={`${basePath}/shop`}>{content}</Link>;
 };
 
 function AuroraContent() {
@@ -262,7 +263,7 @@ function AuroraContent() {
                                 </p>
                                 <div className="flex items-center gap-8">
                                         <Link 
-                                            href="/templates/aurora/shop" 
+                                            href={`${basePath}/shop`}
                                             className="bg-[var(--color-dark)] text-white px-4 py-2 md:px-8 md:py-4 rounded-[4px] font-medium text-[2.5vw] md:text-sm hover:bg-opacity-90 transition-all flex items-center gap-2"
                                         >
                                         Shop Now <ArrowRight size={14} className="md:w-4 md:h-4" />
@@ -292,7 +293,7 @@ function AuroraContent() {
                                     <h2 className="text-[7vw] md:text-5xl font-serif mb-2 md:mb-4 text-[var(--color-dark)]">{businessData.collections?.title}</h2>
                                     <p className="text-[var(--color-text-light)] text-[3vw] md:text-base max-w-lg leading-relaxed">{businessData.collections?.subtitle}</p>
                                 </div>
-                                <Link href="/templates/aurora/shop" className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[var(--color-dark)] hover:text-[var(--color-dark)] text-[var(--color-text-light)] transition-all">
+                                <Link href={`${basePath}/shop`} className="hidden lg:flex items-center gap-2 text-xs font-bold uppercase tracking-widest border-b border-gray-300 pb-2 hover:border-[var(--color-dark)] hover:text-[var(--color-dark)] text-[var(--color-text-light)] transition-all">
                                     View Collection
                                 </Link>
                             </div>
@@ -304,7 +305,7 @@ function AuroraContent() {
                             </div>
                             {/* Mobile Only View Collection Button */}
                             <div className="mt-8 text-center block lg:hidden">
-                                <Link href="/templates/aurora/shop" className="inline-block bg-[var(--color-dark)] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[var(--color-gold)] transition-colors">
+                                <Link href={`${basePath}/shop`} className="inline-block bg-[var(--color-dark)] text-white px-8 py-3 text-[3vw] font-bold uppercase tracking-widest hover:bg-[var(--color-gold)] transition-colors">
                                     View Collection
                                 </Link>
                             </div>
@@ -355,6 +356,8 @@ function AuroraContent() {
 }
 
 export default function AuroraPage() {
+    const { basePath } = useTemplateContext();
+
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <AuroraContent />

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { businessData as initialBusinessData } from './data.js';
 import { Header, Footer, CartIcon } from './components.js';
 import { CartProvider, useCart } from './cartContext.js';
@@ -124,7 +125,7 @@ function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverDa
     const themeClassName = `theme-${businessData.theme.colorPalette}`;
     
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             <div 
               className={`antialiased bg-brand-bg text-brand-text ${themeClassName} font-sans`}
               style={fontVariables}
@@ -161,7 +162,7 @@ function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverDa
                                 <div className="flex-grow flex flex-col items-center justify-center">
                                     <p className="text-brand-text/70 text-center py-8">Your cart is empty.</p>
                                     <a 
-                                        href="/templates/blissly/shop"
+                                        href={`${basePath}/shop`}
                                         onClick={closeCart}
                                         className="w-full text-center inline-block bg-brand-primary border border-brand-text/10 text-brand-text px-6 py-3 font-medium rounded-lg"
                                     >
@@ -206,7 +207,7 @@ function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverDa
                                             <span>${total.toFixed(2)}</span>
                                         </div>
                                         <a 
-                                            href="/templates/blissly/checkout"
+                                            href={`${basePath}/checkout`}
                                             onClick={closeCart}
                                             className="mt-4 w-full text-center inline-block bg-brand-secondary text-brand-bg px-6 py-4 font-medium tracking-wide rounded-lg"
                                         >
@@ -246,7 +247,16 @@ export default function BlisslyLayout({ children, serverData, websiteId }) {
 // Wrapper to Provide State & Context
 function BlisslyStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
-    const router = useRouter();
+
+    const pathname = usePathname();
+    let basePath = '/templates/blissly';
+    if (serverData && pathname && pathname.startsWith('/site/')) {
+        const parts = pathname.split('/');
+        if (parts.length >= 3) {
+            basePath = `/${parts[1]}/${parts[2]}`;
+        }
+    }
+const router = useRouter();
 
     useEffect(() => {
         if (serverData) return;
@@ -276,14 +286,14 @@ function BlisslyStateProvider({ children, serverData, websiteId }) {
     }, [router, serverData]);
 
     return (
-        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId }}>
+        <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>
             {children}
         </TemplateContext.Provider>
     );
 }
 
 function BlisslyContent({ children }) {
-    const { businessData, websiteId } = useContext(TemplateContext);
+    const { businessData, websiteId , basePath } = useContext(TemplateContext);
     const { 
         cartCount, 
         isCartOpen, 
@@ -367,7 +377,7 @@ function BlisslyContent({ children }) {
                             <div className="flex-grow flex flex-col items-center justify-center">
                                 <p className="text-brand-text/70 text-center py-8">Your cart is empty.</p>
                                 <a 
-                                    href="/templates/blissly/shop"
+                                    href={`${basePath}/shop`}
                                     onClick={closeCart}
                                     className="w-full text-center inline-block bg-brand-primary border border-brand-text/10 text-brand-text px-6 py-3 font-medium rounded-lg"
                                 >
@@ -412,7 +422,7 @@ function BlisslyContent({ children }) {
                                         <span>${total.toFixed(2)}</span>
                                     </div>
                                     <a 
-                                        href="/templates/blissly/checkout"
+                                        href={`${basePath}/checkout`}
                                         onClick={closeCart}
                                         className="mt-4 w-full text-center inline-block bg-brand-secondary text-brand-bg px-6 py-4 font-medium tracking-wide rounded-lg"
                                     >

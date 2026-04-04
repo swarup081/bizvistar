@@ -3,10 +3,42 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import { Download } from 'lucide-react';
 
 export default function UpdatePlanNavButton({ isMobile = false }) {
   const [nextPlanText, setNextPlanText] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // PWA State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const [showPwaInstall, setShowPwaInstall] = useState(false);
+
+  useEffect(() => {
+    // Check if PWA is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      setIsPwaInstalled(true);
+    }
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsPwaInstalled(false);
+    };
+
+    const handleAppInstalled = () => {
+      setIsPwaInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserPlan = async () => {
@@ -52,9 +84,62 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
     fetchUserPlan();
   }, []);
 
+  // Decide whether to show PWA install or Update Plan randomly, but only if PWA is installable and not installed
+  useEffect(() => {
+    if (!loading) {
+      if (!isPwaInstalled && deferredPrompt && nextPlanText) {
+        // Randomize
+        setShowPwaInstall(Math.random() > 0.5);
+      } else if (!isPwaInstalled && deferredPrompt && !nextPlanText) {
+        // If they are on max plan, always show install if available
+        setShowPwaInstall(true);
+      } else {
+        setShowPwaInstall(false);
+      }
+    }
+  }, [loading, isPwaInstalled, deferredPrompt, nextPlanText]);
+
   if (loading) return (
       <div className={isMobile ? "w-8 h-8 rounded-full bg-gray-200 animate-pulse" : "w-32 h-8 rounded-full bg-gray-200 animate-pulse"}></div>
   );
+
+  const handleInstallClick = async (e) => {
+    e.preventDefault();
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsPwaInstalled(true);
+      }
+      setDeferredPrompt(null);
+    }
+  };
+
+  if (showPwaInstall) {
+    if (isMobile) {
+      return (
+          <button
+              onClick={handleInstallClick}
+              className="flex items-center justify-center w-auto pl-5 pr-5 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md hover:shadow-lg transition-all border border-green-700/50"
+              title="Install Dashboard App"
+          >
+              <Download size={14} className="text-white drop-shadow-md mr-1"/>
+              <span className="p-2 text-sm font-bold">Install App</span>
+          </button>
+      );
+    }
+
+    return (
+      <button
+          onClick={handleInstallClick}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 bg-[length:200%_auto] text-white text-sm font-bold shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5 border border-green-700/40 relative overflow-hidden group hover:bg-[position:right_center]"
+      >
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></span>
+          <Download size={16} className="text-white drop-shadow-md animate-bounce"/>
+          <span className="drop-shadow-sm">Install App</span>
+      </button>
+    );
+  }
 
   if (!nextPlanText) return null; // Don't show if max plan
 
@@ -73,7 +158,7 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
             title={buttonText}
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap text-yellow-400"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-           <span className="p-2">Update Plan</span>  </Link>
+           <span className="p-2 text-sm font-bold">Update Plan</span>  </Link>
     );
   }
 

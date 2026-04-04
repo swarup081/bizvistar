@@ -2,12 +2,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock, Truck } from 'lucide-react';
+import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock, Truck, Download, Smartphone } from 'lucide-react';
 import { updateProfileDataAction } from '@/app/actions/profileActions';
 import PlanManager from '@/components/dashboard/PlanManager';
 
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
   const [saving, setSaving] = useState(false);
   
   // Forms state
@@ -575,75 +595,6 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                     <div className="space-y-2 md:col-span-2">
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Billing Address</h4>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                        <input
-                            type="tel"
-                            name="phoneNumber"
-                            value={formData.phoneNumber}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
-                            placeholder="e.g. 9876543210"
-                        />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                        <label className="text-sm font-medium text-gray-700">Address</label>
-                        <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
-                            placeholder="Street address, building, etc."
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">City</label>
-                        <input
-                            type="text"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">State</label>
-                        <input
-                            type="text"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">ZIP Code</label>
-                        <input
-                            type="text"
-                            name="zipCode"
-                            value={formData.zipCode}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#8A63D2]/20 focus:border-[#8A63D2] transition-colors outline-none"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Country</label>
-                        <input
-                            type="text"
-                            name="country"
-                            value={formData.country}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 outline-none"
-                            disabled
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
-                    <div className="space-y-2 md:col-span-2">
                         <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Company Details (Optional)</h4>
                     </div>
                     <div className="space-y-2">
@@ -669,6 +620,30 @@ export default function ProfilePage() {
                 </div>
 
                 
+
+
+          {deferredPrompt && (
+          <div className="bg-gradient-to-r from-[#8A63D2] to-[#6A43B2] rounded-2xl shadow-lg border border-[#8A63D2]/20 overflow-hidden mb-8 text-white">
+            <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <Download className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold">Install Dashboard App</h3>
+                        <p className="text-white/80 text-sm mt-1">Get quick access to your business dashboard straight from your device.</p>
+                    </div>
+                </div>
+                <button
+                    onClick={handleInstallClick}
+                    className="px-6 py-3 bg-white text-[#8A63D2] hover:bg-gray-50 rounded-xl font-bold transition-colors whitespace-nowrap shadow-sm"
+                >
+                    Install App Now
+                </button>
+            </div>
+          </div>
+          )}
+
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">

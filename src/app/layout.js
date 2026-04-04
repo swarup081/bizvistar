@@ -52,6 +52,7 @@ const boiling = localFont({
 // --- END FONT DEFINITIONS ---
 
 import SupportWidget from '@/components/dashboard/SupportWidget';
+import PwaRegistration from '@/components/PwaRegistration';
 
 export const metadata = {
   title: "BizVistaar",
@@ -63,9 +64,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${boiling.variable} antialiased`}
       >
+        <PwaRegistration />
         {children}
         <SupportWidget />
       </body>
