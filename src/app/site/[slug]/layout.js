@@ -57,7 +57,7 @@ export async function generateMetadata({ params }) {
   const title = businessName || 'Bizvistar';
 
   // Logic for the icon:
-  // 1. User uploaded logo
+  // 1. User uploaded logo (logoUrl)
   // 2. SVG letter generated from business name
   // 3. If neither (businessName is empty), fallback to Bizvistar's default favicon
   let iconUrl = '';
@@ -74,10 +74,11 @@ export async function generateMetadata({ params }) {
       absolute: title,
     },
     // We explicitly supply the icons object so it perfectly overrides the parent layout config
+    // Using objects with 'url' helps Next.js parse base64/data URIs accurately.
     icons: {
-      icon: iconUrl,
-      shortcut: iconUrl,
-      apple: iconUrl,
+      icon: [{ url: iconUrl }],
+      shortcut: [{ url: iconUrl }],
+      apple: [{ url: iconUrl }],
     },
     openGraph: {
       title,
