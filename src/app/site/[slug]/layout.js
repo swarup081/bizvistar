@@ -48,19 +48,39 @@ export async function generateMetadata({ params }) {
       .single();
 
     if (onboarding) {
-      businessName = businessName || onboarding.owner_name;
-      logoUrl = logoUrl || onboarding.logo_url;
+      businessName = businessName || onboarding.owner_name || '';
+      logoUrl = logoUrl || onboarding.logo_url || '';
     }
   }
 
-  const title = businessName || 'Bizvistar Site';
+  // If businessName is empty, fallback to "Bizvistar"
+  const title = businessName || 'Bizvistar';
 
-  // Use logo if available, otherwise generate a data URI SVG with the first letter
-  const iconUrl = logoUrl || generateFallbackFavicon(businessName);
+  // Logic for the icon:
+  // 1. User uploaded logo
+  // 2. SVG letter generated from business name
+  // 3. If neither (businessName is empty), fallback to Bizvistar's default favicon
+  let iconUrl = '';
+  if (logoUrl) {
+    iconUrl = logoUrl;
+  } else if (businessName) {
+    iconUrl = generateFallbackFavicon(businessName);
+  } else {
+    // If no logo and no business name, just omit the icons block so it falls back
+    // to the default /favicon.ico provided by the Next.js root layout.
+    return {
+      title: {
+        absolute: title,
+      },
+      openGraph: {
+        title,
+      },
+    };
+  }
 
   return {
     title: {
-      absolute: title, // Explicitly override any layout title template
+      absolute: title,
     },
     icons: {
       icon: iconUrl,
