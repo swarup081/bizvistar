@@ -4,59 +4,35 @@ import Logo from '@/lib/logo/logoOfBizVistar';
 
 const footerData = [
   {
-    title: "Product",
+    title: "Platform",
     links: [
-      { name: "Website Templates", href: "#" }, 
-      { name: "Website Builder", href: "#" }, 
-      { name: "E-Commerce", href: "#" }, 
-      { name: "AI Features", href: "#" },
-      { name: "Integrations", href: "#" }, 
-      { name: "Hosting", href: "#" }, 
-      { name: "Domain Names", href: "#" }, 
-      { name: "Mobile App Builder", href: "#" }
+      { name: "Website Templates", href: "/templates" },
+      { name: "Pricing", href: "/pricing" },
+      { name: "Login", href: "/login" },
+      { name: "Sign Up", href: "/login" },
     ]
   },
   {
-    title: "Solutions",
+    title: "Features",
     links: [
-      { name: "Online Store", href: "#" }, 
-      { name: "Portfolio Website", href: "#" }, 
-      { name: "Blog Website", href: "#" }, 
-      { name: "Service Business", href: "#" },
-      { name: "Agencies", href: "#" }, 
-      { name: "Enterprise", href: "#" }, 
-      { name: "Creators", href: "#" }
+      { name: "Online Store", href: "/#e-commerce" },
+      { name: "AI Builder", href: "/#ai" },
+      { name: "UPI Payments", href: "/#upi" },
     ]
   },
   {
-    title: "Resources",
+    title: "Legal",
     links: [
-      { name: "Blog", href: "#" }, 
-      { name: "Help Center", href: "#" }, 
-      { name: "Community", href: "#" }, 
-      { name: "Guides & Tutorials", href: "#" },
-      { name: "API Documentation", href: "#" },
-      { name: "Marketplace", href: "#" }
-    ]
-  },
-  {
-    title: "Support",
-    links: [
-      { name: "Contact Support", href: "#" }, 
-      { name: "Hire an Expert", href: "#" }, 
-      { name: "Report Abuse", href: "#" }, 
-      { name: "System Status", href: "#", highlight: true }
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Refund Policy", href: "/terms" },
     ]
   },
   {
     title: "Company",
     links: [
-      { name: "About Us", href: "#" }, 
-      { name: "Careers", href: "#" }, 
-      { name: "Partners", href: "#" }, 
-      { name: "Affiliate Program", href: "#" },
-      { name: "Press & Media", href: "#" }, 
-      { name: "Contact Us", href: "#" }
+      { name: "Contact Support", href: "mailto:bizvistar.help@gmail.com" },
+      { name: "Report Abuse", href: "mailto:bizvistar.help@gmail.com" },
     ]
   }
 ];
@@ -72,8 +48,7 @@ const BrandSection = () => (
       BizVistar is a powerful platform that empowers businesses and individuals to build professional websites effortlessly. With intelligent design tools and comprehensive business solutions, BizVistar provides everything you need to create, manage, and scale your online presence.
     </p>
     <div className="flex flex-col gap-4">
-      <Link href="#" className="hover:text-black transition-colors">About Us</Link>
-      <Link href="#" className="hover:text-black transition-colors">Contact Us</Link>
+      <Link href="mailto:bizvistar.help@gmail.com" className="hover:text-black transition-colors">Contact Us</Link>
     </div>
   </div>
 );
@@ -93,7 +68,7 @@ export default function Footer() {
           </div>
 
           {/* Links Section */}
-          <div className="w-full lg:w-[75%] grid grid-cols-1 lg:grid-cols-5 lg:gap-6 border-t border-gray-200 lg:border-t-0">
+          <div className="w-full lg:w-[75%] grid grid-cols-1 lg:grid-cols-4 lg:gap-6 border-t border-gray-200 lg:border-t-0">
             {footerData.map((section, idx) => (
               <details 
                 key={idx} 
@@ -165,9 +140,8 @@ export default function Footer() {
           {/* Legal Links & Copyright */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 text-sm text-gray-500">
             <div className="flex gap-6">
-              <Link href="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
-              <Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-black transition-colors">Refund Policy</Link>
+              <Link href="/terms" className="hover:text-black transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-black transition-colors">Privacy</Link>
             </div>
             <span>© {new Date().getFullYear()} BizVistar. All rights reserved.</span>
           </div>

@@ -5,7 +5,7 @@ export function LegalLayout({ title, lastUpdated, children }) {
   return (
     <div className="bg-white min-h-screen text-gray-900 font-sans">
       {/* Header Area */}
-      <div className="pt-32 pb-16 px-6 md:px-12 max-w-7xl mx-auto border-b border-gray-100">
+      <div className="pt-16 pb-12 px-6 md:px-12 max-w-7xl mx-auto border-b border-gray-100">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">{title}</h1>
         <p className="text-gray-500">Last Revised: {lastUpdated}</p>
       </div>
