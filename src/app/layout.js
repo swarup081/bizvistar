@@ -55,8 +55,16 @@ import SupportWidget from '@/components/dashboard/SupportWidget';
 import PwaRegistration from '@/components/PwaRegistration';
 
 export const metadata = {
-  title: "Bizvistar",
+  title: {
+    template: "%s | Bizvistar",
+    default: "Bizvistar",
+  },
   description: "Empowering Local Businesses",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 
