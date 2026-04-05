@@ -25,17 +25,17 @@ export function LegalSection({ title, legalText, plainEnglish }) {
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-24 xl:gap-32 border-b border-gray-100 pb-12 last:border-0">
       {/* Left Column: Legal Text */}
       <div className="w-full lg:w-3/5 prose prose-gray max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-li:text-gray-700">
-        {title && <h2 className="text-2xl font-bold mb-6 text-gray-900">{title}</h2>}
+        {title && <span className="block text-2xl font-bold mb-6 text-gray-900">{title}</span>}
         {legalText}
       </div>
 
       {/* Right Column: Plain English Summary (#TheBizvistarWay) */}
-      <div className="w-full lg:w-2/5 lg:pl-4">
+      <div className="w-full lg:w-2/5 lg:pl-4 relative">
         {plainEnglish && (
-          <div className="sticky top-28 pt-2">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <div className="sticky top-40 pt-4">
+            <span className="block text-lg font-semibold mb-3 flex items-center gap-2">
               <span className="text-[#8A63D2]">#TheBizvistarWay</span>
-            </h3>
+            </span>
             <div className="text-gray-500 text-sm leading-relaxed space-y-4">
               {plainEnglish}
             </div>
