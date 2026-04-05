@@ -165,9 +165,9 @@ export default function Footer() {
           {/* Legal Links & Copyright */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 text-sm text-gray-500">
             <div className="flex gap-6">
-              <Link href="#" className="hover:text-black transition-colors">Terms of Service</Link>
-              <Link href="#" className="hover:text-black transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-black transition-colors">Refund Policy</Link>
+              <Link href="/terms" className="hover:text-black transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-black transition-colors">Refund Policy</Link>
             </div>
             <span>© {new Date().getFullYear()} BizVistar. All rights reserved.</span>
           </div>
