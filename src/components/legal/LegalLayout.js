@@ -32,11 +32,11 @@ export function LegalSection({ title, legalText, plainEnglish }) {
       {/* Right Column: Plain English Summary (#TheBizvistarWay) */}
       <div className="w-full lg:w-1/3">
         {plainEnglish && (
-          <div className="sticky top-24 bg-gray-50 rounded-2xl p-6 lg:p-8">
-            <h3 className="text-lg font-bold mb-4 text-brand-600 flex items-center gap-2">
+          <div className="sticky top-28 pt-2">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <span className="text-[#8A63D2]">#TheBizvistarWay</span>
             </h3>
-            <div className="text-gray-600 text-sm leading-relaxed space-y-4">
+            <div className="text-gray-500 text-sm leading-relaxed space-y-4">
               {plainEnglish}
             </div>
           </div>
