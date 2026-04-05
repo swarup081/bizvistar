@@ -57,7 +57,9 @@ export async function generateMetadata({ params }) {
   const iconUrl = logoUrl || generateFallbackFavicon(businessName);
 
   return {
-    title,
+    title: {
+      absolute: title, // This explicitly overrides any layout title template
+    },
     icons: {
       icon: iconUrl,
       shortcut: iconUrl,
