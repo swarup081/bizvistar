@@ -34,8 +34,10 @@ export async function generateMetadata({ params }) {
   if (!site) return {};
 
   const websiteData = site.website_data || {};
-  let businessName = websiteData.businessName;
-  let logoUrl = websiteData.logo;
+
+  // Follow the exact fallback chain used in profile
+  let businessName = websiteData.name || websiteData.businessName || websiteData.business?.name || '';
+  let logoUrl = websiteData.logo || '';
 
   // Fallback to onboarding data if not in website_data directly
   if (!businessName || !logoUrl) {
@@ -58,7 +60,7 @@ export async function generateMetadata({ params }) {
 
   return {
     title: {
-      absolute: title, // This explicitly overrides any layout title template
+      absolute: title, // Explicitly override any layout title template
     },
     icons: {
       icon: iconUrl,
