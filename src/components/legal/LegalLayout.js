@@ -22,15 +22,15 @@ export function LegalLayout({ title, lastUpdated, children }) {
 
 export function LegalSection({ title, legalText, plainEnglish }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 border-b border-gray-100 pb-12 last:border-0">
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-24 xl:gap-32 border-b border-gray-100 pb-12 last:border-0">
       {/* Left Column: Legal Text */}
-      <div className="w-full lg:w-2/3 prose prose-gray max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-li:text-gray-700">
+      <div className="w-full lg:w-3/5 prose prose-gray max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-li:text-gray-700">
         {title && <h2 className="text-2xl font-bold mb-6 text-gray-900">{title}</h2>}
         {legalText}
       </div>
 
       {/* Right Column: Plain English Summary (#TheBizvistarWay) */}
-      <div className="w-full lg:w-1/3">
+      <div className="w-full lg:w-2/5 lg:pl-4">
         {plainEnglish && (
           <div className="sticky top-28 pt-2">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
