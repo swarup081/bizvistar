@@ -66,27 +66,19 @@ export async function generateMetadata({ params }) {
   } else if (businessName) {
     iconUrl = generateFallbackFavicon(businessName);
   } else {
-    // If no logo and no business name, omit icons so it falls back to /favicon.ico
-    return {
-      title: {
-        absolute: title,
-      },
-      openGraph: {
-        title,
-      },
-    };
+    iconUrl = '/favicon.ico';
   }
 
   return {
     title: {
       absolute: title,
     },
-    // Enforcing array format for robust Next.js icon injection
-    icons: [
-      { rel: 'icon', url: iconUrl },
-      { rel: 'shortcut icon', url: iconUrl },
-      { rel: 'apple-touch-icon', url: iconUrl }
-    ],
+    // We explicitly supply the icons object so it perfectly overrides the parent layout config
+    icons: {
+      icon: iconUrl,
+      shortcut: iconUrl,
+      apple: iconUrl,
+    },
     openGraph: {
       title,
       images: logoUrl ? [logoUrl] : [],

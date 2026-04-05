@@ -60,6 +60,11 @@ export const metadata = {
     default: "Bizvistar",
   },
   description: "Empowering Local Businesses",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 
