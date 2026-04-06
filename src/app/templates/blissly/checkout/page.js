@@ -9,7 +9,8 @@ import { TemplateContext } from '../templateContext.js';
 import { useCheckout } from '@/hooks/useCheckout';
 import { Loader2, AlertCircle, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { QRCodeSVG } from 'qrcode.react';
+import dynamic from 'next/dynamic';
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG), { ssr: false });
 import StateSelector from '@/components/checkout/StateSelector';
 
 export default function CheckoutPage() {

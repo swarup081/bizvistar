@@ -1,5 +1,4 @@
 export const runtime = 'edge';
-import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 
 const SYSTEM_PROMPT = `
@@ -49,24 +48,36 @@ export async function POST(req) {
          return NextResponse.json({ reply: "I am currently offline for maintenance. Please contact support via WhatsApp." });
     }
 
-    const openai = new OpenAI({ apiKey });
-
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
     }
 
     // Layer 2: The AI Analyst
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        ...messages
-      ],
-      temperature: 0.7,
-      max_tokens: 150, // Keep it short as per constraints
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...messages
+        ],
+        temperature: 0.7,
+        max_tokens: 150, // Keep it short as per constraints
+      })
     });
 
-    const aiResponse = completion.choices[0].message.content;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenAI API returned non-ok status:", errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content;
 
     return NextResponse.json({ reply: aiResponse });
 

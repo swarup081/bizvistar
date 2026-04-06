@@ -3,16 +3,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function verifyWebsiteOwnership(websiteId) {
     const cookieStore = await cookies();
@@ -442,13 +437,31 @@ export async function generateAIContent(description, templateName = null) {
             ${JSON.stringify(currentData).substring(0, 15000)} 
         `; // Truncate to avoid token limits if necessary
 
-        const completion = await openai.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "gpt-3.5-turbo-1106", // or gpt-4
-            response_format: { type: "json_object" },
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            throw new Error("OpenAI API key missing");
+        }
+
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo-1106",
+                response_format: { type: "json_object" },
+                messages: [{ role: "user", content: prompt }]
+            })
         });
 
-        const newContent = JSON.parse(completion.choices[0].message.content);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        const newContent = JSON.parse(data.choices[0].message.content);
         
         // Merge safely? Or assume AI returned full structure?
         // AI might return partial or full. Prompt asked for update.

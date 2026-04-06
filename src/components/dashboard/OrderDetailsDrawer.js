@@ -4,8 +4,6 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X, Truck, CheckCircle, Package, FileText, MessageCircle, MapPin, User, Calendar, AlertCircle, StickyNote, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 // --- Confirmation Modal ---
 function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 'normal' }) {
@@ -119,7 +117,10 @@ export default function OrderDetailsDrawer({ order, isOpen, onClose, onUpdate, b
     }
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
+    const jsPDF = (await import('jspdf')).default;
+    const autoTable = (await import('jspdf-autotable')).default;
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
