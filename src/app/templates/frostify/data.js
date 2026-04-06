@@ -182,7 +182,7 @@ export const businessData = {
 
     footer: {
         contactTitle: "Contact us",
-        copyright: "© 2026 by Sweet Delight. Built on BizVistar.",
+        copyright: "© 2026 by Sweet Delight. Built on Bizvistar.",
         socials: [ 
             { platform: "IG", url: "#" }, 
             { platform: "FB", url: "#" }, 

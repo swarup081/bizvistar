@@ -330,7 +330,7 @@ function PricingContent() {
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our Bizvistar Guides are always here to help.</p>
               </div>
             </div>
 

@@ -266,7 +266,7 @@ export default function PostPaymentManager() {
   }
 
   if (status === 'success') {
-      const siteUrl = website ? `${website.site_slug}.bizvistaar.com` : 'your-site.bizvistaar.com'; 
+      const siteUrl = website ? `${website.site_slug}.bizvistar.com` : 'your-site.bizvistar.com'; 
       
       return (
           <ModalOverlay>

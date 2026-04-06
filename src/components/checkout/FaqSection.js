@@ -88,41 +88,41 @@ export default function FaqSection({ pageType = 'default' }) {
     ],
     landing: [
       {
-        q: 'What is BizVistar?',
-        a: 'BizVistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
+        q: 'What is Bizvistar?',
+        a: 'Bizvistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
       },
       {
         q: 'How do I get started?',
         a: 'Simply sign up, choose a template that fits your business, customize it in our easy-to-use editor, and launch your site!'
       },
       {
-        q: 'Do I need technical skills to use BizVistar?',
+        q: 'Do I need technical skills to use Bizvistar?',
         a: 'Not at all! Our intuitive drag-and-drop editor and pre-designed templates make it easy for anyone to build a professional website without writing a single line of code.'
       },
       {
         q: 'Can I use my own domain name?',
-        a: 'Yes, you can easily connect your own custom domain name to your BizVistar website.'
+        a: 'Yes, you can easily connect your own custom domain name to your Bizvistar website.'
       },
       {
-        q: 'Is BizVistar optimized for mobile devices?',
+        q: 'Is Bizvistar optimized for mobile devices?',
         a: 'Absolutely. All our templates are fully responsive and designed to look great on any device, from desktops to smartphones.'
       },
       {
         q: 'Do you charge any transaction fees?',
-        a: 'No, BizVistar does not charge any transaction fees on your sales. You keep 100% of your profits.'
+        a: 'No, Bizvistar does not charge any transaction fees on your sales. You keep 100% of your profits.'
       }
     ],
     default: [
       {
-        q: 'What is BizVistar?',
-        a: 'BizVistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
+        q: 'What is Bizvistar?',
+        a: 'Bizvistar is a platform that empowers businesses to easily create and manage their online presence with powerful e-commerce tools.'
       },
       {
         q: 'How do I get started?',
         a: 'Simply sign up, choose a template that fits your business, customize it in our easy-to-use editor, and launch your site!'
       },
       {
-        q: 'Do I need technical skills to use BizVistar?',
+        q: 'Do I need technical skills to use Bizvistar?',
         a: 'Not at all! Our intuitive drag-and-drop editor and pre-designed templates make it easy for anyone to build a professional website without writing a single line of code.'
       }
     ]
@@ -152,7 +152,7 @@ export default function FaqSection({ pageType = 'default' }) {
         <p className="text-lg text-gray-600">
           Haven't found what you're looking for? Try the{' '}
           <button onClick={handleHelpCenterClick} className="text-[#8a63d2] hover:underline hover:text-[#7554b3] font-medium text-left">
-            BizVistar Help Center
+            Bizvistar Help Center
           </button>{' '}
           or{' '}
           <a

@@ -238,7 +238,7 @@ export default function SupportWidget() {
                         </div>
                         <div className="flex items-center gap-2">
                             <button 
-                                onClick={() => setMessages([{ role: 'assistant', content: 'Hi! I am the BizVistar Assistant. How can I help you today?' }])}
+                                onClick={() => setMessages([{ role: 'assistant', content: 'Hi! I am the Bizvistar Assistant. How can I help you today?' }])}
                                 className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
                             >
                                 Clear

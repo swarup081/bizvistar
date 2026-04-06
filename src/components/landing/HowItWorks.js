@@ -7,7 +7,7 @@ export default function HowItWorks() {
     {
       id: "1.",
       title: "Find a platform.",
-      description: "Pick a secure and reliable free website builder like BizVistar to create, host and manage your site in one place.",
+      description: "Pick a secure and reliable free website builder like Bizvistar to create, host and manage your site in one place.",
     },
     {
       id: "2.",

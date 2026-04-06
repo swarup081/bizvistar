@@ -445,7 +445,7 @@ const plans = {
               <div className="flex flex-col">
                 <Phone className="w-6 h-6 mb-4 text-gray-900" strokeWidth={1.5} />
                 <span className="font-bold text-gray-900 text-[15px] leading-snug min-h-[44px]">24/7 expert support</span>
-                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our BizVistar Guides are always here to help.</p>
+                <p className="text-gray-700 text-[13px] xl:text-[14px] leading-relaxed mt-3">Our Bizvistar Guides are always here to help.</p>
               </div>
             </div>
 
@@ -463,7 +463,7 @@ const plans = {
         {/* --- "Why Choose BizVistar?" Section --- */}
         <div className="mt-32 hidden lg:block">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-16">
-            Why Choose BizVistar?
+            Why Choose Bizvistar?
           </h2>
           <ComparisonTable />
         </div>
@@ -773,7 +773,7 @@ const ComparisonTable = () => (
                   <span className="text-sm font-normal text-gray-500">(Freelancers)</span>
                   </th>
                   <th className="text-center text-lg font-bold text-[#7554b3] p-6 border-l border-gray-200 bg-[#f4f1fa]">
-                    BizVistar<br />
+                    Bizvistar<br />
                     <span className="text-sm font-normal text-[#8a63d2]">(Your Partner)</span>
                   </th>
                 </tr>
@@ -899,7 +899,7 @@ const FaqItem = ({ q, a }) => {
 const FaqSection = () => {
   const faqs = [
     {
-      q: 'What do I get with a BizVistar plan?',
+      q: 'What do I get with a Bizvistar plan?',
       a: 'You get a complete business website with hosting, payments, order management, and analytics — all in one place. You can start selling, managing orders, and growing your business without needing multiple tools.'
     },
     {
@@ -907,7 +907,7 @@ const FaqSection = () => {
       a: 'Yes, you can switch between plans anytime. Upgrade instantly to unlock more features or downgrade based on your needs — no long-term commitments.'
     },
     {
-      q: 'Do I need technical skills to use BizVistar?',
+      q: 'Do I need technical skills to use Bizvistar?',
       a: 'Not at all. Your website is created using AI in seconds, and you can easily edit everything with a simple interface — no coding required.'
     },
     {
@@ -927,8 +927,8 @@ const FaqSection = () => {
       a: 'Yes, the Growth yearly plan includes a free custom domain for one year. You can also connect your own domain anytime.'
     },
     {
-      q: 'Can I use BizVistar for any type of business?',
-      a: 'Yes, BizVistar works for product-based businesses, service providers, and personal brands. You can customize your site based on your needs.'
+      q: 'Can I use Bizvistar for any type of business?',
+      a: 'Yes, Bizvistar works for product-based businesses, service providers, and personal brands. You can customize your site based on your needs.'
     },
     {
       q: 'How fast can I launch my website?',
@@ -953,7 +953,7 @@ const FaqSection = () => {
         <p className="text-lg text-gray-600">
           Haven't found what you're looking for? Try the{' '}
           <button onClick={handleHelpCenterClick} className="text-[#8a63d2] hover:underline hover:text-[#7554b3] font-medium text-left">
-            BizVistar Help Center
+            Bizvistar Help Center
           </button>{' '}
           or{' '}
           <a
