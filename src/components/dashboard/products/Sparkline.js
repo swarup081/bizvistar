@@ -1,6 +1,11 @@
 'use client';
 
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
+import dynamic from 'next/dynamic';
+const LineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
+
 
 export default function Sparkline({ data, color = '#8A63D2' }) {
   if (!data || data.length === 0) return <div className="h-8 w-24 bg-gray-100 rounded"></div>;

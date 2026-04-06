@@ -10,7 +10,8 @@ import { motion } from 'framer-motion';
 import { submitOrder } from '@/app/actions/orderActions';
 import { Loader2, AlertCircle, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { QRCodeSVG } from 'qrcode.react';
+import dynamic from 'next/dynamic';
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG), { ssr: false });
 
 export default function CheckoutPage() {
     const { cartDetails, subtotal, shipping, total, openCart, clearCart } = useCart();

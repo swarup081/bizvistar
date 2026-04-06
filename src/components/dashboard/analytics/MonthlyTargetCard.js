@@ -3,7 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { saveMonthlyTarget, getMonthlyTarget } from '@/app/actions/analyticsActions';
 import { supabase } from '@/lib/supabaseClient';
 import { MoreHorizontal, Edit2, Check, X, RefreshCw } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+
 
 export default function MonthlyTargetCard({ websiteId, currentRevenue, prevRevenue = 0, targetMultiplier = 1 }) {
   const [target, setTarget] = useState(600000); // Default placeholder
