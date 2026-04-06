@@ -1,9 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { X, FileSpreadsheet, FileText, Download, Calendar, ArrowLeft, Layers } from "lucide-react";
-import ExcelJS from "exceljs";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { supabase } from "@/lib/supabaseClient";
 import { subMonths, subYears, startOfMonth, startOfYear, isAfter } from "date-fns";
 
@@ -201,6 +198,7 @@ export default function ExportModal({ isOpen, onClose }) {
               fetchDataset("analytics", website.id, startDate)
           ]);
 
+          const ExcelJS = (await import("exceljs")).default;
           const workbook = new ExcelJS.Workbook();
 
           const addSheet = (name, data) => {
@@ -235,6 +233,7 @@ export default function ExportModal({ isOpen, onClose }) {
           }
 
           if (format === "excel" || format === "csv") {
+            const ExcelJS = (await import("exceljs")).default;
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet("Report");
 
@@ -262,6 +261,9 @@ export default function ExportModal({ isOpen, onClose }) {
             }
           }
           else if (format === "pdf") {
+            const jsPDF = (await import("jspdf")).default;
+            const autoTable = (await import("jspdf-autotable")).default;
+
             const doc = new jsPDF();
             doc.text(`BizVistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
             doc.text(`Period: ${TIME_RANGES.find(t => t.id === timeRange)?.label}`, 14, 22);
