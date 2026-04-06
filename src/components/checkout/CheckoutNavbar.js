@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 
 export default function CheckoutNavbar() {
   return (

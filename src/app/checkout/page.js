@@ -505,7 +505,7 @@ function CheckoutContent() {
         const options = {
             "key": subRes.keyId, 
             "subscription_id": subRes.subscriptionId,
-            "name": "BizVistar",
+            "name": "Bizvistar",
             "description": `${planName} Plan - ${billingCycle}`,
             "image": "https://bizvistar.com/logo.png", 
             "handler": async function (response) {
@@ -551,7 +551,7 @@ function CheckoutContent() {
                 "contact": formData.phoneNumber
             },
             "notes": {
-                "note_key": "BizVistar Subscription"
+                "note_key": "Bizvistar Subscription"
             },
             "theme": {
                 "color": "#8A63D2"

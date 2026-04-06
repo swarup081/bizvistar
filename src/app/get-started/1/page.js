@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion } from 'framer-motion';
 import { Globe, Sparkles, Palette } from 'lucide-react';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 
 const PencilIcon = ({ className }) => (
     <svg

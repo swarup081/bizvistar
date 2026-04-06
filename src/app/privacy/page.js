@@ -8,7 +8,7 @@ export default function PrivacyPolicy() {
     <div className="flex flex-col min-h-screen bg-white">
       <NewHeader />
       <main className="flex-grow mt-10">
-        <LegalLayout title="BizVistar Privacy Policy" lastUpdated={new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}>
+        <LegalLayout title="Bizvistar Privacy Policy" lastUpdated={new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}>
 
           <LegalSection
             title="1. Introduction"
@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
               <>
                 <p className="font-bold mb-2">1.1. Scope of Policy</p>
                 <p className="mb-4">
-                  BizVistar (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) cares deeply about the privacy of our users. This Privacy Policy describes how we collect, use, and share your Personal Information when you use our website (bizvistar.in), our website builder tools, and related services (collectively, the &quot;Services&quot;).
+                  Bizvistar (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;) cares deeply about the privacy of our users. This Privacy Policy describes how we collect, use, and share your Personal Information when you use our website (bizvistar.in), our website builder tools, and related services (collectively, the &quot;Services&quot;).
                 </p>
                 <p className="font-bold mb-2">1.2. Legal Framework</p>
                 <p>
@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
               <>
                 <p>We care about your privacy and keeping your data safe.</p>
                 <p>This policy explains what information we collect, how we use it, and who we share it with.</p>
-                <p>By using BizVistar, you agree to these rules.</p>
+                <p>By using Bizvistar, you agree to these rules.</p>
               </>
             }
           />
@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <p className="font-bold mb-2">2.3. Users-of-Users Data</p>
                 <p>
-                  We may also process information pertaining to visitors or customers of your BizVistar website (&quot;Users-of-Users&quot;). We process this data strictly on your behalf as a service provider. You are responsible for ensuring you have the legal right to collect and share this data with us.
+                  We may also process information pertaining to visitors or customers of your Bizvistar website (&quot;Users-of-Users&quot;). We process this data strictly on your behalf as a service provider. You are responsible for ensuring you have the legal right to collect and share this data with us.
                 </p>
               </>
             }
@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
               <>
                 <p>We collect information you give us (like your name and email when signing up).</p>
                 <p>We also collect technical info automatically (like what browser you use) so our website works correctly.</p>
-                <p>If you have customers on your BizVistar website, we process their data on your behalf, but you are responsible for getting their permission.</p>
+                <p>If you have customers on your Bizvistar website, we process their data on your behalf, but you are responsible for getting their permission.</p>
               </>
             }
           />
@@ -74,7 +74,7 @@ export default function PrivacyPolicy() {
                 <p className="font-bold mb-2">3.2. Secondary Uses</p>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>To send you administrative messages, legal notices, and promotional materials (you can opt out of promotional emails at any time).</li>
-                  <li>To analyze website usage and improve the functionality of BizVistar.</li>
+                  <li>To analyze website usage and improve the functionality of Bizvistar.</li>
                   <li>To comply with applicable laws and legal obligations.</li>
                 </ul>
               </>
@@ -82,7 +82,7 @@ export default function PrivacyPolicy() {
             plainEnglish={
               <>
                 <p>We use your information to run our service, process your payments, and help you if you contact support.</p>
-                <p>We also use it to figure out how to make BizVistar better for everyone.</p>
+                <p>We also use it to figure out how to make Bizvistar better for everyone.</p>
               </>
             }
           />
@@ -97,11 +97,11 @@ export default function PrivacyPolicy() {
                 </p>
                 <p className="font-bold mb-2">4.2. Third-Party AI Services</p>
                 <p className="mb-4">
-                  BizVistar utilizes third-party artificial intelligence service providers, such as OpenAI, to offer advanced features like text generation and analytics. By using these features, you acknowledge that non-sensitive business data, product descriptions, and user prompts may be transmitted to these AI providers to generate the requested content.
+                  Bizvistar utilizes third-party artificial intelligence service providers, such as OpenAI, to offer advanced features like text generation and analytics. By using these features, you acknowledge that non-sensitive business data, product descriptions, and user prompts may be transmitted to these AI providers to generate the requested content.
                 </p>
                 <p className="font-bold mb-2">4.3. Legal Compliance</p>
                 <p>
-                  We may disclose your information if required to do so by law, court order, or government request, or to protect the rights, property, or safety of BizVistar, our users, or the public.
+                  We may disclose your information if required to do so by law, court order, or government request, or to protect the rights, property, or safety of Bizvistar, our users, or the public.
                 </p>
               </>
             }

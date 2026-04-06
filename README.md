@@ -1,4 +1,4 @@
-# 🌐 BizVistar
+# 🌐 Bizvistar
 
 **Empowering Local Businesses with Simple, Affordable, and Professional Digital Presence**
 
@@ -20,7 +20,7 @@ Many local business owners *know* they need a website and social media presence,
 - ⚙️ **Technical Complexity:** Tools like WordPress or Wix can be overwhelming.  
 - 🧠 **Content Creation:** They don't know what to post on social media.
 
-**BizVistar** removes these barriers through a **simple, all-in-one subscription service.**
+**Bizvistar** removes these barriers through a **simple, all-in-one subscription service.**
 
 ---
 
@@ -39,7 +39,7 @@ Examples include:
 
 ## ⚙️ Core Product & Features
 
-BizVistar is a **"do-it-with-me"** service — automation powered by AI, guided by a human touch.
+Bizvistar is a **"do-it-with-me"** service — automation powered by AI, guided by a human touch.
 
 ### 🧠 AI-Powered Website Generator
 
@@ -150,7 +150,7 @@ We’re starting lean — focusing on learning, feedback, and trust.
 
 ## 🧩 Summary
 
-**BizVistar** bridges the gap between traditional businesses and modern digital tools.  
+**Bizvistar** bridges the gap between traditional businesses and modern digital tools.
 We make it possible for *every* local entrepreneur to have a stunning website, smart tools, and consistent online presence — without tech stress or high costs.
 
 ---

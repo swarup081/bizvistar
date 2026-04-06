@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 
 const footerData = [
   {
@@ -45,7 +45,7 @@ const BrandSection = () => (
       </Link>
     </div>
     <p className="leading-relaxed mb-6">
-      BizVistar is a powerful platform that empowers businesses and individuals to build professional websites effortlessly. With intelligent design tools and comprehensive business solutions, BizVistar provides everything you need to create, manage, and scale your online presence.
+      Bizvistar is a powerful platform that empowers businesses and individuals to build professional websites effortlessly. With intelligent design tools and comprehensive business solutions, Bizvistar provides everything you need to create, manage, and scale your online presence.
     </p>
     <div className="flex flex-col gap-4">
       <Link href="mailto:bizvistar.help@gmail.com" className="hover:text-black transition-colors">Contact Us</Link>
@@ -143,7 +143,7 @@ export default function Footer() {
               <Link href="/terms" className="hover:text-black transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-black transition-colors">Privacy</Link>
             </div>
-            <span>© {new Date().getFullYear()} BizVistar. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Bizvistar. All rights reserved.</span>
           </div>
 
         </div>
