@@ -184,7 +184,7 @@ export default function ExportModal({ isOpen, onClose }) {
 
       if (!website) throw new Error("No website found");
       const startDate = getStartDate();
-      const fileName = `BizVistar_Report_${timeRange}_${new Date().toISOString().slice(0,10)}`;
+      const fileName = `Bizvistar_Report_${timeRange}_${new Date().toISOString().slice(0,10)}`;
 
       // Handle "Full Backup" (Excel Only)
       if (reportType === "all") {
@@ -263,7 +263,7 @@ export default function ExportModal({ isOpen, onClose }) {
           }
           else if (format === "pdf") {
             const doc = new jsPDF();
-            doc.text(`BizVistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
+            doc.text(`Bizvistar Report: ${REPORT_TYPES.find(r => r.id === reportType)?.label}`, 14, 15);
             doc.text(`Period: ${TIME_RANGES.find(t => t.id === timeRange)?.label}`, 14, 22);
             
             const tableRows = result.data.map(row => result.columns.map(col => row[col]));

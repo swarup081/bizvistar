@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient'; 
 import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react'; 
 import { cn } from '@/lib/utils'; // Assuming cn is available
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 import Footer from '@/components/Footer';
 
 

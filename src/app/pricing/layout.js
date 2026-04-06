@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Check } from 'lucide-react';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 import Footer from '@/components/Footer';
 import NewHeader from '@/components/landing/NewHeader';
 

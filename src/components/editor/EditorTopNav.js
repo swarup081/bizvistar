@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, Save
 } from 'lucide-react';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 import AIContentModal from './AIContentModal';
 import { generateAIContent } from '@/app/actions/onboardingActions';
 
@@ -165,7 +165,7 @@ export default function EditorTopNav({
   
   // Use DB slug if in dashboard/available, else default placeholder
   const displaySlug = siteSlug || 'your-site-slug';
-  const siteUrl = `${displaySlug}.bizvistaar.com`;
+  const siteUrl = `${displaySlug}.bizvistar.com`;
 
   const handlePageSelect = (path) => {
     onPageChange(path);

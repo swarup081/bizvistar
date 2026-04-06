@@ -11,7 +11,7 @@ import { createBrowserClient } from '@supabase/ssr';
 export default function SupportWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hi! I am the BizVistar Assistant. How can I help you today?' }
+    { role: 'assistant', content: 'Hi! I am the Bizvistar Assistant. How can I help you today?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -160,7 +160,7 @@ export default function SupportWidget() {
                     I see this is an urgent issue. Please chat directly with the Founder.
                 </p>
                 <a 
-                    href={`https://wa.me/${contactFounderNumber || '919876543210'}?text=I%20need%20urgent%20help%20with%20my%20BizVistar%20account`}
+                    href={`https://wa.me/${contactFounderNumber || '919876543210'}?text=I%20need%20urgent%20help%20with%20my%20Bizvistar%20account`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-2 rounded-md text-sm font-medium transition-colors"
@@ -238,7 +238,7 @@ export default function SupportWidget() {
                         </div>
                         <div className="flex items-center gap-2">
                             <button 
-                                onClick={() => setMessages([{ role: 'assistant', content: 'Hi! I am the BizVistar Assistant. How can I help you today?' }])}
+                                onClick={() => setMessages([{ role: 'assistant', content: 'Hi! I am the Bizvistar Assistant. How can I help you today?' }])}
                                 className="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded transition-colors"
                             >
                                 Clear

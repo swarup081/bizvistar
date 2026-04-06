@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { GridBackgroundDemo } from "@/components/GridBackgroundDemo";
 import { motion, AnimatePresence } from 'framer-motion';
-import Logo from '@/lib/logo/logoOfBizVistar';
+import Logo from '@/lib/logo/logoOfBizvistar';
 
 // --- 1. Smart Skeleton Component (Subtle but Distinct Colors) ---
 const TemplateSkeleton = ({ variant }) => {
