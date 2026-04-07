@@ -55,6 +55,7 @@ export async function generateMetadata({ params }) {
 
   // If businessName is empty, fallback to "Bizvistar"
   const title = businessName || 'Bizvistar';
+  const description = websiteData.description || websiteData.hero?.subtitle || `Welcome to ${title}'s online store.`;
   
   // Logic for the icon:
   // 1. User uploaded logo (logoUrl)
@@ -69,10 +70,13 @@ export async function generateMetadata({ params }) {
     iconUrl = '/favicon.ico';
   }
 
+  const ogImageUrl = logoUrl ? logoUrl : 'https://bizvistar.in/dashboard.png';
+
   return {
     title: {
       absolute: title, 
     },
+    description: description,
     // We explicitly supply the icons object so it perfectly overrides the parent layout config
     // Using objects with 'url' helps Next.js parse base64/data URIs accurately.
     icons: {
@@ -82,7 +86,22 @@ export async function generateMetadata({ params }) {
     },
     openGraph: {
       title,
-      images: logoUrl ? [logoUrl] : [],
+      description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${title} Logo or Banner`,
+        }
+      ],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImageUrl],
     },
   };
 }
