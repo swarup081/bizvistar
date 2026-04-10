@@ -20,6 +20,98 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder"
 );
 
+function generateFallbackFavicon(text) {
+  const firstLetter = text ? text.charAt(0).toUpperCase() : 'B';
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#8A63D2" rx="20" />
+      <text x="50" y="50" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" dominant-baseline="central" text-anchor="middle">
+        ${firstLetter}
+      </text>
+    </svg>
+  `;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
+export async function generateMetadata({ params }) {
+  const { slug, productId } = await params;
+
+  if (!slug || !productId) return {};
+
+  const { data: site } = await supabaseAdmin
+    .from("websites")
+    .select("website_data, id")
+    .eq("site_slug", slug)
+    .single();
+
+  if (!site) return {};
+
+  const { data: product } = await supabaseAdmin
+    .from("products")
+    .select("name, description, image_url")
+    .eq("id", productId)
+    .eq("website_id", site.id)
+    .single();
+
+  if (!product) return {};
+
+  const websiteData = site.website_data || {};
+  let businessName = websiteData.name || websiteData.businessName || websiteData.business?.name || '';
+  let logoUrl = websiteData.logo || '';
+
+  if (!businessName || !logoUrl) {
+    const { data: onboarding } = await supabaseAdmin
+      .from("onboarding_data")
+      .select("owner_name, logo_url")
+      .eq("website_id", site.id)
+      .single();
+
+    if (onboarding) {
+      businessName = businessName || onboarding.owner_name || '';
+      logoUrl = logoUrl || onboarding.logo_url || '';
+    }
+  }
+
+  const title = `${product.name} | ${businessName || 'Bizvistar'}`;
+  const description = product.description || `Buy ${product.name} at ${businessName || 'our store'}.`;
+
+  // Image priority: Product Image -> Shop Logo -> SVG generation -> Dashboard fallback
+  let ogImageUrl = product.image_url;
+  if (!ogImageUrl) {
+    if (logoUrl) {
+      ogImageUrl = logoUrl;
+    } else if (businessName) {
+      ogImageUrl = generateFallbackFavicon(businessName);
+    } else {
+      ogImageUrl = 'https://bizvistar.in/dashboard.png';
+    }
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 800,
+          height: 800,
+          alt: product.name,
+        }
+      ],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description,
+      images: [ogImageUrl],
+    },
+  };
+}
+
 // CHANGED: The function signature is now (props)
 export default async function LiveProductPage(props) {
   // CHANGED: We now await props.params to get both parameters
