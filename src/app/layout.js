@@ -53,17 +53,40 @@ const boiling = localFont({
 
 import SupportWidget from '@/components/dashboard/SupportWidget';
 import PwaRegistration from '@/components/PwaRegistration';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata = {
   title: {
     template: "%s | Bizvistar",
     default: "Bizvistar",
   },
-  description: "Empowering Local Businesses",
+  description: "Empowering Local Businesses to build their online presence.",
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
+  },
+  openGraph: {
+    title: 'Bizvistar',
+    description: 'Empowering Local Businesses to build their online presence.',
+    url: 'https://bizvistar.in',
+    siteName: 'Bizvistar',
+    images: [
+      {
+        url: 'https://bizvistar.in/dashboard.png', // Fallback landing page image
+        width: 1200,
+        height: 630,
+        alt: 'Bizvistar Landing Page',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Bizvistar',
+    description: 'Empowering Local Businesses to build their online presence.',
+    images: ['https://bizvistar.in/dashboard.png'],
   },
 };
 
@@ -84,6 +107,17 @@ export default function RootLayout({ children }) {
             });
           `
         }} />
+        {process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID && (
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "${process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID}");
+            `
+          }} />
+        )}
       </head>
       <body
         className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${boiling.variable} antialiased`}
@@ -92,6 +126,9 @@ export default function RootLayout({ children }) {
         {children}
         <SupportWidget />
       </body>
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      )}
     </html>
   );
 }
