@@ -13,7 +13,7 @@ const categories = [
     { 
       id: 1, 
       name: "CUBAN COLLAR ", 
-      price: 55.00,
+      price: 755.00,
       category: 'c1',
       description: "A classic Cuban collar shirt with a relaxed fit, perfect for any casual occasion. Made from 100% breathable linen.",
       image: "/avenix/tian-dayong-8UsQoiJLNNQ-unsplash.jpg"
@@ -21,7 +21,7 @@ const categories = [
     { 
       id: 2, 
       name: "KNIT POLO SHIRT", 
-      price: 65.00,
+      price: 665.00,
       category: 'c1',
       description: "A sophisticated knit polo that bridges the gap between casual and smart. Crafted from a soft cotton blend.",
       image: "/avenix/ihor-rapita-Dy_WYJHrhO8-unsplash.jpg"
@@ -29,7 +29,7 @@ const categories = [
     { 
       id: 3, 
       name: "SLEEVELESS V-NECK TOP", 
-      price: 45.00,
+      price: 945.00,
       category: 'c2',
       description: "Striped sleeveless top with V-neck and halter button detail. A versatile piece for a modern wardrobe.",
       image: "/avenix/md-ishak-raman-GdZMLxhqNhU-unsplash.jpg"
@@ -37,7 +37,7 @@ const categories = [
     { 
       id: 4, 
       name: "CASUAL SPORTS CAP", 
-      price: 25.00,
+      price: 925.00,
       category: 'c5',
       description: "Lightweight sporty cap for comfort and sun-ready style. Features an adjustable back strap.",
       image: "/avenix/mediamodifier-F5i3PZXYkvY-unsplash.jpg"
@@ -45,7 +45,7 @@ const categories = [
     { 
       id: 5, 
       name: "HOODED SWEATSHIRT", 
-      price: 75.00,
+      price: 1075.00,
       category: 'c5',
       description: "Everyday hoodie with a relaxed shape and cozy feel. Made from premium heavyweight cotton.",
       image: "/avenix/ihor-rapita-KkvbXU0teEM-unsplash.jpg"
@@ -53,8 +53,8 @@ const categories = [
     { 
       id: 6, 
       name: "WIDE-LEG TROUSERS", 
-      price: 80.00,
-      category: 'c3',
+      price: 980.00,
+      category: 'c5',
       description: "Wide-leg pants with raw hems and a relaxed, easy fit. A statement piece for any outfit.",
       image: "/avenix/everdrop-gmbh-cDOMVV5Eaxw-unsplash.jpg"
     },

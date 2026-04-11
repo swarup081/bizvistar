@@ -56,7 +56,7 @@ const allProducts = [
       price: 299.00,
       category: 'earrings',
       description: "Classic pearl drop earrings that add a touch of sophistication.",
-      image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=800"
+      image: "/aurora/auroraprodcutid4.avif"
     },
     { 
         id: 5, 
@@ -64,7 +64,7 @@ const allProducts = [
         price: 1450.00,
         category: 'rings',
         description: "A bold ruby centerpiece surrounded by crushed diamonds.",
-        image: "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&q=80&w=800"
+        image: "/aurora/auroraprodcutid5.avif"
     },
     { 
         id: 6, 
@@ -152,7 +152,7 @@ export const businessData = {
     about: {
         title: "The Aurora Legacy",
         text: "Established in 2020, Aurora began as a humble atelier in the heart of the artisan district. For over a century, we have remained true to our founding principles: uncompromising quality, artistic innovation, and a deep respect for the gemstones we work with.",
-        image: "https://images.unsplash.com/photo-1531995811006-35cb42e1a022?auto=format&fit=crop&q=80&w=1000",
+        image: "/aurora/auroraaboutimage.avif",
     },
 
     collections: {
@@ -188,11 +188,11 @@ export const businessData = {
         title: "@aurora_official",
         handle: "Follow our journey",
         images: [
-            "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=400",
-            "https://images.unsplash.com/photo-1608042314453-ae338d80c427?auto=format&fit=crop&q=80&w=400",
+            "/aurora/auroraig1.avif",
+            "/aurora/auroraig2.png",
             "/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
-            "https://images.unsplash.com/photo-1603561591411-07134e71a2a9?auto=format&fit=crop&q=80&w=400",
-            "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=400",
+            "/aurora/auroraig3.png",
+            "/aurora/auroraprodcutid4.avif",
             "/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
         ]
     },

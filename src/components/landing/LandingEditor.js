@@ -294,7 +294,7 @@ export default function LandingEditor() {
                 ...prev,
                 hero: { 
                     ...prev.hero, 
-                    imageArch1_b: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?auto=format&fit=crop&q=80&w=500" 
+                    imageArch1_b: "/goldbraceletlanding.png"
                 }
             }));
             await wait(200);

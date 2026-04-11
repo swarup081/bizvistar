@@ -26,14 +26,7 @@ const categories = [
 
 const allProducts = [
     
-    { 
-        id: 8, 
-        name: "BUTTER CAKE", 
-        price: 4.50, 
-        category: 'pastries',
-        description: "Classic french butter croissant.",
-        image: "/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
-    },
+
     { 
       id: 1, 
       name: "CHOCOLATE CROISSANT", 
@@ -56,7 +49,7 @@ const allProducts = [
       price: 24.00,
       category: 'cookies',
       description: "A selection of 6 assorted French macarons.",
-      image: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&q=80&w=800"
+      image: "/frostify/macaronfrostify.avif"
     },
     { 
       id: 4, 
@@ -72,15 +65,15 @@ const allProducts = [
         price: 8.50,
         category: 'pastries',
         description: "Fresh berries atop a smooth vanilla custard.",
-        image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&q=80&w=400" 
+        image: "/frostify/cupcakefrostify.avif" 
     },
     { 
         id: 6, 
-        name: "RED VELVET CAKE", 
-        price: 45.00,
+        name: "Chocolate Cake", 
+        price: 745.00,
         category: 'cakes',
         description: "Classic red velvet with cream cheese frosting.",
-        image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=400" 
+        image: "/frostify/chcocakefrostify.avif" 
     },
     { 
         id: 7, 
@@ -89,6 +82,14 @@ const allProducts = [
         category: 'breads',
         description: "Freshly baked sourdough loaf.",
         image: "/frostify/katie-rosario-QNyRp21hb5I-unsplash.jpg" 
+    },
+    { 
+        id: 8, 
+        name: "BUTTER CAKE", 
+        price: 4.50, 
+        category: 'pastries',
+        description: "Classic french butter croissant.",
+        image: "/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
     }
 ];
 
@@ -121,7 +122,7 @@ export const businessData = {
         title: "Homemade Goodness in Every Bite",
         subtitle: "Freshly baked with love, using the finest ingredients.",
         cta: "Explore Treats",
-        image1: "https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?auto=format&fit=crop&q=80&w=800",
+        image1: "/frostify/cakeheroimage.avif",
         image2: "/frostify/sincerely-media-z10eH_RA6ZQ-unsplash.jpg"
     },
 
