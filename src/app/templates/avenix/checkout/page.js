@@ -75,7 +75,7 @@ export default function CheckoutPage() {
 
         // Check minimum order value
         if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
-            setCouponError(`Minimum order value of $${offer.min_order_value} required`);
+            setCouponError(`Minimum order value of ₹${offer.min_order_value} required`);
             setAppliedCoupon(null);
             return;
         }
@@ -339,8 +339,8 @@ export default function CheckoutPage() {
                                             <div>
                                                 <p className="font-bold text-gray-800 text-sm">{offer.code}</p>
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `$${offer.value} OFF`} 
-                                                    {offer.min_order_value > 0 ? ` on orders above $${offer.min_order_value}` : ''}
+                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `₹${offer.value} OFF`} 
+                                                    {offer.min_order_value > 0 ? ` on orders above ₹${offer.min_order_value}` : ''}
                                                 </p>
                                             </div>
                                             <button 
@@ -366,7 +366,7 @@ export default function CheckoutPage() {
                                         <h3 className="text-[3vw] md:text-base font-medium text-brand-text uppercase tracking-wider">{item.name}</h3>
                                         <p className="text-[2.5vw] md:text-sm text-brand-text/70">Quantity: {item.quantity}</p>
                                     </div>
-                                    <p className="font-medium text-brand-text text-[3vw] md:text-base">${(item.price * item.quantity).toFixed(2)}</p>
+                                    <p className="font-medium text-brand-text text-[3vw] md:text-base">₹{(item.price * item.quantity).toFixed(2)}</p>
                                 </div>
                             ))}
                         </div>
@@ -374,25 +374,25 @@ export default function CheckoutPage() {
                         <div className="space-y-2 border-b border-brand-text/10 py-4">
                             <div className="flex justify-between text-brand-text/80 text-[3vw] md:text-base">
                                 <span>Subtotal</span>
-                                <span>${subtotal.toFixed(2)}</span>
+                                <span>₹{subtotal.toFixed(2)}</span>
                             </div>
                                 {/* Discount Line */}
                                 {appliedCoupon && (
                                     <div className="flex justify-between items-center text-sm mb-3 text-green-600">
                                         <span className="flex items-center gap-1"><Tag size={14}/> Discount ({appliedCoupon.code})</span>
-                                        <span>-${discountAmount.toFixed(2)}</span>
+                                        <span>-₹{discountAmount.toFixed(2)}</span>
                                     </div>
                                 )}
 
                              <div className="flex justify-between text-brand-text/80 text-[3vw] md:text-base">
                                 <span>Shipping</span>
-                                <span>${typeof deliveryAmount !== 'undefined' ? deliveryAmount.toFixed(2) : 0}</span>
+                                <span>₹{typeof deliveryAmount !== 'undefined' ? deliveryAmount.toFixed(2) : 0}</span>
                             </div>
                         </div>
                         
                          <div className="flex justify-between text-brand-text font-bold text-[4vw] md:text-xl py-4">
                             <span>Total</span>
-                            <span>${finalTotal.toFixed(2)}</span>
+                            <span>₹{finalTotal.toFixed(2)}</span>
                         </div>
                         
                         {message && !message.includes('fix') && (

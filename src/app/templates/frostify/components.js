@@ -153,7 +153,7 @@ export const ProductCard = ({ item }) => {
                 <a href={productUrl} className="flex-grow">
                     <h3 className="font-serif text-[3vw] md:text-lg text-[var(--color-primary)] hover:text-[var(--color-secondary)] tracking-wide">{item.name}</h3>
                 </a>
-                <p className="text-[var(--color-secondary)] font-bold text-[3vw] md:text-lg">${item.price.toFixed(2)}</p>
+                <p className="text-[var(--color-secondary)] font-bold text-[3vw] md:text-lg">₹{item.price.toFixed(2)}</p>
                 
                 {/* Updated Buttons: View + Add (Side-by-side or Stacked, always visible) */}
                 <div className="mt-auto w-full flex gap-2">

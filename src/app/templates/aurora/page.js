@@ -66,19 +66,19 @@ function AuroraContent() {
             
            {/* --- HERO SECTION --- */}
            <Editable focusId="hero">
-                <section className={`relative w-full pb-0 ${isLanding ? 'pt-32 md:pt-40' : 'pt-4 md:pt-20'}`} style={isLanding ? { height: '100vh', overflow: 'hidden' } : {}}>
+                <section className={`relative w-full flex flex-col pb-0 ${isLanding ? 'pt-32 md:pt-40' : 'pt-4 md:pt-20'}`} style={isLanding ? { minHeight: '100vh', overflow: 'hidden' } : {}}>
                     
                     {/* Background Split: The right beige block */}
                     <div className="absolute top-0 right-0 w-[40%] h-[90%] bg-[var(--color-bg-alt)] -z-10 rounded-bl-[100px] hidden lg:block"></div>
 
-                    <div className="container mx-auto px-6 lg:px-16 relative h-full flex flex-col justify-center">
+                    <div className="container mx-auto px-6 lg:px-16 relative flex-grow flex flex-col justify-center">
                         {/* Mobile: Grid Cols 2 (Shrink) | Desktop: Grid Cols 12 */}
                         <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-12 items-center">
                             
                             {/* LEFT COLUMN: Text */}
-                            <div className="lg:col-span-6 flex flex-col justify-center lg:pr-12 z-10 pt-4 md:pt-0">
+                            <div className="lg:col-span-6 flex flex-col justify-center lg:pr-12 z-10 pt-4 md:pt-0 lg:py-[220px]">
                                 <div className="relative">
-                                    <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[var(--color-dark)] tracking-tight">
+                                    <h1 className="text-[10vw] md:text-[90px] font-serif leading-[1.1] text-[var(--color-dark)] tracking-tight break-words">
                                         <span className="relative inline-block">
                                             {businessData.hero?.title || "Desire Meets New Style"}
                                             {/* Floating Bracelet Image Graphic */}
@@ -89,7 +89,7 @@ function AuroraContent() {
                                     </h1>
                                 </div>
                                 
-                                <p className="text-[var(--color-text-light)] text-[3vw] md:text-lg mt-4 md:mt-8 mb-4 md:mb-10 max-w-md font-light leading-relaxed">
+                                <p className="text-[var(--color-text-light)] text-[3vw] md:text-lg mt-4 md:mt-8 mb-4 md:mb-10 max-w-lg font-light leading-relaxed break-words">
                                     {businessData.hero?.subtitle || "Anyone can get dressed up and glamorous, but it is how people dress in their days off that."}
                                 </p>
                             </div>
@@ -172,7 +172,7 @@ function AuroraContent() {
                     </div>
 
                     {/* --- STATS BAR OVERLAY (Scaled Down) --- */}
-                    <div className="relative lg:absolute bottom-0 left-0 w-full z-30 mt-8 lg:mt-0">
+                    <div className="relative left-0 w-full z-30 mt-8 lg:-mt-[220px]">
                         <div className="container mx-auto px-0 lg:px-16">
                             <div className="flex flex-row items-end"> {/* Forced Row on Mobile */}
                                 

@@ -157,7 +157,7 @@ export default function BrewhavenPage() {
                                 <div key={index} className="py-2 md:py-4">
                                     <div className="flex justify-between items-baseline mb-1 md:mb-2">
                                         <h4 className="text-[3vw] md:text-2xl font-bold text-brand-text truncate pr-1">{item.name}</h4>
-                                        <span className="text-[3vw] md:text-2xl font-bold text-brand-secondary">${item.price}</span>
+                                        <span className="text-[3vw] md:text-2xl font-bold text-brand-secondary">₹{item.price}</span>
                                     </div>
                                     <p className="text-brand-text opacity-70 text-[2vw] md:text-base leading-tight line-clamp-2">{item.description}</p>
                                 </div>

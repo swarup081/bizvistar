@@ -75,7 +75,7 @@ export default function CheckoutPage() {
 
         // Check minimum order value
         if (offer.min_order_value > 0 && subtotal < offer.min_order_value) {
-            setCouponError(`Minimum order value of $${offer.min_order_value} required`);
+            setCouponError(`Minimum order value of ₹${offer.min_order_value} required`);
             setAppliedCoupon(null);
             return;
         }
@@ -323,8 +323,8 @@ export default function CheckoutPage() {
                                             <div>
                                                 <p className="font-bold text-[#D4A373] text-sm">{offer.code}</p>
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `$${offer.value} OFF`} 
-                                                    {offer.min_order_value > 0 ? ` on orders above $${offer.min_order_value}` : ''}
+                                                    {offer.type === 'percentage' ? `${offer.value}% OFF` : `₹${offer.value} OFF`} 
+                                                    {offer.min_order_value > 0 ? ` on orders above ₹${offer.min_order_value}` : ''}
                                                 </p>
                                             </div>
                                             <button 
@@ -351,7 +351,7 @@ export default function CheckoutPage() {
                                             </div>
                                             <span>{item.name} <span className="text-xs text-gray-400 ml-1">x {item.quantity}</span></span>
                                         </div>
-                                        <span className="font-medium text-[#0F1C23]">${(item.price * item.quantity).toFixed(2)}</span>
+                                        <span className="font-medium text-[#0F1C23]">₹{(item.price * item.quantity).toFixed(2)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -359,14 +359,14 @@ export default function CheckoutPage() {
                             <div className="space-y-3 border-b border-gray-200 pb-6 mb-6">
                                 <div className="flex justify-between text-[3vw] md:text-sm text-gray-500">
                                     <span>Subtotal</span>
-                                    <span>${subtotal.toFixed(2)}</span>
+                                    <span>₹{subtotal.toFixed(2)}</span>
                                 </div>
                                 
                                 {/* Discount Line */}
                                 {appliedCoupon && (
                                     <div className="flex justify-between text-[3vw] md:text-sm text-green-600">
                                         <span className="flex items-center gap-1"><Tag size={14}/> Discount ({appliedCoupon.code})</span>
-                                        <span>-${discountAmount.toFixed(2)}</span>
+                                        <span>-₹{discountAmount.toFixed(2)}</span>
                                     </div>
                                 )}
 
@@ -378,7 +378,7 @@ export default function CheckoutPage() {
 
                             <div className="flex justify-between text-[4vw] md:text-xl font-bold mb-8 text-[#0F1C23] font-serif">
                                 <span>Total</span>
-                                <span>${finalTotal.toFixed(2)}</span>
+                                <span>₹{finalTotal.toFixed(2)}</span>
                             </div>
                             
                             {message && !message.includes('fix') && (

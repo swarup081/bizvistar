@@ -13,50 +13,50 @@ const categories = [
     { 
       id: 1, 
       name: "CUBAN COLLAR ", 
-      price: 755.00,
+      price: 1899.00,
       category: 'c1',
       description: "A classic Cuban collar shirt with a relaxed fit, perfect for any casual occasion. Made from 100% breathable linen.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893428/bizvistar/avenix/tian-dayong-8UsQoiJLNNQ-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893428/bizvistar/avenix/tian-dayong-8UsQoiJLNNQ-unsplash.jpg"
     },
     { 
       id: 2, 
       name: "KNIT POLO SHIRT", 
-      price: 665.00,
+      price: 1499.00,
       category: 'c1',
       description: "A sophisticated knit polo that bridges the gap between casual and smart. Crafted from a soft cotton blend.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893391/bizvistar/avenix/ihor-rapita-Dy_WYJHrhO8-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893391/bizvistar/avenix/ihor-rapita-Dy_WYJHrhO8-unsplash.jpg"
     },
     { 
       id: 3, 
       name: "SLEEVELESS V-NECK TOP", 
-      price: 945.00,
+      price: 1299.00,
       category: 'c2',
       description: "Striped sleeveless top with V-neck and halter button detail. A versatile piece for a modern wardrobe.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893407/bizvistar/avenix/md-ishak-raman-GdZMLxhqNhU-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893407/bizvistar/avenix/md-ishak-raman-GdZMLxhqNhU-unsplash.jpg"
     },
     { 
       id: 4, 
       name: "CASUAL SPORTS CAP", 
-      price: 925.00,
+      price: 799.00,
       category: 'c5',
       description: "Lightweight sporty cap for comfort and sun-ready style. Features an adjustable back strap.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893411/bizvistar/avenix/mediamodifier-F5i3PZXYkvY-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893411/bizvistar/avenix/mediamodifier-F5i3PZXYkvY-unsplash.jpg"
     },
     { 
       id: 5, 
       name: "HOODED SWEATSHIRT", 
-      price: 1075.00,
+      price: 2499.00,
       category: 'c5',
       description: "Everyday hoodie with a relaxed shape and cozy feel. Made from premium heavyweight cotton.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893396/bizvistar/avenix/ihor-rapita-KkvbXU0teEM-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893396/bizvistar/avenix/ihor-rapita-KkvbXU0teEM-unsplash.jpg"
     },
     { 
       id: 6, 
       name: "WIDE-LEG TROUSERS", 
-      price: 980.00,
+      price: 2199.00,
       category: 'c5',
       description: "Wide-leg pants with raw hems and a relaxed, easy fit. A statement piece for any outfit.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893381/bizvistar/avenix/everdrop-gmbh-cDOMVV5Eaxw-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893381/bizvistar/avenix/everdrop-gmbh-cDOMVV5Eaxw-unsplash.jpg"
     },
   ];
   
@@ -113,12 +113,12 @@ const categories = [
       
       // --- Heels Hero Section ---
       heelsHero: {
-          line1: "Keep your thread,",
-          line2: "tight",
-          line3: "tough &",
+          line1: "Keep your style,",
+          line2: "fresh,",
+          line3: "bold &",
           bentText: "trendy",
           buttonText: "VIEW TRENDS",
-          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893422/bizvistar/avenix/pew-nguyen-Ib0H1MGt5yw-unsplash.jpg",
+          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893422/bizvistar/avenix/pew-nguyen-Ib0H1MGt5yw-unsplash.jpg",
           accentColor: "var(--color-brand-accent)", 
           buttonColor: "var(--color-brand-secondary)"
       },
@@ -127,54 +127,54 @@ const categories = [
       about: {
           heading: "ABOUT AVENIX",
           subheading: {
-              part1: "A fashion space where style meets comfort,",
-              part2: "bringing timeless trends and modern looks for every mood and occasion."
+              part1: "Born with a commitment to quality, we blend heritage craft with modern confidence",
+              part2: "bringing timeless designs and bold new looks for every mood, moment, and lifestyle."
           },
           inlineImages: [
-              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893415/bizvistar/avenix/michael-austin-jgSAuqMmJUE-unsplash.jpg", 
-              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893404/bizvistar/avenix/jason-briscoe-w2uvoJo_woE-unsplash.jpg", 
-              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893426/bizvistar/avenix/stefan-stefancik-w_Mj-SsE1mI-unsplash.jpg"  
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893415/bizvistar/avenix/michael-austin-jgSAuqMmJUE-unsplash.jpg", 
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893404/bizvistar/avenix/jason-briscoe-w2uvoJo_woE-unsplash.jpg", 
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893426/bizvistar/avenix/stefan-stefancik-w_Mj-SsE1mI-unsplash.jpg"  
           ],
-          statement: "Avenix delivers fashion that fits your mood & moment",
-          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893418/bizvistar/avenix/micheile-henderson-FpPcoOAk5PI-unsplash.jpg" 
+          statement: "Delivering fashion that fits your vibe, your community & your story",
+          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893418/bizvistar/avenix/micheile-henderson-FpPcoOAk5PI-unsplash.jpg" 
       },
   
       // --- UPDATED to reference product IDs ---
       featured: {
           sectionHeading: "OUR COLLECTIONS",
           title: "Featured Products",
-          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893405/bizvistar/avenix/mahdi-chaghari-TlwDP1sa1mQ-unsplash.jpg",
+          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893405/bizvistar/avenix/mahdi-chaghari-TlwDP1sa1mQ-unsplash.jpg",
           itemIDs: [1, 2] // References products 1 and 2 from allProducts
       },
   
       // --- CTA Section ---
       ctaSection: {
-          title: "Expolre fashion that fits your mood and moment",
-          text: "From casual comfort to elegant evenings, our collection is designed to match your mood, uplift your confidence, and celebrate your individuality.",
+          title: "Explore fashion that fits your mood and moment",
+          text: "From casual comfort to elegant evenings, our collection is designed to match your mood, uplift your confidence, and celebrate your individuality — all at prices that make sense.",
           cta: "Explore Collection",
-          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893370/bizvistar/avenix/dao-vi-t-hoang-YgScHOUdfGM-unsplash.jpg",
+          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893370/bizvistar/avenix/dao-vi-t-hoang-YgScHOUdfGM-unsplash.jpg",
           icons: [
-              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893385/bizvistar/avenix/icon_shirt.png" }, 
-              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893383/bizvistar/avenix/icon_dress.png" }, 
-              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893384/bizvistar/avenix/icon_outer.png" }  
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_200/v1775893385/bizvistar/avenix/icon_shirt.png" }, 
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_200/v1775893383/bizvistar/avenix/icon_dress.png" }, 
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_200/v1775893384/bizvistar/avenix/icon_outer.png" }  
           ]
       },
   
 
       brands: {
           heading: "Avenix helps you dress with purpose and personality",
-          text: "We collaborate with trusted brands to bring you fashion that combines quality, style, and authenticity.",
+          text: "We partner with trusted makers across India to bring you fashion that combines quality, style, and authenticity.",
           logos: [] 
       },
   
       features: [
           {
               title: "Designed for Everyone",
-              text: "Designed to inspire confidence, our fashion suits every occasion, every style, and everyone."
+              text: "Designed to inspire confidence, our fashion suits every occasion — from bustling city streets to relaxed weekend getaways."
           },
           {
               title: "Crafted with Purpose",
-              text: "Crafted with purpose, each design reflects quality, care, and style for every mood and moment.",
+              text: "Each piece reflects quality craftsmanship and conscious design, made to move with you through every chapter of your day.",
               cta: "Explore Collection"
           }
       ],
@@ -188,7 +188,7 @@ const categories = [
   
       stats: {
           title: "Avenix in Numbers",
-          text: "Our numbers reflect a growing global community that values fashion, comfort, and confidence.",
+          text: "Our numbers reflect a growing community across India that values fashion, comfort, and confidence.",
           items: [
               { number: "85k+", label: "Happy Customers" },
               { number: "54+", label: "New Styles Monthly" },
@@ -202,15 +202,15 @@ const categories = [
           items: [
               {
                   title: "How one good outerwear piece can elevate your entire look",
-                  date: "August 7, 2025",
+                  date: "March 15, 2026",
                   category: "Essentials",
-                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893357/bizvistar/avenix/alyssa-strohmann-TS--uNw-JqE-unsplash.jpg"
+                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893357/bizvistar/avenix/alyssa-strohmann-TS--uNw-JqE-unsplash.jpg"
               },
               {
                   title: "Simple tricks to elevate your essentials into standout fits",
-                  date: "August 5, 2025",
+                  date: "March 10, 2026",
                   category: "Style Hacks",
-                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893374/bizvistar/avenix/ed-us-kleCw7s_t0s-unsplash.jpg"
+                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893374/bizvistar/avenix/ed-us-kleCw7s_t0s-unsplash.jpg"
               }
           ]
       },
@@ -218,11 +218,11 @@ const categories = [
       // --- FOOTER DATA ---
       footer: {
           logo: "AVENIX",
-          description: "Designed by Nixar. Powered by Webflow",
+          description: "Fashion rooted in Indian culture, styled for the world.",
           contact: {
-              phone: "+(123) 456-7890",
-              email: "info@example.com",
-              address: "4517 Washington Ave. Manchester, Kentucky 39495"
+              phone: "+91 98765 43210",
+              email: "hello@avenix.in",
+              address: "12, MG Road, Indiranagar, Bengaluru, Karnataka 560038"
           },
           links: {
               main: [
@@ -233,10 +233,9 @@ const categories = [
                   { name: "Contact us", url: "#contact" },
               ],
               utility: [
-                  { name: "Licensing", url: "#" },
-                  { name: "Changelog", url: "#" },
+                  { name: "Shipping Policy", url: "#" },
+                  { name: "Refund & Returns", url: "#" },
                   { name: "Style Guide", url: "#" },
-                  { name: "Return Policy", url: "#" },
                   { name: "Privacy Policy", url: "#" },
                   { name: "Terms & Conditions", url: "#" },
               ]
@@ -245,7 +244,7 @@ const categories = [
               title: "Stay updated with new arrivals",
               cta: "GET UPDATES"
           },
-          copyright: "© 2026 Avenix,",
+          copyright: "© 2026 Avenix. All Rights Reserved.",
           socials: [
               { platform: "instagram", url: "https://instagram.com" },
               { platform: "facebook", url: "https://facebook.com" },

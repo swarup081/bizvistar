@@ -28,51 +28,51 @@ const allProducts = [
     { 
       id: 1, 
       name: "SOLITAIRE DIAMOND RING", 
-      price: 1250.00,
+      price: 48500.00,
       category: 'rings',
-      description: "A timeless solitaire diamond ring set in 18k white gold.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893574/bizvistar/aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg"
+      description: "A timeless solitaire diamond ring set in 18k white gold, handcrafted by master artisans.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893574/bizvistar/aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg"
     },
   
     { 
       id: 3, 
       name: "GOLD CUFF BRACELET", 
-      price: 450.00,
+      price: 18500.00,
       category: 'bracelets',
-      description: "Handcrafted gold cuff bracelet with intricate detailing.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893569/bizvistar/aurora/laura-guldner-rZjRXpDJUdw-unsplash.jpg"
+      description: "Handcrafted gold cuff bracelet with intricate Rajasthani filigree detailing.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893569/bizvistar/aurora/laura-guldner-rZjRXpDJUdw-unsplash.jpg"
     },
     { 
         id: 2, 
         name: "EMERALD CUT NECKLACE", 
-        price: 890.00,
+        price: 35900.00,
         category: 'necklaces',
-        description: "Stunning emerald cut pendant suspended from a delicate gold chain.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893564/bizvistar/aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg"
+        description: "Stunning emerald cut pendant suspended from a delicate gold chain, perfect for special occasions.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893564/bizvistar/aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg"
       },
     { 
       id: 4, 
       name: "PEARL DROP EARRINGS", 
-      price: 299.00,
+      price: 12900.00,
       category: 'earrings',
-      description: "Classic pearl drop earrings that add a touch of sophistication.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893548/bizvistar/aurora/auroraprodcutid4.avif"
+      description: "Classic pearl drop earrings that add a touch of sophistication to any ensemble.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893548/bizvistar/aurora/auroraprodcutid4.avif"
     },
     { 
         id: 5, 
         name: "RUBY STATEMENT RING", 
-        price: 1450.00,
+        price: 62500.00,
         category: 'rings',
-        description: "A bold ruby centerpiece surrounded by crushed diamonds.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893550/bizvistar/aurora/auroraprodcutid5.avif"
+        description: "A bold Burmese ruby centerpiece surrounded by ethically sourced crushed diamonds.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893550/bizvistar/aurora/auroraprodcutid5.avif"
     },
     { 
         id: 6, 
         name: "SAPPHIRE NECKLACE", 
-        price: 1890.00,
+        price: 78900.00,
         category: 'necklaces',
-        description: "Deep blue sapphire pendant.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893568/bizvistar/aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg"
+        description: "Deep blue Ceylon sapphire pendant, certified and set in 22k gold.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893568/bizvistar/aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg"
     },
 ];
 
@@ -112,52 +112,52 @@ export const businessData = {
 
     hero: {
         title: "Desire Meets New Style",
-        subtitle: "Welcome to a realm of timeless beauty and unparalleled craftsmanship. At Aurora, we invite you to adorn yourself in the finest expressions of luxury.",
+        subtitle: "Step into a world of timeless elegance and unparalleled craftsmanship. Every piece tells a story of heritage, artistry, and enduring beauty.",
         cta: "EXPLORE COLLECTIONS",
         // Large Arch Slideshow Images
-        imageArch1: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893565/bizvistar/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
-        imageArch1_b: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893571/bizvistar/aurora/photo-1573408301185-9146fe634ad0.avif", 
+        imageArch1: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893565/bizvistar/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
+        imageArch1_b: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893571/bizvistar/aurora/photo-1573408301185-9146fe634ad0.avif", 
         // Small Arch Image (Detail Shot)
-        imageSmallArch: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893562/bizvistar/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg",
+        imageSmallArch: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893562/bizvistar/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg",
         stats: [
-            { value: "12", label: "All over World" },
-            { value: "150+", label: "Product Available" },
-            { value: "1K+", label: "Product Reviews" }
+            { value: "12", label: "Cities in India" },
+            { value: "150+", label: "Handcrafted Designs" },
+            { value: "1K+", label: "Customer Reviews" }
         ]
     },
 
     features: [
         {
-            title: "FAST SHIPPING",
-            text: "Express delivery worldwide.",
+            title: "NATIONWIDE SHIPPING",
+            text: "Free express delivery across all regions.",
             icon: "fast_shipping"
         },
         {
             title: "FLEXIBLE PAYMENT",
-            text: "Multiple secure payment options.",
+            text: "UPI, cards, wallets & EMI options available at checkout.",
             icon: "card"
         },
         {
-            title: "CERTIFIED GEMS", 
-            text: "All gems are GIA certified authentic.",
+            title: "CERTIFIED QUALITY", 
+            text: "All our products are certified for authenticity and premium quality.",
             icon: "certified" 
         },
         {
             title: "ETHICAL SOURCING",
-            text: "Conflict-free, sustainable stones.",
+            text: "Conflict-free materials, responsibly and sustainably sourced.",
             icon: "ecology"
         }
     ],
 
     about: {
-        title: "The Aurora Legacy",
-        text: "Established in 2020, Aurora began as a humble atelier in the heart of the artisan district. For over a century, we have remained true to our founding principles: uncompromising quality, artistic innovation, and a deep respect for the gemstones we work with.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893544/bizvistar/aurora/auroraaboutimage.avif",
+        title: "Our Legacy",
+        text: "Established with a vision for excellence, we began as a small boutique. Rooted in centuries of tradition, we blend time-honoured techniques with contemporary design — creating heirloom pieces that transcend generations.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893544/bizvistar/aurora/auroraaboutimage.avif",
     },
 
     collections: {
         title: "Curated Collections",
-        subtitle: "Indulge in the opulence of handcrafted necklaces, bracelets, earrings, and rings, each a masterpiece in its own right.",
+        subtitle: "Indulge in the opulence of handcrafted necklaces, bracelets, earrings, and rings — each a masterpiece born from India's finest goldsmithing traditions.",
         itemIDs: [1, 6, 2]
     },
 
@@ -165,68 +165,68 @@ export const businessData = {
         title: "Client Experiences",
         items: [
             {
-                quote: "The attention to detail is simply extraordinary. I've never felt more special wearing a piece of jewelry.",
-                author: "Victoria Sterling",
-                location: "London, UK"
+                quote: "The craftsmanship is extraordinary. My engagement ring from Aurora is the most stunning piece I've ever owned — truly world-class quality.",
+                author: "Priya Sharma",
+                location: "Mumbai, Maharashtra"
             },
             {
-                quote: "A beautiful collection for having diamond jewellery. Staff are quite friendly and helpful. It is a big showroom.",
-                author: "Connie H. Tengan",
-                location: "New York, USA"
+                quote: "A beautiful collection of diamond jewellery. The showroom in Connaught Place is stunning, and the staff made me feel so special during my visit.",
+                author: "Ananya Reddy",
+                location: "New Delhi"
             }
         ]
     },
 
     newsletterCta: {
         title: "Unlock Exclusive Access",
-        text: "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewelry heirloom.",
+        text: "Sign up to receive invitations to private viewings, early access to new collections, and expert advice on building your jewellery heirloom.",
         placeholder: "Enter your email address",
         buttonText: "SUBSCRIBE NOW"
     },
 
     instagram: {
-        title: "@aurora_official",
+        title: "@aurora_jewels",
         handle: "Follow our journey",
         images: [
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893545/bizvistar/aurora/auroraig1.avif",
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893546/bizvistar/aurora/auroraig2.avif",
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893578/bizvistar/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893547/bizvistar/aurora/auroraig3.avif",
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893548/bizvistar/aurora/auroraprodcutid4.avif",
-            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893581/bizvistar/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893545/bizvistar/aurora/auroraig1.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893546/bizvistar/aurora/auroraig2.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893578/bizvistar/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893547/bizvistar/aurora/auroraig3.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893548/bizvistar/aurora/auroraprodcutid4.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775893581/bizvistar/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
         ]
     },
 
     faq: {
         title: "Frequently Asked Questions",
-        subtitle: "Quick answers to the questions our Insta fam asks the most!",
+        subtitle: "Quick answers to everything our customers ask the most!",
         questions: [
             { 
-                q: "Is your jewelry suitable for daily wear?", 
+                q: "Is your jewellery suitable for daily wear?", 
                 a: "Absolutely! Our pieces are lightweight, skin-friendly, and designed for everyday styling." 
             },
             { 
-                q: "Will the color fade over time?", 
-                a: "Our jewelry is premium-plated and long-lasting. Just keep it away from water, perfume, and sweat for best durability." 
+                q: "Will the colour fade over time?", 
+                a: "Our jewellery is premium-plated and long-lasting. Just keep it away from water, perfume, and sweat for best durability." 
             },
             { 
-                q: "How do I take care of my jewelry?", 
+                q: "How do I take care of my jewellery?", 
                 a: "Wipe it with a soft cloth after use and store it in an airtight pouch. Avoid moisture to keep the shine intact." 
             },
             { 
                 q: "Do you offer COD or online payments?", 
-                a: "Yes! We support secure online payments and Cash on Delivery in most locations." 
+                a: "Yes! We support UPI, cards, net banking, and Cash on Delivery across most Indian pincodes." 
             }
         ]
     },
 
     footer: {
-        description: "A legacy of brilliance, crafted for eternity.",
+        description: "A legacy of brilliance, handcrafted in India for eternity.",
         subscribe: {
             title: "Be the first to know our news",
             cta: "SUBMIT"
         },
-        copyright: "© 2026 Aurora. All rights reserved.",
+        copyright: "© 2026 Aurora Jewels. All rights reserved.",
         links: {
             main: [
                 { name: "Home", url: "" },
@@ -237,7 +237,7 @@ export const businessData = {
             utility: [
                 { name: "Terms & Conditions", url: "#" },
                 { name: "Privacy Policy", url: "#" },
-                { name: "Cookie Policy", url: "#" }
+                { name: "Shipping & Returns", url: "#" }
             ]
         }
     }

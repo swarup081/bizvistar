@@ -28,14 +28,14 @@ export default function CandleaPage() {
         <>
             {/* --- Hero Section --- */}
             <section id="home" className="container mx-auto px-6 py-10 md:py-32">
-                <div className="flex flex-row md:grid md:grid-cols-2 gap-4 md:gap-12 items-center">
+                <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-6 md:gap-12 items-center">
                     <Editable focusId="hero">
-                        <div className="flex flex-col gap-4 md:gap-6 md:pr-10 text-left items-start w-1/2 md:w-full">
-                            <h1 className="text-2xl md:text-7xl font-bold text-brand-text leading-tight font-serif">{businessData.hero.title}</h1>
-                            <p className="text-xs md:text-lg text-brand-text opacity-70 max-w-md hidden md:block">{businessData.hero.subtitle}</p>
+                        <div className="flex flex-col gap-3 md:gap-6 md:pr-10 text-left items-start w-full">
+                            <h1 className="text-3xl md:text-7xl font-bold text-brand-text leading-tight font-serif">{businessData.hero.title}</h1>
+                            <p className="text-sm md:text-lg text-brand-text opacity-70 max-w-md">{businessData.hero.subtitle}</p>
                        <Link 
                             href={`${basePath}/shop`}
-                            className="mt-2 md:mt-4 inline-flex items-center gap-2 md:gap-3 btn btn-secondary px-4 py-2 md:px-8 md:py-3 text-xs md:text-base font-medium tracking-wider uppercase border border-brand-secondary bg-brand-secondary text-brand-bg hover:opacity-90 transition-all duration-300"
+                            className="mt-2 md:mt-4 inline-flex items-center gap-2 md:gap-3 btn btn-secondary px-5 py-2.5 md:px-8 md:py-3 text-sm md:text-base font-medium tracking-wider uppercase border border-brand-secondary bg-brand-secondary text-brand-bg hover:opacity-90 transition-all duration-300"
                         >
                             <span>{businessData.hero.cta}</span>
                             <ArrowRightIcon />
@@ -43,7 +43,7 @@ export default function CandleaPage() {
                         </div>
                     </Editable>
                     <Editable focusId="hero">
-                        <div className="flex justify-center w-1/2 md:w-full">
+                        <div className="flex justify-center w-full">
                             <div className="w-full max-w-md lg:max-w-lg aspect-[4/5] rounded-bl-[50px] rounded-tr-[50px] md:rounded-bl-[150px] md:rounded-tr-[150px] overflow-hidden">
                                 <img 
                                     src={businessData.hero.image} 

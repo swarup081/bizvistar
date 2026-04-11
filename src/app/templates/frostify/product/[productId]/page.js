@@ -170,7 +170,7 @@ export default function FrostifyProductPage() {
                             </span>
                         )}
                         <h1 className="text-4xl md:text-5xl font-serif text-[var(--color-primary)] mb-2 md:mb-6 leading-tight">{product.name}</h1>
-                        <p className="text-3xl text-[var(--color-primary)] font-bold mb-4 md:mb-8">${product.price.toFixed(2)}</p>
+                        <p className="text-3xl text-[var(--color-primary)] font-bold mb-4 md:mb-8">₹{product.price.toFixed(2)}</p>
                         
                          {/* Variants */}
                          {product.variants && product.variants.length > 0 && (

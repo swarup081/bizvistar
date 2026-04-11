@@ -30,66 +30,66 @@ const allProducts = [
     { 
       id: 1, 
       name: "CHOCOLATE CROISSANT", 
-      price: 6.50,
+      price: 185.00,
       category: 'pastries',
-      description: "Buttery, flaky pastry filled with dark Belgian chocolate.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893617/bizvistar/frostify/mae-mu-m9pzwmxm2rk-unsplash.jpg"
+      description: "Buttery, flaky pastry filled with rich dark Belgian chocolate.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893617/bizvistar/frostify/mae-mu-m9pzwmxm2rk-unsplash.jpg"
     },
     { 
       id: 2, 
       name: "LAVENDER LAYER CAKE", 
-      price: 55.00,
+      price: 1650.00,
       category: 'cakes',
-      description: "Three layers of vanilla sponge soaked in lavender syrup with buttercream.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893598/bizvistar/frostify/junior-reis--72q2VOq90Q-unsplash.jpg"
+      description: "Three layers of vanilla sponge soaked in lavender syrup with buttercream frosting.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893598/bizvistar/frostify/junior-reis--72q2VOq90Q-unsplash.jpg"
     },
     { 
       id: 3, 
       name: "MACARON BOX", 
-      price: 24.00,
+      price: 850.00,
       category: 'cookies',
-      description: "A selection of 6 assorted French macarons.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893611/bizvistar/frostify/macaronfrostify.avif"
+      description: "A curated selection of 6 assorted French macarons in seasonal flavours.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893611/bizvistar/frostify/macaronfrostify.avif"
     },
     { 
       id: 4, 
       name: "ARTISAN SOURDOUGH", 
-      price: 12.00,
+      price: 350.00,
       category: 'breads',
-      description: "Slow-fermented sourdough with a crispy crust.",
-      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893608/bizvistar/frostify/kobby-mendez-q54Oxq44MZs-unsplash.jpg"
+      description: "Slow-fermented sourdough with a crispy crust and chewy interior.",
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893608/bizvistar/frostify/kobby-mendez-q54Oxq44MZs-unsplash.jpg"
     },
     { 
         id: 5, 
         name: "BERRY TART", 
-        price: 8.50,
+        price: 295.00,
         category: 'pastries',
-        description: "Fresh berries atop a smooth vanilla custard.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893584/bizvistar/frostify/cupcakefrostify.avif" 
+        description: "Fresh seasonal berries atop a smooth vanilla custard in a buttery crust.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893584/bizvistar/frostify/cupcakefrostify.avif" 
     },
     { 
         id: 6, 
         name: "Chocolate Cake", 
-        price: 745.00,
+        price: 1450.00,
         category: 'cakes',
-        description: "Classic red velvet with cream cheese frosting.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893583/bizvistar/frostify/chcocakefrostify.avif" 
+        description: "Dense, fudgy chocolate cake with a rich ganache glaze — pure indulgence.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893583/bizvistar/frostify/chcocakefrostify.avif" 
     },
     { 
         id: 7, 
         name: "SOURDOUGH LOAF", 
-        price: 10.00,
+        price: 299.00,
         category: 'breads',
-        description: "Freshly baked sourdough loaf.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893603/bizvistar/frostify/katie-rosario-QNyRp21hb5I-unsplash.jpg" 
+        description: "Freshly baked sourdough loaf with a deep, tangy flavour.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893603/bizvistar/frostify/katie-rosario-QNyRp21hb5I-unsplash.jpg" 
     },
     { 
         id: 8, 
         name: "BUTTER CAKE", 
-        price: 4.50, 
+        price: 225.00, 
         category: 'pastries',
-        description: "Classic french butter croissant.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893618/bizvistar/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
+        description: "Classic French butter cake — golden, moist, and irresistibly rich.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893618/bizvistar/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
     }
 ];
 
@@ -119,18 +119,18 @@ export const businessData = {
 
     hero: {
         badge: "Made with Love",
-        title: "Homemade Goodness in Every Bite",
-        subtitle: "Freshly baked with love, using the finest ingredients.",
-        cta: "Explore Treats",
-        image1: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893582/bizvistar/frostify/cakeheroimage.avif",
-        image2: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893624/bizvistar/frostify/sincerely-media-z10eH_RA6ZQ-unsplash.jpg"
+        title: "Handcrafted Goodness in Every Detail",
+        subtitle: "Freshly crafted with love, using the finest materials and ingredients sourced from trusted partners.",
+        cta: "Explore Specialties",
+        image1: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893582/bizvistar/frostify/cakeheroimage.avif",
+        image2: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893624/bizvistar/frostify/sincerely-media-z10eH_RA6ZQ-unsplash.jpg"
     },
 
     about: {
-        title: "Meet Johanna",
-        text: "Johanna, the heart behind Sweet Delight, believes the best treats are made with love and the finest ingredients. With years of baking experience, she creates delicious homemade pastries that bring joy to every bite.",
-        subtext: "Come visit and taste Johanna's creations—you'll love every bite!",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893588/bizvistar/frostify/frostifybaleryface.png"
+        title: "Meet Our Founder",
+        text: "Our founder believes the best products are made with love, patience, and the finest ingredients. With years of experience and a deep passion for quality, we create items that bring joy to every moment.",
+        subtext: "Come visit and experience our creations — you'll fall in love instantly!",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893588/bizvistar/frostify/frostifybaleryface.png"
     },
 
     specialties: {
@@ -152,51 +152,51 @@ export const businessData = {
     faq: {
         title: "Got Questions? We've Got Answers!",
         questions: [
-            { q: "CAKE SIZES & PRICING", a: "We offer 6\", 8\", and 10\" cakes starting at $45." },
-            { q: "FLAVOURS", a: "Our standard flavors are Vanilla, Chocolate, Red Velvet, and Lemon." },
-            { q: "DO YOU MAKE CUSTOM CAKES?", a: "Yes! We specialize in custom designs for weddings and birthdays." },
-            { q: "HOW MUCH NOTICE DO YOU NEED?", a: "We require at least 2 weeks notice for custom orders." },
-            { q: "DO YOU OFFER GLUTEN-FREE?", a: "Yes, we have a selection of gluten-free cupcakes and cookies." }
+            { q: "CAKE SIZES & PRICING", a: "We offer 6\", 8\", and 10\" cakes starting at ₹1,200." },
+            { q: "FLAVOURS", a: "Our standard flavours are Vanilla, Chocolate, Red Velvet, Butterscotch, and Pineapple." },
+            { q: "DO YOU MAKE CUSTOM CAKES?", a: "Yes! We specialise in custom designs for weddings, birthdays, and festive occasions." },
+            { q: "HOW MUCH NOTICE DO YOU NEED?", a: "We require at least 2 days' notice for custom orders. Same-day available for select items." },
+            { q: "DO YOU OFFER EGGLESS OPTIONS?", a: "Absolutely! We have a wide range of eggless cakes, cookies, and pastries." }
         ]
     },
 
     testimonials: {
-        title: "Sweet Words",
+        title: "Client Love",
         items: [
             {
-                text: "The chocolate croissants here are the best I've ever had! Perfectly flaky and rich.",
-                author: "Sarah M.",
-                image: "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?auto=format&fit=crop&q=80&w=800"
+                text: "The quality here is the best I've ever experienced! Perfectly crafted, and absolutely divine.",
+                author: "Meera S.",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775911466/bizvistar/frostify/testimonial_avatar_1.jpg"
             },
             {
-                text: "Ordered a custom birthday cake and it was stunning. Tasted even better than it looked!",
-                author: "James D.",
-                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800"
+                text: "Ordered a custom piece for my daughter and it was breathtaking. It was even better than expected!",
+                author: "Arjun D.",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775911468/bizvistar/frostify/testimonial_avatar_2.jpg"
             },
             {
-                text: "My go-to spot for morning coffee and a treat. The atmosphere is just lovely.",
-                author: "Emily R.",
-                image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800"
+                text: "My go-to spot for everyday essentials. The warmth of this business is unmatched — feels like family.",
+                author: "Kavya R.",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_400/v1775911469/bizvistar/frostify/testimonial_avatar_3.jpg"
             }
         ]
     },
 
     footer: {
         contactTitle: "Contact us",
-        copyright: "© 2026 by Sweet Delight. Built on Bizvistar.",
+        copyright: "© 2026 Sweet Delight. Built on Bizvistar.",
         socials: [ 
             { platform: "IG", url: "#" }, 
             { platform: "FB", url: "#" }, 
             { platform: "TK", url: "#" } 
         ],
         openingHours: {
-            monFri: "Monday – Friday: 8:00 AM – 6:00 PM",
-            sat: "Saturday: 9:00 AM – 4:00 PM",
-            sun: "Sunday: Closed"
+            monFri: "Monday – Friday: 8:00 AM – 8:00 PM",
+            sat: "Saturday: 9:00 AM – 9:00 PM",
+            sun: "Sunday: 10:00 AM – 6:00 PM"
         },
         contact: {
-            phone: "+1 (123) 456-7890",
-            email: "bakery@example.com"
+            phone: "+91 98765 12345",
+            email: "orders@sweetdelight.in"
         }
     }
 };

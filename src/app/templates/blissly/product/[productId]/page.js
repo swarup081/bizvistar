@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
                     {/* Product Info */}
                     <div className="py-0 md:py-4 flex flex-col h-full">
                         <h1 className="text-4xl md:text-5xl font-serif font-medium text-brand-text mt-1 md:mt-2 leading-tight">{product.name}</h1>
-                        <p className="text-2xl md:text-3xl text-brand-secondary font-sans mt-2 md:mt-4 font-bold">${product.price.toFixed(2)}</p>
+                        <p className="text-2xl md:text-3xl text-brand-secondary font-sans mt-2 md:mt-4 font-bold">₹{product.price.toFixed(2)}</p>
                         
                         {category && (
                             <div className="mt-4">

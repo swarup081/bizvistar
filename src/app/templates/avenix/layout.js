@@ -103,7 +103,7 @@ function AvenixContent({ children }) {
                                             </a>
                                             <div className="flex-grow">
                                                 <a href={`/templates/avenix/product/${item.id}`} className="font-sans font-medium tracking-wider uppercase text-brand-text hover:opacity-70">{item.name}</a>
-                                                <p className="text-sm text-brand-text/60 mt-1">${item.price.toFixed(2)}</p>
+                                                <p className="text-sm text-brand-text/60 mt-1">₹{item.price.toFixed(2)}</p>
                                                 <div className="flex items-center border border-brand-text/20 w-fit mt-2 rounded-full">
                                                     <button onClick={() => decreaseQuantity(item.id)} className="w-8 h-8 text-lg text-brand-text/70 hover:bg-brand-primary rounded-l-full">-</button>
                                                     <span className="w-8 h-8 flex items-center justify-center text-sm font-bold">{item.quantity}</span>
@@ -111,7 +111,7 @@ function AvenixContent({ children }) {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-sans font-medium text-brand-text">${(item.price * item.quantity).toFixed(2)}</p>
+                                                <p className="font-sans font-medium text-brand-text">₹{(item.price * item.quantity).toFixed(2)}</p>
                                                 <button onClick={() => removeFromCart(item.id)} className="text-xs text-brand-text/50 hover:text-brand-secondary mt-1">Remove</button>
                                             </div>
                                         </div>
@@ -120,15 +120,15 @@ function AvenixContent({ children }) {
                                 <div className="border-t border-brand-text/10 pt-6 space-y-4">
                                     <div className="flex justify-between text-brand-text/80 font-medium">
                                         <span>Subtotal</span>
-                                        <span>${subtotal.toFixed(2)}</span>
+                                        <span>₹{subtotal.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-brand-text/80 font-medium">
                                         <span>Shipping</span>
-                                        <span>${shipping.toFixed(2)}</span>
+                                        <span>₹{shipping.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-brand-text font-bold text-lg border-t border-brand-text/10 pt-4 mt-4">
                                         <span>Total</span>
-                                        <span>${total.toFixed(2)}</span>
+                                        <span>₹{total.toFixed(2)}</span>
                                     </div>
                                     <a 
                                         href={`${basePath}/checkout`}

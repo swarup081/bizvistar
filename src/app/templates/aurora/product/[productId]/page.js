@@ -149,7 +149,7 @@ export default function ProductPage() {
                     {/* Info */}
                     <div className="flex flex-col justify-center">
                         <h1 className="text-[7vw] md:text-4xl font-serif mb-2 md:mb-4 leading-tight">{product.name}</h1>
-                        <p className="text-[5vw] md:text-4xl font-bold mb-4 text-[#D4A373]">${product.price.toFixed(2)}</p>
+                        <p className="text-[5vw] md:text-4xl font-bold mb-4 text-[#D4A373]">₹{product.price.toFixed(2)}</p>
                         
                         {/* Headers */}
                         {category && (

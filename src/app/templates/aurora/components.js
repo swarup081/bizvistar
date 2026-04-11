@@ -144,7 +144,7 @@ export const ProductCard = ({ item }) => {
                 <a href={productUrl} className="flex-grow">
                     <h3 className="font-serif text-[3.5vw] md:text-lg text-[var(--color-dark)] leading-tight mb-1 md:mb-2 group-hover:text-[var(--color-gold)] transition-colors">{item.name}</h3>
                 </a>
-                <span className="text-[2.5vw] md:text-sm font-medium text-[var(--color-text-light)] tracking-wide">${item.price.toFixed(2)}</span>
+                <span className="text-[2.5vw] md:text-sm font-medium text-[var(--color-text-light)] tracking-wide">₹{item.price.toFixed(2)}</span>
                 
                 {/* Always Visible Buttons */}
                 <div className="mt-auto flex gap-2">

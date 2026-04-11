@@ -12,66 +12,66 @@ const allProducts = [
     { 
         id: 1, 
         name: "Classic Espresso", 
-        price: 3.50, 
+        price: 199.00, 
         category: 'c1', 
         image: "/blissly/specialty-espresso.jpg", // Placeholder, you can change this
-        description: "A rich, full-bodied shot with notes of chocolate and citrus." 
+        description: "A rich, full-bodied shot with bold notes of dark chocolate and citrus." 
     },
     { 
         id: 2, 
         name: "Creamy Cappuccino", 
-        price: 4.50, 
+        price: 249.00, 
         category: 'c1', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893436/bizvistar/blissly/esra-afsar-JqXUZxoLwlE-unsplash.jpg", // From original specialty
-        description: "Perfectly balanced espresso, steamed milk, and a cap of foam." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893436/bizvistar/blissly/esra-afsar-JqXUZxoLwlE-unsplash.jpg", // From original specialty
+        description: "Perfectly balanced espresso, steamed milk, and a velvety cap of microfoam." 
     },
     { 
         id: 3, 
         name: "Artisanal Latte", 
-        price: 5.00, 
+        price: 279.00, 
         category: 'c1', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893437/bizvistar/blissly/hero_image.png", // Placeholder
-        description: "Our signature espresso with velvety smooth steamed milk." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893437/bizvistar/blissly/hero_image.png", // Placeholder
+        description: "Our signature espresso with velvety smooth steamed milk — a true crowd favourite." 
     },
     { 
         id: 4, 
         name: "Pour Over (V60)", 
-        price: 5.50, 
+        price: 329.00, 
         category: 'c3', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg", // From original events
-        description: "A clean, bright cup highlighting our single-origin of the day." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg", // From original events
+        description: "A clean, bright cup highlighting our single-origin beans sourced from Coorg plantations." 
     },
     { 
         id: 5, 
-        name: "Croissant", 
-        price: 35.00, // Price from specialty
+        name: "Butter Croissant", 
+        price: 179.00,
         category: 'c2', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893454/bizvistar/blissly/vicky-nguyen-a4xoMVKzbak-unsplash.jpg", // From original specialty
-        description: "Flaky, buttery, and baked fresh every morning." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893454/bizvistar/blissly/vicky-nguyen-a4xoMVKzbak-unsplash.jpg", // From original specialty
+        description: "Flaky, golden, and baked fresh every morning with European-style butter." 
     },
     { 
         id: 6, 
         name: "Avocado Toast", 
-        price: 8.50, 
+        price: 349.00, 
         category: 'c4', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg", // From original about
-        description: "Sourdough toast with fresh avocado, chili flakes, and sea salt." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg", // From original about
+        description: "Sourdough toast with fresh avocado, chili flakes, and Himalayan pink salt." 
     },
     { 
         id: 7, 
-        name: "Cookies", 
-        price: 18.00, 
+        name: "Assorted Cookies", 
+        price: 149.00, 
         category: 'c2', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893433/bizvistar/blissly/caroline-badran-UvZiEu43tcQ-unsplash.jpg", // From original specialty
-        description: "Assorted freshly baked cookies, perfect with a coffee." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893433/bizvistar/blissly/caroline-badran-UvZiEu43tcQ-unsplash.jpg", // From original specialty
+        description: "Freshly baked cookies in classic flavours — perfect alongside your coffee." 
     },
     { 
         id: 8, 
         name: "Matcha Green Tea Latte", 
-        price: 25.00, // Price from specialty
+        price: 299.00,
         category: 'c3', 
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893448/bizvistar/blissly/mustafa-akin-4fa1DuXBTKw-unsplash.jpg", // From original specialty
-        description: "Premium matcha powder whisked with steamed milk for a smooth, earthy taste." 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893448/bizvistar/blissly/mustafa-akin-4fa1DuXBTKw-unsplash.jpg", // From original specialty
+        description: "Premium ceremonial-grade matcha whisked with steamed milk for a smooth, earthy taste." 
     }
 ];
 
@@ -132,49 +132,49 @@ export const businessData = {
 
     // --- PAGE SECTIONS (Original content preserved) ---
     hero: {
-        title: "Where Every Sip is an Experience",
-        subtitle: "Discover our passion for artisanal coffee, handcrafted pastries, and a space designed for you to relax, work, or connect.",
+        title: "Where Every Moment is an Experience",
+        subtitle: "Discover our passion for quality, expertly crafted products, and a space designed for you to connect, relax, and be inspired.",
         cta: "View Our Menu",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893437/bizvistar/blissly/hero_image.png"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893437/bizvistar/blissly/hero_image.png"
     },
 
     events: {
-        title: "What's Brewing",
+        title: "What's Happening",
         items: [
             {
-                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893451/bizvistar/blissly/valentin-ciccarone-YMihlfY0wcE-unsplash.jpg",
-                title: "Live Acoustic Nights",
-                text: "Join us every Friday evening for live music from local artists. Enjoy great coffee and even better company."
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893451/bizvistar/blissly/valentin-ciccarone-YMihlfY0wcE-unsplash.jpg",
+                title: "Live Community Events",
+                text: "Join us every week for live events showcasing local talent. Enjoy great products and even better company."
             },
             {
-                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg",
-                title: "Latte Art Workshop",
-                text: "Unleash your inner barista. Learn the basics of latte art from our head barista. Sign up in-store!"
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg",
+                title: "Expert Workshops",
+                text: "Unleash your creativity! Learn new skills directly from our experts. Sign up in-store!"
             },
             {
-                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893457/bizvistar/blissly/wtu-257-KaMWcrwimB4-unsplash.jpg",
-                title: "Meet the Roaster",
-                text: "A special tasting event featuring our latest single-origin bean. Learn about the roasting process."
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893457/bizvistar/blissly/wtu-257-KaMWcrwimB4-unsplash.jpg",
+                title: "Exclusive Previews",
+                text: "A special event featuring our latest collections and offerings. Learn about our process and quality."
             }
         ]
     },
     
     about: {
-        title: "From Bean to Cup, With Passion",
-        text: "Brewhaven was born from a simple idea: coffee should be an experience, not just a routine. We partner with sustainable farms, roast our beans in-house, and train our baristas to pull the perfect shot, every time.",
-        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg",
+        title: "Crafted with Passion",
+        text: "Our brand was born from a simple idea: quality should be an experience, not just a routine. We partner with sustainable sources, focus on premium materials, and train our team to deliver perfection — every single time.",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/f_auto,q_auto,w_800/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg",
         features: [
             {
-                title: "Ethically Sourced Beans",
-                text: "We build direct relationships with farmers to ensure quality and fair compensation."
+                title: "Ethically Sourced",
+                text: "We build direct, sustainable relationships with our partners to ensure exceptional quality."
             },
             {
-                title: "In-House Roasting",
-                text: "Our beans are roasted fresh every week to bring out their unique, complex flavors."
+                title: "In-House Quality",
+                text: "Every product is carefully crafted and curated to bring out its unique, best features."
             },
             {
                 title: "Community Focused",
-                text: "A welcoming space for everyone to gather, create, and connect."
+                text: "A welcoming brand built for everyone to gather, create, and connect."
             }
         ]
     },
@@ -182,15 +182,15 @@ export const businessData = {
     menu: {
         badge: "Our Menu",
         title: "Crafted for You",
-        description: "From our signature espresso blends to freshly-baked pastries and light bites, there's something to brighten your day.",
+        description: "From our signature selections to our latest arrivals, there's always something to brighten your day.",
         // This list is now for display on the homepage, not the master list
         items: [
-            { name: "Classic Espresso", price: "3.50", description: "A rich, full-bodied shot with notes of chocolate and citrus." },
-            { name: "Creamy Cappuccino", price: "4.50", description: "Perfectly balanced espresso, steamed milk, and a cap of foam." },
-            { name: "Artisanal Latte", price: "5.00", description: "Our signature espresso with velvety smooth steamed milk." },
-            { name: "Pour Over (V60)", price: "5.50", description: "A clean, bright cup highlighting our single-origin of the day." },
-            { name: "Croissant", price: "3.00", description: "Flaky, buttery, and baked fresh every morning." },
-            { name: "Avocado Toast", price: "8.50", description: "Sourdough toast with fresh avocado, chili flakes, and sea salt." }
+            { name: "Classic Espresso", price: "199", description: "A rich, full-bodied shot with bold notes of dark chocolate and citrus." },
+            { name: "Creamy Cappuccino", price: "249", description: "Perfectly balanced espresso, steamed milk, and a velvety cap of microfoam." },
+            { name: "Artisanal Latte", price: "279", description: "Our signature espresso with velvety smooth steamed milk." },
+            { name: "Pour Over (V60)", price: "329", description: "A clean, bright cup highlighting our single-origin beans from Coorg." },
+            { name: "Butter Croissant", price: "179", description: "Flaky, golden, and baked fresh every morning." },
+            { name: "Avocado Toast", price: "349", description: "Sourdough toast with fresh avocado, chili flakes, and Himalayan pink salt." }
         ],
         cta: "View Full Menu"
     },
@@ -198,19 +198,19 @@ export const businessData = {
     testimonials: {
         items: [
             {
-                quote: "This is my absolute favorite spot. The coffee is consistently excellent and the atmosphere is so cozy and welcoming!",
-                name: "Sarah K.",
-                title: "Local Designer"
+                quote: "This is hands down my favourite café in the city. The coffee is consistently excellent and the atmosphere is incredibly warm and inviting!",
+                name: "Sneha K.",
+                title: "Graphic Designer"
             },
             {
-                quote: "The best avocado toast in the city, hands down. And the baristas always remember my order.",
-                name: "Michael R.",
+                quote: "The best avocado toast I've had in Bangalore — and the baristas always remember my order. Feels like home.",
+                name: "Rohit M.",
                 title: "Remote Worker"
             },
             {
-                quote: "I came for the latte art workshop and had a blast. The staff is so knowledgeable and friendly. A true community gem.",
-                name: "Emily T.",
-                title: "Student"
+                quote: "I came for the latte art workshop and had the most amazing time. The staff are so knowledgeable and friendly. A true community gem!",
+                name: "Isha T.",
+                title: "College Student"
             }
         ]
     },
@@ -231,8 +231,8 @@ export const businessData = {
     footer: {
         promoTitle: "Join our mailing list",
         contact: {
-            phone: "+1 (123) 456-7890",
-            email: "hello@brewhaven.com",
+            phone: "+91 98765 43210",
+            email: "hello@brewhaven.in",
         },
         links: {
             pages: [
@@ -249,8 +249,8 @@ export const businessData = {
         },
         location: {
             title: "Location",
-            address: "123 Coffee St, Bean Town, CA 90210",
-            hours: "Mon - Fri: 7am - 6pm\nSat - Sun: 8am - 5pm"
+            address: "42, Church Street, Ashok Nagar, Bengaluru, Karnataka 560001",
+            hours: "Mon - Fri: 7am - 9pm\nSat - Sun: 8am - 10pm"
         },
         copyright: `© ${new Date().getFullYear()} Brewhaven. All Rights Reserved.`
     }

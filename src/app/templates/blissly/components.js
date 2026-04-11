@@ -149,7 +149,7 @@ export const ProductCard = ({ item, templateName }) => {
                     <h4 className="text-[3vw] md:text-xl font-bold text-brand-text font-serif mt-1">
                         <a href={productUrl} className="hover:text-brand-secondary line-clamp-1">{item.name}</a>
                     </h4>
-                    <p className="text-brand-secondary text-[2.5vw] md:text-lg font-medium mt-1">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-secondary text-[2.5vw] md:text-lg font-medium mt-1">₹{item.price.toFixed(2)}</p>
                 </div>
 
                 {/* Actions (Always visible) */}

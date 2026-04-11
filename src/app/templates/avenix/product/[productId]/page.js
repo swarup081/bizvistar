@@ -155,7 +155,7 @@ export default function ProductDetailPage() {
                 {/* Product Info */}
                 <div className="py-2 md:py-4">
                     <h1 className="text-[6vw] md:text-5xl font-serif font-medium text-brand-text mt-1 md:mt-2">{product.name}</h1>
-                    <p className="text-[4vw] md:text-3xl text-brand-text font-sans mt-2 md:mt-4">${product.price.toFixed(2)}</p>
+                    <p className="text-[4vw] md:text-3xl text-brand-text font-sans mt-2 md:mt-4">₹{product.price.toFixed(2)}</p>
                     
                     <div className="mt-2 md:mt-4 text-[2.5vw] md:text-base">
                         {isOutOfStock ? <span className="text-red-600 font-medium">Currently Unavailable</span> : isLowStock ? <span className="text-orange-600 font-medium">Only {stock} left in stock!</span> : <span className="text-green-600 font-medium">In Stock</span>}

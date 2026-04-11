@@ -177,7 +177,7 @@ export const ProductCard = ({ item, templateName }) => {
                     {category && (
                         <p className="text-brand-text opacity-50 text-[2vw] md:text-sm mt-0.5 md:mt-1 font-sans">{category.name}</p>
                     )}
-                    <p className="text-brand-text text-[2.5vw] md:text-base mt-1 md:mt-2 font-sans">${item.price.toFixed(2)}</p>
+                    <p className="text-brand-text text-[2.5vw] md:text-base mt-1 md:mt-2 font-sans">₹{item.price.toFixed(2)}</p>
                 </div>
             </div>
             

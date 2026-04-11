@@ -247,7 +247,7 @@ export default function AvenixPage() {
 
     // --- NEW: Dynamic Content using Logic ---
     // Avenix "Collection" (Featured) takes 2 items (besides the large image)
-    const featuredItems = getLandingItems(businessData, 2);
+    const featuredItems = getProductsByIds(businessData.allProducts, businessData.featured.itemIDs);
     
     // New Arrivals can still be manual or just latest products. 
     // Keeping it as originally intended (New Arrivals = latest), 
@@ -368,7 +368,7 @@ export default function AvenixPage() {
                                             
                                             {!isCategory && (
                                                 <p className="text-[2.5vw] md:text-lg font-sans text-brand-text/80 mt-1">
-                                                    ${item.price.toFixed(2)} USD
+                                                    ₹{item.price.toFixed(2)}
                                                 </p>
                                             )}
                                             

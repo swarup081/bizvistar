@@ -215,7 +215,7 @@ function AuroraContent({ children }) {
                                         <div className="flex-grow py-1 flex flex-col justify-between">
                                             <div>
                                                 <h4 className="font-serif text-lg leading-none mb-2">{item.name}</h4>
-                                                <p className="text-sm font-medium text-[var(--color-text-light)]">${item.price}</p>
+                                                <p className="text-sm font-medium text-[var(--color-text-light)]">₹{item.price}</p>
                                             </div>
                                             <div className="flex justify-between items-end">
                                                 <span className="text-xs text-[var(--color-text-light)]">Qty: {item.quantity}</span>
@@ -231,7 +231,7 @@ function AuroraContent({ children }) {
                             <div className="border-t border-gray-100 pt-6 mt-4">
                                 <div className="flex justify-between font-serif text-2xl mb-6">
                                     <span>Total</span>
-                                    <span>${total.toFixed(2)}</span>
+                                    <span>₹{total.toFixed(2)}</span>
                                 </div>
                                 <a href={`${basePath}/checkout`} className="block w-full bg-[var(--color-dark)] text-white text-center py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--color-gold)] transition-colors">
                                     Checkout

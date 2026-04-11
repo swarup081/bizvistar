@@ -258,26 +258,13 @@
       color: #211A16; /* Darker text for light buttons */
 }
 }
-/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
+/* --- MULTI-TEMPLATE MARQUEE ANIMATION --- */
 @layer utilities {
   .marquee {
-    animation: marquee 10s linear infinite;
-  }
-  @keyframes marquee {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-100%); }
-  }
-}
-
-/* --- MARQUEE ANIMATION (FOR POINT 3) --- */
-@layer utilities {
-  .marquee {
-    /* --- THIS IS THE FIX --- */
-    animation: marquee 40s linear infinite; /* Changed 20s to 40s */
-    /* --- END OF FIX --- */
+    animation: scroll-marquee 40s linear infinite;
     flex-shrink: 0; 
   }
-  @keyframes marquee {
+  @keyframes scroll-marquee {
     0% { transform: translateX(0%); }
     100% { transform: translateX(-50%); }
   }
