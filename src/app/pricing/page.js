@@ -618,7 +618,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
 const AllFeaturesTable = ({ InfoTooltip, featureTooltips, featureList }) => (
   <div className="border border-gray-200  bg-white ">
     <div className="relative">
-      <div className="sticky top-0 z-30 bg-white">
+      <div className="sticky top-[52px] md:top-[128px] z-10 bg-white">
         <div className="grid grid-cols-4 border-b border-gray-200 bg-gray-50">
 
           {/* --- Empty First Column (for feature names) --- */}
@@ -762,7 +762,7 @@ const ComparisonTable = () => (
         <div className="border border-gray-300 bg-white">
           <div className="relative">
             <table className="min-w-full border-collapse">
-              <thead className="sticky top-0 z-200 bg-white shadow-sm">
+              <thead className="sticky top-[52px] md:top-[128px] z-10 bg-white shadow-sm">
                 <tr className="bg-gray-50 border-b border-gray-300">
                   <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">Features</th>
                   <th className="text-center text-lg font-bold text-gray-900 p-6 border-l border-gray-200">

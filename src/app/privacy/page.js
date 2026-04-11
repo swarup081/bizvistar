@@ -168,8 +168,9 @@ export default function PrivacyPolicy() {
                   In accordance with the Information Technology Act, 2000 and the rules made thereunder, the name and contact details of our Grievance Officer are provided below to address any discrepancies and grievances you may have with respect to your Personal Information:
                 </p>
                 <p className="mb-4">
-                  <strong>Name:</strong> Swarup Das<br />
-                  <strong>Email:</strong> bizvistar.help@gmail.com<br />
+                  <strong>Grievance Officer:</strong> Swarup Das (support@bizvistar.in)<br />
+                  <strong>Contact Founder:</strong> founder@bizvistar.in<br />
+                  <strong>General Inquiries:</strong> info@bizvistar.in<br />
                   <strong>Address:</strong> Mohanpur Road, Srikona Grant, Near Kali Mandir, Silchar, Assam, India.
                 </p>
                 <p className="font-bold mb-2">7.2. Response Time</p>

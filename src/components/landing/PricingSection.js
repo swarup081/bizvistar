@@ -12,6 +12,7 @@ function PricingContent() {
   const [currentPlan, setCurrentPlan] = useState(null);
   const searchParams = useSearchParams();
   const isUpdateFlow = searchParams.get('update') === 'true';
+  const [isYearly, setIsYearly] = useState(false);
 
   useEffect(() => {
     const fetchCurrentPlan = async () => {
@@ -183,7 +184,6 @@ function PricingContent() {
       },
     ],
   };
-  const [isYearly, setIsYearly] = useState(false);
   const activePlans = isYearly ? plans.yearly : plans.monthly;
   const maxSavings = 17;
 

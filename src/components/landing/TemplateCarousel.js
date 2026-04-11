@@ -46,13 +46,13 @@ export default function TemplateCarousel() {
     return () => clearInterval(interval);
   }, [currentIndex]);
 
-  const handleNext = () => {
+  function handleNext() {
     setCurrentIndex((prev) => (prev + 1) % templates.length);
-  };
+  }
 
-  const handlePrev = () => {
+  function handlePrev() {
     setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
-  };
+  }
 
   return (
     <div className="w-full py-0 bg-[#fdfdfd] overflow-hidden relative group">

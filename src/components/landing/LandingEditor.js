@@ -357,7 +357,7 @@ export default function LandingEditor() {
     };
     sequence();
     return () => { isMounted.current = false; };
-  }, [scale]); 
+  }, [scale, defaultData]); 
 
   const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
   const [previewUrl, setPreviewUrl] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
