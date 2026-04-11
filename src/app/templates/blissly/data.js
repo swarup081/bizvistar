@@ -22,7 +22,7 @@ const allProducts = [
         name: "Creamy Cappuccino", 
         price: 4.50, 
         category: 'c1', 
-        image: "/blissly/esra-afsar-JqXUZxoLwlE-unsplash.jpg", // From original specialty
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893436/bizvistar/blissly/esra-afsar-JqXUZxoLwlE-unsplash.jpg", // From original specialty
         description: "Perfectly balanced espresso, steamed milk, and a cap of foam." 
     },
     { 
@@ -30,7 +30,7 @@ const allProducts = [
         name: "Artisanal Latte", 
         price: 5.00, 
         category: 'c1', 
-        image: "/blissly/hero_image.png", // Placeholder
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893437/bizvistar/blissly/hero_image.png", // Placeholder
         description: "Our signature espresso with velvety smooth steamed milk." 
     },
     { 
@@ -38,7 +38,7 @@ const allProducts = [
         name: "Pour Over (V60)", 
         price: 5.50, 
         category: 'c3', 
-        image: "/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg", // From original events
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg", // From original events
         description: "A clean, bright cup highlighting our single-origin of the day." 
     },
     { 
@@ -46,7 +46,7 @@ const allProducts = [
         name: "Croissant", 
         price: 35.00, // Price from specialty
         category: 'c2', 
-        image: "/blissly/vicky-nguyen-a4xoMVKzbak-unsplash.jpg", // From original specialty
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893454/bizvistar/blissly/vicky-nguyen-a4xoMVKzbak-unsplash.jpg", // From original specialty
         description: "Flaky, buttery, and baked fresh every morning." 
     },
     { 
@@ -54,7 +54,7 @@ const allProducts = [
         name: "Avocado Toast", 
         price: 8.50, 
         category: 'c4', 
-        image: "/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg", // From original about
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg", // From original about
         description: "Sourdough toast with fresh avocado, chili flakes, and sea salt." 
     },
     { 
@@ -62,7 +62,7 @@ const allProducts = [
         name: "Cookies", 
         price: 18.00, 
         category: 'c2', 
-        image: "/blissly/caroline-badran-UvZiEu43tcQ-unsplash.jpg", // From original specialty
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893433/bizvistar/blissly/caroline-badran-UvZiEu43tcQ-unsplash.jpg", // From original specialty
         description: "Assorted freshly baked cookies, perfect with a coffee." 
     },
     { 
@@ -70,7 +70,7 @@ const allProducts = [
         name: "Matcha Green Tea Latte", 
         price: 25.00, // Price from specialty
         category: 'c3', 
-        image: "/blissly/mustafa-akin-4fa1DuXBTKw-unsplash.jpg", // From original specialty
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893448/bizvistar/blissly/mustafa-akin-4fa1DuXBTKw-unsplash.jpg", // From original specialty
         description: "Premium matcha powder whisked with steamed milk for a smooth, earthy taste." 
     }
 ];
@@ -135,24 +135,24 @@ export const businessData = {
         title: "Where Every Sip is an Experience",
         subtitle: "Discover our passion for artisanal coffee, handcrafted pastries, and a space designed for you to relax, work, or connect.",
         cta: "View Our Menu",
-        image: "/blissly/hero_image.png"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893437/bizvistar/blissly/hero_image.png"
     },
 
     events: {
         title: "What's Brewing",
         items: [
             {
-                image: "/blissly/valentin-ciccarone-YMihlfY0wcE-unsplash.jpg",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893451/bizvistar/blissly/valentin-ciccarone-YMihlfY0wcE-unsplash.jpg",
                 title: "Live Acoustic Nights",
                 text: "Join us every Friday evening for live music from local artists. Enjoy great coffee and even better company."
             },
             {
-                image: "/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893442/bizvistar/blissly/john-amachaab-z0IktCV6PAg-unsplash.jpg",
                 title: "Latte Art Workshop",
                 text: "Unleash your inner barista. Learn the basics of latte art from our head barista. Sign up in-store!"
             },
             {
-                image: "/blissly/wtu-257-KaMWcrwimB4-unsplash.jpg",
+                image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893457/bizvistar/blissly/wtu-257-KaMWcrwimB4-unsplash.jpg",
                 title: "Meet the Roaster",
                 text: "A special tasting event featuring our latest single-origin bean. Learn about the roasting process."
             }
@@ -162,7 +162,7 @@ export const businessData = {
     about: {
         title: "From Bean to Cup, With Passion",
         text: "Brewhaven was born from a simple idea: coffee should be an experience, not just a routine. We partner with sustainable farms, roast our beans in-house, and train our baristas to pull the perfect shot, every time.",
-        image: "/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893445/bizvistar/blissly/keghan-crossland-ZZxmc66SjfM-unsplash.jpg",
         features: [
             {
                 title: "Ethically Sourced Beans",

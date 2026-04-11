@@ -12,7 +12,7 @@ const allProducts = [
         description: "Classic steamed modaks filled with a rich, saffron-infused mawa (khoya) and nuts. (Pre-order)", 
         price: 129, 
         unit: "6 Pieces", 
-        image: "/flavournestImage/modak_productimage.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893532/bizvistar/flavournestImage/modak_productimage.jpg", 
         category: 'c1' 
     },
     { 
@@ -21,7 +21,7 @@ const allProducts = [
         description: "A royal treat, these rolls are made from mawa and nuts, delicately flavored and perfect for celebrations. (Pre-order)", 
         price: 149, 
         unit: "4 Pieces", 
-        image: "/flavournestImage/shahi_mava_rolls_productimage.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893535/bizvistar/flavournestImage/shahi_mava_rolls_productimage.jpg", 
         category: 'c1' 
     },
     { 
@@ -30,7 +30,7 @@ const allProducts = [
         description: "A classic Bengali sweet made from fresh chenna (paneer) and sugar, soft and delicious. (Pre-order)", 
         price: 109, 
         unit: "6 Pieces", 
-        image: "/flavournestImage/Sandesh_productimage.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893526/bizvistar/flavournestImage/Sandesh_productimage.jpg", 
         category: 'c1' 
     },
     { 
@@ -39,7 +39,7 @@ const allProducts = [
         description: "A traditional crispy and sweet deep-fried biscuit from Bihar, perfect for tea time. (Pre-order)", 
         price: 249, 
         unit: "200 grams", 
-        image: "/flavournestImage/thakua_productimage.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893537/bizvistar/flavournestImage/thakua_productimage.jpg", 
         category: 'c2' 
     },
     { 
@@ -48,7 +48,7 @@ const allProducts = [
         description: "A fragrant twist on the classic shondesh, infused with saffron and cardamom. (Pre-order)", 
         price: 129, 
         unit: "6 Pieces", 
-        image: "/flavournestImage/Kesar_Elaichi_Shondesh_product_image.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893523/bizvistar/flavournestImage/Kesar_Elaichi_Shondesh_product_image.jpg", 
         category: 'c1' 
     },
     { 
@@ -57,7 +57,7 @@ const allProducts = [
         description: "A modern fusion of decadent chocolate and classic coconut burfi. (Pre-order)", 
         price: 312, 
         unit: "12 Pieces", 
-        image: "/flavournestImage/Chocolate_Coconut_Burfi.jpeg", 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893521/bizvistar/flavournestImage/Chocolate_Coconut_Burfi.jpg", 
         category: 'c1' 
     }
 ];
@@ -66,7 +66,7 @@ export const businessData = {
     // --- GENERAL BUSINESS INFO ---
     name: "Your Business Name",
     logoText: "FlavorNest",
-    logo: "/flavournestImage/flavornest_logo.jpeg",
+    logo: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893530/bizvistar/flavournestImage/flavornest_logo.jpg",
     whatsappNumber: "91123456789", 
 
     // --- NEW: Master Lists ---

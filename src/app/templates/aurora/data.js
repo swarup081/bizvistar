@@ -31,7 +31,7 @@ const allProducts = [
       price: 1250.00,
       category: 'rings',
       description: "A timeless solitaire diamond ring set in 18k white gold.",
-      image: "/aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893574/bizvistar/aurora/segal-jewelry-NsH-CvU0deg-unsplash.jpg"
     },
   
     { 
@@ -40,7 +40,7 @@ const allProducts = [
       price: 450.00,
       category: 'bracelets',
       description: "Handcrafted gold cuff bracelet with intricate detailing.",
-      image: "/aurora/laura-guldner-rZjRXpDJUdw-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893569/bizvistar/aurora/laura-guldner-rZjRXpDJUdw-unsplash.jpg"
     },
     { 
         id: 2, 
@@ -48,7 +48,7 @@ const allProducts = [
         price: 890.00,
         category: 'necklaces',
         description: "Stunning emerald cut pendant suspended from a delicate gold chain.",
-        image: "/aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893564/bizvistar/aurora/jasmin-chew-WKD2vIe8Rb0-unsplash.jpg"
       },
     { 
       id: 4, 
@@ -56,7 +56,7 @@ const allProducts = [
       price: 299.00,
       category: 'earrings',
       description: "Classic pearl drop earrings that add a touch of sophistication.",
-      image: "/aurora/auroraprodcutid4.avif"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893548/bizvistar/aurora/auroraprodcutid4.avif"
     },
     { 
         id: 5, 
@@ -64,7 +64,7 @@ const allProducts = [
         price: 1450.00,
         category: 'rings',
         description: "A bold ruby centerpiece surrounded by crushed diamonds.",
-        image: "/aurora/auroraprodcutid5.avif"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893550/bizvistar/aurora/auroraprodcutid5.avif"
     },
     { 
         id: 6, 
@@ -72,7 +72,7 @@ const allProducts = [
         price: 1890.00,
         category: 'necklaces',
         description: "Deep blue sapphire pendant.",
-        image: "/aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893568/bizvistar/aurora/kotryna-juskaite-dlXBaYIQ5nY-unsplash.jpg"
     },
 ];
 
@@ -115,10 +115,10 @@ export const businessData = {
         subtitle: "Welcome to a realm of timeless beauty and unparalleled craftsmanship. At Aurora, we invite you to adorn yourself in the finest expressions of luxury.",
         cta: "EXPLORE COLLECTIONS",
         // Large Arch Slideshow Images
-        imageArch1: "/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
-        imageArch1_b: "/aurora/photo-1573408301185-9146fe634ad0.avif", 
+        imageArch1: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893565/bizvistar/aurora/kamran-abdullayev-WQ-f4ux5xX0-unsplash.jpg",
+        imageArch1_b: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893571/bizvistar/aurora/photo-1573408301185-9146fe634ad0.avif", 
         // Small Arch Image (Detail Shot)
-        imageSmallArch: "/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg",
+        imageSmallArch: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893562/bizvistar/aurora/jasmin-chew-UBeNYvk6ED0-unsplash.jpg",
         stats: [
             { value: "12", label: "All over World" },
             { value: "150+", label: "Product Available" },
@@ -152,7 +152,7 @@ export const businessData = {
     about: {
         title: "The Aurora Legacy",
         text: "Established in 2020, Aurora began as a humble atelier in the heart of the artisan district. For over a century, we have remained true to our founding principles: uncompromising quality, artistic innovation, and a deep respect for the gemstones we work with.",
-        image: "/aurora/auroraaboutimage.avif",
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893544/bizvistar/aurora/auroraaboutimage.avif",
     },
 
     collections: {
@@ -188,12 +188,12 @@ export const businessData = {
         title: "@aurora_official",
         handle: "Follow our journey",
         images: [
-            "/aurora/auroraig1.avif",
-            "/aurora/auroraig2.png",
-            "/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
-            "/aurora/auroraig3.png",
-            "/aurora/auroraprodcutid4.avif",
-            "/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893545/bizvistar/aurora/auroraig1.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893546/bizvistar/aurora/auroraig2.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893578/bizvistar/aurora/tara-yates-ZL7JpQ3d1Yk-unsplash.jpg",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893547/bizvistar/aurora/auroraig3.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893548/bizvistar/aurora/auroraprodcutid4.avif",
+            "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893581/bizvistar/aurora/tina-park-4_1qfH3ds4M-unsplash.jpg"
         ]
     },
 

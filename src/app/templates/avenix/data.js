@@ -16,7 +16,7 @@ const categories = [
       price: 755.00,
       category: 'c1',
       description: "A classic Cuban collar shirt with a relaxed fit, perfect for any casual occasion. Made from 100% breathable linen.",
-      image: "/avenix/tian-dayong-8UsQoiJLNNQ-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893428/bizvistar/avenix/tian-dayong-8UsQoiJLNNQ-unsplash.jpg"
     },
     { 
       id: 2, 
@@ -24,7 +24,7 @@ const categories = [
       price: 665.00,
       category: 'c1',
       description: "A sophisticated knit polo that bridges the gap between casual and smart. Crafted from a soft cotton blend.",
-      image: "/avenix/ihor-rapita-Dy_WYJHrhO8-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893391/bizvistar/avenix/ihor-rapita-Dy_WYJHrhO8-unsplash.jpg"
     },
     { 
       id: 3, 
@@ -32,7 +32,7 @@ const categories = [
       price: 945.00,
       category: 'c2',
       description: "Striped sleeveless top with V-neck and halter button detail. A versatile piece for a modern wardrobe.",
-      image: "/avenix/md-ishak-raman-GdZMLxhqNhU-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893407/bizvistar/avenix/md-ishak-raman-GdZMLxhqNhU-unsplash.jpg"
     },
     { 
       id: 4, 
@@ -40,7 +40,7 @@ const categories = [
       price: 925.00,
       category: 'c5',
       description: "Lightweight sporty cap for comfort and sun-ready style. Features an adjustable back strap.",
-      image: "/avenix/mediamodifier-F5i3PZXYkvY-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893411/bizvistar/avenix/mediamodifier-F5i3PZXYkvY-unsplash.jpg"
     },
     { 
       id: 5, 
@@ -48,7 +48,7 @@ const categories = [
       price: 1075.00,
       category: 'c5',
       description: "Everyday hoodie with a relaxed shape and cozy feel. Made from premium heavyweight cotton.",
-      image: "/avenix/ihor-rapita-KkvbXU0teEM-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893396/bizvistar/avenix/ihor-rapita-KkvbXU0teEM-unsplash.jpg"
     },
     { 
       id: 6, 
@@ -56,7 +56,7 @@ const categories = [
       price: 980.00,
       category: 'c5',
       description: "Wide-leg pants with raw hems and a relaxed, easy fit. A statement piece for any outfit.",
-      image: "/avenix/everdrop-gmbh-cDOMVV5Eaxw-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893381/bizvistar/avenix/everdrop-gmbh-cDOMVV5Eaxw-unsplash.jpg"
     },
   ];
   
@@ -118,7 +118,7 @@ const categories = [
           line3: "tough &",
           bentText: "trendy",
           buttonText: "VIEW TRENDS",
-          image: "/avenix/pew-nguyen-Ib0H1MGt5yw-unsplash.jpg",
+          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893422/bizvistar/avenix/pew-nguyen-Ib0H1MGt5yw-unsplash.jpg",
           accentColor: "var(--color-brand-accent)", 
           buttonColor: "var(--color-brand-secondary)"
       },
@@ -131,19 +131,19 @@ const categories = [
               part2: "bringing timeless trends and modern looks for every mood and occasion."
           },
           inlineImages: [
-              "/avenix/michael-austin-jgSAuqMmJUE-unsplash.jpg", 
-              "/avenix/jason-briscoe-w2uvoJo_woE-unsplash.jpg", 
-              "/avenix/stefan-stefancik-w_Mj-SsE1mI-unsplash.jpg"  
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893415/bizvistar/avenix/michael-austin-jgSAuqMmJUE-unsplash.jpg", 
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893404/bizvistar/avenix/jason-briscoe-w2uvoJo_woE-unsplash.jpg", 
+              "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893426/bizvistar/avenix/stefan-stefancik-w_Mj-SsE1mI-unsplash.jpg"  
           ],
           statement: "Avenix delivers fashion that fits your mood & moment",
-          largeImage: "/avenix/micheile-henderson-FpPcoOAk5PI-unsplash.jpg" 
+          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893418/bizvistar/avenix/micheile-henderson-FpPcoOAk5PI-unsplash.jpg" 
       },
   
       // --- UPDATED to reference product IDs ---
       featured: {
           sectionHeading: "OUR COLLECTIONS",
           title: "Featured Products",
-          largeImage: "/avenix/mahdi-chaghari-TlwDP1sa1mQ-unsplash.jpg",
+          largeImage: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893405/bizvistar/avenix/mahdi-chaghari-TlwDP1sa1mQ-unsplash.jpg",
           itemIDs: [1, 2] // References products 1 and 2 from allProducts
       },
   
@@ -152,11 +152,11 @@ const categories = [
           title: "Expolre fashion that fits your mood and moment",
           text: "From casual comfort to elegant evenings, our collection is designed to match your mood, uplift your confidence, and celebrate your individuality.",
           cta: "Explore Collection",
-          image: "/avenix/dao-vi-t-hoang-YgScHOUdfGM-unsplash.jpg",
+          image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893370/bizvistar/avenix/dao-vi-t-hoang-YgScHOUdfGM-unsplash.jpg",
           icons: [
-              { image: "/avenix/icon_shirt.png" }, 
-              { image: "/avenix/icon_dress.png" }, 
-              { image: "/avenix/icon_outer.png" }  
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893385/bizvistar/avenix/icon_shirt.png" }, 
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893383/bizvistar/avenix/icon_dress.png" }, 
+              { image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893384/bizvistar/avenix/icon_outer.png" }  
           ]
       },
   
@@ -204,13 +204,13 @@ const categories = [
                   title: "How one good outerwear piece can elevate your entire look",
                   date: "August 7, 2025",
                   category: "Essentials",
-                  image: "/avenix/alyssa-strohmann-TS--uNw-JqE-unsplash.jpg"
+                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893357/bizvistar/avenix/alyssa-strohmann-TS--uNw-JqE-unsplash.jpg"
               },
               {
                   title: "Simple tricks to elevate your essentials into standout fits",
                   date: "August 5, 2025",
                   category: "Style Hacks",
-                  image: "/avenix/ed-us-kleCw7s_t0s-unsplash.jpg"
+                  image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893374/bizvistar/avenix/ed-us-kleCw7s_t0s-unsplash.jpg"
               }
           ]
       },

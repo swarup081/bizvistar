@@ -33,7 +33,7 @@ const allProducts = [
       price: 6.50,
       category: 'pastries',
       description: "Buttery, flaky pastry filled with dark Belgian chocolate.",
-      image: "/frostify/mae-mu-m9pzwmxm2rk-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893617/bizvistar/frostify/mae-mu-m9pzwmxm2rk-unsplash.jpg"
     },
     { 
       id: 2, 
@@ -41,7 +41,7 @@ const allProducts = [
       price: 55.00,
       category: 'cakes',
       description: "Three layers of vanilla sponge soaked in lavender syrup with buttercream.",
-      image: "/frostify/junior-reis--72q2VOq90Q-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893598/bizvistar/frostify/junior-reis--72q2VOq90Q-unsplash.jpg"
     },
     { 
       id: 3, 
@@ -49,7 +49,7 @@ const allProducts = [
       price: 24.00,
       category: 'cookies',
       description: "A selection of 6 assorted French macarons.",
-      image: "/frostify/macaronfrostify.avif"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893611/bizvistar/frostify/macaronfrostify.avif"
     },
     { 
       id: 4, 
@@ -57,7 +57,7 @@ const allProducts = [
       price: 12.00,
       category: 'breads',
       description: "Slow-fermented sourdough with a crispy crust.",
-      image: "/frostify/kobby-mendez-q54Oxq44MZs-unsplash.jpg"
+      image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893608/bizvistar/frostify/kobby-mendez-q54Oxq44MZs-unsplash.jpg"
     },
     { 
         id: 5, 
@@ -65,7 +65,7 @@ const allProducts = [
         price: 8.50,
         category: 'pastries',
         description: "Fresh berries atop a smooth vanilla custard.",
-        image: "/frostify/cupcakefrostify.avif" 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893584/bizvistar/frostify/cupcakefrostify.avif" 
     },
     { 
         id: 6, 
@@ -73,7 +73,7 @@ const allProducts = [
         price: 745.00,
         category: 'cakes',
         description: "Classic red velvet with cream cheese frosting.",
-        image: "/frostify/chcocakefrostify.avif" 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893583/bizvistar/frostify/chcocakefrostify.avif" 
     },
     { 
         id: 7, 
@@ -81,7 +81,7 @@ const allProducts = [
         price: 10.00,
         category: 'breads',
         description: "Freshly baked sourdough loaf.",
-        image: "/frostify/katie-rosario-QNyRp21hb5I-unsplash.jpg" 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893603/bizvistar/frostify/katie-rosario-QNyRp21hb5I-unsplash.jpg" 
     },
     { 
         id: 8, 
@@ -89,7 +89,7 @@ const allProducts = [
         price: 4.50, 
         category: 'pastries',
         description: "Classic french butter croissant.",
-        image: "/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893618/bizvistar/frostify/paulina-kaminska-M9xYLiRnH_k-unsplash.jpg" 
     }
 ];
 
@@ -122,15 +122,15 @@ export const businessData = {
         title: "Homemade Goodness in Every Bite",
         subtitle: "Freshly baked with love, using the finest ingredients.",
         cta: "Explore Treats",
-        image1: "/frostify/cakeheroimage.avif",
-        image2: "/frostify/sincerely-media-z10eH_RA6ZQ-unsplash.jpg"
+        image1: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893582/bizvistar/frostify/cakeheroimage.avif",
+        image2: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893624/bizvistar/frostify/sincerely-media-z10eH_RA6ZQ-unsplash.jpg"
     },
 
     about: {
         title: "Meet Johanna",
         text: "Johanna, the heart behind Sweet Delight, believes the best treats are made with love and the finest ingredients. With years of baking experience, she creates delicious homemade pastries that bring joy to every bite.",
         subtext: "Come visit and taste Johanna's creations—you'll love every bite!",
-        image: "/frostify/frostifybaleryface.jpg"
+        image: "https://res.cloudinary.com/drg4lzk9s/image/upload/v1775893588/bizvistar/frostify/frostifybaleryface.png"
     },
 
     specialties: {
