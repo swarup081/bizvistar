@@ -65,7 +65,7 @@ export default function BenefitsSection() {
             
             {/* Rotated text placed to the left of the image (Mobile Only - Hidden on Desktop) */}
             {/* Shifted higher (top-32) to align with start, and further right (-left-2) */}
-            <div className="flex flex-col lg:hidden absolute top-32 -left-17 origin-center -rotate-90 gap-2 whitespace-nowrap z-20 items-start">
+            <div className="flex flex-col md:hidden absolute top-32 -left-17 origin-center -rotate-90 gap-2 whitespace-nowrap z-20 items-start">
               <div className="flex items-center gap-1">
                 <UserIcon />
                 <span className="text-[13px] font-semibold text-gray-800 tracking-wide">Localized benefits</span>
