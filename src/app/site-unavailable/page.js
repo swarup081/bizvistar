@@ -13,172 +13,144 @@ export default function SiteUnavailablePage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+        <style>{`
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+          }
+          .container {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+          }
+          .left-content {
+            flex: 1;
+            padding-right: 20px;
+            max-width: 550px;
+          }
+          .right-graphics {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .error-label {
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 30px;
+          }
+          .error-code {
+            font-size: clamp(140px, 16vw, 260px);
+            font-weight: 400;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            margin-bottom: 30px;
+            color: #000000;
+          }
+          .error-desc {
+            font-size: clamp(20px, 3vw, 26px);
+            margin-bottom: 40px;
+            color: #000000;
+          }
+          .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+            color: #fff;
+            padding: 16px 36px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+          }
+          .btn:hover {
+            background: linear-gradient(135deg, #8A63D2, #6A43B2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(138,99,210,0.3);
+            opacity: 1;
+          }
+          .svg-graphic {
+            width: 100%;
+            height: auto;
+            max-width: 650px;
+          }
+          @media (max-width: 900px) {
+            .container {
+              flex-direction: column;
+              text-align: left;
+              padding: 32px 24px;
+              justify-content: flex-start;
+              padding-top: 8vh;
+            }
+            .left-content {
+              padding-right: 0;
+              margin-bottom: 60px;
+              max-width: 100%;
+            }
+            .right-graphics {
+              width: 100%;
+              max-width: 500px;
+              margin: 0 auto;
+            }
+            .error-code {
+              font-size: 120px;
+            }
+          }
+        `}</style>
       </head>
-      <body style={{ margin: 0, padding: 0, fontFamily: "'Inter', sans-serif" }}>
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0f0c29 0%, #1a1440 30%, #24243e 60%, #0f0c29 100%)',
-          color: '#fff',
-          textAlign: 'center',
-          padding: '24px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          {/* Background glow effects */}
-          <div style={{
-            position: 'absolute',
-            top: '20%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '600px',
-            height: '400px',
-            background: 'radial-gradient(ellipse, rgba(138,99,210,0.15) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute',
-            bottom: '10%',
-            right: '10%',
-            width: '300px',
-            height: '300px',
-            background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Main Content */}
-          <div style={{
-            maxWidth: '520px',
-            zIndex: 1,
-          }}>
-            {/* Icon */}
-            <div style={{
-              width: '88px',
-              height: '88px',
-              borderRadius: '24px',
-              background: 'linear-gradient(135deg, rgba(138,99,210,0.2), rgba(138,99,210,0.05))',
-              border: '1px solid rgba(138,99,210,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 32px',
-              backdropFilter: 'blur(10px)',
-            }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(138,99,210,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 8v4"/>
-                <path d="M12 16h.01"/>
-              </svg>
-            </div>
-
-            {/* Title */}
-            <h1 style={{
-              fontSize: 'clamp(28px, 5vw, 40px)',
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              margin: '0 0 16px',
-              background: 'linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              lineHeight: 1.2,
-            }}>
-              This Website is Currently Unavailable
-            </h1>
-
-            {/* Description */}
-            <p style={{
-              fontSize: '16px',
-              color: 'rgba(255,255,255,0.55)',
-              lineHeight: 1.7,
-              margin: '0 0 40px',
-              maxWidth: '420px',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-            }}>
-              The owner has temporarily taken this website offline. If you believe this is an error, please contact the site owner or check back later.
-            </p>
-
-            {/* Divider */}
-            <div style={{
-              width: '48px',
-              height: '1px',
-              background: 'rgba(138,99,210,0.3)',
-              margin: '0 auto 40px',
-            }} />
-
-            {/* CTA */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-            }}>
-              <p style={{
-                fontSize: '13px',
-                color: 'rgba(255,255,255,0.35)',
-                margin: 0,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-              }}>
-                Want your own online store?
-              </p>
-              <a
-                href="https://bizvistar.in"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '14px 32px',
-                  borderRadius: '14px',
-                  background: 'linear-gradient(135deg, #8A63D2, #6A43B2)',
-                  color: '#fff',
-                  textDecoration: 'none',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  letterSpacing: '-0.01em',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 24px rgba(138,99,210,0.3)',
-                }}
-              >
-                Get Started with Bizvistar
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14"/>
-                  <path d="m12 5 7 7-7 7"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div style={{
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: 'rgba(255,255,255,0.2)',
-            fontSize: '12px',
-            fontWeight: 500,
-          }}>
-            Powered by
-            <a
-              href="https://bizvistar.in"
-              style={{
-                color: 'rgba(138,99,210,0.5)',
-                textDecoration: 'none',
-                fontWeight: 700,
-              }}
-            >
-              Bizvistar
+      <body>
+        <div className="container">
+          <div className="left-content">
+            <div className="error-label">ERROR: PAGE NOT FOUND</div>
+            <div className="error-code">404</div>
+            <div className="error-desc">This page isn't available.</div>
+            <a href="https://bizvistar.in" className="btn">
+              Go to Bizvistar.in
             </a>
+          </div>
+          <div className="right-graphics">
+            <svg viewBox="0 0 600 500" className="svg-graphic" style={{ overflow: 'visible' }}>
+              {/* Dark Green Shape */}
+              <g transform="translate(100, 140) rotate(-15) scale(1.1)">
+                <path d="M45,0 h40 a20,20 0 0 1 20,20 v30 a20,20 0 0 1 -20,20 h-20 v20 a20,20 0 0 1 -20,20 h-40 a20,20 0 0 1 -20,-20 v-30 a20,20 0 0 1 20,-20 h20 v-20 a20,20 0 0 1 20,-20 z" fill="#065C50" />
+              </g>
+
+              {/* Light Blue Circle (top) */}
+              <g transform="translate(360, 60)">
+                <circle cx="45" cy="45" r="45" fill="#D5E2EF" />
+              </g>
+
+              {/* Orange Pill */}
+              <rect x="180" y="240" width="250" height="75" rx="37.5" transform="rotate(-35 305 277.5)" fill="#FA866F" />
+
+              {/* Purple Circle (bottom left) */}
+              <g transform="translate(210, 370)">
+                <circle cx="35" cy="35" r="35" fill="#9BA8FC" />
+              </g>
+
+              {/* Light Green Square (mid right) */}
+              <g transform="translate(480, 260) rotate(8)">
+                <rect x="0" y="0" width="60" height="60" rx="14" fill="#D3F98E" />
+              </g>
+
+              {/* Yellow Cursor (bottom right) */}
+              <g transform="translate(370, 360) rotate(-15) scale(1.1)">
+                <path d="M0,0 L0,50 L15,35 L26,60 L36,55 L25,30 L45,30 Z" fill="#FAD172" stroke="#FAD172" strokeWidth="4" strokeLinejoin="round"/>
+              </g>
+            </svg>
           </div>
         </div>
       </body>
