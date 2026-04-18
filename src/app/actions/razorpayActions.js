@@ -272,14 +272,27 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
                                 razorpay_subscription_id: subscriptionId,
                                 status: newStatus, // Use mapped status
                                 plan_id: planData?.id || null,
-                                current_period_start: new Date(subData.current_start * 1000).toISOString(),
-                                current_period_end: new Date(subData.current_end * 1000).toISOString(),
+                                current_period_start: subData.current_start 
+                                    ? new Date(subData.current_start * 1000).toISOString()
+                                    : new Date().toISOString(),
+                                current_period_end: subData.current_end 
+                                    ? new Date(subData.current_end * 1000).toISOString()
+                                    : new Date().toISOString(),
                                 metadata: {
                                     coupon_used: subData.notes?.coupon_used,
                                     notes: subData.notes
                                 }
                            };
                            
+                           // Deactivate old subscriptions for this user before creating new one
+                           // This prevents duplicate active subs when user upgrades/changes plans
+                           await supabaseAdmin
+                             .from('subscriptions')
+                             .update({ status: 'canceled', metadata: { superseded_by: subscriptionId, superseded_at: new Date().toISOString() } })
+                             .eq('user_id', userId)
+                             .in('status', ['active', 'trialing'])
+                             .neq('razorpay_subscription_id', subscriptionId);
+
                            // Upsert Subscription
                            await supabaseAdmin.from('subscriptions').upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
 

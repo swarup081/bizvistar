@@ -212,16 +212,27 @@ export async function POST(req) {
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
       }
 
-      // --- HANDLE OLD SUBSCRIPTION (Upgrade) ---
-      if (newStatus === 'active' && notes?.old_subscription_id) {
+      // --- DEACTIVATE OLD SUBSCRIPTIONS (safety net for upgrades) ---
+      // On ANY activation event, ensure no other active subs exist for this user
+      if (newStatus === 'active') {
         try {
+          // Cancel specific old sub if noted
+          if (notes?.old_subscription_id) {
+            await supabaseAdmin
+              .from('subscriptions')
+              .update({ status: 'canceled', metadata: { superseded_by: razorpaySubscriptionId, superseded_at: new Date().toISOString() } })
+              .eq('razorpay_subscription_id', notes.old_subscription_id);
+            console.log(`[Webhook] Old subscription ${notes.old_subscription_id} marked canceled`);
+          }
+          // Also clean up any other stale active subs for same user
           await supabaseAdmin
             .from('subscriptions')
-            .update({ status: 'canceled' })
-            .eq('razorpay_subscription_id', notes.old_subscription_id);
-          console.log(`[Webhook] Old subscription ${notes.old_subscription_id} marked canceled`);
+            .update({ status: 'canceled', metadata: { superseded_by: razorpaySubscriptionId, superseded_at: new Date().toISOString() } })
+            .eq('user_id', userId)
+            .in('status', ['active', 'trialing'])
+            .neq('razorpay_subscription_id', razorpaySubscriptionId);
         } catch (e) {
-          console.error('[Webhook] Failed to cancel old subscription:', e);
+          console.error('[Webhook] Failed to clean up old subscriptions:', e);
         }
       }
 
