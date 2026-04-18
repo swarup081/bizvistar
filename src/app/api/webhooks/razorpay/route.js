@@ -1,11 +1,9 @@
 export const runtime = 'edge';
 import { createClient } from '@supabase/supabase-js';
-// Using Web Crypto API instead of Node.js crypto module for Edge Runtime support
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    // Lazy Initialization of Supabase inside the handler to avoid build-time errors if env vars are missing
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
       process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
@@ -14,10 +12,8 @@ export async function POST(req) {
     const rawBody = await req.text();
     const signature = req.headers.get('x-razorpay-signature');
     
-    // Support both Live and Test secrets provided by user
     const secretLive = process.env.RAZORPAY_WEBHOOK_SECRET_LIVE;
     const secretTest = process.env.RAZORPAY_WEBHOOK_SECRET_TEST;
-    // Fallback to generic if set
     const secretGeneric = process.env.RAZORPAY_WEBHOOK_SECRET;
 
     const secretsToTry = [secretLive, secretTest, secretGeneric].filter(Boolean);
@@ -28,7 +24,6 @@ export async function POST(req) {
     }
 
     // Verify Signature against any available secret
-    
     let isValid = false;
     const encoder = new TextEncoder();
     
@@ -68,186 +63,284 @@ export async function POST(req) {
     const { payload } = event;
     const eventName = event.event;
 
-    console.log(`Razorpay Webhook Received: ${eventName}`);
+    console.log(`[Webhook] Razorpay Event: ${eventName}`);
 
-    // --- Subscription Events ---
-    if ([
+    // ============================================================
+    // SUBSCRIPTION EVENTS
+    // ============================================================
+    const SUBSCRIPTION_EVENTS = [
+        'subscription.authenticated',
         'subscription.activated', 
         'subscription.charged', 
         'subscription.cancelled', 
         'subscription.completed', 
         'subscription.halted',
         'subscription.paused',
-        'subscription.resumed'
-    ].includes(eventName)) {
-        
+        'subscription.resumed',
+        'subscription.pending'
+    ];
+
+    if (SUBSCRIPTION_EVENTS.includes(eventName)) {
       const subscription = payload.subscription.entity;
       const razorpaySubscriptionId = subscription.id;
       const razorpayPlanId = subscription.plan_id;
       const notes = subscription.notes || {};
       const userId = notes.user_id;
-      const couponUsed = notes.coupon_used; // Extract coupon used
+      const couponUsed = notes.coupon_used;
 
       if (!userId) {
-        console.warn(`No user_id in subscription notes for event ${eventName}`);
-        // Can't link to a user, but we acknowledge receipt.
+        console.warn(`[Webhook] No user_id in subscription notes for ${eventName}, sub: ${razorpaySubscriptionId}`);
         return NextResponse.json({ received: true }); 
       }
 
-      // Determine Status
-      let newStatus = 'active';
-      if (eventName === 'subscription.cancelled') newStatus = 'canceled';
-      if (eventName === 'subscription.halted') newStatus = 'past_due';
-      
-      // FIX: DB Constraint only allows 'active', 'canceled', 'past_due'
-      // Map 'paused' -> 'past_due' (blocks access)
-      if (eventName === 'subscription.paused') newStatus = 'past_due'; 
-      
-      if (eventName === 'subscription.resumed') newStatus = 'active'; 
+      // --- STATUS MAPPING ---
+      // DB constraint: 'active', 'canceled', 'past_due', 'paused'
+      let newStatus;
+      let shouldPublish = false;
+      let shouldUnpublish = false;
+      let cancelAtPeriodEnd = false;
 
-      // FIX: Map 'completed' -> 'active' so it saves to DB. 
-      // We rely on current_period_end date check in validation logic to handle actual expiry.
-      if (eventName === 'subscription.completed') newStatus = 'active'; 
-      
-      // 'charged' and 'activated' imply active.
-      // Map Status text to DB constraints: 'active', 'canceled', 'past_due', 'completed'
-      // Note: 'completed' status must be allowed in DB check constraint if strict, otherwise use 'active'.
-      // Assuming DB check constraint allows text, or we mapped it. 
-      // The schema says: CHECK (status = ANY (ARRAY['active'::text, 'canceled'::text, 'past_due'::text]))
-      // The Schema DOES NOT include 'completed'. We must handle this.
-      // If DB constraint is strict, we might need to use 'active' or 'canceled'.
-      // But we need to distinguish for the Founder Fix.
-      // Option: Update DB constraint (SQL needed) OR map 'completed' -> 'active' but rely on date?
-      // "exactly after user pay last cycle sucess and it terminate even after the payment they cant use the last cycle"
-      // If we map to 'active', and current_period_end is correct, it works.
-      // If we map to 'canceled', access is blocked.
-      // SO: Map 'completed' -> 'active'. 
-      // AND ensuring current_period_end is updated is key.
-      
-      if (newStatus === 'completed') newStatus = 'active'; // Map to active so DB accepts it, logic checks date.
-      if (newStatus === 'halted') newStatus = 'past_due';
+      switch (eventName) {
+        case 'subscription.authenticated':
+        case 'subscription.activated':
+        case 'subscription.charged':
+          newStatus = 'active';
+          shouldPublish = true;
+          break;
 
-      // Timestamps
-      // Razorpay uses unix timestamp (seconds), JS uses ms.
-      const currentPeriodStart = new Date(subscription.current_start * 1000);
-      const currentPeriodEnd = new Date(subscription.current_end * 1000);
+        case 'subscription.resumed':
+          newStatus = 'active';
+          shouldPublish = true; // Re-publish on resume — restore everything
+          break;
 
-      // Find Internal Plan ID
+        case 'subscription.completed':
+          // Completed = all cycles done. Keep active until current_period_end.
+          // The period end date check in subscriptionUtils handles expiry.
+          newStatus = 'active';
+          break;
+
+        case 'subscription.cancelled':
+          // Razorpay fires this when cancel takes effect (end of period or immediate).
+          // We check: if current_period_end is in the future, mark cancel_at_period_end.
+          // Otherwise, immediate cancel.
+          {
+            const periodEnd = subscription.current_end ? new Date(subscription.current_end * 1000) : new Date();
+            const now = new Date();
+            if (periodEnd > now) {
+              // End-of-period cancel: keep active but flag
+              newStatus = 'active';
+              cancelAtPeriodEnd = true;
+              // Don't unpublish yet — user still has access until period ends
+            } else {
+              // Immediate cancel or period already ended
+              newStatus = 'canceled';
+              shouldUnpublish = true;
+            }
+          }
+          break;
+
+        case 'subscription.paused':
+          newStatus = 'paused';
+          shouldUnpublish = true;
+          break;
+
+        case 'subscription.halted':
+          // Halted = payment failure after retries exhausted
+          newStatus = 'past_due';
+          shouldUnpublish = true;
+          break;
+
+        case 'subscription.pending':
+          // Pending = awaiting first payment, no action needed on website
+          newStatus = 'active'; // Treat as active since they're in the process
+          break;
+
+        default:
+          newStatus = 'active';
+      }
+
+      // --- TIMESTAMPS ---
+      const currentPeriodStart = subscription.current_start 
+        ? new Date(subscription.current_start * 1000) 
+        : new Date();
+      const currentPeriodEnd = subscription.current_end 
+        ? new Date(subscription.current_end * 1000) 
+        : new Date();
+
+      // --- FIND INTERNAL PLAN ID ---
       const { data: planData } = await supabaseAdmin
         .from('plans')
         .select('id')
         .eq('razorpay_plan_id', razorpayPlanId)
         .single();
         
-      let internalPlanId = planData?.id;
+      const internalPlanId = planData?.id;
 
-      // Prepare upsert payload
+      // --- BUILD UPSERT PAYLOAD ---
       const upsertPayload = {
-            user_id: userId,
-            razorpay_subscription_id: razorpaySubscriptionId,
-            status: newStatus,
-            plan_id: internalPlanId || null, 
-            current_period_start: currentPeriodStart.toISOString(),
-            current_period_end: currentPeriodEnd.toISOString(),
-            // Save metadata including coupon
-            metadata: {
-                coupon_used: couponUsed,
-                notes: notes // save all notes just in case
-            }
+        user_id: userId,
+        razorpay_subscription_id: razorpaySubscriptionId,
+        status: newStatus,
+        plan_id: internalPlanId || null, 
+        current_period_start: currentPeriodStart.toISOString(),
+        current_period_end: currentPeriodEnd.toISOString(),
+        cancel_at_period_end: cancelAtPeriodEnd,
+        metadata: {
+          coupon_used: couponUsed,
+          last_event: eventName,
+          last_event_at: new Date().toISOString(),
+          notes: notes
+        }
       };
 
-      // Upsert Subscription
-      const { error } = await supabaseAdmin
+      // Clear paused_at on resume, set it on pause
+      if (eventName === 'subscription.paused') {
+        upsertPayload.paused_at = new Date().toISOString();
+      }
+      if (eventName === 'subscription.resumed') {
+        upsertPayload.paused_at = null;
+        upsertPayload.cancel_at_period_end = false;
+      }
+
+      // --- UPSERT SUBSCRIPTION ---
+      const { error: upsertError } = await supabaseAdmin
         .from('subscriptions')
         .upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
 
-      if (error) {
-        console.error('Error updating subscription in DB:', error);
+      if (upsertError) {
+        console.error('[Webhook] DB upsert error:', upsertError);
         return NextResponse.json({ error: 'Database Error' }, { status: 500 });
       }
 
-      // If this was an upgrade (has old_subscription_id), mark the old one as canceled locally
-      if (newStatus === 'active' && subscription.notes?.old_subscription_id) {
-         try {
-             await supabaseAdmin
-               .from('subscriptions')
-               .update({ status: 'canceled' })
-               .eq('razorpay_subscription_id', subscription.notes.old_subscription_id);
-         } catch (e) {
-             console.error("Failed to cancel old subscription internally", e);
-         }
+      // --- HANDLE OLD SUBSCRIPTION (Upgrade) ---
+      if (newStatus === 'active' && notes?.old_subscription_id) {
+        try {
+          await supabaseAdmin
+            .from('subscriptions')
+            .update({ status: 'canceled' })
+            .eq('razorpay_subscription_id', notes.old_subscription_id);
+          console.log(`[Webhook] Old subscription ${notes.old_subscription_id} marked canceled`);
+        } catch (e) {
+          console.error('[Webhook] Failed to cancel old subscription:', e);
+        }
       }
 
-      // --- PUBLISH WEBSITE (Critical Fix) ---
-      // Ensure the user's website is published and accessible immediately
-      if (newStatus === 'active') {
-          try {
-             // Fetch website to check current state
-             const { data: website } = await supabaseAdmin
-                 .from('websites')
-                 .select('id, website_data, draft_data')
-                 .eq('user_id', userId)
-                 .limit(1)
-                 .maybeSingle();
+      // --- PUBLISH / UNPUBLISH WEBSITE ---
+      if (shouldPublish) {
+        try {
+          const { data: website } = await supabaseAdmin
+            .from('websites')
+            .select('id, website_data, draft_data')
+            .eq('user_id', userId)
+            .limit(1)
+            .maybeSingle();
 
-             if (website) {
-                 const updates = { is_published: true };
-                 
-                 // If published data is missing, copy from draft
-                 // This ensures the user sees their content immediately
-                 if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {
-                     updates.website_data = website.draft_data;
-                 }
-                 
-                 const { error: pubError } = await supabaseAdmin
-                     .from('websites')
-                     .update(updates)
-                     .eq('id', website.id);
+          if (website) {
+            const updates = { is_published: true };
+            
+            // If published data is missing, copy from draft
+            if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {
+              updates.website_data = website.draft_data;
+            }
+            
+            const { error: pubError } = await supabaseAdmin
+              .from('websites')
+              .update(updates)
+              .eq('id', website.id);
 
-                 if (pubError) {
-                     console.error(`Failed to publish website for user ${userId}:`, pubError);
-                 } else {
-                     console.log(`Website published successfully for user ${userId}`);
-                 }
-             } else {
-                 console.warn(`No website found for user ${userId} to publish.`);
-             }
-          } catch (webErr) {
-              console.error("Unexpected error publishing website in webhook:", webErr);
+            if (pubError) {
+              console.error(`[Webhook] Failed to publish website for user ${userId}:`, pubError);
+            } else {
+              console.log(`[Webhook] Website published for user ${userId}`);
+            }
           }
+        } catch (webErr) {
+          console.error('[Webhook] Error publishing website:', webErr);
+        }
       }
 
-      // --- BACKUP: Update Profile from Notes if missing ---
-      if (userId && notes) {
-          try {
-               const { data: profile } = await supabaseAdmin.from('profiles').select('billing_address').eq('id', userId).single();
-               if (profile && !profile.billing_address) {
-                   const newBilling = {
-                       fullName: notes.customer_name || '',
-                       email: notes.customer_email || '',
-                       phoneNumber: notes.customer_phone || '',
-                       address: notes.customer_address || '',
-                       gstNumber: notes.customer_gst || ''
-                   };
-                   await supabaseAdmin.from('profiles').update({ 
-                       billing_address: newBilling,
-                       full_name: newBilling.fullName || undefined
-                   }).eq('id', userId);
-               }
-          } catch(e) { console.error("Profile sync error", e); }
+      if (shouldUnpublish) {
+        try {
+          // IMPORTANT: Only set is_published = false
+          // DO NOT delete website_data or draft_data — preserve everything for resume
+          const { error: unpubError } = await supabaseAdmin
+            .from('websites')
+            .update({ is_published: false })
+            .eq('user_id', userId);
+
+          if (unpubError) {
+            console.error(`[Webhook] Failed to unpublish website for user ${userId}:`, unpubError);
+          } else {
+            console.log(`[Webhook] Website unpublished for user ${userId} (data preserved)`);
+          }
+        } catch (webErr) {
+          console.error('[Webhook] Error unpublishing website:', webErr);
+        }
+      }
+
+      // --- BACKUP: Profile Sync from Notes ---
+      if (userId && notes && (eventName === 'subscription.activated' || eventName === 'subscription.charged')) {
+        try {
+          const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('billing_address')
+            .eq('id', userId)
+            .single();
+            
+          if (profile && !profile.billing_address) {
+            const newBilling = {
+              fullName: notes.customer_name || '',
+              email: notes.customer_email || '',
+              phoneNumber: notes.customer_phone || '',
+              address: notes.customer_address || '',
+              gstNumber: notes.customer_gst || ''
+            };
+            await supabaseAdmin
+              .from('profiles')
+              .update({ 
+                billing_address: newBilling,
+                full_name: newBilling.fullName || undefined
+              })
+              .eq('id', userId);
+          }
+        } catch(e) { 
+          console.error('[Webhook] Profile sync error:', e); 
+        }
       }
     }
     
-    // --- Payment Failed (Log only) ---
+    // ============================================================
+    // PAYMENT FAILED
+    // ============================================================
     if (eventName === 'payment.failed') {
-        const payment = payload.payment.entity;
-        console.log(`Payment Failed: ${payment.id} for reason: ${payment.error_description}`);
+      const payment = payload.payment.entity;
+      console.log(`[Webhook] Payment Failed: ${payment.id}, reason: ${payment.error_description}`);
+      // We don't change subscription status here — Razorpay will fire 
+      // subscription.halted after all retries are exhausted
+    }
+
+    // ============================================================
+    // PAYMENT DISPUTE LOST
+    // ============================================================
+    if (eventName === 'payment.dispute.lost') {
+      const dispute = payload?.payment?.entity;
+      console.log(`[Webhook] Payment Dispute Lost: ${dispute?.id}`);
+      // Log for manual review — no automatic action
+    }
+
+    // ============================================================
+    // REFUND PROCESSED
+    // ============================================================
+    if (eventName === 'refund.processed') {
+      const refund = payload?.refund?.entity;
+      console.log(`[Webhook] Refund Processed: ${refund?.id}, amount: ${refund?.amount}`);
+      // Log for manual review — no automatic action
     }
 
     return NextResponse.json({ status: 'ok' });
 
   } catch (err) {
-    console.error('Webhook Error:', err);
+    console.error('[Webhook] Unhandled Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

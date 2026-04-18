@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader2, User, CreditCard, CheckCircle2, AlertCircle, Building2, Lock, Truck, Download, Smartphone } from 'lucide-react';
 import { updateProfileDataAction } from '@/app/actions/profileActions';
 import PlanManager from '@/components/dashboard/PlanManager';
 import { usePwa } from '@/components/dashboard/PwaContext';
 
-export default function ProfilePage() {
+function ProfileContent() {
   const [loading, setLoading] = useState(true);
   const { deferredPrompt, clearPrompt, isPwaInstalled } = usePwa();
+  const searchParams = useSearchParams();
+  const isInactive = searchParams.get('reason') === 'inactive';
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -152,14 +155,12 @@ export default function ProfilePage() {
       }));
       setInitialUpiId(upiId || '');
 
-      // Fetch Active Subscription & Products
-      // We order by 'id' descending to ensure we ALWAYS get the absolute most recently inserted subscription row 
-      // in case `created_at` timestamps are identical or webhook canceled the old one slightly late.
+      // Fetch Latest Subscription (ANY status) & Products
+      // We order by 'id' descending to get the most recently inserted subscription row
       const { data: subs } = await supabase
         .from('subscriptions')
         .select('*, plans(*)')
         .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
         .order('id', { ascending: false })
         .limit(1);
 
@@ -171,7 +172,6 @@ export default function ProfilePage() {
           // Check if current_period_end is a Unix timestamp (seconds)
           let endValue = sub.current_period_end;
           if (endValue && typeof endValue === 'number' && endValue < 10000000000) {
-              // Convert seconds to milliseconds
               endValue = new Date(endValue * 1000).toISOString();
           } else if (endValue && !isNaN(Number(endValue)) && String(endValue).length === 10) {
               endValue = new Date(Number(endValue) * 1000).toISOString();
@@ -183,17 +183,12 @@ export default function ProfilePage() {
               price: sub.plans.price,
               status: sub.status,
               end: endValue,
-              cycle: cycle
+              cycle: cycle,
+              cancelAtPeriodEnd: sub.cancel_at_period_end || false,
+              pausedAt: sub.paused_at || null
           });
       } else {
-          setCurrentPlan({
-              id: 'default',
-              name: 'Starter',
-              price: '299',
-              status: 'active',
-              end: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
-              cycle: 'monthly'
-          });
+          setCurrentPlan(null);
       }
 
       if (websites && websites.length > 0) {
@@ -465,6 +460,19 @@ export default function ProfilePage() {
         </div>
       )}
 
+      {/* Inactive Subscription Banner */}
+      {isInactive && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-red-50 border border-amber-200 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Your subscription is inactive</h3>
+            <p className="text-gray-600 text-sm mt-0.5">
+              Your dashboard features (orders, products, analytics) are locked. Resume or resubscribe below to regain full access.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Profile Management</h1>
         <p className="text-gray-500 mt-2">Manage your personal information, business settings, and subscription plan.</p>
@@ -510,23 +518,41 @@ export default function ProfilePage() {
                 <div className="pt-6 border-t border-gray-100">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current Plan</span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-700 uppercase tracking-wider">
-                      Active
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                      currentPlan.status === 'active' ? 'bg-green-100 text-green-700' :
+                      currentPlan.status === 'paused' ? 'bg-amber-100 text-amber-700' :
+                      currentPlan.status === 'canceled' ? 'bg-red-100 text-red-700' :
+                      currentPlan.status === 'past_due' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {currentPlan.status === 'active' && currentPlan.cancelAtPeriodEnd ? 'Canceling' :
+                       currentPlan.status === 'past_due' ? 'Past Due' :
+                       currentPlan.status?.charAt(0).toUpperCase() + currentPlan.status?.slice(1)}
                     </span>
                   </div>
                   <h4 className="text-2xl font-extrabold text-gray-900 mb-1">{currentPlan.name}</h4>
                   <p className="text-gray-600 text-sm">
                       Billed {currentPlan.cycle}.
                   </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                      Next billing date: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span>
-                  </p>
+                  {currentPlan.status === 'active' && (
+                    <p className="text-gray-500 text-sm mt-2">
+                      {currentPlan.cancelAtPeriodEnd 
+                        ? <>Cancels on: <span className="font-semibold text-red-600">{new Date(currentPlan.end).toLocaleDateString()}</span></>
+                        : <>Next billing: <span className="font-semibold text-gray-900">{new Date(currentPlan.end).toLocaleDateString()}</span></>
+                      }
+                    </p>
+                  )}
+                  {currentPlan.status === 'paused' && (
+                    <p className="text-amber-600 text-sm mt-2 font-medium">
+                      Paused — resume anytime to bring your website back online
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <PlanManager currentPlan={currentPlan} productCount={productCount} />
+          <PlanManager currentPlan={currentPlan} productCount={productCount} subscriptionStatus={currentPlan?.status} />
         </div>
 
         {/* Right Content - Forms */}
@@ -760,5 +786,13 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }

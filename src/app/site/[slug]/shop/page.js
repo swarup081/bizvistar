@@ -37,13 +37,18 @@ export default async function LiveShopPage(props) {
     .eq('site_slug', slug)
     .single();
 
-  if (error || !site || !site.is_published) {
+  if (error || !site) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h1>404 - Site Not Found</h1>
-        <p>Query ran, but no site matches this slug: <strong>{slug}</strong></p>
+        <p>No site matches this slug: <strong>{slug}</strong></p>
       </div>
     );
+  }
+
+  if (!site.is_published) {
+    const { redirect } = await import('next/navigation');
+    redirect('/site-unavailable');
   }
 
   const templateName = site.template.name;

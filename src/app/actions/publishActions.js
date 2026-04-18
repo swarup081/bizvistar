@@ -66,7 +66,7 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
         console.log(`[PublishAction] DB check failed. Checking Razorpay API for sub ${fallbackSubscriptionId}...`);
         try {
             const keyId = getKeyId();
-            const keySecret = process.env.RAZORPAY_Test_Key_Secret || process.env.RAZORPAY_TEST_KEY_SECRET;
+            const keySecret = process.env.RAZORPAY_TEST_KEY_SECRET;
             
             if (keyId && keySecret) {
                 const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });

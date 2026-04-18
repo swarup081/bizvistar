@@ -9,22 +9,25 @@ const supabaseAdmin = createClient(
 
 /**
  * Validates a user's subscription status and returns their plan details.
- * Implements strict security checks and Founder Plan expiry logic.
+ * Implements strict security checks, Founder Plan expiry logic, 
+ * grace period for webhook delays, and paused status handling.
  */
 export async function validateUserSubscription(userId) {
   if (!userId) throw new Error("User ID required for subscription check.");
 
-  // Fetch subscription with Plan details
-  // Fix: Order by created_at desc to get the LATEST subscription if multiple exist (e.g. old canceled ones)
+  // Fetch the LATEST subscription (any status) to give proper error messages
+  // Using 'id' (auto-incrementing IDENTITY) for ordering since it's guaranteed to exist
   const { data: subscription, error } = await supabaseAdmin
     .from('subscriptions')
     .select(`
       status, 
       current_period_end, 
+      cancel_at_period_end,
+      paused_at,
       plan:plans ( razorpay_plan_id, name )
     `)
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
     .limit(1)
     .maybeSingle(); 
 
@@ -37,39 +40,49 @@ export async function validateUserSubscription(userId) {
       throw new Error("No subscription found. Please upgrade to a paid plan.");
   }
 
-  const { status, current_period_end, plan } = subscription;
+  const { status, current_period_end, cancel_at_period_end, plan } = subscription;
   const now = new Date();
   const periodEnd = new Date(current_period_end);
 
-  // Buffer for webhook delays (e.g., 24 hours)
-  // If period ended 1 hour ago, maybe give grace? 
-  // But strict requirement says "exactly after user pay last cycle... terminate... cant use last cycle".
-  // The fix ensures they CAN use the last cycle.
-  // So strict date check is appropriate.
-  // Note: periodEnd from Razorpay is usually the exact second of expiry.
+  // Grace period: 2 hours buffer for webhook delays
+  const GRACE_PERIOD_MS = 2 * 60 * 60 * 1000; // 2 hours
+  const periodEndWithGrace = new Date(periodEnd.getTime() + GRACE_PERIOD_MS);
+
+  // 1. PAUSED → Blocked but can be resumed
+  if (status === 'paused') {
+    throw new Error("Your subscription is paused. Resume your plan from the Profile page to continue.");
+  }
   
-  // 1. CANCELED / PAST DUE -> Immediate Block
-  // Note: 'paused' and 'halted' are mapped to 'past_due' in webhook to satisfy DB constraints.
-  if (status === 'canceled' || status === 'past_due') {
-      throw new Error("Your subscription is inactive or canceled. Access denied.");
+  // 2. CANCELED → Blocked
+  if (status === 'canceled') {
+    throw new Error("Your subscription has been canceled. Please subscribe again to regain access.");
   }
 
-  // 2. ACTIVE / TRIALLING
-  // 'completed' is mapped to 'active' in webhook.
+  // 3. PAST DUE → Blocked (payment failure)
+  if (status === 'past_due') {
+    throw new Error("Your subscription has a payment issue. Please update your payment method or contact support.");
+  }
+
+  // 4. ACTIVE / TRIALING
   if (status === 'active' || status === 'trialing') {
-      if (now > periodEnd) {
-          // If it's active but date passed, and we haven't received renewal webhook, 
-          // technically they are expired or past_due.
-          // For Founder plan (completed -> active), this is the correct termination point.
-          throw new Error("Your subscription period has ended. Please renew.");
-      }
-  } else {
-       throw new Error(`Invalid subscription status: ${status}`);
-  }
+    // Check if period has actually expired (with grace period)
+    if (now > periodEndWithGrace) {
+      // Active but period ended and grace period passed
+      throw new Error("Your subscription period has ended. Please renew to continue.");
+    }
 
-  return {
+    // If cancel_at_period_end is true, still allow access until period ends
+    // (The user cancelled but period hasn't ended yet)
+
+    return {
       isValid: true,
       razorpayPlanId: plan?.razorpay_plan_id,
-      planName: plan?.name
-  };
+      planName: plan?.name,
+      cancelAtPeriodEnd: cancel_at_period_end || false,
+      periodEnd: current_period_end
+    };
+  }
+
+  // Fallback: Unknown status
+  throw new Error(`Invalid subscription status: ${status}. Please contact support.`);
 }

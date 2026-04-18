@@ -127,8 +127,13 @@ export default async function LiveProductPage(props) {
     .eq('site_slug', slug)
     .single();
 
-  if (error || !site || !site.is_published) {
+  if (error || !site) {
     return <div>404 - Site Not Found</div>;
+  }
+
+  if (!site.is_published) {
+    const { redirect } = await import('next/navigation');
+    redirect('/site-unavailable');
   }
 
   const templateName = site.template.name;

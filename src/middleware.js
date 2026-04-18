@@ -11,7 +11,6 @@ export async function middleware(request) {
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
      console.error('[Middleware] Missing Supabase Environment Variables');
-     // Allow request to proceed (or fail downstream) to avoid infinite redirects on misconfiguration
      return response;
   }
 
@@ -46,24 +45,32 @@ export async function middleware(request) {
 
   if ((path.startsWith('/dashboard') || path.startsWith('/editor')) && !user) {
     const signInUrl = new URL('/sign-in', request.url);
-    // Append the current path as a 'redirect' param so the user can return
     signInUrl.searchParams.set('redirect', path);
     return NextResponse.redirect(signInUrl)
   }
 
-  // Security Check: Restrict /dashboard to users with a published website
+  // Dashboard access control
   if (user && path.startsWith('/dashboard')) {
     const { data: website } = await supabase
       .from('websites')
-      .select('id')
+      .select('id, is_published')
       .eq('user_id', user.id)
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!website) {
+      // No website at all — redirect to templates to create one
       return NextResponse.redirect(new URL('/templates', request.url));
+    }
+
+    // If website is NOT published (paused/canceled/halted),
+    // only allow /dashboard/profile so user can resume/resubscribe.
+    // Block all other dashboard routes (orders, products, analytics, etc.)
+    if (!website.is_published && path !== '/dashboard/profile') {
+      const profileUrl = new URL('/dashboard/profile', request.url);
+      profileUrl.searchParams.set('reason', 'inactive');
+      return NextResponse.redirect(profileUrl);
     }
   }
 

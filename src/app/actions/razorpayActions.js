@@ -243,7 +243,8 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
                  
                  // Map statuses
                  if (status === 'cancelled') newStatus = 'canceled';
-                 if (status === 'halted' || status === 'paused') newStatus = 'past_due';
+                 if (status === 'halted') newStatus = 'past_due';
+                 if (status === 'paused') newStatus = 'paused';
                  if (status === 'completed') newStatus = 'active';
                  if (status === 'authenticated') newStatus = 'active'; // Just paid
 

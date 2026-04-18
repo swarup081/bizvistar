@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { Download } from 'lucide-react';
+import { Download, Play } from 'lucide-react';
 import { usePwa } from './PwaContext';
 
 export default function UpdatePlanNavButton({ isMobile = false }) {
   const [nextPlanText, setNextPlanText] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // PWA State
@@ -24,11 +25,18 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
           .from('subscriptions')
           .select('*, plans(*)')
           .eq('user_id', user.id)
-          .in('status', ['active', 'trialing'])
           .order('id', { ascending: false })
           .limit(1);
 
-        const currentPlan = subs && subs.length > 0 ? subs[0].plans : null;
+        const currentSub = subs && subs.length > 0 ? subs[0] : null;
+        const currentPlan = currentSub?.plans || null;
+
+        // Check for paused status
+        if (currentSub && currentSub.status === 'paused') {
+          setIsPaused(true);
+          setNextPlanText(null);
+          return;
+        }
 
         if (currentPlan) {
             const planName = currentPlan.name.toLowerCase();
@@ -121,6 +129,33 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
           <Download size={16} className="text-white drop-shadow-md animate-bounce"/>
           <span className="drop-shadow-sm">Install App</span>
       </button>
+    );
+  }
+
+  // Show Resume button when paused
+  if (isPaused) {
+    const resumeHref = '/dashboard/profile';
+    if (isMobile) {
+      return (
+        <Link
+          href={resumeHref}
+          className="flex items-center justify-center w-auto pl-5 pr-5 h-8 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md hover:shadow-lg transition-all border border-amber-500/50"
+          title="Resume Plan"
+        >
+          <Play size={14} className="text-white mr-1" />
+          <span className="p-2 text-sm font-bold">Resume Plan</span>
+        </Link>
+      );
+    }
+    return (
+      <Link
+        href={resumeHref}
+        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 bg-[length:200%_auto] text-white text-sm font-bold shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5 border border-amber-500/40 relative overflow-hidden group hover:bg-[position:right_center]"
+      >
+        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></span>
+        <Play size={16} className="text-white drop-shadow-md" />
+        <span className="drop-shadow-sm">Resume Plan</span>
+      </Link>
     );
   }
 

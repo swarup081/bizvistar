@@ -70,12 +70,8 @@ export default async function LiveSitePage(props) {
   }
 
   if (!site.is_published && !isPreview) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center" }}>
-        <h1>Site Not Published</h1>
-        <p>This site is created but not published yet.</p>
-      </div>
-    );
+    const { redirect } = await import('next/navigation');
+    redirect('/site-unavailable');
   }
 
   const templateName = site.template?.name;
