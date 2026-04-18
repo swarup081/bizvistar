@@ -295,7 +295,7 @@ export default function FrostifyCheckoutPage() {
                             
                         {/* Coupon Section */}
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-6">
-                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Tag size={16} /> Promo Code</h3>
+                            <h3 className="text-lg text-black font-bold mb-4 flex items-center gap-2"><Tag size={16} /> Promo Code</h3>
                             <div className="flex gap-2">
                                 <input 
                                     type="text" 
