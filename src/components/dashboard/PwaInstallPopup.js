@@ -62,7 +62,7 @@ export default function PwaInstallPopup() {
     <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-500">
       <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-5 max-w-sm w-full relative overflow-hidden">
         {/* Decorative background element */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-bl-full -z-10 opacity-50"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#8A63D2]/10 rounded-bl-full -z-10 opacity-50"></div>
 
         <button
           onClick={handleDismiss}
@@ -72,8 +72,8 @@ export default function PwaInstallPopup() {
         </button>
 
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-            <Smartphone className="text-green-600" size={24} />
+          <div className="w-12 h-12 rounded-full bg-[#8A63D2]/10 flex items-center justify-center flex-shrink-0">
+            <Smartphone className="text-[#8A63D2]" size={24} />
           </div>
 
           <div className="flex-1">

@@ -103,7 +103,7 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
       return (
           <button
               onClick={handleInstallClick}
-              className="flex items-center justify-center w-auto pl-5 pr-5 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md hover:shadow-lg transition-all border border-green-700/50"
+              className="flex items-center justify-center w-auto pl-5 pr-5 h-8 rounded-full bg-gradient-to-r from-[#8A63D2] to-[#6A43B2] text-white shadow-md hover:shadow-lg transition-all border border-[#8A63D2]/50"
               title="Install Dashboard App"
           >
               <Download size={14} className="text-white drop-shadow-md mr-1"/>
@@ -115,7 +115,7 @@ export default function UpdatePlanNavButton({ isMobile = false }) {
     return (
       <button
           onClick={handleInstallClick}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-600 via-emerald-500 to-green-600 bg-[length:200%_auto] text-white text-sm font-bold shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5 border border-green-700/40 relative overflow-hidden group hover:bg-[position:right_center]"
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#8A63D2] via-[#7B54C4] to-[#8A63D2] bg-[length:200%_auto] text-white text-sm font-bold shadow-md hover:shadow-xl transition-all transform hover:-translate-y-0.5 border border-[#8A63D2]/40 relative overflow-hidden group hover:bg-[position:right_center]"
       >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out"></span>
           <Download size={16} className="text-white drop-shadow-md animate-bounce"/>
