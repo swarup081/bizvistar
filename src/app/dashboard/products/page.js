@@ -117,7 +117,7 @@ export default function ProductsPage() {
 
         let query = supabase
             .from('products')
-            .select('*')
+            .select('id, name, price, category_id, description, image_url, stock, additional_images, variants, created_at')
             .eq('website_id', websiteId);
 
         // Fetch all, sort client side or basic sort here. 

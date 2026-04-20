@@ -122,7 +122,7 @@ export default function AddOrderWizard({ isOpen, onClose, onOrderAdded, websiteI
   useEffect(() => {
       if (isOpen && websiteId) {
           const fetchProds = async () => {
-              const { data } = await supabase.from('products').select('*').eq('website_id', websiteId);
+              const { data } = await supabase.from('products').select('id, name, price, image_url, stock, category_id').eq('website_id', websiteId);
               if (data) setProducts(data);
           };
           fetchProds();

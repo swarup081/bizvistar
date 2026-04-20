@@ -7,7 +7,7 @@ export async function syncWebsiteDataClient(websiteId) {
         // 1. Fetch all products, categories, and order items for this website
         const { data: products, error: prodError } = await supabase
             .from('products')
-            .select('*')
+            .select('id, name, price, category_id, description, image_url, stock, additional_images, variants')
             .eq('website_id', websiteId)
             .order('id', { ascending: false }); // Latest first
 

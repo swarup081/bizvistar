@@ -66,7 +66,7 @@ async function syncWebsiteData(websiteId) {
   try {
     const { data: products } = await supabaseAdmin
       .from('products')
-      .select('*')
+      .select('id, name, price, category_id, description, image_url, stock')
       .eq('website_id', websiteId)
       .order('id'); 
 
@@ -265,7 +265,7 @@ export async function getProducts({ page = 1, limit = 10, search = '', categoryI
     let query = supabaseAdmin
       .from('products')
       .select(`
-        *,
+        id, name, price, category_id, description, image_url, stock, additional_images, variants, created_at,
         categories ( name )
       `)
       .eq('website_id', websiteId)

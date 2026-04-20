@@ -1,4 +1,4 @@
-'use server';
+// API Route: POST /api/upload
 
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
