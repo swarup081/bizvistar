@@ -11,6 +11,10 @@ import BlisslyLayout from '@/app/templates/blissly/layout';
 import BlisslyCheckoutPage from '@/app/templates/blissly/checkout/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 import FlavornestCheckoutPage from '@/app/templates/flavornest/checkout/page';
+import AuroraLayout from '@/app/templates/aurora/layout';
+import AuroraCheckoutPage from '@/app/templates/aurora/checkout/page';
+import FrostifyLayout from '@/app/templates/frostify/layout';
+import FrostifyCheckoutPage from '@/app/templates/frostify/checkout/page';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -54,6 +58,10 @@ export default async function LiveCheckoutPage(props) {
       return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyCheckoutPage /></BlisslyLayout>;
     case 'flavornest':
       return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestCheckoutPage /></FlavornestLayout>;
+    case 'aurora':
+      return <AuroraLayout serverData={websiteData} websiteId={site.id}><AuroraCheckoutPage /></AuroraLayout>;
+    case 'frostify':
+      return <FrostifyLayout serverData={websiteData} websiteId={site.id}><FrostifyCheckoutPage /></FrostifyLayout>;
     default:
       return <div>Checkout not found for this template.</div>;
   }

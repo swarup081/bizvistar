@@ -7,11 +7,11 @@ export const Header = ({ business, cartCount, onCartClick }) => {
     const { basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/flavornest', '');
         const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (

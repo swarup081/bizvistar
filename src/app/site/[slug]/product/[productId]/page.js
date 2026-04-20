@@ -8,11 +8,14 @@ import FlaraProductPage from '@/app/templates/flara/product/[productId]/page';
 import AvenixLayout from '@/app/templates/avenix/layout';
 import AvenixProductPage from '@/app/templates/avenix/product/[productId]/page';
 import BlisslyLayout from '@/app/templates/blissly/layout';
-// CHANGED: Corrected import path for Blissly product page
 import BlisslyProductPage from '@/app/templates/blissly/product/[productId]/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 // Flavornest does not have a product page, so we would just render the shop
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
+import AuroraLayout from '@/app/templates/aurora/layout';
+import AuroraProductPage from '@/app/templates/aurora/product/[productId]/page';
+import FrostifyLayout from '@/app/templates/frostify/layout';
+import FrostifyProductPage from '@/app/templates/frostify/product/[productId]/page';
 
 
 const supabaseAdmin = createClient(
@@ -142,14 +145,18 @@ export default async function LiveProductPage(props) {
   // Render the correct template's product page
   switch (templateName) {
     case 'flara':
-      return <FlaraLayout serverData={websiteData}><FlaraProductPage /></FlaraLayout>;
+      return <FlaraLayout serverData={websiteData} websiteId={site.id}><FlaraProductPage /></FlaraLayout>;
     case 'avenix':
-      return <AvenixLayout serverData={websiteData}><AvenixProductPage /></AvenixLayout>;
+      return <AvenixLayout serverData={websiteData} websiteId={site.id}><AvenixProductPage /></AvenixLayout>;
     case 'blissly':
-      return <BlisslyLayout serverData={websiteData}><BlisslyProductPage /></BlisslyLayout>;
+      return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyProductPage /></BlisslyLayout>;
     case 'flavornest':
       // Flavornest has no product page, redirect to its shop
-      return <FlavornestLayout serverData={websiteData}><FlavornestShopPage /></FlavornestLayout>;
+      return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestShopPage /></FlavornestLayout>;
+    case 'aurora':
+      return <AuroraLayout serverData={websiteData} websiteId={site.id}><AuroraProductPage /></AuroraLayout>;
+    case 'frostify':
+      return <FrostifyLayout serverData={websiteData} websiteId={site.id}><FrostifyProductPage /></FrostifyLayout>;
     default:
       return <div>Product not found for this template.</div>;
   }

@@ -45,13 +45,11 @@ export const Header = ({ business, cartCount, onCartClick }) => {
 
     // Helper to resolve links with basePath
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
-        // Strip legacy hardcoded template paths if present (fixes old data)
         const path = url.replace('/templates/flara', '');
-        // Ensure we don't double-slash or mis-path. `basePath` might be `/site/slug` or `.`
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : ''; 
-        return `${cleanBasePath}${path}`;
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (
@@ -163,11 +161,11 @@ export const Footer = () => {
     const { businessData, basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/flara', '');
         const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (

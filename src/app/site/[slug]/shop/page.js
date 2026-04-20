@@ -11,6 +11,10 @@ import BlisslyLayout from '@/app/templates/blissly/layout';
 import BlisslyShopPage from '@/app/templates/blissly/shop/page';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
 import FlavornestShopPage from '@/app/templates/flavornest/shop/page';
+import AuroraLayout from '@/app/templates/aurora/layout';
+import AuroraShopPage from '@/app/templates/aurora/shop/page';
+import FrostifyLayout from '@/app/templates/frostify/layout';
+import FrostifyShopPage from '@/app/templates/frostify/shop/page';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -33,7 +37,7 @@ export default async function LiveShopPage(props) {
 
   const { data: site, error } = await supabaseAdmin
     .from('websites')
-    .select(`is_published, website_data, template:templates ( name )`)
+    .select(`id, is_published, website_data, template:templates ( name )`)
     .eq('site_slug', slug)
     .single();
 
@@ -57,13 +61,17 @@ export default async function LiveShopPage(props) {
   // Render the correct template's shop page
   switch (templateName) {
     case 'flara':
-      return <FlaraLayout serverData={websiteData}><FlaraShopPage /></FlaraLayout>;
+      return <FlaraLayout serverData={websiteData} websiteId={site.id}><FlaraShopPage /></FlaraLayout>;
     case 'avenix':
-      return <AvenixLayout serverData={websiteData}><AvenixShopPage /></AvenixLayout>;
+      return <AvenixLayout serverData={websiteData} websiteId={site.id}><AvenixShopPage /></AvenixLayout>;
     case 'blissly':
-      return <BlisslyLayout serverData={websiteData}><BlisslyShopPage /></BlisslyLayout>;
+      return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyShopPage /></BlisslyLayout>;
     case 'flavornest':
-      return <FlavornestLayout serverData={websiteData}><FlavornestShopPage /></FlavornestLayout>;
+      return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestShopPage /></FlavornestLayout>;
+    case 'aurora':
+      return <AuroraLayout serverData={websiteData} websiteId={site.id}><AuroraShopPage /></AuroraLayout>;
+    case 'frostify':
+      return <FrostifyLayout serverData={websiteData} websiteId={site.id}><FrostifyShopPage /></FrostifyLayout>;
     default:
       return <div>Shop not found for this template.</div>;
   }

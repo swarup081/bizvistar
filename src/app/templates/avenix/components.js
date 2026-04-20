@@ -53,11 +53,11 @@ export const Header = ({ cartCount, onCartClick }) => {
     const { businessData, basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/avenix', '');
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : ''; 
-        return `${cleanBasePath}${path}`;
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (
@@ -211,11 +211,11 @@ export const Footer = () => {
     const { businessData, basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/avenix', '');
-        const cleanBasePath = basePath && basePath !== '.' ? basePath : ''; 
-        return `${cleanBasePath}${path}`;
+        const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (

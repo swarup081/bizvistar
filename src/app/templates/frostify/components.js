@@ -56,11 +56,11 @@ export const Header = () => {
     const { cartCount, openCart } = useCart();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/frostify', '');
         const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (

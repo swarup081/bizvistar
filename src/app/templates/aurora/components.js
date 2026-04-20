@@ -32,11 +32,11 @@ const HeaderContent = () => {
     const isLanding = searchParams.get('isLanding') === 'true';
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/aurora', '');
         const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        return `${cleanBasePath}${path}` || '/';
     };
 
     if (typeof window !== "undefined") {
@@ -340,11 +340,11 @@ export const Footer = () => {
     const { businessData, basePath } = useTemplateContext();
 
     const resolveLink = (url) => {
-        if (!url) return "#";
+        if (url === undefined || url === null) return "#";
         if (url.startsWith('#') || url.startsWith('http')) return url;
         const path = url.replace('/templates/aurora', '');
         const cleanBasePath = basePath && basePath !== '.' ? basePath : '';
-        return `${cleanBasePath}${path}`;
+        return `${cleanBasePath}${path}` || '/';
     };
 
     return (
