@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
   LayoutDashboard,
@@ -237,19 +237,42 @@ const EditorSelect = ({
   );
 };
 
-// Image Upload Control
+// Image Upload Control — Uploads to Cloudinary
 // --- ADDED onFocus PROP ---
+const MAX_EDITOR_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
   const inputId = `file-upload-${label.replace(/\s+/g, '-')}`;
+  const [uploading, setUploading] = useState(false);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        onChange({ target: { value: reader.result } });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > MAX_EDITOR_FILE_SIZE) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      alert(`Image too large (${sizeMB}MB). Maximum allowed size is 10MB.`);
+      e.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'editor');
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.error || 'Image upload failed. Please try again.');
+      } else {
+        onChange({ target: { value: data.url } });
+      }
+    } catch (err) {
+      alert('Image upload failed. Please check your connection and try again.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -260,7 +283,9 @@ const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
       </label>
       <div className="flex items-center gap-2">
         <div className="w-12 h-12 rounded border border-gray-300 bg-gray-100 flex-shrink-0 flex items-center justify-center relative overflow-hidden">
-          {value ? (
+          {uploading ? (
+            <div className="animate-spin w-5 h-5 border-2 border-[#8A63D2] border-t-transparent rounded-full" />
+          ) : value ? (
             <Image
               src={value}
               alt="Preview"
@@ -274,16 +299,17 @@ const EditorImageUpload = ({ label, value, onChange, onFocus }) => {
         </div>
         <label
           htmlFor={inputId}
-          className="cursor-pointer flex-grow px-3 py-2 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 text-center"
+          className={`cursor-pointer flex-grow px-3 py-2 bg-white text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-gray-50 text-center ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           onClick={onFocus} // <-- ADDED
         >
-          <span>Upload Image</span>
+          <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
           <input
             id={inputId}
             type="file"
             accept="image/*"
             className="hidden"
             onChange={handleImageChange}
+            disabled={uploading}
           />
         </label>
       </div>
@@ -2992,13 +3018,29 @@ export default function EditorSidebar({
                               type="file" 
                               accept="image/*" 
                               className="hidden" 
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                   const file = e.target.files[0];
-                                  if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => handleDataChange('logo', reader.result);
-                                      reader.readAsDataURL(file);
+                                  if (!file) return;
+                                  if (file.size > 10 * 1024 * 1024) {
+                                      alert(`Logo too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum allowed size is 10MB.`);
+                                      e.target.value = '';
+                                      return;
                                   }
+                                  try {
+                                      const fd = new FormData();
+                                      fd.append('file', file);
+                                      fd.append('folder', 'logos');
+                                      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                      const data = await res.json();
+                                      if (data.success) {
+                                          handleDataChange('logo', data.url);
+                                      } else {
+                                          alert(data.error || 'Logo upload failed.');
+                                      }
+                                  } catch (err) {
+                                      alert('Logo upload failed. Please try again.');
+                                  }
+                                  e.target.value = '';
                               }}
                           />
                       </label>

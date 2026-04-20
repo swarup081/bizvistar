@@ -184,24 +184,42 @@ export async function uploadLogo(formData) {
     
     if (!file || !websiteId) throw new Error("Invalid upload");
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${websiteId}-${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error(`Image too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Maximum allowed size is 10MB.`);
+    }
 
-    // Ensure bucket exists (best effort)
-    await supabaseAdmin.storage.createBucket('logos', { public: true }).catch(() => {});
+    // Upload to Cloudinary
+    const { v2: cloudinary } = await import('cloudinary');
+    cloudinary.config({
+      cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
 
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('logos')
-      .upload(filePath, file);
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    if (uploadError) throw uploadError;
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `bizvistar/logos`,
+          resource_type: 'image',
+          quality: 'auto',
+          format: 'auto',
+          transformation: [
+            { width: 800, height: 800, crop: 'limit', quality: 'auto:good', fetch_format: 'auto' },
+          ],
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(buffer);
+    });
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('logos')
-      .getPublicUrl(filePath);
-
-    return { success: true, url: publicUrl };
+    return { success: true, url: uploadResult.secure_url };
 
   } catch (err) {
     return { success: false, error: err.message };

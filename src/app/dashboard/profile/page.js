@@ -213,34 +213,47 @@ function ProfileContent() {
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setMessage({ type: 'error', text: 'Logo image must be smaller than 2MB.' });
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      setMessage({ type: 'error', text: `Logo image too large (${sizeMB}MB). Maximum allowed size is 10MB.` });
+      e.target.value = '';
+      return;
+    }
+
+    setMessage({ type: '', text: '' });
+
+    try {
+      // 1. Upload to Cloudinary
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('folder', 'logos');
+      
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: uploadData });
+      const uploadResult = await uploadRes.json();
+      
+      if (!uploadResult.success) {
+        setMessage({ type: 'error', text: uploadResult.error || 'Failed to upload logo.' });
+        e.target.value = '';
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Logo = reader.result;
-        setFormData(prev => ({ ...prev, logoUrl: base64Logo }));
-        
-        // Immediately save logo to backend
-        try {
-            // We can just call updateProfileDataAction with a partial update if we adapt it, 
-            // or call it with current formData + new logo. Since formData might have unsaved text changes,
-            // we will pass the exact updated formData state.
-            const dataToSave = { ...formData, logoUrl: base64Logo };
-            const res = await updateProfileDataAction(dataToSave);
-            if (res.success) {
-                setMessage({ type: 'success', text: 'Logo updated successfully!' });
-            } else {
-                setMessage({ type: 'error', text: 'Failed to save logo.' });
-            }
-        } catch (err) {
-            setMessage({ type: 'error', text: 'Failed to upload logo.' });
-        }
-      };
-      reader.readAsDataURL(file);
+
+      const cloudinaryUrl = uploadResult.url;
+      setFormData(prev => ({ ...prev, logoUrl: cloudinaryUrl }));
+      
+      // 2. Save to backend
+      const dataToSave = { ...formData, logoUrl: cloudinaryUrl };
+      const res = await updateProfileDataAction(dataToSave);
+      if (res.success) {
+        setMessage({ type: 'success', text: 'Logo updated successfully!' });
+      } else {
+        setMessage({ type: 'error', text: 'Failed to save logo.' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to upload logo. Please try again.' });
     }
+    e.target.value = '';
   };
 
   const proceedWithSave = async () => {

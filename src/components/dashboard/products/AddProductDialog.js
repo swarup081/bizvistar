@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Select from '@radix-ui/react-select';
-import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2, Palette, Ruler } from 'lucide-react';
+import { X, UploadCloud, Loader2, Check, ChevronDown, CheckCircle, Plus, Trash2, Palette, Ruler, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -10,8 +10,38 @@ import { notifyLowStock } from '@/app/actions/productStockActions';
 import { addProduct } from '@/app/actions/productActions';
 import UpgradeModal from '@/components/dashboard/UpgradeModal';
 
+// --- Image Upload Helper ---
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml', 'image/avif'];
+
+async function uploadImageToCloudinary(file, folder = 'products') {
+    // Client-side validation
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        throw new Error(`Unsupported file type "${file.type}". Please upload JPEG, PNG, WebP, GIF, or SVG.`);
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        throw new Error(`Image too large (${sizeMB}MB). Maximum allowed size is 10MB.`);
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!data.success) {
+        throw new Error(data.error || 'Image upload failed.');
+    }
+    return data.url;
+}
+
 export default function AddProductDialog({ isOpen, onClose, onProductAdded, categories, websiteId, productToEdit }) {
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [additionalUploading, setAdditionalUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -34,6 +64,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
 
   useEffect(() => {
     if (isOpen) {
+      setUploadError('');
       if (productToEdit) {
          setFormData({
             name: productToEdit.name || '',
@@ -83,34 +114,49 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
     }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, imageUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    
+    setImageUploading(true);
+    setUploadError('');
+    try {
+        const url = await uploadImageToCloudinary(file, 'products');
+        setFormData(prev => ({ ...prev, imageUrl: url }));
+    } catch (err) {
+        setUploadError(err.message);
+    } finally {
+        setImageUploading(false);
+        // Reset input so same file can be re-selected
+        e.target.value = '';
     }
   };
 
-  const handleAdditionalImageUpload = (e) => {
+  const handleAdditionalImageUpload = async (e) => {
       const files = Array.from(e.target.files);
       if (files.length + formData.additionalImages.length > 9) {
-          alert("You can only add up to 9 additional images.");
+          setUploadError("You can only add up to 9 additional images.");
+          e.target.value = '';
           return;
       }
       
-      files.forEach(file => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              setFormData(prev => {
-                  if (prev.additionalImages.length >= 9) return prev;
-                  return { ...prev, additionalImages: [...prev.additionalImages, reader.result] };
-              });
-          };
-          reader.readAsDataURL(file);
-      });
+      setAdditionalUploading(true);
+      setUploadError('');
+      try {
+          const uploadPromises = files.map(file => uploadImageToCloudinary(file, 'products'));
+          const urls = await Promise.all(uploadPromises);
+          
+          setFormData(prev => {
+              const remaining = 9 - prev.additionalImages.length;
+              const toAdd = urls.slice(0, remaining);
+              return { ...prev, additionalImages: [...prev.additionalImages, ...toAdd] };
+          });
+      } catch (err) {
+          setUploadError(err.message);
+      } finally {
+          setAdditionalUploading(false);
+          e.target.value = '';
+      }
   };
 
   const removeAdditionalImage = (index) => {
@@ -262,11 +308,29 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 h-full overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative">
                   <div className="space-y-6">
+
+                      {/* Upload Error Banner */}
+                      {uploadError && (
+                          <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl animate-in fade-in duration-200">
+                              <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                              <div className="flex-1">
+                                  <p className="text-sm text-red-700 font-medium">{uploadError}</p>
+                              </div>
+                              <button type="button" onClick={() => setUploadError('')} className="text-red-400 hover:text-red-600">
+                                  <X size={14} />
+                              </button>
+                          </div>
+                      )}
                       
                       {/* Main Image */}
                       <div className="flex justify-center">
                           <div className="relative group w-32 h-32 rounded-2xl bg-gray-50/50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden hover:border-[#8A63D2] hover:bg-brand-50 transition-all cursor-pointer">
-                              {formData.imageUrl ? (
+                              {imageUploading ? (
+                              <div className="flex flex-col items-center text-[#8A63D2]">
+                                  <Loader2 size={24} className="animate-spin" />
+                                  <span className="text-xs mt-1">Uploading...</span>
+                              </div>
+                              ) : formData.imageUrl ? (
                               <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                               ) : (
                               <div className="flex flex-col items-center text-gray-400">
@@ -279,6 +343,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                               accept="image/*" 
                               className="absolute inset-0 opacity-0 cursor-pointer" 
                               onChange={handleImageUpload}
+                              disabled={imageUploading}
                               />
                           </div>
                       </div>
@@ -301,13 +366,18 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
                               ))}
                               {formData.additionalImages.length < 9 && (
                                   <div className="relative aspect-square rounded-lg bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center hover:bg-brand-50 hover:border-brand-300 transition-colors cursor-pointer">
-                                      <Plus size={16} className="text-gray-400" />
+                                      {additionalUploading ? (
+                                          <Loader2 size={16} className="text-[#8A63D2] animate-spin" />
+                                      ) : (
+                                          <Plus size={16} className="text-gray-400" />
+                                      )}
                                       <input 
                                           type="file" 
                                           accept="image/*" 
                                           multiple
                                           className="absolute inset-0 opacity-0 cursor-pointer" 
                                           onChange={handleAdditionalImageUpload}
+                                          disabled={additionalUploading}
                                       />
                                   </div>
                               )}
@@ -501,7 +571,7 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
               </button>
               <button 
                 type="submit" 
-                disabled={loading}
+                disabled={loading || imageUploading || additionalUploading}
                 className="px-8 py-2.5 rounded-xl bg-[#8A63D2] text-white font-bold hover:bg-[#7854bc] transition-colors disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-brand-200"
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
