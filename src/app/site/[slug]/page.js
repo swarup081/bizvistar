@@ -7,12 +7,16 @@ import FlaraLayout from '@/app/templates/flara/layout';
 import AvenixLayout from '@/app/templates/avenix/layout';
 import BlisslyLayout from '@/app/templates/blissly/layout';
 import FlavornestLayout from '@/app/templates/flavornest/layout';
+import AuroraLayout from '@/app/templates/aurora/layout';
+import FrostifyLayout from '@/app/templates/frostify/layout';
 
 // Template Pages
 import FlaraPage from '@/app/templates/flara/page';
 import AvenixPage from '@/app/templates/avenix/page';
 import BlisslyPage from '@/app/templates/blissly/page';
 import FlavornestPage from '@/app/templates/flavornest/page';
+import AuroraPage from '@/app/templates/aurora/page';
+import FrostifyPage from '@/app/templates/frostify/page';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
@@ -141,6 +145,20 @@ export default async function LiveSitePage(props) {
         <FlavornestLayout serverData={finalData} websiteId={site.id}>
           <FlavornestPage />
         </FlavornestLayout>
+      );
+
+    case "aurora":
+      return (
+        <AuroraLayout serverData={finalData} websiteId={site.id}>
+          <AuroraPage />
+        </AuroraLayout>
+      );
+
+    case "frostify":
+      return (
+        <FrostifyLayout serverData={finalData} websiteId={site.id}>
+          <FrostifyPage />
+        </FrostifyLayout>
       );
 
     default:
