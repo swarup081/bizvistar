@@ -27,7 +27,7 @@ async function cleanBase64Images() {
 
   const { data: websites, error } = await supabase
     .from('websites')
-    .select('id, website_data');
+    .select('id, website_data, draft_data');
 
   if (error) {
     console.error('❌ Failed to fetch websites:', error.message);
@@ -108,7 +108,7 @@ async function cleanBase64Images() {
     }
 
     if (modified) {
-      console.log(`  ✏️  Website ${website.id}: cleaned ${cleanedCount} base64 image(s)`);
+      console.log(`  ✏️  Website ${website.id}: cleaned ${cleanedCount} base64 image(s) from website_data`);
       
       const { error: updateError } = await supabase
         .from('websites')
@@ -118,11 +118,71 @@ async function cleanBase64Images() {
       if (updateError) {
         console.error(`  ❌ Failed to update website ${website.id}:`, updateError.message);
       } else {
-        console.log(`  ✅ Website ${website.id}: updated successfully\n`);
+        console.log(`  ✅ Website ${website.id}: website_data updated\n`);
         totalCleaned += cleanedCount;
       }
     } else {
-      console.log(`  ⏭️  Website ${website.id}: no base64 images found\n`);
+      console.log(`  ⏭️  Website ${website.id}: no base64 in website_data\n`);
+    }
+
+    // --- Also clean draft_data ---
+    const draft = website.draft_data;
+    if (draft) {
+      let draftModified = false;
+      let draftCleanedCount = 0;
+
+      if (Array.isArray(draft.allProducts)) {
+        for (const product of draft.allProducts) {
+          if (product.image && typeof product.image === 'string' && product.image.startsWith('data:image/')) {
+            product.image = '';
+            draftModified = true;
+            draftCleanedCount++;
+          }
+          if (Array.isArray(product.additional_images)) {
+            product.additional_images = product.additional_images.filter(img =>
+              typeof img !== 'string' || !img.startsWith('data:image/')
+            );
+          }
+        }
+      }
+      if (draft.logo && typeof draft.logo === 'string' && draft.logo.startsWith('data:image/')) {
+        draft.logo = '';
+        draftModified = true;
+        draftCleanedCount++;
+      }
+      if (draft.hero?.backgroundImage && typeof draft.hero.backgroundImage === 'string' && draft.hero.backgroundImage.startsWith('data:image/')) {
+        draft.hero.backgroundImage = '';
+        draftModified = true;
+        draftCleanedCount++;
+      }
+      if (draft.about?.image && typeof draft.about.image === 'string' && draft.about.image.startsWith('data:image/')) {
+        draft.about.image = '';
+        draftModified = true;
+        draftCleanedCount++;
+      }
+      if (Array.isArray(draft.categories)) {
+        for (const cat of draft.categories) {
+          if (cat.image && typeof cat.image === 'string' && cat.image.startsWith('data:image/')) {
+            cat.image = '';
+            draftModified = true;
+            draftCleanedCount++;
+          }
+        }
+      }
+
+      if (draftModified) {
+        console.log(`  ✏️  Website ${website.id}: cleaned ${draftCleanedCount} base64 image(s) from draft_data`);
+        const { error: draftErr } = await supabase
+          .from('websites')
+          .update({ draft_data: draft })
+          .eq('id', website.id);
+        if (draftErr) {
+          console.error(`  ❌ Failed to update draft_data for website ${website.id}:`, draftErr.message);
+        } else {
+          console.log(`  ✅ Website ${website.id}: draft_data updated\n`);
+          totalCleaned += draftCleanedCount;
+        }
+      }
     }
   }
 

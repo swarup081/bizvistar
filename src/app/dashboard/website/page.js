@@ -69,12 +69,12 @@ function WebsiteDashboardContent() {
              const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
                  supabase
                     .from('products')
-                    .select('*')
+                    .select('id, name, price, category_id, description, image_url, stock, additional_images, variants')
                     .eq('website_id', site.id)
                     .order('id', { ascending: false }),
                  supabase
                     .from('categories')
-                    .select('*')
+                    .select('id, name')
                     .eq('website_id', site.id)
                     .order('name')
              ]);
