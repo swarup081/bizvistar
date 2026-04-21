@@ -9,6 +9,7 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import OfferPopup from '@/components/editor/OfferPopup';
+import { getBasePath } from '@/app/templates/getBasePath';
 
 function FlaraContent({ children }) {
     const { businessData, basePath, websiteId } = useContext(TemplateContext);
@@ -161,13 +162,7 @@ function TemplateStateProvider({ children, serverData, websiteId }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    let basePath = '/templates/flara';
-    if (serverData && pathname && pathname.startsWith('/site/')) {
-        const parts = pathname.split('/');
-        if (parts.length >= 3) {
-            basePath = `/${parts[1]}/${parts[2]}`;
-        }
-    }
+    const basePath = getBasePath('flara', serverData, pathname);
 
     // Logic to listen to iframe messages etc. (MOVED HERE)
     useEffect(() => {

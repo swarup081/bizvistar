@@ -8,6 +8,40 @@ export async function middleware(request) {
     },
   })
 
+  // ─── SUBDOMAIN ROUTING ───
+  // If the request comes from a Cloudflare Worker with a subdomain,
+  // internally rewrite the URL to /site/[slug]/... so Next.js routes correctly.
+  // The browser URL stays clean (e.g., abc.bizvistar.in/shop).
+  const subdomain = request.headers.get('x-subdomain');
+  if (subdomain) {
+    const pathname = request.nextUrl.pathname;
+
+    // Don't rewrite static assets or API routes
+    if (
+      pathname.startsWith('/_next/') ||
+      pathname.startsWith('/_vercel/') ||
+      pathname.startsWith('/api/') ||
+      pathname === '/favicon.ico'
+    ) {
+      return response;
+    }
+
+    // Rewrite: / → /site/slug, /shop → /site/slug/shop, etc.
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/site/${subdomain}${pathname === '/' ? '' : pathname}`;
+
+    // Pass subdomain info as a cookie so client-side code can detect it
+    const rewriteResponse = NextResponse.rewrite(rewriteUrl);
+    rewriteResponse.cookies.set('x-subdomain', subdomain, {
+      path: '/',
+      httpOnly: false, // Readable by client-side JS
+      sameSite: 'lax',
+      maxAge: 60 * 60, // 1 hour
+    });
+    return rewriteResponse;
+  }
+  // ─── END SUBDOMAIN ROUTING ───
+
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
      console.error('[Middleware] Missing Supabase Environment Variables');
@@ -79,7 +113,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/editor/:path*',
+    // Match subdomain requests (any path that isn't a static file)
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

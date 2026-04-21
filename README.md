@@ -1,158 +1,121 @@
-# 🌐 Bizvistar
+# 🌐 BizVistar (Internal Documentation)
 
 **Empowering Local Businesses with Simple, Affordable, and Professional Digital Presence**
 
----
-
-## 🧭 Mission Statement
-
-To empower local businesses in **Silchar and beyond** with a professional, affordable, and hassle-free digital presence.  
-We handle the technology so business owners can focus on what they do best — **serving their customers**.
+This is an internal repository for BizVistar. It powers a comprehensive SaaS and Website Generation platform designed to help local service-based and retail businesses quickly establish a digital presence.
 
 ---
 
-## 💡 The Problem We Solve
+## 🧭 Project Overview
 
-Many local business owners *know* they need a website and social media presence, but they face major barriers:
+**BizVistar** provides a "do-it-with-me" subscription service. We provide an automated AI-powered website builder with integrated SaaS tools (appointment booking, galleries, menus, inventory, etc.), managed social media services, and business analytics. 
 
-- 💰 **High Cost:** Custom websites are expensive.  
-- ⏰ **Lack of Time:** They're too busy running daily operations.  
-- ⚙️ **Technical Complexity:** Tools like WordPress or Wix can be overwhelming.  
-- 🧠 **Content Creation:** They don't know what to post on social media.
-
-**Bizvistar** removes these barriers through a **simple, all-in-one subscription service.**
+The primary business goal is to offer an all-in-one monthly subscription that removes technical complexities for non-tech-savvy business owners.
 
 ---
 
-## 🎯 Target Audience
+## 🏛 Architecture & Tech Stack
 
-Our primary customers are **small, local, service-based, or retail businesses** that aren’t tech-savvy.  
-Examples include:
+This project is built using modern web development tools and services:
 
-- Salons and barbershops  
-- Cafes, bakeries, and restaurants  
-- Boutiques and local shops (kirana, clothing – retail or wholesale)  
-- Tutors, consultants, and artists  
-- Repair and home services (plumbers, electricians, etc.)
-
----
-
-## ⚙️ Core Product & Features
-
-Bizvistar is a **"do-it-with-me"** service — automation powered by AI, guided by a human touch.
-
-### 🧠 AI-Powered Website Generator
-
-Our core product is a **smart, template-based website builder** that eliminates manual work and ensures professional quality.
-
-#### Step 1: Business Form  
-Users fill a simple multi-step form providing key details:
-- Business name, services, and location  
-- Target customers  
-- Brand style (modern, traditional, friendly, etc.)
-
-#### Step 2: AI Content & Personalization  
-The backend AI generates professional content:
-- Catchy headlines  
-- Service descriptions  
-- "About Us" text  
-- Contact information  
-
-#### Step 3: Instant Template Preview  
-The AI-generated content is automatically filled into **professionally designed, mobile-responsive templates**, showing multiple complete website previews instantly.
-
-#### Step 4: Simple Customizer  
-After free login, users can:
-- Edit text  
-- Upload logos/photos  
-- Choose from pre-approved color palettes  
-→ Ensures everything stays sleek and professional.
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Language**: JavaScript / Node.js
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) & [React UI libraries]
+- **Database Backend & Auth**: [Supabase](https://supabase.com/) (PostgreSQL)
+- **Payments**: [Razorpay](https://razorpay.com/)
+- **Media Storage**: [Cloudinary](https://cloudinary.com/) (Images) & Supabase Storage
+- **AI Content Generation**: [OpenAI API](https://openai.com/)
+- **Analytics & Error Tracking**: [Sentry](https://sentry.io/)
 
 ---
 
-### 💼 SaaS Business Tools (Integrated)
+## 📂 Project Structure
 
-- Appointment/Booking Scheduler  
-- Contact & Inquiry Forms  
-- Photo Galleries & Portfolios  
-- Menu & Price List Displays  
-- Inventory/Stock Management  
+A high-level overview of the repository:
 
----
+```text
+├── .env.local                  # Environment variables (not committed)
+├── src/
+│   ├── app/                    # Next.js App Router pages (Dashboard, Auth, Templates, etc.)
+│   ├── components/             # Reusable UI components (Shadcn, specialized editors)
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/                    # Utility functions, configs, and third-party initializations
+│   ├── middleware.js           # Next.js Middleware (Auth & Tenant routing)
+│   └── scripts/                # Internal Node.js maintenance scripts
+├── supabase/                   # Supabase configuration and DB schemas
+├── public/                     # Static assets (images, icons, manifest.json)
+└── docs/                       # Internal project documentation
+```
 
-### 📱 Managed Social Media & SEO Services
-
-**Content Creation:**  
-We use pre-made professional templates (built on Canva) to design posts personalized with client-provided photos & updates (via WhatsApp).
-
-**Google Maps Optimization:**  
-We manage and optimize clients’ Google Maps profiles to improve local search visibility.
-
----
-
-### ☁️ Hosting & Support
-
-- **Hosting:** Fast, secure hosting with a subdomain (`clientname.bizvistar.in`) or custom domain.  
-- **Support:** Hybrid support via AI chatbot + WhatsApp/call access for direct help.
+### Key Modules
+- `src/app/dashboard`: Client dashboard where users manage products, categories, subscriptions, and website data.
+- `src/app/actions`: Server actions for database operations, bypassing client-side RLS where necessary.
+- **Templates** (e.g., Aurora, Frostify): Dynamic paths rendered based on tenant subdomains or internal routing, applying stored user customizations.
 
 ---
 
-## 💸 Pricing & Plans
+## 🚀 Getting Started (Development Setup)
 
-Simple, monthly subscription plans tailored for every stage of business.
+### Prerequisites
+- Node.js (v18+)
+- npm or pnpm
+- Supabase Project & Credentials
+- Cloudinary Account
+- Razorpay Sandbox/Live Account
 
-### 🌱 **Plan 1: Starter — ₹299/month**
-Includes:
-- Professional Website  
-- Choice of 1 Business Tool  
-- Hosting on subdomain  
+### 1. Install Dependencies
+```bash
+npm install
+```
 
-**Perfect for:** Businesses needing a clean digital “business card.”
+### 2. Environment Variables
+Copy `.env.example` to `.env.local` and populate the required keys:
 
----
+```bash
+cp .env.example .env.local
+```
 
-### ✨ **Plan 2: Pro — ₹799/month**
-Includes everything in Starter +  
-- Choice of 2 Business Tools  
-- 3 Social Media Posts per month  
+Key environment variables to configure:
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `CLOUDINARY_URL` / `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+- `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET`
+- `OPENAI_API_KEY`
 
-**Perfect for:** Busy owners wanting an active presence without the daily effort.
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
----
-
-### 🚀 **Plan 3: Growth — ₹1499/month**
-Includes everything in Pro +  
-- All Business Tools  
-- 8 Social Media Posts per month  
-- Google Maps Management  
-- Free Custom Domain  
-
-**Perfect for:** Growth-focused businesses ready to scale their online presence.
-
----
-
-## 🚀 Launch Strategy (Phase 1)
-
-We’re starting lean — focusing on learning, feedback, and trust.
-
-### 🎯 MVP (Minimum Viable Product)
-- Front-end form with 3–5 high-quality templates.  
-- AI generation and site population done **manually** on backend for now.
-
-### 🤝 Initial Client Acquisition
-- Approach 5–10 local Silchar businesses with special **introductory offers** in exchange for testimonials and feedback.
-
-### 🛠 Manual Fulfillment
-- Handle domains, hosting, and content manually in early stage.  
-- Perfect the process before automating.
+The app should now be running on [http://localhost:3000](http://localhost:3000).
 
 ---
 
-## 🧩 Summary
+## 💾 Database Schema & Migrations
 
-**Bizvistar** bridges the gap between traditional businesses and modern digital tools.  
-We make it possible for *every* local entrepreneur to have a stunning website, smart tools, and consistent online presence — without tech stress or high costs.
+The database is managed via Supabase. We utilize several key tables:
+- `users`: Core user accounts and metadata.
+- `subscriptions`: Stripe/Razorpay subscription states and lifecycles.
+- `website_data`: Configurations, AI-generated content, themes, and layouts for the tenant websites.
+- `products` / `categories`: Tenant-managed inventory.
+- `draft_data`: Saved but unpublished website configurations.
+
+*Note: Some database migrations and automated SQL setups are located in `supabase_migration_subscription.sql` and `supabase_data_cleanup.sql`.*
 
 ---
 
-> 💬 *“We handle your digital side, so you can handle your business side.”*
+## 🛠 Internal Tools & Maintenance Scripts
+
+- **`scripts/clean-base64-images.mjs`**: A utility script to purge bloated base64 image strings from `website_data` to comply with Vercel function limits, migrating them implicitly to Cloudinary.
+
+---
+
+## 🔒 Security & Deployment
+
+- **Deployment**: The application is configured to deploy via **Vercel**. 
+- **Authentication**: Using Supabase Auth with RLS (Row Level Security) on client-side requests, and bypassing RLS selectively using Server Actions (`@supabase/ssr`) where elevated privileges are needed (e.g., internal synchronization tasks).
+- **Subdomains**: Managed dynamically via Next.js Middleware `middleware.js` to route `tenant.bizvistar.in` or custom domains correctly to the template renderer.
+
+---
+
+> ⚠️ *This is private and proprietary code for BizVistar. Do not distribute.*

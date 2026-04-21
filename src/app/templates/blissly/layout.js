@@ -10,19 +10,14 @@ import { Editable } from '@/components/editor/Editable';
 import AnalyticsTracker from '@/components/dashboard/analytics/AnalyticsTracker';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import OfferPopup from '@/components/editor/OfferPopup';
+import { getBasePath } from '@/app/templates/getBasePath';
 
 function CartLayout({ children, serverData, websiteId }) { // 1. Accept serverData
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); // 2. Use serverData
     const router = useRouter();
     const pathname = usePathname();
 
-    let basePath = '/templates/blissly';
-    if (serverData && pathname && pathname.startsWith('/site/')) {
-        const parts = pathname.split('/');
-        if (parts.length >= 3) {
-            basePath = `/${parts[1]}/${parts[2]}`;
-        }
-    }
+    const basePath = getBasePath('blissly', serverData, pathname);
     
     const { 
         cartCount, 
@@ -258,13 +253,7 @@ function BlisslyStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
 
     const pathname = usePathname();
-    let basePath = '/templates/blissly';
-    if (serverData && pathname && pathname.startsWith('/site/')) {
-        const parts = pathname.split('/');
-        if (parts.length >= 3) {
-            basePath = `/${parts[1]}/${parts[2]}`;
-        }
-    }
+    const basePath = getBasePath('blissly', serverData, pathname);
 const router = useRouter();
 
     useEffect(() => {

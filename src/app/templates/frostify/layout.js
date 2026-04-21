@@ -12,6 +12,7 @@ import { X, Minus, Plus } from 'lucide-react'; // Added icons
 import { colorPalettes } from '@/components/editor/EditorSidebar';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import OfferPopup from '@/components/editor/OfferPopup';
+import { getBasePath } from '@/app/templates/getBasePath';
 
 function CartLayout({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData);
@@ -152,13 +153,7 @@ function FrostifyStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
 
     const pathname = usePathname();
-    let basePath = '/templates/frostify';
-    if (serverData && pathname && pathname.startsWith('/site/')) {
-        const parts = pathname.split('/');
-        if (parts.length >= 3) {
-            basePath = `/${parts[1]}/${parts[2]}`;
-        }
-    }
+    const basePath = getBasePath('frostify', serverData, pathname);
 const router = useRouter();
 
     useEffect(() => {

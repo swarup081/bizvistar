@@ -12,6 +12,7 @@ import { X } from 'lucide-react';
 import { colorPalettes } from '@/components/editor/EditorSidebar';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import OfferPopup from '@/components/editor/OfferPopup';
+import { getBasePath } from '@/app/templates/getBasePath';
 
 const fontMap = {
     'Poppins': { url: 'family=Poppins:wght@300;400;500;600;700', family: "'Poppins', sans-serif" },
@@ -48,13 +49,7 @@ function AuroraStateProvider({ children, serverData, websiteId }) {
     const [businessData, setBusinessData] = useState(serverData || initialBusinessData); 
 
     const pathname = usePathname();
-    let basePath = '/templates/aurora';
-    if (serverData && pathname && pathname.startsWith('/site/')) {
-        const parts = pathname.split('/');
-        if (parts.length >= 3) {
-            basePath = `/${parts[1]}/${parts[2]}`;
-        }
-    }
+    const basePath = getBasePath('aurora', serverData, pathname);
 const router = useRouter();
 
     useEffect(() => {
