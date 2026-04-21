@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
 import { notifyLowStock } from '@/app/actions/productStockActions';
-import { addProduct } from '@/app/actions/productActions';
+import { addProduct, updateProduct } from '@/app/actions/productActions';
 import UpgradeModal from '@/components/dashboard/UpgradeModal';
 
 // --- Image Upload Helper ---
@@ -224,26 +224,21 @@ export default function AddProductDialog({ isOpen, onClose, onProductAdded, cate
       let productId = productToEdit ? productToEdit.id : null;
 
       if (productToEdit) {
-          const payload = {
+          // Use Server Action for Update (admin client, bypasses RLS)
+          const updatePayload = {
             name: formData.name,
             price: parseFloat(formData.price),
-            category_id: (!formData.categoryId || formData.categoryId === 'uncategorized') ? null : parseInt(formData.categoryId),
+            categoryId: (!formData.categoryId || formData.categoryId === 'uncategorized') ? 'uncategorized' : String(formData.categoryId),
             description: formData.description,
-            image_url: formData.imageUrl,
+            imageUrl: formData.imageUrl,
             stock: finalStock,
-            website_id: websiteId,
-            additional_images: formData.additionalImages,
+            additionalImages: formData.additionalImages,
             variants: cleanVariants
           };
 
-          const { error } = await supabase
-            .from('products')
-            .update(payload)
-            .eq('id', productToEdit.id);
+          const result = await updateProduct(productToEdit.id, updatePayload);
+          if (!result.success) throw new Error(result.error);
 
-          if (error) throw new Error(error.message);
-
-          await syncWebsiteDataClient(websiteId);
           if (finalStock !== -1 && finalStock <= 5) {
               await notifyLowStock(productToEdit.id);
           }

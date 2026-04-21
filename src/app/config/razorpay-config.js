@@ -143,7 +143,7 @@ export const getKeyId = () => {
 * Helper to get limits for a given Plan ID (Standard or Founder)
 */
 export const getPlanLimits = (planId) => {
-  if (!planId) return { maxProducts: 0 }; // No plan = no products
+  if (!planId) return { maxProducts: -1 }; // No plan ID = unlimited (test/free users)
 
   const mode = getRazorpayMode();
   const config = RAZORPAY_CONFIG[mode];

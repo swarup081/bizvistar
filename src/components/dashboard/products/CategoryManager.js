@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Loader2, Trash2, Edit, Package, TrendingUp, Check, ChevronLeft, Search } from 'lucide-react'; // Added Search import
-import { supabase } from '@/lib/supabaseClient';
-import { syncWebsiteDataClient } from '@/lib/websiteSync';
+import { Loader2, Trash2, Edit, Package, TrendingUp, Check, ChevronLeft, Search } from 'lucide-react';
+import { addCategory, updateCategory, deleteCategory as deleteCategoryAction, updateProductCategory, getCategoryStats, getDashboardProducts } from '@/app/actions/productActions';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
@@ -28,12 +27,19 @@ function CategoryDialog({ isOpen, onClose, categoryToEdit, onSave, loading, webs
 
     const fetchProducts = async () => {
         setProductsLoading(true);
-        const { data } = await supabase
-            .from('products')
-            .select('id, name, image_url, category_id')
-            .eq('website_id', websiteId)
-            .order('name');
-        setProducts(data || []);
+        try {
+            // Use server action to bypass RLS
+            const result = await getDashboardProducts();
+            setProducts((result.products || []).map(p => ({
+                id: p.id,
+                name: p.name,
+                image_url: p.image_url,
+                category_id: p.category_id
+            })));
+        } catch (err) {
+            console.error('Error fetching products for category dialog:', err);
+            setProducts([]);
+        }
         setProductsLoading(false);
     };
 
@@ -182,46 +188,14 @@ export default function CategoryManager({
   
   const [categoryToEdit, setCategoryToEdit] = useState(null);
 
-  // Fetch detailed stats
+  // Fetch detailed stats via server action (bypasses RLS)
   useEffect(() => {
       if (!websiteId) return;
       const fetchStats = async () => {
           setStatsLoading(true);
           try {
-              const { data: products } = await supabase
-                  .from('products')
-                  .select('id, name, image_url, category_id, price')
-                  .eq('website_id', websiteId);
-
-              if (!products) { setStatsLoading(false); return; }
-
-              const { data: orderItems } = await supabase
-                  .from('order_items')
-                  .select('product_id, quantity');
-              
-              const productSales = {};
-              (orderItems || []).forEach(item => {
-                  productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity;
-              });
-
-              const stats = {};
-              categories.forEach(cat => {
-                  const catProducts = products.filter(p => p.category_id === cat.id);
-                  const count = catProducts.length;
-                  let topProd = null;
-                  let maxSales = -1;
-                  let totalCatSales = 0;
-
-                  catProducts.forEach(p => {
-                      const sales = productSales[p.id] || 0;
-                      totalCatSales += sales;
-                      if (sales > maxSales) { maxSales = sales; topProd = p; }
-                  });
-
-                  stats[cat.id] = { count, topProduct: topProd, sales: totalCatSales };
-              });
-
-              setCategoryStats(stats);
+              const result = await getCategoryStats();
+              setCategoryStats(result.stats || {});
           } catch (e) { console.error(e); } finally { setStatsLoading(false); }
       };
       fetchStats();
@@ -234,30 +208,22 @@ export default function CategoryManager({
           let catId = categoryToEdit?.id;
 
           if (categoryToEdit) {
-              const { error } = await supabase
-                  .from('categories')
-                  .update({ name })
-                  .eq('id', categoryToEdit.id);
-              if(error) throw error;
+              // Use server action (admin client, bypasses RLS)
+              const result = await updateCategory(categoryToEdit.id, name);
+              if (!result.success) throw new Error(result.error);
           } else {
-              const { data, error } = await supabase
-                  .from('categories')
-                  .insert({ name, website_id: websiteId })
-                  .select()
-                  .single();
-              if(error) throw error;
-              catId = data.id;
+              // Use server action (admin client, bypasses RLS)
+              const result = await addCategory(name);
+              if (!result.success) throw new Error(result.error);
+              catId = result.category?.id;
           }
 
           if (productIds.length > 0 && catId) {
-              const { error: prodError } = await supabase
-                  .from('products')
-                  .update({ category_id: catId })
-                  .in('id', productIds);
-              if (prodError) throw prodError;
+              // Use server action to update product categories (admin client, bypasses RLS)
+              const result = await updateProductCategory(productIds, catId);
+              if (!result.success) throw new Error(result.error);
           }
 
-          await syncWebsiteDataClient(websiteId);
           onUpdate();
           onAddClose();
           setCategoryToEdit(null);
@@ -271,9 +237,9 @@ export default function CategoryManager({
   const handleDelete = async (id) => {
       if (!confirm('Are you sure? Products in this category will be uncategorized.')) return;
       try {
-          const { error } = await supabase.from('categories').delete().eq('id', id);
-          if (error) throw error;
-          await syncWebsiteDataClient(websiteId);
+          // Use server action (admin client, bypasses RLS)
+          const result = await deleteCategoryAction(id);
+          if (!result.success) throw new Error(result.error);
           onUpdate();
       } catch(e) { alert(e.message); }
   };
@@ -312,8 +278,6 @@ export default function CategoryManager({
   // BETTER: `CategoryManager` should probably control the dialog visibility for *Edit*, 
   // but *Add* is controlled by parent.
   // OR: We just assume `isAddOpen` is for ADDING. Editing can use its own state or share.
-  // Let's keep `categoryToEdit` local. But we need to open the dialog.
-  // Solution: Pass a `triggerEdit` callback or just use a separate state for Edit Dialog?
   // User wants "Add Category" button in parent.
   // Let's use `isDialogOpen` locally for Edit, and `isAddOpen` prop for Add.
   // Combined: The Dialog component is rendered once.

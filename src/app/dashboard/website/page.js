@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import EditorLayout from '@/components/editor/EditorLayout';
@@ -36,9 +36,8 @@ function WebsiteDashboardContent() {
         if (slugParam) {
            query = query.eq('site_slug', slugParam).single();
         } else {
-           // Default: Most recent published site
+           // Default: Most recent site (not filtered by is_published so unpublished sites are also editable)
            query = query
-              .eq('is_published', true)
               .order('created_at', { ascending: false })
               .limit(1)
               .maybeSingle();
@@ -82,9 +81,25 @@ function WebsiteDashboardContent() {
              const rawData = site.draft_data || site.website_data || {};
              const finalData = { ...rawData };
              
-             // Overwrite with real DB data to remove demo data
-             finalData.allProducts = realProducts || [];
-             finalData.allCategories = realCategories || [];
+             // Overwrite with real DB data and apply field mapping
+             // Templates expect 'image' and 'category', not 'image_url' and 'category_id'
+             finalData.allProducts = (realProducts || []).map(p => ({
+                 ...p,
+                 id: p.id,
+                 name: p.name,
+                 price: Number(p.price),
+                 category: p.category_id ? String(p.category_id) : 'uncategorized',
+                 description: p.description,
+                 image: p.image_url,
+                 stock: p.stock,
+                 additional_images: p.additional_images || [],
+                 variants: p.variants || []
+             }));
+             finalData.allCategories = (realCategories || []).map(c => ({
+                 id: String(c.id),
+                 name: c.name
+             }));
+             finalData.categories = finalData.allCategories;
 
              setWebsite({
                  id: site.id,
@@ -105,6 +120,70 @@ function WebsiteDashboardContent() {
 
     fetchUserWebsite();
   }, [slugParam]); // Added slugParam dependency
+
+  // Realtime sync: listen for website changes from other devices (publish/save)
+  useEffect(() => {
+    if (!website?.id) return;
+
+    const channel = supabase
+      .channel(`website-sync-${website.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'websites',
+          filter: `id=eq.${website.id}`,
+        },
+        async (payload) => {
+          // Another device updated this website — re-fetch products to get latest data
+          const [{ data: realProducts }, { data: realCategories }] = await Promise.all([
+            supabase
+              .from('products')
+              .select('id, name, price, category_id, description, image_url, stock, additional_images, variants')
+              .eq('website_id', website.id)
+              .order('id', { ascending: false }),
+            supabase
+              .from('categories')
+              .select('id, name')
+              .eq('website_id', website.id)
+              .order('name')
+          ]);
+
+          const updatedRow = payload.new;
+          const rawData = updatedRow.draft_data || updatedRow.website_data || website.data;
+          const finalData = { ...rawData };
+          
+          finalData.allProducts = (realProducts || []).map(p => ({
+            ...p,
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            category: p.category_id ? String(p.category_id) : 'uncategorized',
+            description: p.description,
+            image: p.image_url,
+            stock: p.stock,
+            additional_images: p.additional_images || [],
+            variants: p.variants || []
+          }));
+          finalData.allCategories = (realCategories || []).map(c => ({
+            id: String(c.id),
+            name: c.name
+          }));
+          finalData.categories = finalData.allCategories;
+
+          setWebsite(prev => ({
+            ...prev,
+            data: finalData
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [website?.id]);
 
   if (loading) {
     return (

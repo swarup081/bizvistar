@@ -347,8 +347,19 @@ useEffect(() => {
   // Handler for Publishing (passed to TopNav)
   const handlePublish = async () => {
       if (!websiteId) return { success: false, error: 'No website ID' };
-      // Pass current businessData to ensure we publish exactly what is on screen
-      return await publishWebsite(websiteId, businessData);
+      
+      // 1. Flush pending draft save to ensure DB has the latest data
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      // Save draft immediately before publishing
+      const draftResult = await saveDraft(websiteId, businessData);
+      if (!draftResult.success) {
+        console.error('Failed to save draft before publish:', draftResult.error);
+      }
+      
+      // 2. Publish from DB (no longer sends full data — avoids 1MB body limit)
+      return await publishWebsite(websiteId);
   };
 
   const sendDataToIframe = (data) => {

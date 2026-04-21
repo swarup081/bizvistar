@@ -17,7 +17,7 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient'; 
-import { syncWebsiteDataClient } from '@/lib/websiteSync';
+import { getDashboardProducts, deleteProduct, getWebsiteIdForUser } from '@/app/actions/productActions';
 import Sparkline from '@/components/dashboard/products/Sparkline';
 import AddProductDialog from '@/components/dashboard/products/AddProductDialog';
 import ProductDrawer from '@/components/dashboard/products/ProductDrawer';
@@ -30,6 +30,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [websiteId, setWebsiteId] = useState(null); 
   
@@ -81,108 +82,43 @@ export default function ProductsPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 1. Fetch Website ID once
+  // 1. Init: Get websiteId immediately via server action (so buttons & CategoryManager work)
   useEffect(() => {
     const init = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: website } = await supabase
-            .from('websites')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('is_published', true)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-            
-        if (website) {
-            setWebsiteId(website.id);
+      try {
+        const result = await getWebsiteIdForUser();
+        if (result.websiteId) {
+          setWebsiteId(result.websiteId);
+        } else {
+          console.error('Init: No website found:', result.error);
+          setLoading(false);
         }
+      } catch (err) {
+        console.error('Init error:', err);
+        setLoading(false);
+      }
     };
     init();
   }, []);
 
-  // 2. Fetch Data
+  // 2. Fetch products & categories once websiteId is available
   const fetchData = useCallback(async () => {
-    if (!websiteId) return; 
+    if (!websiteId) return;
     setLoading(true);
+    setFetchError(null);
     try {
-        const { data: cats } = await supabase
-            .from('categories')
-            .select('*')
-            .eq('website_id', websiteId)
-            .order('name');
-        setCategories(cats || []);
-
-        let query = supabase
-            .from('products')
-            .select('id, name, price, category_id, description, image_url, stock, additional_images, variants, created_at')
-            .eq('website_id', websiteId);
-
-        // Fetch all, sort client side or basic sort here. 
-        // We'll rely on client-side sort for complex logic to match 'productSortBy' state easily without re-fetching
-        const { data: productsData, error } = await query;
-        if (error) throw error;
-
-        // Analytics Fetch (Last 7 Days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const isoDate = sevenDaysAgo.toISOString();
-
-        const { data: salesData, error: salesError } = await supabase
-            .from('order_items')
-            .select(`product_id, quantity, orders!inner(created_at, website_id)`)
-            .eq('orders.website_id', websiteId)
-            .gte('orders.created_at', isoDate);
-
-        const salesMap = {}; 
-        if (!salesError && salesData) {
-            salesData.forEach(item => {
-                const date = item.orders.created_at.split('T')[0];
-                const pid = item.product_id;
-                if (!salesMap[pid]) salesMap[pid] = {};
-                if (!salesMap[pid][date]) salesMap[pid][date] = 0;
-                salesMap[pid][date] += item.quantity;
-            });
+        const result = await getDashboardProducts();
+        
+        // Check for server-side errors
+        if (result.error) {
+            console.error('getDashboardProducts returned error:', result.error);
+            setFetchError(result.error);
         }
 
-        const catMap = (cats || []).reduce((acc, c) => { acc[c.id] = c.name; return acc; }, {});
-
-        const processed = productsData.map(p => {
-            const stockCount = p.stock !== undefined ? p.stock : 0; 
-            let status = 'Active';
-            if (stockCount === -1) { status = 'Unlimited'; } 
-            else {
-                if (stockCount === 0) status = 'Out Of Stock';
-                else if (stockCount < 10) status = 'Low Stock';
-                else if (stockCount > 100) status = 'Overflow Stock';
-            }
-
-            const analyticsData = [];
-            for(let i=6; i>=0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const val = salesMap[p.id]?.[dateStr] || 0;
-                analyticsData.push({ date: dateStr, value: val });
-            }
-
-            // Calculate total sales for 'Top Products' sort
-            const totalSales = analyticsData.reduce((sum, item) => sum + item.value, 0);
-
-            return {
-                ...p,
-                stock: stockCount === -1 ? 'Unlimited' : stockCount,
-                stockStatus: status,
-                categoryName: (p.category_id && catMap[p.category_id]) || 'Uncategorized',
-                analytics: analyticsData,
-                totalSales
-            };
-        });
+        setCategories(result.categories || []);
 
         // Client-Side Filter & Sort
-        let final = processed;
+        let final = result.products || [];
         
         if (searchTerm) {
              const lowerTerm = searchTerm.toLowerCase();
@@ -194,7 +130,8 @@ export default function ProductsPage() {
         }
 
         if (selectedCategory && selectedCategory !== 'all') {
-            final = final.filter(p => p.category_id === selectedCategory);
+            // Use String() coercion: category_id is integer from DB, selectedCategory is string from <select>
+            final = final.filter(p => String(p.category_id) === String(selectedCategory));
         }
 
         if (stockFilters.length > 0) {
@@ -207,8 +144,8 @@ export default function ProductsPage() {
             if (productSortBy === 'price-desc') return b.price - a.price;
             if (productSortBy === 'name-asc') return a.name.localeCompare(b.name);
             if (productSortBy === 'name-desc') return b.name.localeCompare(a.name);
-            if (productSortBy === 'top') return b.totalSales - a.totalSales; // Sort by Total Sales (Desc)
-            // Newest (Default) - assuming higher ID is newer
+            if (productSortBy === 'top') return b.totalSales - a.totalSales;
+            // Newest (Default)
             return b.id - a.id;
         });
 
@@ -216,14 +153,41 @@ export default function ProductsPage() {
 
     } catch (error) {
         console.error("Fetch error:", error);
+        setFetchError(error.message || 'Failed to load products');
     } finally {
         setLoading(false);
     }
-  }, [websiteId, searchTerm, selectedCategory, stockFilters, productSortBy]); // Added productSortBy dependency
+  }, [websiteId, searchTerm, selectedCategory, stockFilters, productSortBy]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Realtime sync: listen for product changes from other devices
+  useEffect(() => {
+    if (!websiteId) return;
+
+    const channel = supabase
+      .channel(`products-sync-${websiteId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products',
+          filter: `website_id=eq.${websiteId}`,
+        },
+        () => {
+          // Refresh product list when any product change happens
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [websiteId, fetchData]);
 
 
   const handlePageChange = (newPage) => {
@@ -235,9 +199,8 @@ export default function ProductsPage() {
   const handleDeleteProduct = async (product) => {
       if(!confirm("Are you sure you want to delete this product?")) return;
       try {
-        const { error } = await supabase.from('products').delete().eq('id', product.id);
-        if(error) throw error;
-        await syncWebsiteDataClient(websiteId);
+        const result = await deleteProduct(product.id);
+        if (!result.success) throw new Error(result.error);
         fetchData();
         setOpenDropdownId(null);
       } catch (err) { alert("Failed: " + err.message); }
@@ -606,9 +569,19 @@ export default function ProductsPage() {
                             </td>
                         </tr>
                         ))
+                    ) : fetchError ? (
+                        <tr>
+                            <td colSpan="7" className="p-12 text-center text-red-500">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <p className="font-medium">Error loading products</p>
+                                    <p className="text-sm text-red-400">{fetchError}</p>
+                                    <button onClick={() => fetchData()} className="text-sm text-brand-600 font-bold hover:underline mt-2">Retry</button>
+                                </div>
+                            </td>
+                        </tr>
                     ) : products.length === 0 ? (
                         <tr>
-                            <td colSpan="6" className="p-12 text-center text-gray-500">
+                            <td colSpan="7" className="p-12 text-center text-gray-500">
                                 <div className="flex flex-col items-center justify-center gap-2">
                                     <Search className="text-gray-300 h-8 w-8" />
                                     <p>No products found matching your filters.</p>

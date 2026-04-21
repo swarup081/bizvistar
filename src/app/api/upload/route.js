@@ -100,8 +100,8 @@ export async function POST(request) {
           folder: `bizvistar/${folder}`,
           resource_type: 'image',
           quality: 'auto',
-          format: 'auto',
-          // Limit max dimensions to prevent oversized images
+          // Note: Do NOT use `format: 'auto'` here — it's invalid for uploads.
+          // Use `fetch_format: 'auto'` in transformations for delivery instead.
           transformation: [
             {
               width: 2000,
@@ -129,8 +129,12 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Upload API Error:', error);
+    // Return actual error message for debugging instead of generic message
+    const errorMessage = error?.message || error?.http_code 
+      ? `Upload failed: ${error.message || 'Cloudinary error ' + error.http_code}`
+      : 'Image upload failed. Please try again.';
     return NextResponse.json(
-      { success: false, error: 'Image upload failed. Please try again.' },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }
