@@ -279,35 +279,89 @@ export const getSimilarProducts = (currentProduct, allProducts, requiredCount = 
 };
 
 /**
- * Sort products for the Shop page:
- * 1. Pinned Products (Top Priority)
- * 2. In Stock
- * 3. Sales High -> Low
- * 4. ID Desc (Newest)
+ * Sort products for the Shop page.
+ * Reads shopSettings.sortOrder from businessData:
+ *   'default'      — Pinned → In-stock → Sales → Newest (original behavior)
+ *   'price_low'    — Price ascending
+ *   'price_high'   — Price descending
+ *   'newest'       — Newest ID first
+ *   'name_az'      — Alphabetical A→Z
+ *   'name_za'      — Alphabetical Z→A
+ *   'random'       — Pseudo-random, stable per day
+ *   'best_selling' — Purely by sales count
  */
 export const sortProducts = (products, businessData) => {
-    if (!products) return [];
+    if (!products || products.length === 0) return [];
     
+    const sortOrder = businessData?.shopSettings?.sortOrder || 'default';
     const settings = businessData?.landing_settings || { prioritizedProducts: [] };
     const prioritizedIds = (settings.prioritizedProducts || []).map(String);
+    const sorted = [...products];
 
-    return [...products].sort((a, b) => {
-        // 1. Pinned
-        const isPinnedA = prioritizedIds.includes(String(a.id));
-        const isPinnedB = prioritizedIds.includes(String(b.id));
-        if (isPinnedA !== isPinnedB) return isPinnedB - isPinnedA;
+    switch (sortOrder) {
+        case 'price_low':
+            sorted.sort((a, b) => Number(a.price) - Number(b.price));
+            break;
 
-        // 2. Stock (In stock > Out of stock)
-        const isOosA = (a.stock !== -1 && a.stock <= 0);
-        const isOosB = (b.stock !== -1 && b.stock <= 0);
-        if (isOosA !== isOosB) return isOosA - isOosB; // False (0) > True (1)
+        case 'price_high':
+            sorted.sort((a, b) => Number(b.price) - Number(a.price));
+            break;
 
-        // 3. Sales
-        const salesA = a.sales || 0;
-        const salesB = b.sales || 0;
-        if (salesA !== salesB) return salesB - salesA;
+        case 'newest':
+            sorted.sort((a, b) => Number(b.id) - Number(a.id));
+            break;
 
-        // 4. ID (Newest)
-        return Number(b.id) - Number(a.id);
-    });
+        case 'name_az':
+            sorted.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            break;
+
+        case 'name_za':
+            sorted.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+            break;
+
+        case 'random': {
+            // Seeded by today's date so the shuffle is stable for the day
+            const today = new Date();
+            let seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+            const seededRandom = () => {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            };
+            // Fisher-Yates shuffle with seeded random
+            for (let i = sorted.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom() * (i + 1));
+                [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
+            }
+            break;
+        }
+
+        case 'best_selling':
+            sorted.sort((a, b) => (b.sales || 0) - (a.sales || 0));
+            break;
+
+        case 'default':
+        default:
+            sorted.sort((a, b) => {
+                // 1. Pinned
+                const isPinnedA = prioritizedIds.includes(String(a.id));
+                const isPinnedB = prioritizedIds.includes(String(b.id));
+                if (isPinnedA !== isPinnedB) return isPinnedB - isPinnedA;
+
+                // 2. Stock (In stock > Out of stock)
+                const isOosA = (a.stock !== -1 && a.stock <= 0);
+                const isOosB = (b.stock !== -1 && b.stock <= 0);
+                if (isOosA !== isOosB) return isOosA - isOosB;
+
+                // 3. Sales
+                const salesA = a.sales || 0;
+                const salesB = b.sales || 0;
+                if (salesA !== salesB) return salesB - salesA;
+
+                // 4. ID (Newest)
+                return Number(b.id) - Number(a.id);
+            });
+            break;
+    }
+
+    return sorted;
 };

@@ -90,7 +90,7 @@ function mergeWithDefaults(userData, defaultData) {
 
 
 // Main component updated to read site_id
-export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug }) {
+export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug, syncVersion = 0 }) {
   // Initialize view state lazily to match window width on client
   // Default to 'desktop' for SSR safety, then update in effect
   const [view, setView] = useState('desktop'); 
@@ -244,6 +244,29 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
       setHistoryIndex(0);
     }
   }, [templateName, websiteId, defaultData, editorDataKey]); 
+
+  // --- Sync from other devices: when syncVersion bumps, reset editor to latest data ---
+  const initialSyncVersion = useRef(syncVersion);
+  useEffect(() => {
+    // Skip the initial mount — only react to actual sync events
+    if (syncVersion === initialSyncVersion.current) return;
+    initialSyncVersion.current = syncVersion;
+
+    if (!initialData) return;
+
+    // Clear stale localStorage so it doesn't override the sync
+    localStorage.removeItem(editorDataKey);
+    localStorage.removeItem(cartDataKey);
+
+    const merged = mergeWithDefaults(initialData, defaultData);
+    setBusinessData(merged);
+    setHistory([merged]);
+    setHistoryIndex(0);
+    sendDataToIframe(merged);
+    setSaveStatus('Synced');
+
+    console.log('[EditorLayout] Synced from another device (syncVersion:', syncVersion, ')');
+  }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
 // Auto-save logic
 useEffect(() => {

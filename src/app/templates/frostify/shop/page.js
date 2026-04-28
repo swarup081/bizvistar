@@ -18,6 +18,18 @@ export default function FrostifyShopPage() {
 
     const sortedProducts = sortProducts(filteredProducts, businessData);
 
+    // Shop display settings
+    const shopSettings = businessData.shopSettings || {};
+    const gridCols = shopSettings.gridColumns || 4;
+    const perPage = shopSettings.productsPerPage || 0;
+    const displayProducts = perPage > 0 ? sortedProducts.slice(0, perPage) : sortedProducts;
+
+    const gridColsClass = {
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+    }[gridCols] || 'lg:grid-cols-4';
+
     return (
         <div className="bg-white min-h-screen pt-24 md:pt-32 pb-12 md:pb-24 w-full max-w-full overflow-hidden overflow-x-hidden">
             <div className="container mx-auto px-6">
@@ -46,13 +58,13 @@ export default function FrostifyShopPage() {
                 </div>
 
                 {/* Product Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {sortedProducts.map(product => (
+                <div className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 ${gridColsClass} gap-4 md:gap-8`}>
+                    {displayProducts.map(product => (
                         <ProductCard key={product.id} item={product} />
                     ))}
                 </div>
 
-                {sortedProducts.length === 0 && (
+                {displayProducts.length === 0 && (
                     <p className="text-center text-gray-500 mt-12 text-[3vw] md:text-base">No delicious treats found in this category.</p>
                 )}
             </div>

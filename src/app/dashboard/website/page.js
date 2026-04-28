@@ -9,6 +9,7 @@ import Link from 'next/link';
 function WebsiteDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [website, setWebsite] = useState(null);
+  const [syncVersion, setSyncVersion] = useState(0);
   const [error, setError] = useState(null);
   
   const searchParams = useSearchParams();
@@ -136,7 +137,15 @@ function WebsiteDashboardContent() {
           filter: `id=eq.${website.id}`,
         },
         async (payload) => {
-          // Another device updated this website — re-fetch products to get latest data
+          const updatedRow = payload.new;
+          
+          // Only sync on PUBLISH events (draft_data cleared to null + website_data present).
+          // Regular draft saves (draft_data updated) from other devices should NOT
+          // overwrite the local editor state — that would cause a feedback loop.
+          const isPublishEvent = updatedRow.draft_data === null && updatedRow.website_data;
+          if (!isPublishEvent) return;
+
+          // Another device published — re-fetch products to get latest data
           const [{ data: realProducts }, { data: realCategories }] = await Promise.all([
             supabase
               .from('products')
@@ -150,8 +159,7 @@ function WebsiteDashboardContent() {
               .order('name')
           ]);
 
-          const updatedRow = payload.new;
-          const rawData = updatedRow.draft_data || updatedRow.website_data || website.data;
+          const rawData = updatedRow.website_data;
           const finalData = { ...rawData };
           
           finalData.allProducts = (realProducts || []).map(p => ({
@@ -176,6 +184,9 @@ function WebsiteDashboardContent() {
             ...prev,
             data: finalData
           }));
+          // Bump sync version to force EditorLayout to pick up new data
+          setSyncVersion(v => v + 1);
+          console.log('[WebsiteSync] Publish detected from another device — syncing editor.');
         }
       )
       .subscribe();
@@ -283,6 +294,7 @@ function WebsiteDashboardContent() {
         websiteId={website.id}
         initialData={website.data}
         siteSlug={website.slug}
+        syncVersion={syncVersion}
     />
   );
 }

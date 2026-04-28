@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { businessData } from '../data.js';
 import { ProductCard } from '../components.js';
+import { sortProducts } from '@/lib/templates/templateLogic';
 
 export default function ShopPage() {
     const [selectedCategoryId, setSelectedCategoryId] = useState('all');
@@ -17,6 +18,20 @@ export default function ShopPage() {
     const filteredProducts = selectedCategoryId === 'all' 
         ? allProducts 
         : allProducts.filter(p => p.category === selectedCategoryId);
+
+    const sortedProducts = sortProducts(filteredProducts, businessData);
+
+    // Shop display settings
+    const shopSettings = businessData.shopSettings || {};
+    const gridCols = shopSettings.gridColumns || 3;
+    const perPage = shopSettings.productsPerPage || 0;
+    const displayProducts = perPage > 0 ? sortedProducts.slice(0, perPage) : sortedProducts;
+
+    const gridColsClass = {
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+    }[gridCols] || 'lg:grid-cols-3';
 
     return (
         <div className="container mx-auto px-6 py-24">
@@ -39,16 +54,16 @@ export default function ShopPage() {
                 ))}
             </div>
             
-            {/* Products Grid (Updated gap) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-                {filteredProducts.map(item => (
+            {/* Products Grid */}
+            <div className={`grid grid-cols-1 md:grid-cols-2 ${gridColsClass} gap-6 items-stretch`}>
+                {displayProducts.map(item => (
                     <ProductCard 
                         key={item.id} 
                         item={item}
                     />
                 ))}
             </div>
-            {filteredProducts.length === 0 && (
+            {displayProducts.length === 0 && (
                 <p className="text-center text-brand-text/70 text-lg mt-12">No products found in this category.</p>
             )}
         </div>

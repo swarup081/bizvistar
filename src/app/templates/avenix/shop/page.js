@@ -31,6 +31,18 @@ function ShopContent() {
 
     const sortedProducts = sortProducts(filteredProducts, businessData);
 
+    // Shop display settings
+    const shopSettings = businessData.shopSettings || {};
+    const gridCols = shopSettings.gridColumns || 4;
+    const perPage = shopSettings.productsPerPage || 0;
+    const displayProducts = perPage > 0 ? sortedProducts.slice(0, perPage) : sortedProducts;
+
+    const gridColsClass = {
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+    }[gridCols] || 'lg:grid-cols-4';
+
     return (
         <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
             <h1 className="text-[8vw] md:text-6xl font-serif font-medium text-brand-text text-center mb-8 md:mb-16">Shop Collection</h1>
@@ -53,8 +65,8 @@ function ShopContent() {
             ))}
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 items-stretch">
-                {sortedProducts.map(item => (
+            <div className={`grid grid-cols-2 sm:grid-cols-2 ${gridColsClass} gap-x-4 md:gap-x-8 gap-y-8 md:gap-y-16 items-stretch`}>
+                {displayProducts.map(item => (
                     <ProductCard 
                         key={item.id} 
                         item={item}
@@ -63,7 +75,7 @@ function ShopContent() {
                 ))}
             </div>
 
-            {sortedProducts.length === 0 && (
+            {displayProducts.length === 0 && (
                 <p className="text-center text-brand-text/70 text-lg col-span-full">No products found in this category.</p>
             )}
         </div>

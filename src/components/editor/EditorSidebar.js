@@ -2205,6 +2205,77 @@ export default function EditorSidebar({
                 >
                     Add New Product
                 </button>
+
+                {/* --- SHOP PAGE DISPLAY SETTINGS --- */}
+                <div className="mt-6 pt-5 border-t border-gray-200">
+                    <h4 className="text-base font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                        <Store size={16} className="text-[#8A63D2]" />
+                        Shop Page Display
+                    </h4>
+                    <p className="text-xs text-gray-500 mb-4">Control how products appear on your shop page.</p>
+
+                    {/* Sort Order */}
+                    <EditorSelect
+                        label="Sort Order"
+                        value={getSafe(businessData, 'shopSettings.sortOrder') || 'default'}
+                        onChange={(e) => handleDataChange('shopSettings.sortOrder', e.target.value)}
+                        options={[
+                            { value: 'default', label: 'Default (Pinned → Top Selling)' },
+                            { value: 'best_selling', label: 'Best Selling' },
+                            { value: 'newest', label: 'Newest First' },
+                            { value: 'price_low', label: 'Price: Low → High' },
+                            { value: 'price_high', label: 'Price: High → Low' },
+                            { value: 'name_az', label: 'Name: A → Z' },
+                            { value: 'name_za', label: 'Name: Z → A' },
+                            { value: 'random', label: 'Random (Changes Daily)' },
+                        ]}
+                        placeholder="Select sort order"
+                    />
+
+                    {/* Grid Columns */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Grid Columns (Desktop)</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[2, 3, 4].map(cols => {
+                                const isActive = (getSafe(businessData, 'shopSettings.gridColumns') || 4) === cols;
+                                return (
+                                    <button
+                                        key={cols}
+                                        onClick={() => handleDataChange('shopSettings.gridColumns', cols)}
+                                        className={`p-2.5 rounded-lg border-2 text-center transition-all text-sm font-medium ${
+                                            isActive 
+                                                ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]' 
+                                                : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <div className="flex justify-center gap-0.5 mb-1">
+                                            {Array.from({ length: cols }).map((_, i) => (
+                                                <div key={i} className={`w-3 h-4 rounded-sm ${isActive ? 'bg-[#8A63D2]/40' : 'bg-gray-300'}`} />
+                                            ))}
+                                        </div>
+                                        {cols} cols
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-1">Mobile always shows 2 columns.</p>
+                    </div>
+
+                    {/* Products Per Page */}
+                    <EditorSelect
+                        label="Products Per Page"
+                        value={getSafe(businessData, 'shopSettings.productsPerPage') || 0}
+                        onChange={(e) => handleDataChange('shopSettings.productsPerPage', Number(e.target.value))}
+                        options={[
+                            { value: 0, label: 'Show All' },
+                            { value: 8, label: '8 Products' },
+                            { value: 12, label: '12 Products' },
+                            { value: 16, label: '16 Products' },
+                            { value: 20, label: '20 Products' },
+                        ]}
+                        placeholder="Select limit"
+                    />
+                </div>
             </AccordionItem>
             </div>
             

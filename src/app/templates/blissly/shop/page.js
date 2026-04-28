@@ -22,6 +22,18 @@ export default function ShopPage() {
 
     const sortedProducts = sortProducts(filteredProducts, businessData);
 
+    // Shop display settings
+    const shopSettings = businessData.shopSettings || {};
+    const gridCols = shopSettings.gridColumns || 4;
+    const perPage = shopSettings.productsPerPage || 0;
+    const displayProducts = perPage > 0 ? sortedProducts.slice(0, perPage) : sortedProducts;
+
+    const gridColsClass = {
+        2: 'xl:grid-cols-2',
+        3: 'xl:grid-cols-3',
+        4: 'xl:grid-cols-4',
+    }[gridCols] || 'xl:grid-cols-4';
+
     return (
         <div className="w-full max-w-full overflow-hidden overflow-x-hidden">
             <div className="container mx-auto px-4 md:px-6 py-10 md:py-24">
@@ -44,9 +56,9 @@ export default function ShopPage() {
                     ))}
                 </div>
                 
-                {/* Products Grid - UPDATED GAPS & COLS - 2 cols on mobile */}
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8 items-stretch">
-                    {sortedProducts.map(item => (
+                {/* Products Grid */}
+                <div className={`grid grid-cols-2 md:grid-cols-3 ${gridColsClass} gap-4 md:gap-8 items-stretch`}>
+                    {displayProducts.map(item => (
                         <ProductCard 
                             key={item.id} 
                             item={item}
@@ -56,7 +68,7 @@ export default function ShopPage() {
                 </div>
 
                 {/* "No products" message */}
-                {sortedProducts.length === 0 && (
+                {displayProducts.length === 0 && (
                     <p className="text-center text-brand-text/70 text-lg mt-12 col-span-full">No products found in this category.</p>
                 )}
             </div>

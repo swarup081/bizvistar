@@ -14,6 +14,18 @@ export default function ShopPage() {
 
     const sortedProducts = sortProducts(products, businessData);
 
+    // Shop display settings
+    const shopSettings = businessData.shopSettings || {};
+    const gridCols = shopSettings.gridColumns || 4;
+    const perPage = shopSettings.productsPerPage || 0;
+    const displayProducts = perPage > 0 ? sortedProducts.slice(0, perPage) : sortedProducts;
+
+    const gridColsClass = {
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+    }[gridCols] || 'lg:grid-cols-4';
+
     return (
         <div className="bg-[var(--color-bg)] w-full max-w-full overflow-hidden overflow-x-hidden min-h-screen">
             <div className="container mx-auto px-6 py-12 md:py-24">
@@ -24,8 +36,8 @@ export default function ShopPage() {
                         <button key={c.id} onClick={() => setFilter(c.id)} className={`uppercase tracking-widest text-[2.5vw] md:text-sm ${filter === c.id ? 'border-b border-black text-black' : 'text-gray-500'}`}>{c.name}</button>
                     ))}
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-                    {sortedProducts.map(p => <ProductCard key={p.id} item={p} />)}
+                <div className={`grid grid-cols-2 md:grid-cols-3 ${gridColsClass} gap-4 md:gap-8`}>
+                    {displayProducts.map(p => <ProductCard key={p.id} item={p} />)}
                 </div>
             </div>
         </div>

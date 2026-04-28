@@ -1,7 +1,7 @@
 'use client';
 
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Check, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Info } from 'lucide-react';
+import { X, Check, Loader2, ArrowUp, ArrowDown, Trash2, Plus, Info, Store } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { syncWebsiteDataClient } from '@/lib/websiteSync';
@@ -20,6 +20,13 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
       mode: 'auto', // 'auto' | 'manual'
       manualItems: [], // Array of { type: 'product'|'category', id: 123, name: '' }
       prioritizedProducts: [] // Array of IDs
+  });
+
+  // Shop Display Settings State
+  const [shopSettings, setShopSettings] = useState({
+      sortOrder: 'default',
+      gridColumns: 4,
+      productsPerPage: 0,
   });
 
   const [newItemType, setNewItemType] = useState('product');
@@ -51,6 +58,12 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
                   manualItems: existing.manualItems || [],
                   prioritizedProducts: existing.prioritizedProducts || []
               });
+              const existingShop = webRes.data.website_data.shopSettings || {};
+              setShopSettings({
+                  sortOrder: existingShop.sortOrder || 'default',
+                  gridColumns: existingShop.gridColumns || 4,
+                  productsPerPage: existingShop.productsPerPage || 0,
+              });
           }
       } catch (e) {
           console.error(e);
@@ -65,7 +78,8 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
           // Merge with existing website_data
           const newWebsiteData = {
               ...websiteData,
-              landing_settings: settings
+              landing_settings: settings,
+              shopSettings: shopSettings
           };
 
           const { error } = await supabase
@@ -270,6 +284,82 @@ export default function WebsiteProductSettings({ isOpen, onClose, websiteId }) {
                              </div>
                          </div>
                      )}
+
+                     {/* --- Shop Page Display Settings --- */}
+                     <div className="space-y-4 pt-6 border-t border-gray-200">
+                         <div>
+                             <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                                 <Store size={18} className="text-[#8A63D2]" />
+                                 Shop Page Display
+                             </h3>
+                             <p className="text-xs text-gray-500 mt-1">Control how products appear on your shop page.</p>
+                         </div>
+
+                         {/* Sort Order */}
+                         <div className="space-y-1">
+                             <label className="block text-sm font-medium text-gray-700">Sort Order</label>
+                             <select
+                                 value={shopSettings.sortOrder}
+                                 onChange={(e) => setShopSettings(s => ({ ...s, sortOrder: e.target.value }))}
+                                 className="w-full p-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8A63D2] focus:ring-2 focus:ring-[#8A63D2]/20 transition-colors bg-white"
+                             >
+                                 <option value="default">Default (Pinned → Top Selling)</option>
+                                 <option value="best_selling">Best Selling</option>
+                                 <option value="newest">Newest First</option>
+                                 <option value="price_low">Price: Low → High</option>
+                                 <option value="price_high">Price: High → Low</option>
+                                 <option value="name_az">Name: A → Z</option>
+                                 <option value="name_za">Name: Z → A</option>
+                                 <option value="random">Random (Changes Daily)</option>
+                             </select>
+                         </div>
+
+                         {/* Grid Columns */}
+                         <div className="space-y-1">
+                             <label className="block text-sm font-medium text-gray-700">Grid Columns (Desktop)</label>
+                             <div className="grid grid-cols-3 gap-3">
+                                 {[2, 3, 4].map(cols => {
+                                     const isActive = shopSettings.gridColumns === cols;
+                                     return (
+                                         <button
+                                             key={cols}
+                                             type="button"
+                                             onClick={() => setShopSettings(s => ({ ...s, gridColumns: cols }))}
+                                             className={`p-3 rounded-xl border-2 text-center transition-all text-sm font-medium ${
+                                                 isActive
+                                                     ? 'border-[#8A63D2] bg-[#8A63D2]/5 text-[#8A63D2]'
+                                                     : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'
+                                             }`}
+                                         >
+                                             <div className="flex justify-center gap-1 mb-1.5">
+                                                 {Array.from({ length: cols }).map((_, i) => (
+                                                     <div key={i} className={`w-3.5 h-5 rounded-sm ${isActive ? 'bg-[#8A63D2]/40' : 'bg-gray-300'}`} />
+                                                 ))}
+                                             </div>
+                                             {cols} cols
+                                         </button>
+                                     );
+                                 })}
+                             </div>
+                             <p className="text-[11px] text-gray-400">Mobile always shows 2 columns.</p>
+                         </div>
+
+                         {/* Products Per Page */}
+                         <div className="space-y-1">
+                             <label className="block text-sm font-medium text-gray-700">Products Per Page</label>
+                             <select
+                                 value={shopSettings.productsPerPage}
+                                 onChange={(e) => setShopSettings(s => ({ ...s, productsPerPage: Number(e.target.value) }))}
+                                 className="w-full p-2.5 border border-gray-300 rounded-xl text-sm outline-none focus:border-[#8A63D2] focus:ring-2 focus:ring-[#8A63D2]/20 transition-colors bg-white"
+                             >
+                                 <option value={0}>Show All</option>
+                                 <option value={8}>8 Products</option>
+                                 <option value={12}>12 Products</option>
+                                 <option value={16}>16 Products</option>
+                                 <option value={20}>20 Products</option>
+                             </select>
+                         </div>
+                     </div>
                  </div>
              )}
           </div>
