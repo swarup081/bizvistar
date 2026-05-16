@@ -14,9 +14,7 @@ export default function BenefitsSection() {
           <h2 className="text-4xl sm:text-6xl font-bold mb-6 leading-[1.15] tracking-tight">
             Make your website and start<br />selling with benefits
           </h2>
-          <p className="text-md md:text-xl text-gray-600 font-light leading-relaxed max-w-2xl mx-auto">
-            Eget malesuada aliquam, in lacinia habitant gravida bibendum. Commodo vel pretium neque, nulla aenean. Risus velit sit varius justo sit.
-          </p>
+            Create a stunning online presence and reach customers everywhere. Enjoy seamless tools designed to help your business grow and thrive on a global scale.
         </div>
 
         {/* --- Main Content Grid --- */}
@@ -32,7 +30,7 @@ export default function BenefitsSection() {
                 <span className="text-[22px] font-bold text-gray-900">Global customer interaction</span>
               </div>
               <p className="text-gray-600 text-[15px] leading-relaxed mb-6">
-                Eget malesuada aliquam, in lacinia habitant gravida bibendum. Commodo vel pretium neque, nulla aenean. Risus velit sit varius justo sit.
+                Connect with customers around the world effortlessly. Our platform ensures a seamless shopping experience, breaking down geographical barriers for your business.
               </p>
               <a href="#" className="inline-flex items-center text-[#4038DA] font-semibold text-[16px] hover:text-blue-800 transition-colors">
                 Learn more 
@@ -48,7 +46,7 @@ export default function BenefitsSection() {
 
             <div className="hidden lg:flex items-center gap-2 px-8 py-0 rounded-2xl transition-colors cursor-pointer">
               <MonitorIcon />
-              <span className="text-[20px] font-semibold text-gray-800">Money is not beyond boltesi.</span>
+              <span className="text-[20px] font-semibold text-gray-800">Money is not beyond borders.</span>
             </div>
 
             {/* 3rd Item (Desktop Only - Hidden on Mobile) */}
@@ -72,7 +70,7 @@ export default function BenefitsSection() {
               </div>
               <div className="flex items-center gap-1">
                 <MonitorIcon />
-                <span className="text-[13px] font-semibold text-gray-800 tracking-wide">Money is not beyond boltesi.</span>
+                <span className="text-[13px] font-semibold text-gray-800 tracking-wide">Money is not beyond borders.</span>
               </div>
             </div>
 
