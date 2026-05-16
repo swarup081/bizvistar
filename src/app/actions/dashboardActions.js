@@ -42,18 +42,35 @@ export async function getWebsiteDetails() {
     return { success: false, error: 'Not authenticated' };
   }
 
-  // Use supabaseAdmin to bypass potential RLS, and use limit(1).single() to avoid 'multiple rows' error
-  const { data, error } = await supabaseAdmin
+  // Prefer published website, fall back to most recent
+  let { data, error } = await supabaseAdmin
     .from('websites')
     .select('*')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+    .eq('is_published', true)
     .limit(1)
-    .single();
+    .maybeSingle();
+
+  if (!data) {
+    // No published site — get the most recent one
+    const result = await supabaseAdmin
+      .from('websites')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    data = result.data;
+    error = result.error;
+  }
 
   if (error) {
     console.error('Error fetching website details:', error);
     return { success: false, error: error.message };
+  }
+
+  if (!data) {
+    return { success: false, error: 'No website found' };
   }
 
   return { success: true, data };

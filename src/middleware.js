@@ -85,27 +85,19 @@ export async function middleware(request) {
 
   // Dashboard access control
   if (user && path.startsWith('/dashboard')) {
-    const { data: website } = await supabase
+    const { data: websites } = await supabase
       .from('websites')
-      .select('id, is_published')
+      .select('id')
       .eq('user_id', user.id)
-      .order('id', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
 
-    if (!website) {
+    if (!websites || websites.length === 0) {
       // No website at all — redirect to templates to create one
       return NextResponse.redirect(new URL('/templates', request.url));
     }
 
-    // If website is NOT published (paused/canceled/halted),
-    // only allow /dashboard/profile so user can resume/resubscribe.
-    // Block all other dashboard routes (orders, products, analytics, etc.)
-    if (!website.is_published && path !== '/dashboard/profile') {
-      const profileUrl = new URL('/dashboard/profile', request.url);
-      profileUrl.searchParams.set('reason', 'inactive');
-      return NextResponse.redirect(profileUrl);
-    }
+    // Users with websites (published or draft) can access the full dashboard.
+    // Publish enforcement happens at the publish action level, not here.
   }
 
   return response

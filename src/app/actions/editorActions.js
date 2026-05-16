@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateUserSubscription } from './subscriptionUtils';
+import { TEMPLATE_CHANGE_LIMITS, getPlanTierFromName } from '@/app/config/razorpay-config';
 
 // Helper: Re-sync products/categories from DB into website_data JSON after publish
 async function resyncProductsIntoWebsiteData(supabaseAdmin, websiteId) {
@@ -114,9 +115,135 @@ export async function saveDraft(websiteId, draftData) {
   }
 }
 
+// Helper: Get user's plan tier from their subscription
+async function getUserPlanTier(userId) {
+  const { data: subscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('plan:plans ( name )')
+    .eq('user_id', userId)
+    .in('status', ['active', 'trialing'])
+    .order('id', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!subscription?.plan?.name) return 'starter';
+  return getPlanTierFromName(subscription.plan.name);
+}
+
+// Action: Check if user's subscription is active (lightweight check for editor UI)
+export async function getSubscriptionStatus() {
+  try {
+    const userId = await getUserId();
+    const planTier = await getUserPlanTier(userId);
+    
+    // Check if user has ANY active subscription
+    const { data: sub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('status')
+      .eq('user_id', userId)
+      .in('status', ['active', 'trialing'])
+      .limit(1)
+      .maybeSingle();
+
+    return { 
+      hasActiveSubscription: !!sub, 
+      planTier 
+    };
+  } catch {
+    return { hasActiveSubscription: false, planTier: 'starter' };
+  }
+}
+
+// Action: Check template change allowance for the user
+export async function checkTemplateChangeAllowance() {
+  try {
+    const userId = await getUserId();
+    const planTier = await getUserPlanTier(userId);
+    const limit = TEMPLATE_CHANGE_LIMITS[planTier];
+
+    // Unlimited
+    if (limit === -1) {
+      return { allowed: true, planTier, reason: null };
+    }
+
+    // Not allowed at all (Starter)
+    if (limit === 0) {
+      return { allowed: false, planTier, reason: 'Upgrade to Pro or Growth to change templates.' };
+    }
+
+    // Pro: check 30-day rolling window
+    // Find the currently published website's last_template_change_at
+    // Note: Column may not exist yet — treat missing column as "allowed"
+    try {
+      const { data: publishedSite, error: colError } = await supabaseAdmin
+        .from('websites')
+        .select('last_template_change_at')
+        .eq('user_id', userId)
+        .eq('is_published', true)
+        .limit(1)
+        .maybeSingle();
+
+      // If column doesn't exist, skip the check (allow change)
+      if (colError && colError.message?.includes('last_template_change_at')) {
+        return { allowed: true, planTier, reason: null };
+      }
+
+      if (publishedSite?.last_template_change_at) {
+        const lastChange = new Date(publishedSite.last_template_change_at);
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        
+        if (lastChange > thirtyDaysAgo) {
+          const nextAllowed = new Date(lastChange.getTime() + 30 * 24 * 60 * 60 * 1000);
+          const daysLeft = Math.ceil((nextAllowed - Date.now()) / (24 * 60 * 60 * 1000));
+          return { 
+            allowed: false, 
+            planTier, 
+            reason: `You can change templates again in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}. Upgrade to Growth for unlimited changes.` 
+          };
+        }
+      }
+    } catch {
+      // Column doesn't exist or other error — allow the change
+    }
+
+    return { allowed: true, planTier, reason: null };
+  } catch (error) {
+    console.error('checkTemplateChangeAllowance error:', error);
+    return { allowed: false, planTier: 'starter', reason: 'Unable to verify plan. Please try again.' };
+  }
+}
+
+// Action: Load website draft data (for standalone editor that needs DB data)
+export async function getWebsiteDraft(websiteId) {
+  try {
+    const userId = await getUserId();
+
+    const { data: website, error } = await supabaseAdmin
+      .from('websites')
+      .select('id, draft_data, website_data, template_id, is_published, site_slug')
+      .eq('id', websiteId)
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !website) return { success: false, error: 'Website not found.' };
+
+    return { 
+      success: true, 
+      data: website.draft_data || website.website_data || null,
+      templateId: website.template_id,
+      isPublished: website.is_published,
+      siteSlug: website.site_slug
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 // Action: Publish Website
 // NOTE: No longer accepts currentData param — reads from DB draft_data to avoid
 // exceeding Next.js 1MB Server Action body limit.
+// ENFORCES: Only 1 website can be published at a time per user.
+// ENFORCES: Template change limits per plan tier.
 export async function publishWebsite(websiteId) {
   try {
     const userId = await getUserId();
@@ -124,7 +251,7 @@ export async function publishWebsite(websiteId) {
     // 1. Verify ownership
     const { data: website, error: verifyError } = await supabaseAdmin
         .from('websites')
-        .select('id, draft_data, website_data, is_published')
+        .select('id, draft_data, website_data, is_published, template_id')
         .eq('id', websiteId)
         .eq('user_id', userId)
         .single();
@@ -132,44 +259,112 @@ export async function publishWebsite(websiteId) {
     if (verifyError || !website) throw new Error('Unauthorized access or website not found.');
 
     // 2. Check Subscription
-    // Requirement: If already published, allow direct update (skip payment check).
-    // If not published (first time), check payment.
-    if (!website.is_published) {
+    const { data: anyPublished } = await supabaseAdmin
+        .from('websites')
+        .select('id, template_id')
+        .eq('user_id', userId)
+        .eq('is_published', true)
+        .limit(1)
+        .maybeSingle();
+
+    if (!anyPublished) {
         try {
             await validateUserSubscription(userId);
         } catch (subError) {
-            // If subscription is invalid/inactive
             return { success: false, error: 'PAYMENT_REQUIRED', message: subError.message };
         }
     }
 
-    // 3. Publish from draft_data (already auto-saved by editor) or existing website_data
+    // 3. TEMPLATE CHANGE CHECK: If publishing a different template than currently published
+    const isTemplateChange = anyPublished && anyPublished.template_id !== website.template_id;
+    
+    if (isTemplateChange) {
+      const allowance = await checkTemplateChangeAllowance();
+      if (!allowance.allowed) {
+        return { 
+          success: false, 
+          error: 'TEMPLATE_CHANGE_BLOCKED', 
+          message: allowance.reason 
+        };
+      }
+    }
+
+    // 4. ENFORCE SINGLE-PUBLISH: Unpublish all OTHER websites owned by this user
+    await supabaseAdmin
+        .from('websites')
+        .update({ is_published: false })
+        .eq('user_id', userId)
+        .neq('id', websiteId);
+
+    // 5. Publish from draft_data or existing website_data
     const dataToPublish = website.draft_data || website.website_data;
     
     if (!dataToPublish) {
         return { success: false, error: 'No data to publish.' };
     }
 
+    const updatePayload = { 
+        website_data: dataToPublish, 
+        is_published: true,
+        draft_data: null,
+        updated_at: new Date()
+    };
+
     const { error: updateError } = await supabaseAdmin
         .from('websites')
-        .update({ 
-            website_data: dataToPublish, 
-            is_published: true,
-            draft_data: null, // Clear draft after publishing to indicate sync state
-            updated_at: new Date()
-        })
+        .update(updatePayload)
         .eq('id', websiteId);
 
     if (updateError) throw updateError;
 
-    // 4. Re-sync products/categories from DB into the published website_data
-    // This ensures correct field mapping (image_url -> image, category_id -> category)
+    // Record template change timestamp separately (column may not exist yet)
+    if (isTemplateChange) {
+      try {
+        await supabaseAdmin
+          .from('websites')
+          .update({ last_template_change_at: new Date() })
+          .eq('id', websiteId);
+      } catch {
+        // Column doesn't exist yet — silently skip. Template change still succeeds.
+        console.warn('last_template_change_at column not found — skipping timestamp update.');
+      }
+    }
+
+    // 6. Re-sync products/categories from DB into the published website_data
     await resyncProductsIntoWebsiteData(supabaseAdmin, websiteId);
 
     return { success: true };
 
   } catch (error) {
     console.error('Publish Error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Action: Unpublish Website (take it offline but keep data)
+export async function unpublishWebsite(websiteId) {
+  try {
+    const userId = await getUserId();
+
+    // Verify ownership
+    const { error: verifyError } = await supabaseAdmin
+        .from('websites')
+        .select('id')
+        .eq('id', websiteId)
+        .eq('user_id', userId)
+        .single();
+
+    if (verifyError) throw new Error('Unauthorized access to website.');
+
+    const { error } = await supabaseAdmin
+        .from('websites')
+        .update({ is_published: false, updated_at: new Date() })
+        .eq('id', websiteId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Unpublish Error:', error);
     return { success: false, error: error.message };
   }
 }

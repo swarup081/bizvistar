@@ -58,26 +58,28 @@ async function getWebsiteId() {
     throw new Error('Unauthorized: Please sign in.');
   }
 
-  // Fetch website ID for this user
-  const { data: website, error: websiteError } = await supabaseAdmin
+  // Fetch website ID for this user — prefer published, fall back to most recent
+  const { data: publishedSite } = await supabaseAdmin
     .from('websites')
     .select('id')
     .eq('user_id', user.id)
-    .single();
+    .eq('is_published', true)
+    .limit(1)
+    .maybeSingle();
 
-  if (websiteError) {
-     const { data: firstWebsite } = await supabaseAdmin
-        .from('websites')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
-        
-     if (firstWebsite) return firstWebsite.id;
-     throw new Error('No website found for this user.');
-  }
+  if (publishedSite) return publishedSite.id;
 
-  return website.id;
+  // No published site — get the most recent one
+  const { data: latestSite } = await supabaseAdmin
+    .from('websites')
+    .select('id')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latestSite) return latestSite.id;
+  throw new Error('No website found for this user.');
 }
 
 // --- HELPER: Sync Website Data ---

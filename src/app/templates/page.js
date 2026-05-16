@@ -445,35 +445,70 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
     }
 
     try {
-      // Check if user already has a site (Enforce 1 site per user)
+      // Look up the template ID for this template name (case-insensitive)
+      const { data: template, error: templateError } = await supabase
+        .from('templates')
+        .select('id')
+        .ilike('name', title) 
+        .limit(1)
+        .maybeSingle();
+
+      if (templateError || !template) {
+        throw new Error('This template is not available yet. Please try another one.');
+      }
+
+      // Check if user already has a website with THIS template — if so, re-edit it
       const { data: existingSite } = await supabase
         .from('websites')
         .select('id')
         .eq('user_id', user.id)
+        .eq('template_id', template.id)
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (existingSite) {
-          alert("You already have a live project. You can only have one shop.");
-          router.push('/dashboard/website'); // Redirect to existing dashboard
+          // Re-enter the editor for the existing website (no blocking!)
+          router.push(`/editor/${title}?site_id=${existingSite.id}`);
           return;
       }
 
-      const { data: template, error: templateError } = await supabase
-        .from('templates')
-        .select('id')
-        .eq('name', title) 
-        .single();
+      // Check if user has ANY existing website (published or draft)
+      // If yes, UPDATE its template_id instead of creating a new row — keeps the same slug
+      const { data: anyExistingSite } = await supabase
+        .from('websites')
+        .select('id, site_slug')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (templateError) throw new Error(`Could not find template: ${templateError.message}`);
-      if (!template) throw new Error('Template not found in database.');
+      if (anyExistingSite) {
+        // Update the existing website to use the new template
+        // Clear draft_data so the editor starts fresh with the new template defaults
+        const { error: updateError } = await supabase
+          .from('websites')
+          .update({ 
+            template_id: template.id, 
+            draft_data: null,
+            updated_at: new Date()
+          })
+          .eq('id', anyExistingSite.id);
 
+        if (updateError) throw new Error(`Could not update template: ${updateError.message}`);
+
+        // Redirect to editor with the same website ID (same slug preserved!)
+        router.push(`/editor/${title}?site_id=${anyExistingSite.id}`);
+        return;
+      }
+
+      // User has NO websites at all — create a new one
       let storeName = localStorage.getItem('storeName');
       
       // If storeName is missing or generic, ask the user
       if (!storeName || storeName === 'My New Site' || storeName === 'Your Business') {
           const input = prompt("Please enter your Business Name to create your site:", "My Business");
-          if (!input || input.trim() === "") return; // Cancelled
+          if (!input || input.trim() === "") { setIsCreating(false); return; } // Cancelled
           storeName = input.trim();
           localStorage.setItem('storeName', storeName); // Save for future
       }
@@ -499,7 +534,6 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
 
       // 2. If that fails (likely unique constraint), fallback to timestamp slug
       if (insertError) {
-          // console.log("Preferred slug taken, using fallback...");
           finalSlug = timestampSlug;
           usedFallback = true;
           

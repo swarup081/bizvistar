@@ -104,20 +104,31 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
     }
 
     // 3. Publish Website
-    const { data: website, error: webError } = await supabaseAdmin
+    const { data: websites, error: webError } = await supabaseAdmin
         .from('websites')
         .select('id, draft_data, is_published')
         .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', { ascending: false });
 
-    if (webError || !website) {
+    if (webError || !websites || websites.length === 0) {
         console.error("[PublishAction] Website not found:", webError);
         return { success: false, error: "Website not found." };
     }
 
+    // Pick the most recent website to publish
+    const website = websites[0];
+
     if (website.is_published) {
         return { success: true, message: "Already published." };
+    }
+
+    // ENFORCE SINGLE-PUBLISH: Unpublish all other websites
+    const otherIds = websites.filter(w => w.id !== website.id).map(w => w.id);
+    if (otherIds.length > 0) {
+        await supabaseAdmin
+            .from('websites')
+            .update({ is_published: false })
+            .in('id', otherIds);
     }
 
     const updatePayload = { is_published: true };

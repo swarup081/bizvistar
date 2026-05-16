@@ -296,15 +296,22 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
                            // Upsert Subscription
                            await supabaseAdmin.from('subscriptions').upsert(upsertPayload, { onConflict: 'razorpay_subscription_id' });
 
-                           // Publish Website
-                           const { data: website } = await supabaseAdmin
+                           // Publish Website — enforce single-publish
+                           const { data: userWebsites } = await supabaseAdmin
                              .from('websites')
                              .select('id, website_data, draft_data')
                              .eq('user_id', userId)
-                             .limit(1)
-                             .maybeSingle();
+                             .order('created_at', { ascending: false });
 
-                           if (website) {
+                           if (userWebsites && userWebsites.length > 0) {
+                               const website = userWebsites[0]; // Most recent
+                               
+                               // Unpublish all other websites first
+                               const otherIds = userWebsites.filter(w => w.id !== website.id).map(w => w.id);
+                               if (otherIds.length > 0) {
+                                   await supabaseAdmin.from('websites').update({ is_published: false }).in('id', otherIds);
+                               }
+
                                const updates = { is_published: true };
                                // Copy draft to published if empty
                                if (!website.website_data || (typeof website.website_data === 'object' && Object.keys(website.website_data).length === 0)) {

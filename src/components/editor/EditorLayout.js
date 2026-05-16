@@ -7,7 +7,7 @@ import EditorSidebar from './EditorSidebar';
 import WizardModal from './WizardModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 import { getOnboardingStatus } from '@/app/actions/onboardingActions';
-import { saveDraft, revertToPublished, publishWebsite } from '@/app/actions/editorActions';
+import { saveDraft, revertToPublished, publishWebsite, unpublishWebsite, getWebsiteDraft, getSubscriptionStatus, checkTemplateChangeAllowance } from '@/app/actions/editorActions';
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -90,7 +90,7 @@ function mergeWithDefaults(userData, defaultData) {
 
 
 // Main component updated to read site_id
-export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug, syncVersion = 0 }) {
+export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug, syncVersion = 0, isPublished: initialIsPublished = false }) {
   // Initialize view state lazily to match window width on client
   // Default to 'desktop' for SSR safety, then update in effect
   const [view, setView] = useState('desktop'); 
@@ -128,7 +128,53 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   }, [websiteId, mode]);
   
   const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
+  const [isPublished, setIsPublished] = useState(initialIsPublished);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [planTier, setPlanTier] = useState('starter');
+  const [editorSiteSlug, setEditorSiteSlug] = useState(siteSlug || null);
   const debounceTimer = useRef(null); // For debouncing save
+  const dbDataLoaded = useRef(false); // Prevent re-loading DB data
+
+  // Load data from DB in standalone editor mode (when no initialData is provided)
+  // This fixes the bug where the standalone editor starts with template defaults
+  // and the auto-save overwrites saved data in the DB
+  useEffect(() => {
+    if (mode === 'dashboard' || !websiteId || dbDataLoaded.current) return;
+    
+    const loadFromDB = async () => {
+      try {
+        const result = await getWebsiteDraft(websiteId);
+        if (result.success && result.data && Object.keys(result.data).length > 0) {
+          dbDataLoaded.current = true;
+          const merged = mergeWithDefaults(result.data, defaultData);
+          setBusinessData(merged);
+          setHistory([merged]);
+          setHistoryIndex(0);
+          sendDataToIframe(merged);
+          setIsPublished(result.isPublished || false);
+          if (result.siteSlug) setEditorSiteSlug(result.siteSlug);
+          
+          // Also update localStorage so it stays in sync
+          localStorage.setItem(editorDataKey, JSON.stringify(merged));
+        }
+      } catch (err) {
+        console.error('[EditorLayout] Failed to load draft from DB:', err);
+      }
+    };
+    
+    loadFromDB();
+  }, [websiteId, mode]);
+
+  // Check subscription status (for standalone editor to know if user can publish)
+  useEffect(() => {
+    if (!websiteId) return;
+    const checkSub = async () => {
+      const status = await getSubscriptionStatus();
+      setHasActiveSubscription(status.hasActiveSubscription);
+      setPlanTier(status.planTier);
+    };
+    checkSub();
+  }, [websiteId]);
 
   const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 
@@ -350,7 +396,7 @@ useEffect(() => {
              setHistoryIndex(0);
              sendDataToIframe(merged);
              
-             const homePage = merged.pages?.[0]?.path || `/templates/${templateName}`;
+             const homePage = merged.pages?.[0]?.path ?? '';
              handlePageChange(homePage);
              return;
         }
@@ -363,7 +409,7 @@ useEffect(() => {
     setHistory([defaultData]);
     setHistoryIndex(0);
     sendDataToIframe(defaultData);
-    const homePage = defaultData.pages?.[0]?.path || `/templates/${templateName}`;
+    const homePage = defaultData.pages?.[0]?.path ?? '';
     handlePageChange(homePage);
   };
 
@@ -382,7 +428,17 @@ useEffect(() => {
       }
       
       // 2. Publish from DB (no longer sends full data — avoids 1MB body limit)
-      return await publishWebsite(websiteId);
+      const result = await publishWebsite(websiteId);
+      if (result.success) setIsPublished(true);
+      return result;
+  };
+
+  // Handler for Unpublishing (passed to TopNav dropdown)
+  const handleUnpublish = async () => {
+      if (!websiteId) return { success: false, error: 'No website ID' };
+      const result = await unpublishWebsite(websiteId);
+      if (result.success) setIsPublished(false);
+      return result;
   };
 
   const sendDataToIframe = (data) => {
@@ -424,35 +480,70 @@ useEffect(() => {
     return () => window.removeEventListener('message', handleMessage);
   }, [businessData]); 
 
-  const [activePage, setActivePage] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
-  const [previewUrl, setPreviewUrl] = useState(defaultData?.pages?.[0]?.path || `/templates/${templateName}`);
+  // Helper: build full iframe URL from a relative page path
+  // Template data stores relative paths like '', '/shop', '/checkout'
+  // The iframe needs full paths like '/templates/flara', '/templates/flara/shop'
+  const templateBasePath = `/templates/${templateName}`;
+  
+  const buildPageUrl = (relativePath) => {
+    if (!relativePath && relativePath !== '') return templateBasePath;
+    // If path is already absolute (starts with /templates/), use as-is
+    if (relativePath.startsWith('/templates/')) return relativePath;
+    // If path is empty string (home page), return base path
+    if (relativePath === '') return templateBasePath;
+    // Otherwise, append to base path (e.g. '/shop' -> '/templates/flara/shop')
+    return `${templateBasePath}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+  };
+
+  const [activePage, setActivePage] = useState(() => {
+    const firstPath = defaultData?.pages?.[0]?.path;
+    return firstPath !== undefined ? firstPath : '';
+  });
+  const [previewUrl, setPreviewUrl] = useState(() => {
+    const firstPath = defaultData?.pages?.[0]?.path;
+    return buildPageUrl(firstPath !== undefined ? firstPath : '');
+  });
   
   const handlePageChange = (path) => {
-    if (!path) return; 
+    if (path === undefined || path === null) return; 
     
     const [basePath, anchorId] = path.split('#');
-    setActivePage(path); 
+    setActivePage(path);
+    
+    // Build the full URL for the iframe
+    const fullUrl = buildPageUrl(basePath);
 
     if (iframeRef.current) {
-      const currentBasePath = iframeRef.current.src.split('#')[0];
+      // Extract just the pathname from the current iframe src for accurate comparison
+      let currentPathname;
+      try {
+        currentPathname = new URL(iframeRef.current.src).pathname;
+      } catch {
+        currentPathname = iframeRef.current.src.split('#')[0].split('?')[0];
+      }
+      const targetPathname = fullUrl.split('?')[0].split('#')[0];
 
-      if (currentBasePath.endsWith(basePath) && anchorId) {
+      const isSamePage = currentPathname === targetPathname;
+
+      if (isSamePage && anchorId) {
+        // Same page, scroll to section
         iframeRef.current.contentWindow.postMessage({
           type: 'SCROLL_TO_SECTION',
           payload: { sectionId: anchorId }
         }, '*');
-      } else if (!currentBasePath.endsWith(basePath)) {
-        setPreviewUrl(path);
-      } else if (currentBasePath.endsWith(basePath) && !anchorId) {
-        setPreviewUrl(basePath);
+      } else if (!isSamePage) {
+        // Different page — navigate the iframe
+        setPreviewUrl(anchorId ? `${fullUrl}#${anchorId}` : fullUrl);
       }
+      // If same page and no anchor, do nothing (already there)
     }
   };
   
   useEffect(() => {
-      const homePage = defaultData.pages?.[0]?.path || `/templates/${templateName}`;
-      setActivePage(homePage);
-      setPreviewUrl(homePage);
+      const firstPath = defaultData.pages?.[0]?.path;
+      const homePath = firstPath !== undefined ? firstPath : '';
+      setActivePage(homePath);
+      setPreviewUrl(buildPageUrl(homePath));
   }, [templateName, defaultData]);
 
   const handleAccordionToggle = (id) => {
@@ -505,7 +596,7 @@ useEffect(() => {
         <div className="flex-shrink-0 z-20 relative">
           <EditorTopNav
             mode={mode}
-            siteSlug={siteSlug}
+            siteSlug={siteSlug || editorSiteSlug}
             templateName={templateName}
             websiteId={websiteId} // Pass websiteId to the nav
             saveStatus={saveStatus} // Pass saveStatus to the nav
@@ -521,6 +612,10 @@ useEffect(() => {
             onRestart={handleRestart}
             setBusinessData={handleDataUpdate} // <-- ADDED for AI functionality
             onPublish={handlePublish} // <-- ADDED
+            onUnpublish={handleUnpublish}
+            isPublished={isPublished}
+            hasActiveSubscription={hasActiveSubscription}
+            planTier={planTier}
           />
         </div>
 

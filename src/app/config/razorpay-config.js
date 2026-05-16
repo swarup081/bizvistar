@@ -80,6 +80,26 @@ export const PLAN_LIMITS = {
   'growth': -1
 };
 
+// Template change limits per plan tier
+// -1 = unlimited, 0 = not allowed, N = max per 30-day rolling window
+export const TEMPLATE_CHANGE_LIMITS = {
+  starter: 0,
+  pro: 1,
+  growth: -1
+};
+
+/**
+ * Determine the plan tier ('starter', 'pro', or 'growth') from a plan name string.
+ * Plan names in the DB are like "Starter Monthly", "Pro Yearly", "Growth Monthly", etc.
+ */
+export const getPlanTierFromName = (planName) => {
+  if (!planName) return 'starter'; // Default to most restrictive
+  const lower = planName.toLowerCase();
+  if (lower.includes('growth')) return 'growth';
+  if (lower.includes('pro')) return 'pro';
+  return 'starter';
+};
+
 /**
 * Retrieves the current Razorpay configuration mode ('test' or 'live').
 */

@@ -146,17 +146,29 @@ export async function getSubscriptionDetailsAction() {
             .update(updatePayload)
             .eq('id', dbSub.id);
 
-          // Also fix website publish state
+          // Also fix website publish state — only target published website
           if (['active', 'authenticated'].includes(rzpStatus)) {
-            await supabaseAdmin
+            // Re-publish the most recent website (prefer one that was previously published)
+            const { data: latestSite } = await supabaseAdmin
               .from('websites')
-              .update({ is_published: true })
-              .eq('user_id', user.id);
+              .select('id')
+              .eq('user_id', user.id)
+              .order('updated_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (latestSite) {
+              await supabaseAdmin
+                .from('websites')
+                .update({ is_published: true })
+                .eq('id', latestSite.id);
+            }
           } else if (['cancelled', 'paused', 'halted'].includes(rzpStatus)) {
+            // Only unpublish the currently published website
             await supabaseAdmin
               .from('websites')
               .update({ is_published: false })
-              .eq('user_id', user.id);
+              .eq('user_id', user.id)
+              .eq('is_published', true);
           }
 
           dbSub.status = expectedDbStatus;
@@ -298,11 +310,12 @@ export async function pauseSubscriptionAction() {
       })
       .eq('id', sub.id);
 
-    // Unpublish website (preserve data)
+    // Unpublish the currently published website only (preserve data)
     await supabaseAdmin
       .from('websites')
       .update({ is_published: false })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .eq('is_published', true);
 
     console.log(`[PauseSub] User ${user.id} paused subscription, website unpublished`);
 
@@ -366,11 +379,12 @@ export async function resumeSubscriptionAction() {
       })
       .eq('id', sub.id);
 
-    // Re-publish website (restore with existing data)
+    // Re-publish the most recent website
     const { data: website } = await supabaseAdmin
       .from('websites')
       .select('id, website_data, draft_data')
       .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 

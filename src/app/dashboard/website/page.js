@@ -22,34 +22,54 @@ function WebsiteDashboardContent() {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError || !user) {
-            // If no user, maybe redirect to login? But for now just show error.
             setError("Please log in to view your website.");
             setLoading(false);
             return;
         }
 
         // 2. Fetch website for this user
-        let query = supabase
-          .from('websites')
-          .select('id, site_slug, template_id, website_data, draft_data')
-          .eq('user_id', user.id);
-
+        let site = null;
+        
         if (slugParam) {
-           query = query.eq('site_slug', slugParam).single();
+           // Specific slug requested
+           const { data, error: dbError } = await supabase
+             .from('websites')
+             .select('id, site_slug, template_id, website_data, draft_data, is_published')
+             .eq('user_id', user.id)
+             .eq('site_slug', slugParam)
+             .single();
+           if (dbError) {
+              console.error('Error fetching website:', JSON.stringify(dbError, null, 2));
+              setError("Failed to load website.");
+              setLoading(false);
+              return;
+           }
+           site = data;
         } else {
-           // Default: Most recent site (not filtered by is_published so unpublished sites are also editable)
-           query = query
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
+           // Default: Prefer published site, fall back to most recent
+           const { data: publishedSite } = await supabase
+             .from('websites')
+             .select('id, site_slug, template_id, website_data, draft_data, is_published')
+             .eq('user_id', user.id)
+             .eq('is_published', true)
+             .limit(1)
+             .maybeSingle();
+
+           if (publishedSite) {
+             site = publishedSite;
+           } else {
+             const { data: latestSite } = await supabase
+               .from('websites')
+               .select('id, site_slug, template_id, website_data, draft_data, is_published')
+               .eq('user_id', user.id)
+               .order('created_at', { ascending: false })
+               .limit(1)
+               .maybeSingle();
+             site = latestSite;
+           }
         }
 
-        const { data: site, error: dbError } = await query;
-
-        if (dbError) {
-             console.error('Error fetching website:', JSON.stringify(dbError, null, 2));
-             setError("Failed to load website.");
-        } else if (site) {
+        if (site) {
              let templateName = 'flara'; // Default
 
              if (site.template_id) {
@@ -106,7 +126,8 @@ function WebsiteDashboardContent() {
                  id: site.id,
                  slug: site.site_slug,
                  templateName: templateName,
-                 data: finalData
+                 data: finalData,
+                 isPublished: site.is_published || false
              });
         } else {
             setError("You haven't created a website yet.");
@@ -295,6 +316,7 @@ function WebsiteDashboardContent() {
         initialData={website.data}
         siteSlug={website.slug}
         syncVersion={syncVersion}
+        isPublished={website.isPublished}
     />
   );
 }

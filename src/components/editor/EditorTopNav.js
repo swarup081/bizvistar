@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import {
-  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, Save
+  Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, Save, Globe, GlobeLock, Plus, ExternalLink
 } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
 import AIContentModal from './AIContentModal';
 import { generateAIContent } from '@/app/actions/onboardingActions';
+import { checkTemplateChangeAllowance } from '@/app/actions/editorActions';
 
 // A simple reusable button component for the nav
 const NavButton = ({ children, className = '', ...props }) => (
@@ -152,12 +153,19 @@ export default function EditorTopNav({
     onRestart,
     isLandingMode = false, // <-- NEW PROP
     setBusinessData, // <-- ADDED for AI Update
-    onPublish // <-- ADDED
+    onPublish, // <-- ADDED
+    onUnpublish, // <-- ADDED
+    isPublished = false, // <-- ADDED
+    hasActiveSubscription = false, // <-- ADDED
+    planTier = 'starter' // <-- ADDED
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
+  const [isPublishDropdownOpen, setIsPublishDropdownOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false); // AI Modal State
+  const publishDropdownRef = useRef(null);
 
   const router = useRouter();
   
@@ -184,16 +192,18 @@ export default function EditorTopNav({
     if (isPublishing) return;
     setIsPublishing(true);
     try {
-        const { success, error } = await onPublish();
+        const result = await onPublish();
 
-        if (success) {
+        if (result.success) {
             alert('Website published successfully!');
         } else {
-            if (error === 'PAYMENT_REQUIRED') {
+            if (result.error === 'PAYMENT_REQUIRED') {
                 router.push(`/pricing?site_id=${websiteId}`);
+            } else if (result.error === 'TEMPLATE_CHANGE_BLOCKED') {
+                alert(result.message || 'Template change not allowed on your current plan.');
             } else {
-                console.error('Publish error:', error);
-                alert('Failed to publish. Please try again.');
+                console.error('Publish error:', result.error);
+                alert(result.message || 'Failed to publish. Please try again.');
             }
         }
     } catch (error) {
@@ -204,11 +214,39 @@ export default function EditorTopNav({
     }
   };
 
+  // Close publish dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (publishDropdownRef.current && !publishDropdownRef.current.contains(event.target)) {
+        setIsPublishDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Helper to intercept clicks in Landing Mode
   const onLandingDummyClick = (e) => {
     if (isLandingMode) {
       e.preventDefault();
       e.stopPropagation();
+    }
+  };
+
+  const handleUnpublish = async () => {
+    if (isUnpublishing || !onUnpublish) return;
+    setIsUnpublishing(true);
+    try {
+      const { success, error } = await onUnpublish();
+      if (success) {
+        setIsPublishDropdownOpen(false);
+      } else {
+        alert('Failed to unpublish: ' + (error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('An error occurred.');
+    } finally {
+      setIsUnpublishing(false);
     }
   };
 
@@ -361,7 +399,7 @@ export default function EditorTopNav({
             </Tooltip>
           )}
           
-          {/* --- PUBLISH BUTTON --- */}
+          {/* --- PUBLISH BUTTON / DROPDOWN --- */}
           {isLandingMode ? (
              <Tooltip title="Just a demo" description="Unlock full potential in the editor">
                 <button
@@ -373,20 +411,117 @@ export default function EditorTopNav({
              </Tooltip>
           ) : (
             mode === 'dashboard' ? (
-                <button
-                  onClick={handlePublish}
-                  disabled={isPublishing}
-                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors disabled:opacity-50"
-                >
-                  {isPublishing ? 'Publishing...' : 'Publish'}
-                </button>
+                // Dashboard mode: Publish button with dropdown
+                <div className="relative" ref={publishDropdownRef}>
+                  <div className="flex items-center">
+                    {/* Main Publish/Update button */}
+                    <button
+                      onClick={handlePublish}
+                      disabled={isPublishing}
+                      className="flex items-center gap-2 bg-black text-white text-sm font-medium pl-5 pr-3 py-2.5 rounded-l-4xl transition-colors disabled:opacity-50 hover:bg-gray-800"
+                    >
+                      {isPublishing ? 'Publishing...' : (isPublished ? 'Update' : 'Publish')}
+                    </button>
+                    {/* Dropdown chevron */}
+                    <button
+                      onClick={() => setIsPublishDropdownOpen(prev => !prev)}
+                      className="flex items-center justify-center bg-black text-white font-medium px-4 py-2.5 rounded-r-4xl border-l border-white/20 hover:bg-gray-800 transition-colors min-w-[44px]"
+                    >
+                      <ChevronDown size={20} className={`transition-transform duration-200 ${isPublishDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+                  
+                  {/* Dropdown Menu */}
+                  {isPublishDropdownOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                      {/* Status indicator */}
+                      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${isPublished ? 'bg-green-500' : 'bg-gray-400'}`} />
+                          <span className="text-xs font-medium text-gray-600">
+                            {isPublished ? 'Live — Published' : 'Draft — Not Published'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="py-1">
+                        {/* Publish / Update Changes */}
+                        <button
+                          onClick={() => { setIsPublishDropdownOpen(false); handlePublish(); }}
+                          disabled={isPublishing}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors disabled:opacity-50"
+                        >
+                          <Globe size={16} className="text-gray-500" />
+                          {isPublished ? 'Update Changes' : 'Publish Website'}
+                        </button>
+                        
+                        {/* Unpublish (only when published) */}
+                        {isPublished && (
+                          <button
+                            onClick={handleUnpublish}
+                            disabled={isUnpublishing}
+                            className="w-full text-left px-4 py-2.5 text-sm text-orange-600 hover:bg-orange-50 flex items-center gap-3 transition-colors disabled:opacity-50"
+                          >
+                            <GlobeLock size={16} />
+                            {isUnpublishing ? 'Unpublishing...' : 'Unpublish Site'}
+                          </button>
+                        )}
+
+                        <div className="border-t border-gray-100 my-1" />
+                        
+                        {/* View Live Site (only when published) */}
+                        {isPublished && siteSlug && (
+                          <a
+                            href={`/site/${siteSlug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                          >
+                            <ExternalLink size={16} className="text-gray-500" />
+                            View Live Site
+                          </a>
+                        )}
+
+                        {/* Publish New — go to templates (with plan check) */}
+                        <button
+                          onClick={async () => {
+                            setIsPublishDropdownOpen(false);
+                            const result = await checkTemplateChangeAllowance();
+                            if (!result.allowed) {
+                              alert(result.reason);
+                              return;
+                            }
+                            router.push('/templates');
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                        >
+                          <Plus size={16} className="text-gray-500" />
+                          Publish New Template
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
             ) : (
-                <Link
-                  href={`/pricing?site_id=${websiteId}`} 
-                  className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2 rounded-4xl transition-colors"
-                >
-                  Publish
-                </Link>
+                // Standalone editor mode
+                hasActiveSubscription ? (
+                  // Paid user: show publish button that calls onPublish directly
+                  <button
+                    onClick={handlePublish}
+                    disabled={isPublishing}
+                    className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2.5 rounded-4xl transition-colors disabled:opacity-50 hover:bg-gray-800"
+                  >
+                    {isPublishing ? 'Publishing...' : (isPublished ? 'Update' : 'Publish')}
+                  </button>
+                ) : (
+                  // No subscription: redirect to pricing
+                  <Link
+                    href={`/pricing?site_id=${websiteId}`} 
+                    className="flex items-center gap-2 bg-black text-white text-sm font-medium px-6 py-2.5 rounded-4xl transition-colors"
+                  >
+                    Publish
+                  </Link>
+                )
             )
           )}
 
@@ -412,7 +547,7 @@ export default function EditorTopNav({
               <div className="absolute top-full mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                 {pages.map(page => (
                   <button
-                    key={page.path}
+                    key={page.name || page.path}
                     onClick={() => handlePageSelect(page.path)}
                     className={`w-full text-left px-3 py-2 text-sm ${activePage === page.path ? 'bg-[#8A63D2]/10 text-[#8A63D2]' : 'text-gray-700'} hover:bg-gray-100`}
                   >
