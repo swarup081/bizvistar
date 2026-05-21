@@ -2,6 +2,20 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/blog/:path*',
+        destination: '/blogs/:path*',
+        permanent: true,
+      },
+      {
+        source: '/blog',
+        destination: '/blogs',
+        permanent: true,
+      },
+    ];
+  },
   serverActions: {
     bodySizeLimit: '5mb',
   },

@@ -113,8 +113,8 @@ export default function NewHeader() {
 
   const navLinks = [
     { label: 'Sell', href: '/#how-it-works' },
-    { label: 'Market', href: '/templates' },
-    { label: 'Platform', href: '/#benefits' },
+    { label: 'Templates', href: '/templates' },
+    { label: 'Blogs', href: '/blogs' },
     { label: 'Manage', href: '/dashboard' },
     { label: 'Pricing', href: '/pricing' },
   ];

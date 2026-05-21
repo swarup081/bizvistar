@@ -37,6 +37,7 @@ const footerData = [
       { name: "Contact Support", href: "mailto:support@bizvistar.in" },
       { name: "Report Abuse", href: "mailto:support@bizvistar.in" },
       { name: "About Us", href: "/#about" },
+      { name: "Blog", href: "/blogs" },
     ]
   },
   {
