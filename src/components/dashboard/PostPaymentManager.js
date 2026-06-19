@@ -40,8 +40,28 @@ export default function PostPaymentManager() {
     const checkPaymentFlow = async () => {
       const isPaymentSuccess = searchParams.get('payment_success') === 'true';
       const isUpdate = searchParams.get('update') === 'true';
+      const isFree = searchParams.get('free') === 'true';
       
       if (!isPaymentSuccess) return;
+
+      // Free tier activation — skip payment verification entirely
+      if (isFree) {
+        setStatus('checking');
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { data: site } = await supabase
+            .from('websites')
+            .select('id, site_slug, is_published')
+            .eq('user_id', user.id)
+            .single();
+          if (site) setWebsite(site);
+        } catch (err) {
+          console.error('Free tier check error', err);
+        }
+        setStatus('success-free');
+        return;
+      }
 
       // If this is just a plan update, we don't need to do slug checks
       if (isUpdate) {
@@ -266,7 +286,7 @@ export default function PostPaymentManager() {
   }
 
   if (status === 'success') {
-      const siteUrl = website ? `${website.site_slug}.bizvistar.com` : 'your-site.bizvistar.com'; 
+      const siteUrl = website ? `${website.site_slug}.bizvistar.in` : 'your-site.bizvistar.in'; 
       
       return (
           <ModalOverlay>
@@ -304,6 +324,36 @@ export default function PostPaymentManager() {
                       onClick={handleClose}
                       className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-lg hover:shadow-xl transition-all"
                   >
+                      Go to Dashboard
+                  </button>
+              </ModalContent>
+          </ModalOverlay>
+      );
+  }
+
+  if (status === 'success-free') {
+      const siteUrl = website ? `${website.site_slug}.bizvistar.in` : 'your-site.bizvistar.in';
+      return (
+          <ModalOverlay>
+              <ModalContent className="p-8 text-center relative overflow-visible">
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                      <Check className="w-10 h-10 text-green-600" strokeWidth={3} />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">Your Free Website is Live!</h2>
+                  <p className="text-gray-600 mb-8 text-lg">
+                      Your website is officially published on the <span className="font-bold text-gray-900">Starter</span> plan.
+                  </p>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-8 flex items-center justify-between group cursor-pointer hover:border-brand-300 transition-colors">
+                      <div className="flex flex-col text-left">
+                          <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Public URL</span>
+                          <span className="text-gray-900 font-medium truncate max-w-[250px]">{siteUrl}</span>
+                      </div>
+                      <a href={`https://${siteUrl}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-lg border border-gray-200 text-gray-500 group-hover:text-brand-600 transition-colors">
+                         <ChevronRight className="w-5 h-5" />
+                      </a>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Upgrade to Pro or Growth anytime for more features.</p>
+                  <button onClick={handleClose} className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-lg hover:shadow-xl transition-all">
                       Go to Dashboard
                   </button>
               </ModalContent>

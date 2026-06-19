@@ -434,14 +434,6 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     let offerId = null;
     let startAt = null;
 
-    if (normalizedCoupon === 'FOUNDER') {
-        if (billingCycle === 'monthly') {
-            totalCount = 12; 
-        } else if (billingCycle === 'yearly') {
-            totalCount = 1; 
-        }
-    }
-
     if (couponConfig && couponConfig.type === 'offer_apply' && couponConfig.offerIds) {
         offerId = couponConfig.offerIds[mode];
         if (!offerId) throw new Error("Offer not available in this mode");

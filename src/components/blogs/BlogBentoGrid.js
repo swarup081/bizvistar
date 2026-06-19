@@ -49,14 +49,14 @@ export default function BlogBentoGrid({ posts = [] }) {
 
         {/* LEFT COLUMN (38%) */}
         <div className="w-[38%] flex flex-col">
-          <div className="h-[500px] lg:h-[646px] relative">
+          <div className="h-[500px] lg:h-[500px] lg:h-[646px] relative">
             {p0 && (
               <div className="relative rounded-[32px] overflow-hidden bg-gray-100 h-full group">
                 <Link href={p0.href || "#"} className="absolute inset-0 z-30"></Link>
                 <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p0.image || '/blogs/blog_club_1778965424607.png'})` }}></div>
 
                 <div className="absolute bottom-0 left-0 flex flex-col items-start z-30 w-full pointer-events-none">
-                  <div className="bg-white rounded-tr-[20px] lg:rounded-tr-[24px] pl-4 pr-6 pt-5 pb-1 relative z-20 w-max">
+                  <div className="bg-white rounded-tr-[20px] lg:rounded-tr-[20px] lg:rounded-tr-[24px] pl-4 pr-6 pt-5 pb-1 relative z-20 w-max">
                     <svg className="absolute left-0 w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none bottom-full -mb-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M0 24V0C0 13.255 10.745 24 24 24H0Z" fill="#ffffff" />
                     </svg>
@@ -69,8 +69,8 @@ export default function BlogBentoGrid({ posts = [] }) {
                       <span className="text-gray-400 font-medium">{getDate(p0)}</span>
                     </div>
                   </div>
-                  <div className="bg-white rounded-tr-[20px] lg:rounded-tr-[24px] relative w-[78%] -mt-[1px] z-10">
-                    <svg className="absolute w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none left-full bottom-0 -ml-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <div className="bg-white rounded-tr-[20px] lg:rounded-tr-[20px] lg:rounded-tr-[24px] relative w-[78%] -mt-[1px] z-10">
+                    <svg className="absolute w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none left-full bottom-0 -ml-[1px] -mb-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M0 24V0C0 13.255 10.745 24 24 24H0Z" fill="#ffffff" />
                     </svg>
                     <div className="pl-4 pr-6 pt-3 pb-5">
@@ -89,16 +89,16 @@ export default function BlogBentoGrid({ posts = [] }) {
         <div className="w-[62%] flex flex-col gap-4">
 
           {/* RIGHT AREA TOP ROW */}
-          <div className="flex gap-4 h-[280px] lg:h-[380px]">
+          <div className="flex gap-4 h-[280px] lg:h-[280px] lg:h-[380px]">
 
             {/* MIDDLE GREEN (70% of Right Area) */}
             <div className="w-[70%] h-full relative group">
               <div className="absolute inset-0 bg-[#eafcb6] rounded-[32px] overflow-hidden transition-all duration-300 group-hover:bg-[#d8eba5]">
-                <div className="absolute top-0 right-0 w-[48px] h-[48px] lg:w-[64px] lg:h-[64px] bg-white rounded-bl-[24px] lg:rounded-bl-[32px] z-20 pointer-events-none transition-colors duration-300"></div>
-                <svg className="absolute top-0 right-[48px] lg:right-[64px] w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none z-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="absolute top-0 right-0 w-[48px] h-[48px] lg:w-[64px] lg:h-[64px] bg-white rounded-bl-[24px] lg:rounded-bl-[24px] lg:rounded-bl-[32px] z-20 pointer-events-none transition-colors duration-300"></div>
+                <svg className="absolute top-0 right-[48px] lg:right-[48px] lg:right-[64px] w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none z-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M24 0V24C24 10.745 13.255 0 0 0H24Z" fill="white" className="transition-colors duration-300" />
                 </svg>
-                <svg className="absolute top-[48px] lg:top-[64px] right-0 w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none z-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute top-[48px] lg:top-[48px] lg:top-[64px] right-0 w-[20px] h-[20px] lg:w-[24px] lg:h-[24px] pointer-events-none z-20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M24 0V24C24 10.745 13.255 0 0 0H24Z" fill="white" className="transition-colors duration-300" />
                 </svg>
 
@@ -159,14 +159,14 @@ export default function BlogBentoGrid({ posts = [] }) {
                     {getBentoTitle(p4)}
                   </h3>
 
-                  <div className="absolute bottom-0 right-0 left-0 h-[50%] bg-cover bg-top z-0 transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p4.image || '/blogs/blog_sneaker_1778965493480.png'})` }}></div>
+                  <div className="absolute bottom-0 right-0 left-0 h-[40%] lg:h-[50%] bg-[length:contain] lg:bg-[length:cover] bg-no-repeat bg-bottom lg:bg-top z-0 transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p4.image || '/blogs/blog_sneaker_1778965493480.png'})` }}></div>
                 </div>
               )}
             </div>
           </div>
 
           {/* RIGHT AREA BOTTOM ROW */}
-          <div className="flex gap-4 h-[204px] lg:h-[250px]">
+          <div className="flex gap-4 h-[204px] lg:h-[204px] lg:h-[250px]">
 
             {/* BOTTOM VIDEO (55% of Right Area) */}
             <div className="w-[55%] h-full">
@@ -244,7 +244,7 @@ export default function BlogBentoGrid({ posts = [] }) {
                 </div>
               </div>
               <div className="bg-white rounded-tr-[24px] relative w-[82%] -mt-[1px] z-10">
-                <svg className="absolute w-[20px] h-[20px] pointer-events-none left-full bottom-0 -ml-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute w-[20px] h-[20px] pointer-events-none left-full bottom-0 -ml-[1px] -mb-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 24V0C0 13.255 10.745 24 24 24H0Z" fill="#ffffff" />
                 </svg>
                 <div className="pl-3 pr-5 pt-2 pb-4">
@@ -316,7 +316,7 @@ export default function BlogBentoGrid({ posts = [] }) {
               {getBentoTitle(p4)}
             </h3>
             
-            <div className="absolute bottom-[20px] right-0 left-0 h-[45%] bg-contain bg-no-repeat bg-bottom z-0" style={{ backgroundImage: `url(${p4.image || '/blogs/posblogs.png'})` }}></div>
+            <div className="absolute bottom-[-10px] right-0 left-0 h-[55%] bg-contain bg-no-repeat bg-bottom z-0 scale-[1.3] origin-bottom" style={{ backgroundImage: `url(${p4.image || '/blogs/posblogs.png'})` }}></div>
           </div>
         )}
 

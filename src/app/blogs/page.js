@@ -62,7 +62,7 @@ export default function BlogPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-20 text-gray-500">
+          <div className="flex items-center justify-center gap-4 mt-8 md:mt-12 text-gray-500">
             <button 
               onClick={() => setCurrentPage(1)} 
               disabled={currentPage === 1} 

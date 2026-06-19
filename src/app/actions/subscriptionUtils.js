@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
+import { isFreeTierSubscription } from '@/app/config/razorpay-config';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,14 +10,13 @@ const supabaseAdmin = createClient(
 
 /**
  * Validates a user's subscription status and returns their plan details.
- * Implements strict security checks, Founder Plan expiry logic, 
- * grace period for webhook delays, and paused status handling.
+ * Implements strict security checks, grace period for webhook delays,
+ * paused status handling, and free tier support.
  */
 export async function validateUserSubscription(userId) {
   if (!userId) throw new Error("User ID required for subscription check.");
 
   // Fetch the LATEST subscription (any status) to give proper error messages
-  // Using 'id' (auto-incrementing IDENTITY) for ordering since it's guaranteed to exist
   const { data: subscription, error } = await supabaseAdmin
     .from('subscriptions')
     .select(`
@@ -24,6 +24,7 @@ export async function validateUserSubscription(userId) {
       current_period_end, 
       cancel_at_period_end,
       paused_at,
+      razorpay_subscription_id,
       plan:plans ( razorpay_plan_id, name )
     `)
     .eq('user_id', userId)
@@ -40,7 +41,7 @@ export async function validateUserSubscription(userId) {
       throw new Error("No subscription found. Please upgrade to a paid plan.");
   }
 
-  const { status, current_period_end, cancel_at_period_end, plan } = subscription;
+  const { status, current_period_end, cancel_at_period_end, razorpay_subscription_id, plan } = subscription;
   const now = new Date();
   const periodEnd = new Date(current_period_end);
 
@@ -65,10 +66,14 @@ export async function validateUserSubscription(userId) {
 
   // 4. ACTIVE / TRIALING
   if (status === 'active' || status === 'trialing') {
-    // Check if period has actually expired (with grace period)
-    if (now > periodEndWithGrace) {
-      // Active but period ended and grace period passed
-      throw new Error("Your subscription period has ended. Please renew to continue.");
+    // Free tier subscriptions never expire
+    const isFree = isFreeTierSubscription(razorpay_subscription_id);
+    
+    if (!isFree) {
+      // Paid subscription: check if period has actually expired (with grace period)
+      if (now > periodEndWithGrace) {
+        throw new Error("Your subscription period has ended. Please renew to continue.");
+      }
     }
 
     // If cancel_at_period_end is true, still allow access until period ends
@@ -79,7 +84,8 @@ export async function validateUserSubscription(userId) {
       razorpayPlanId: plan?.razorpay_plan_id,
       planName: plan?.name,
       cancelAtPeriodEnd: cancel_at_period_end || false,
-      periodEnd: current_period_end
+      periodEnd: current_period_end,
+      isFreeTier: isFree
     };
   }
 

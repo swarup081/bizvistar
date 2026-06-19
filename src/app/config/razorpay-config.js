@@ -2,12 +2,12 @@
 // Coupon Configuration
 export const COUPON_CONFIG = {
   'FOUNDER': {
-      active: true,
+      active: false, // DEACTIVATED — no new FOUNDER signups
       expiresAt: '2030-12-31T23:59:59Z', 
       limit: 50, 
       description: 'Founder Plan (1 Year Access)',
       type: 'plan_swap',
-      usageType: 'once_per_user' // Can only be used once ever by a user
+      usageType: 'once_per_user'
   },
   'FREETRIAL': { // 1 Month Free Trial
       active: true,
@@ -22,8 +22,7 @@ export const COUPON_CONFIG = {
       type: 'offer_apply',
       percentOff: 70,
       maxDiscount: 1300,
-      usageType: 'once_per_user', // "user can opt once but not needed that if it is there first time"
-      // Offer IDs mapped by Mode
+      usageType: 'once_per_user',
       offerIds: {
           test: 'offer_S4Bsf2tMH8hFsz',
           live: 'offer_S4CUbc3yLhHMuJ'
@@ -31,52 +30,55 @@ export const COUPON_CONFIG = {
   }
 };
 
+// ─── FREEMIUM MODEL ───
+// Tiers: Free (Starter) → Pro (₹299) → Growth (₹799)
+// Old Starter IDs (₹299) are now Pro. Old Pro IDs (₹799) are now Growth.
+// Old Growth tier (₹1499) is REMOVED.
 const RAZORPAY_CONFIG = {
 test: {
-  // Standard Plans
-  starter_monthly: 'plan_S4BFGXTRu7GHxX',
-  pro_monthly: 'plan_S4BDgrDG7ivKeR',
-  growth_monthly: 'plan_S4BDMsmUjZXCOM',
-  starter_yearly: 'plan_S4BEoNbwUVfQNB',
-  pro_yearly: 'plan_S4BCYI3fjqbilb',
-  growth_yearly: 'plan_S4BBdtWGIXxqLI',
-
-  // Founder Plan Mappings (Standard ID -> Founder ID)
-  founder_mapping: {
-    'plan_S4BFGXTRu7GHxX': 'plan_S4BHEcxdqLcMDj', // Starter Monthly (199 map)
-    'plan_S4BDgrDG7ivKeR': 'plan_S4BI0mDKImpPzI', // Pro Monthly
-    'plan_S4BDMsmUjZXCOM': 'plan_S4BIhjpwKwAxug', // Growth Monthly
-    'plan_S4BEoNbwUVfQNB': 'plan_S4BLw6F1nsWNOZ', // Starter Yearly
-    'plan_S4BCYI3fjqbilb': 'plan_S4BML6ujolcNKl', // Pro Yearly
-    'plan_S4BBdtWGIXxqLI': 'plan_S4BNHI0KqufC0j', // Growth Yearly
-  }
+  // Pro Plans (₹299/mo, ₹2990/yr) — reusing old Starter plan IDs
+  pro_monthly: 'plan_S4BFGXTRu7GHxX',
+  pro_yearly: 'plan_S4BEoNbwUVfQNB',
+  // Growth Plans (₹799/mo, ₹7990/yr) — reusing old Pro plan IDs
+  growth_monthly: 'plan_S4BDgrDG7ivKeR',
+  growth_yearly: 'plan_S4BCYI3fjqbilb',
 },
 live: {
-  // Standard Plans
-  starter_monthly: 'plan_S2wpNAAtmppvUG',
-  pro_monthly: 'plan_S2wqCR4HPKMqwM',
-  growth_monthly: 'plan_S2wqkKaf1HsR4x',
-  starter_yearly: 'plan_S2wt1MCSq8rzxV',
-  pro_yearly: 'plan_S2wwwLSSoAU9bY',
-  growth_yearly: 'plan_S2wxhv68uVGCPj',
-
-  // Founder Plan Mappings
-  founder_mapping: {
-    'plan_S2wpNAAtmppvUG': 'plan_S4EIqVlt6wVfKf', // Starter Monthly
-    'plan_S2wqCR4HPKMqwM': 'plan_S4EJFMkgqhdXUi', // Pro Monthly
-    'plan_S2wqkKaf1HsR4x': 'plan_S4EJc0Q2xYvaJh', // Growth Monthly
-    'plan_S2wt1MCSq8rzxV': 'plan_S4E0T975OQgHl7', // Starter Yearly
-    'plan_S2wwwLSSoAU9bY': 'plan_S4ENyxLkjJcDUT', // Pro Yearly
-    'plan_S2wxhv68uVGCPj': 'plan_S4ENY18sw6dq6U', // Growth Yearly
-  }
+  // Pro Plans (₹299/mo, ₹2990/yr) — reusing old Starter plan IDs
+  pro_monthly: 'plan_S2wpNAAtmppvUG',
+  pro_yearly: 'plan_S2wt1MCSq8rzxV',
+  // Growth Plans (₹799/mo, ₹7990/yr) — reusing old Pro plan IDs
+  growth_monthly: 'plan_S2wqCR4HPKMqwM',
+  growth_yearly: 'plan_S2wwwLSSoAU9bY',
 }
 };
 
+// Free tier identifier used in subscription records
+export const FREE_TIER_PLAN_ID = 'free_tier_plan';
+export const FREE_TIER_SUB_PREFIX = 'free_tier_';
+
+/**
+ * Check if a razorpay_subscription_id belongs to a free tier subscription
+ */
+export const isFreeTierSubscription = (razorpaySubId) => {
+  return razorpaySubId && razorpaySubId.startsWith(FREE_TIER_SUB_PREFIX);
+};
+
+/**
+ * Check if a plan name is the free tier
+ */
+export const isFreeTierPlan = (planName) => {
+  if (!planName) return false;
+  const lower = planName.toLowerCase();
+  return lower.includes('starter free') || lower.includes('free');
+};
+
 export const PLAN_LIMITS = {
-  // Starter Plans (Limit 25)
+  // Starter / Free (Limit 25 products)
   'starter': 25,
-  // Others (Unlimited = -1)
+  // Pro (Unlimited = -1)
   'pro': -1,
+  // Growth (Unlimited = -1)
   'growth': -1
 };
 
@@ -90,14 +92,14 @@ export const TEMPLATE_CHANGE_LIMITS = {
 
 /**
  * Determine the plan tier ('starter', 'pro', or 'growth') from a plan name string.
- * Plan names in the DB are like "Starter Monthly", "Pro Yearly", "Growth Monthly", etc.
+ * Plan names in the DB are like "Starter Free", "Pro Monthly", "Pro Yearly", "Growth Monthly", etc.
  */
 export const getPlanTierFromName = (planName) => {
   if (!planName) return 'starter'; // Default to most restrictive
   const lower = planName.toLowerCase();
   if (lower.includes('growth')) return 'growth';
   if (lower.includes('pro')) return 'pro';
-  return 'starter';
+  return 'starter'; // "Starter Free" and anything else
 };
 
 /**
@@ -108,12 +110,14 @@ return process.env.NEXT_PUBLIC_RAZORPAY_MODE || 'test';
 };
 
 /**
-* Helper to resolve "Standard" Plan ID from generic names.
+* Helper to resolve Plan ID from generic names.
+* planName: 'pro' or 'growth' (starter is free, has no Razorpay plan)
+* billingCycle: 'monthly' or 'yearly'
 */
 export const getStandardPlanId = (planName, billingCycle) => {
   const mode = getRazorpayMode();
   const config = RAZORPAY_CONFIG[mode];
-  const key = `${planName.toLowerCase()}_${billingCycle.toLowerCase()}`; // e.g., 'starter_monthly'
+  const key = `${planName.toLowerCase()}_${billingCycle.toLowerCase()}`; // e.g., 'pro_monthly'
   return config[key] || null;
 };
 
@@ -125,53 +129,34 @@ if (!config) {
   throw new Error(`Invalid Razorpay Mode: ${mode}`);
 }
 
-const normalizedCoupon = coupon ? coupon.trim().toUpperCase() : '';
-
-// Validate Coupon
-let isValidCoupon = false;
-const couponSettings = COUPON_CONFIG[normalizedCoupon];
-
-if (couponSettings && couponSettings.active) {
-    const now = new Date();
-    const expiresAt = couponSettings.expiresAt ? new Date(couponSettings.expiresAt) : null;
-    if (!expiresAt || now < expiresAt) {
-        isValidCoupon = true;
-    }
-}
-
-if (isValidCoupon && normalizedCoupon === 'FOUNDER') {
-  const founderPlanId = config.founder_mapping[planId];
-  if (founderPlanId) {
-    return founderPlanId;
-  }
-}
-
+// FOUNDER coupon is deactivated — no plan swapping
+// Just return the original plan ID
 return planId;
 };
 
 export const getKeyId = () => {
   const mode = getRazorpayMode();
   if (mode === 'live') {
-      // User provided: RAZORPAY_Live_Key_ID
       return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_Live_Key_ID;
   }
-  // User provided: RAZORPAY_TEST_KEY_ID (All caps now)
   return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZORPAY_TEST_KEY_ID || 'rzp_test_invalid';
 };
 
 /**
-* Helper to get limits for a given Plan ID (Standard or Founder)
+* Helper to get limits for a given Plan ID (Standard or Free Tier)
 */
 export const getPlanLimits = (planId) => {
-  if (!planId) return { maxProducts: -1 }; // No plan ID = unlimited (test/free users)
+  // Free tier plan
+  if (!planId || planId === FREE_TIER_PLAN_ID) {
+    return { maxProducts: PLAN_LIMITS['starter'] }; // 25 products
+  }
 
   const mode = getRazorpayMode();
   const config = RAZORPAY_CONFIG[mode];
   
-  // Reverse lookup to find the key (e.g., 'starter_monthly')
+  // Reverse lookup to find the key (e.g., 'pro_monthly')
   let foundKey = null;
 
-  // 1. Check Standard Plans
   for (const [key, id] of Object.entries(config)) {
       if (typeof id === 'string' && id === planId) {
           foundKey = key;
@@ -179,30 +164,13 @@ export const getPlanLimits = (planId) => {
       }
   }
 
-  // 2. Check Founder Plans (if not found)
-  if (!foundKey && config.founder_mapping) {
-       for (const [stdId, founderId] of Object.entries(config.founder_mapping)) {
-           if (founderId === planId) {
-               // Found the Founder ID, now find the key for the Standard ID
-               for (const [key, id] of Object.entries(config)) {
-                  if (id === stdId) {
-                      foundKey = key;
-                      break;
-                  }
-               }
-               break;
-           }
-       }
-  }
-
   if (foundKey) {
-      if (foundKey.includes('starter')) return { maxProducts: PLAN_LIMITS['starter'] };
       if (foundKey.includes('pro')) return { maxProducts: PLAN_LIMITS['pro'] };
       if (foundKey.includes('growth')) return { maxProducts: PLAN_LIMITS['growth'] };
   }
 
-  // Fallback/Default
-  return { maxProducts: 25 }; 
+  // Fallback: default to starter limits (most restrictive)
+  return { maxProducts: PLAN_LIMITS['starter'] }; 
 };
 
 

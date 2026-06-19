@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
-import { getKeyId, getRazorpayMode } from '../config/razorpay-config';
+import { getKeyId, getRazorpayMode, isFreeTierSubscription } from '../config/razorpay-config';
 
 // Lazy Initialize Supabase Admin
 const getSupabaseAdmin = () => {
@@ -105,7 +105,8 @@ export async function getSubscriptionDetailsAction() {
     let razorpayData = null;
     let reconciled = false;
 
-    if (dbSub.razorpay_subscription_id) {
+    // Skip Razorpay API reconciliation for free tier subscriptions
+    if (dbSub.razorpay_subscription_id && !isFreeTierSubscription(dbSub.razorpay_subscription_id)) {
       try {
         const rzp = getRazorpayInstance();
         razorpayData = await rzp.subscriptions.fetch(dbSub.razorpay_subscription_id);
@@ -232,6 +233,20 @@ export async function cancelSubscriptionAction() {
       return { success: false, error: 'No active subscription found to cancel.' };
     }
 
+    // Free tier: DB-only cancel (no Razorpay API call)
+    if (isFreeTierSubscription(sub.razorpay_subscription_id)) {
+      await supabaseAdmin
+        .from('subscriptions')
+        .update({ status: 'canceled', metadata: { cancel_requested_at: new Date().toISOString(), cancel_type: 'free_tier' } })
+        .eq('id', sub.id);
+      await supabaseAdmin
+        .from('websites')
+        .update({ is_published: false })
+        .eq('user_id', user.id)
+        .eq('is_published', true);
+      return { success: true, message: 'Your free plan has been canceled. Your website is now offline but all your data is preserved.' };
+    }
+
     if (!sub.razorpay_subscription_id) {
       return { success: false, error: 'Subscription has no linked Razorpay ID.' };
     }
@@ -288,6 +303,20 @@ export async function pauseSubscriptionAction() {
 
     if (subError || !sub) {
       return { success: false, error: 'No active subscription found to pause.' };
+    }
+
+    // Free tier: DB-only pause
+    if (isFreeTierSubscription(sub.razorpay_subscription_id)) {
+      await supabaseAdmin
+        .from('subscriptions')
+        .update({ status: 'paused', paused_at: new Date().toISOString(), metadata: { pause_requested_at: new Date().toISOString() } })
+        .eq('id', sub.id);
+      await supabaseAdmin
+        .from('websites')
+        .update({ is_published: false })
+        .eq('user_id', user.id)
+        .eq('is_published', true);
+      return { success: true, message: 'Your free plan has been paused. Your website is offline but all data is preserved. Resume anytime.' };
     }
 
     if (!sub.razorpay_subscription_id) {
@@ -356,6 +385,25 @@ export async function resumeSubscriptionAction() {
 
     if (subError || !sub) {
       return { success: false, error: 'No paused subscription found to resume.' };
+    }
+
+    // Free tier: DB-only resume
+    if (isFreeTierSubscription(sub.razorpay_subscription_id)) {
+      await supabaseAdmin
+        .from('subscriptions')
+        .update({ status: 'active', paused_at: null, metadata: { resumed_at: new Date().toISOString() } })
+        .eq('id', sub.id);
+      const { data: website } = await supabaseAdmin
+        .from('websites')
+        .select('id')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (website) {
+        await supabaseAdmin.from('websites').update({ is_published: true }).eq('id', website.id);
+      }
+      return { success: true, message: 'Your free plan has been resumed! Your website is back online.' };
     }
 
     if (!sub.razorpay_subscription_id) {

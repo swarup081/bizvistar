@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { validateUserSubscription } from './subscriptionUtils';
 import { TEMPLATE_CHANGE_LIMITS, getPlanTierFromName } from '@/app/config/razorpay-config';
+import { tryActivateFreeTierForUser } from './freeActivationAction';
 
 // Helper: Re-sync products/categories from DB into website_data JSON after publish
 async function resyncProductsIntoWebsiteData(supabaseAdmin, websiteId) {
@@ -271,7 +272,13 @@ export async function publishWebsite(websiteId) {
         try {
             await validateUserSubscription(userId);
         } catch (subError) {
-            return { success: false, error: 'PAYMENT_REQUIRED', message: subError.message };
+            // No active subscription — try auto-activating free tier for first-time users
+            const freeResult = await tryActivateFreeTierForUser(userId);
+            if (!freeResult.success) {
+                // Not a first-time user (had prior subs) — require payment
+                return { success: false, error: 'PAYMENT_REQUIRED', message: subError.message };
+            }
+            // Free tier activated successfully, continue with publish
         }
     }
 

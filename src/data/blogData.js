@@ -430,9 +430,9 @@ export function getPostsByCategory(category) {
 // Helper: search posts with fuzzy matching and relevance scoring
 export function searchPosts(query) {
   if (!query || !query.trim()) return ALL_BLOG_POSTS;
-  
+
   const searchTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  
+
   const scored = ALL_BLOG_POSTS.map(post => {
     let score = 0;
     const titleLower = (post.title || '').toLowerCase();
@@ -440,19 +440,19 @@ export function searchPosts(query) {
     const categoryLower = (post.category || '').toLowerCase();
     const tagsJoined = (post.tags || []).join(' ').toLowerCase();
     const queryLower = query.toLowerCase();
-    
+
     // Exact phrase match in title (highest weight)
     if (titleLower.includes(queryLower)) score += 100;
-    
+
     // Exact phrase match in description
     if (descLower.includes(queryLower)) score += 40;
-    
+
     // Exact phrase match in tags
     if (tagsJoined.includes(queryLower)) score += 50;
-    
+
     // Category match
     if (categoryLower.includes(queryLower)) score += 30;
-    
+
     // Individual term matching
     searchTerms.forEach(term => {
       if (titleLower.includes(term)) score += 20;
@@ -460,16 +460,16 @@ export function searchPosts(query) {
       if (tagsJoined.includes(term)) score += 15;
       if (categoryLower.includes(term)) score += 10;
     });
-    
+
     // Bonus for matching multiple terms
-    const matchedTerms = searchTerms.filter(term => 
+    const matchedTerms = searchTerms.filter(term =>
       titleLower.includes(term) || descLower.includes(term) || tagsJoined.includes(term)
     );
     if (matchedTerms.length > 1) score += matchedTerms.length * 10;
-    
+
     return { ...post, score };
   });
-  
+
   return scored
     .filter(post => post.score > 0)
     .sort((a, b) => b.score - a.score);
@@ -478,10 +478,10 @@ export function searchPosts(query) {
 // Helper: get search suggestions based on query
 export function getSearchSuggestions(query) {
   if (!query || !query.trim()) return [];
-  
+
   const queryLower = query.toLowerCase().trim();
   const suggestions = new Set();
-  
+
   // Common search terms derived from tags and titles
   const allKeywords = [];
   ALL_BLOG_POSTS.forEach(post => {
@@ -491,11 +491,11 @@ export function getSearchSuggestions(query) {
       .split(/\s+/)
       .filter(w => w.length > 3);
     allKeywords.push(...titleWords);
-    
+
     // Add tags
     if (post.tags) allKeywords.push(...post.tags.map(t => t.toLowerCase()));
   });
-  
+
   // Find matching keywords
   const uniqueKeywords = [...new Set(allKeywords)];
   uniqueKeywords.forEach(keyword => {
@@ -503,7 +503,7 @@ export function getSearchSuggestions(query) {
       suggestions.add(keyword);
     }
   });
-  
+
   // Also suggest two-word combinations from titles
   ALL_BLOG_POSTS.forEach(post => {
     const words = post.title.toLowerCase().split(/\s+/);
@@ -514,7 +514,7 @@ export function getSearchSuggestions(query) {
       }
     }
   });
-  
+
   return [...suggestions].slice(0, 6);
 }
 
@@ -522,13 +522,13 @@ export function getSearchSuggestions(query) {
 export function getRelatedPosts(currentHref, limit = 6) {
   const current = ALL_BLOG_POSTS.find(p => p.href === currentHref);
   if (!current) return ALL_BLOG_POSTS.slice(0, limit);
-  
+
   const sameCategory = ALL_BLOG_POSTS.filter(
     p => p.href !== currentHref && p.category === current.category
   );
   const others = ALL_BLOG_POSTS.filter(
     p => p.href !== currentHref && p.category !== current.category
   );
-  
+
   return [...sameCategory, ...others].slice(0, limit);
 }

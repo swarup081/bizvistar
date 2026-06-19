@@ -16,9 +16,8 @@ import { supabase } from '@/lib/supabaseClient';
 // --- CONFIGURATION ---
 
 const PLAN_DETAILS = {
-  'Starter': { monthly: 299 },
-  'Pro': { monthly: 799 },
-  'Growth': { monthly: 1499 },
+  'Pro': { monthly: 299 },
+  'Growth': { monthly: 799 },
 };
 
 const FREE_ITEMS_CONFIG = [
@@ -166,7 +165,6 @@ function CheckoutContent() {
   // Dynamic Plan Row Price Display
   let planDisplayStruck = isYearly ? (planBase.monthly * 12) : null;
   let planDisplayMain = basePrice;
-  let isFounder = appliedCoupon?.code === 'FOUNDER';
   let isFreeTrial = appliedCoupon?.code === 'FREETRIAL';
 
   if (discountAmount > 0) {
@@ -179,32 +177,6 @@ function CheckoutContent() {
       planDisplayStruck = basePrice;
       planDisplayMain = 0;
       finalPrice = 0;
-  }
-
-  // FIX: Explicitly handle Founder Prices
-  if (isFounder) {
-      let founderPriceVal = basePrice;
-      // Map Plans: Starter(299)->149, Pro(799)->399, Growth(1499)->749
-      if (planName === 'Starter') founderPriceVal = 149;
-      else if (planName === 'Pro') founderPriceVal = 399;
-      else if (planName === 'Growth') founderPriceVal = 749;
-      
-      // If Yearly, just multiply by 12? Or assume fixed?
-      // "Founder plan is 1 year access".
-      // Usually Founder price given (399) is per month equivalent billing or lump sum?
-      // The prompt said "399 instead of 799" which are monthly rates.
-      // If billing is yearly, base is 799*12=9588. Founder would be 399*12=4788.
-      if (isYearly) {
-          founderPriceVal = founderPriceVal * 12;
-      }
-
-      planDisplayStruck = basePrice;
-      planDisplayMain = founderPriceVal;
-      // Note: finalPrice for subtotal row should also reflect this logic if we want consistency,
-      // but 'finalPrice' is calculated from discount. 
-      // Founder is a Plan Swap, not a % discount in the standard flow, 
-      // so we override finalPrice for display.
-      finalPrice = founderPriceVal;
   }
 
   const formattedPlanDisplayStruck = planDisplayStruck ? formatCurrency(planDisplayStruck) : null;
@@ -882,12 +854,7 @@ function CheckoutContent() {
                          </div>
                     )}
 
-                    {/* Founder Plan Note */}
-                    {isFounder && (
-                        <div className="mt-2 p-3 bg-brand-50 border border-brand-100 rounded-md text-sm text-brand-700">
-                             <strong>Founder Access:</strong> Valid for 1 year. Subscription ends after 1 year and requires re-registration.
-                        </div>
-                    )}
+
                 </div>
 
                 <div className="space-y-4">
