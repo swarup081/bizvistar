@@ -479,7 +479,7 @@ function CheckoutContent() {
             "subscription_id": subRes.subscriptionId,
             "name": "Bizvistar",
             "description": `${planName} Plan - ${billingCycle}`,
-            "image": "https://bizvistar.com/logo.png", 
+            "image": "https://bizvistar.in/logo.png", 
             "handler": async function (response) {
                 // Verify payment server-side before redirecting
                 try {

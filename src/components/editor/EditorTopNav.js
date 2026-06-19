@@ -173,7 +173,7 @@ export default function EditorTopNav({
   
   // Use DB slug if in dashboard/available, else default placeholder
   const displaySlug = siteSlug || 'your-site-slug';
-  const siteUrl = `${displaySlug}.bizvistar.com`;
+  const siteUrl = `${displaySlug}.bizvistar.in`;
 
   const handlePageSelect = (path) => {
     onPageChange(path);
