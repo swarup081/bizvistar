@@ -26,6 +26,18 @@ export async function middleware(request) {
       return response;
     }
 
+    // If the URL accidentally contains /templates/templateName/... on a subdomain, redirect to the clean URL
+    if (pathname.startsWith('/templates/')) {
+      const parts = pathname.split('/');
+      let cleanPathname = '/';
+      if (parts.length >= 4) {
+          cleanPathname = '/' + parts.slice(3).join('/');
+      }
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = cleanPathname;
+      return NextResponse.redirect(redirectUrl);
+    }
+
     // Rewrite: / → /site/slug, /shop → /site/slug/shop, etc.
     const rewriteUrl = request.nextUrl.clone();
     rewriteUrl.pathname = `/site/${subdomain}${pathname === '/' ? '' : pathname}`;
