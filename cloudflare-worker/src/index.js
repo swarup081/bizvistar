@@ -14,9 +14,9 @@ export default {
       return fetch(request);
     }
 
-    // Use Vercel's DNS assignment domain for www.bizvistar.in
-    // This ensures we always reach the correct Vercel deployment
-    const vercelOrigin = 'https://df0160f7b929ab62.vercel-dns-017.com';
+    // Proxy directly to the main www domain
+    // Vercel routes traffic correctly when using the assigned project domain
+    const vercelOrigin = 'https://www.bizvistar.in';
 
     // Build headers — pass subdomain info
     const headers = new Headers(request.headers);
@@ -44,7 +44,7 @@ export default {
         // Follow the redirect but keep our custom headers
         const redirectUrl = new URL(location, targetUrl);
         // Replace the host with vercel origin
-        redirectUrl.hostname = 'df0160f7b929ab62.vercel-dns-017.com';
+        redirectUrl.hostname = 'www.bizvistar.in';
         
         const redirectResponse = await fetch(redirectUrl.toString(), {
           method: request.method,
