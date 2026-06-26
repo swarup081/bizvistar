@@ -3,16 +3,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import OpenAI from 'openai';
+import { jsonCompletion, deepMerge, stripImageFields, restoreImageFields, AI_MODELS } from '@/lib/ai';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
 );
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function verifyWebsiteOwnership(websiteId) {
     const cookieStore = await cookies();
@@ -426,62 +422,64 @@ export async function generateAIContent(description, templateName = null) {
 
         const currentData = website?.website_data || {};
 
-        // Construct Prompt
+        // Step 1: Strip all image/URL fields so AI never sees them
+        const { stripped, imageMap } = stripImageFields(currentData);
+
+        // Step 2: Build prompt with cleaned data (no image URLs to corrupt)
         const prompt = `
-            You are a professional website copywriter.
-            I have a website data JSON structure for a business described as: "${description}".
-            
-            Your task is to update the text content across ALL sections to match this brand voice and industry.
-            
-            ${templateName ? `IMPORTANT: The current template is "${templateName}". Only update fields relevant to this template structure. Do NOT invent fields for other templates (e.g. if using 'aurora', do not generate 'heelsHero' or 'specialties' unless they exist in the input).` : ''}
+You are a professional website copywriter.
+I have a website data JSON structure for a business described as: "${description}".
 
-            Specific Sections to Update:
-            - Hero (title, subtitle, cta)
-            - About (title, text, story)
-            - Features (titles, descriptions)
-            - FAQ (questions, answers) - VERY IMPORTANT: Update questions/answers to be relevant to the business type.
-            - Testimonials (quotes, author names) - Update quotes to reflect happy customers of this specific business.
-            - Menu/Collections/Specialties (section titles like "Our Specialties" or "Menu", descriptions)
-            - CTA Sections (titles, text)
-            - Footer (description)
-            
-            Strict Constraints:
-            1. Return ONLY valid JSON matching the structure of the input.
-            2. Do NOT change or touch 'allProducts' array or any individual product data (price, name, etc).
-            3. Do NOT change image URLs, product lists (arrays), or navigational links. Only update string values of text fields in sections.
-            4. For FAQ and Testimonials:
-               - If the user description lacks specific details (like return policy, specific ingredients, exact pricing), DO NOT invent specific numbers or strict policies.
-               - Use broad, positive, safe language. 
-               - Example (FAQ): "Do you offer delivery?" -> "Yes, we offer delivery services. Please contact us for details."
-               - Example (Testimonial): "Best pizza ever!" -> "Absolutely delicious! Highly recommended."
-            5. Do NOT mention specific pricing or sizes unless explicitly stated in the description.
-            6. Ensure the tone is professional, engaging, and matches the business type (e.g., playful for a bakery, elegant for a jewelry store).
-            7. Do NOT include fields from other templates that are not present in the input JSON.
-            
-            Current JSON:
-            ${JSON.stringify(currentData).substring(0, 15000)} 
-        `; // Truncate to avoid token limits if necessary
+Your task is to update ONLY the text content across all sections to match this brand voice and industry.
 
-        const completion = await openai.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
-            model: "gpt-3.5-turbo-1106", // or gpt-4
-            response_format: { type: "json_object" },
+${templateName ? `IMPORTANT: The current template is "${templateName}". Only update fields relevant to this template structure. Do NOT invent new fields.` : ''}
+
+Sections to Update (text fields only):
+- Hero (title, subtitle, cta)
+- About (title, text, story)
+- Features (titles, descriptions)
+- FAQ (questions, answers) - Make them relevant to the business type.
+- Testimonials (quotes, author names) - Reflect happy customers.
+- Menu/Collections/Specialties (section titles, descriptions)
+- CTA Sections (titles, text)
+- Footer (description)
+
+Strict Rules:
+1. Return ONLY valid JSON matching the EXACT structure of the input.
+2. Fields marked "[IMAGE - DO NOT MODIFY]", "[URL - DO NOT MODIFY]", or "[PRESERVED - DO NOT MODIFY]" must be returned EXACTLY as-is, unchanged.
+3. Only update string values that contain human-readable text content.
+4. Do NOT add or remove any keys. Keep the exact same structure.
+5. For FAQ/Testimonials: use broad, positive language. Do NOT invent specific numbers or policies.
+6. Match the tone to the business type (playful for bakery, elegant for jewelry, etc).
+
+Current JSON:
+${JSON.stringify(stripped)}
+        `.trim();
+
+        // Step 3: Call AI using centralized framework (gpt-4o-mini)
+        const { success, data: newContent, error } = await jsonCompletion({
+            prompt,
+            temperature: 0.7,
+            maxTokens: 4000,
+            retries: 1,
         });
 
-        const newContent = JSON.parse(completion.choices[0].message.content);
-        
-        // Merge safely? Or assume AI returned full structure?
-        // AI might return partial or full. Prompt asked for update.
-        // It's safer to merge top-level keys.
-        
-        const mergedData = { ...currentData, ...newContent };
+        if (!success || !newContent) {
+            throw new Error(error || 'AI content generation failed');
+        }
+
+        // Step 4: Deep merge (preserves nested objects like hero, about, footer)
+        const mergedData = deepMerge(currentData, newContent);
+
+        // Step 5: Force-restore all original images/URLs (final safety net)
+        const finalData = restoreImageFields(mergedData, imageMap);
 
         await supabaseAdmin
             .from('websites')
-            .update({ website_data: mergedData })
+            .update({ website_data: finalData })
             .eq('id', websiteId);
 
-        return { success: true, data: mergedData };
+        return { success: true, data: finalData };
 
     } catch (err) {
         console.error("AI Generation Error:", err);
