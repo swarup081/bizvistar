@@ -74,12 +74,13 @@ export default function FlavorNestPage() {
                 </section>
             </Editable>
 
+            {businessData.reviews && (
             <Editable focusId="reviews">
                 <section id="reviews" className="py-16"> {/* <-- ID ADDED */}
                     <div className="container mx-auto px-6">
-                        <h2 className="text-4xl font-bold text-center text-brand-secondary mb-12 font-serif">{businessData.reviews.title}</h2>
+                        <h2 className="text-4xl font-bold text-center text-brand-secondary mb-12 font-serif">{businessData.reviews?.title}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {businessData.reviews.items.map((review, index) => (
+                            {(businessData.reviews?.items || []).map((review, index) => (
                                 <div key={index} className="bg-white p-6 rounded-lg shadow-md border border-brand-primary">
                                     <p className="italic">"{review.text}"</p>
                                     <p className="mt-4 font-bold text-brand-secondary text-right">- {review.author}</p>
@@ -89,6 +90,7 @@ export default function FlavorNestPage() {
                     </div>
                 </section>
             </Editable>
+            )}
         </main>
     );
 }
