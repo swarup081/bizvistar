@@ -7,38 +7,39 @@ const reviews = [
     avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
     headline: "Built our B2B portal in days",
     authorName: "Rohan M. - Manufacturing Hub, Pune",
-    attribution: "-- Verified Client",
+    attribution: "-- Early Adopter",
     body: "We needed a secure catalog site for our wholesale distributors. This builder allowed us to drag-and-drop a professional B2B site without hiring an expensive agency. Outstanding SaaS platform.",
   },
   {
     avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
     headline: "Perfect for our agency clients",
     authorName: "Anjali S. - Growth Agency, Bengaluru",
-    attribution: "-- Trustpilot review",
+    attribution: "-- Beta User",
     body: "We use this website builder for all our local business clients. The client management dashboard, fast hosting, and SEO tools make it the best B2B software investment we've made this year.",
   },
   {
     avatarUrl: "https://randomuser.me/api/portraits/men/65.jpg",
     headline: "Scaled our lead generation.",
     authorName: "Vikram K. - IT Consultancy, Chennai",
-    attribution: "-- Verified Client",
+    attribution: "-- Early Adopter",
     body: "As a B2B service provider, our website is our main sales funnel. The templates are highly optimized for conversions. Our enterprise lead capture rate has doubled since migrating to this platform.",
   },
   {
     avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg",
     headline: "Zero downtime, pure speed.",
     authorName: "Priya D. - SaaS Founder, Delhi",
-    attribution: "-- Capterra Review",
+    attribution: "-- Beta User",
     body: "We moved our startup's marketing site here. The infrastructure is rock solid. No more worrying about plugin updates or server crashes—just a brilliant, cloud-based website builder that actually scales.",
   },
   {
     avatarUrl: "https://randomuser.me/api/portraits/men/75.jpg",
     headline: "Incredibly intuitive interface.",
     authorName: "Sanjay R. - Logistics Partner, Mumbai",
-    attribution: "-- Google Review",
+    attribution: "-- Early Adopter",
     body: "I have zero coding experience, but setting up our company website was seamless. The built-in forms connect straight to our CRM, streamlining how we onboard new corporate transport clients.",
   },
 ]
+
 
 const firstRow = reviews.slice(0, 3)
 const secondRow = reviews.slice(3, 5)
@@ -122,8 +123,8 @@ export default function ThrivingSection() {
          {/* Header */}
          <div className="text-center max-w-3xl  mx-auto mt-10 md:mt-20 mb-16">
            <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
-           Customer are our valuable <br/>assest for you & us
-           </h2>
+            Customers are our most valuable <br/>asset for you &amp; us
+            </h2>
            <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light mb-10">
            Don’t just take our word for it hear from customers who trusted us, built with us, and saw real growth through their experience.
                       </p>

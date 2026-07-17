@@ -5,6 +5,9 @@ import Link from 'next/link';
 import NewHeader from '@/components/landing/NewHeader';
 import Footer from '@/components/Footer';
 import { Marquee } from "@/components/marquee";
+import BlogSecondaryNav from '@/components/blogs/BlogSecondaryNav';
+import BlogBentoGrid from '@/components/blogs/BlogBentoGrid';
+import { ALL_BLOG_POSTS } from '@/data/blogData';
 
 export default function BlogPost() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -26,6 +29,10 @@ export default function BlogPost() {
     <div className="bg-white text-gray-900 min-h-screen flex flex-col relative overflow-clip antialiased font-sans">
       
       <NewHeader />
+
+      <div className="bg-gray-50/50 pb-8 pt-4 md:pt-12 z-[100] relative">
+        <BlogSecondaryNav posts={ALL_BLOG_POSTS.slice(0, 6)} />
+      </div>
       
       {/* Top Promotional Banner */}
       <div className="max-w-[1240px] w-[calc(100%-32px)] md:w-full mx-auto bg-[#d7e9b9] py-4 px-4 md:px-12 text-center z-10 mt-[24px] md:mt-[80px] rounded-xl sm:rounded-2xl mb-4 sm:mb-8 shadow-sm">
@@ -60,20 +67,20 @@ export default function BlogPost() {
           </div>
         </div>
 
-        {/* Hero Image */}
-        <div className="relative w-full aspect-[16/9] md:aspect-[2.2/1] mb-16 bg-[#F3F4F6] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
-           <img 
-             src="/editorssmock.png" 
-             alt="Bizvistar Website Editor Interface" 
-             className="w-full h-full object-cover object-center"
-           />
-        </div>
-
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[80px] relative">
           
           {/* Left Column: Main Article Content */}
           <div className="lg:col-span-8 pb-4 lg:pb-10">
+            
+            {/* Hero Image */}
+            <div className="relative w-full aspect-square mb-12 bg-[#9B8EC8] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
+               <img 
+                  src="/blogs/blog_hero_build_website.png" 
+                  alt="How to Build a Website from Scratch - Website Builder Interface" 
+                  className="w-full h-full object-contain"
+                />
+            </div>
             
             <p className="text-[18px] text-[#0f172a] leading-[1.8] mb-6 font-normal">
               Building a website from scratch used to mean months of coding, expensive developer fees, and endless frustration. Today, establishing a professional online presence is faster and more accessible than ever. Whether you are launching a personal portfolio, a bustling ecommerce store, or a corporate landing page, the fundamental steps to building a successful website have been radically simplified.
@@ -229,8 +236,8 @@ export default function BlogPost() {
               A beautiful design is only half the battle. Your website needs to actively work for your business. This means integrating the right tools to capture leads, process sales, and analyze visitor behavior. With Bizvistar, expanding your site functionality is as easy as flipping a switch.
             </p>
 
-            <div className="relative w-full aspect-[16/9] md:aspect-[2/1] mb-8 mt-8 bg-[#F3F4F6] rounded-xl overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center">
-               <img src="/editorssmock.png" alt="Bizvistar Dashboard Integration" className="w-full h-full object-cover filter brightness-95" />
+            <div className="relative w-full aspect-square md:aspect-[4/3] mb-8 mt-8 bg-[#9B8EC8] rounded-xl overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center p-8">
+               <img src="/blogs/blog_mid_build_website.png" alt="Bizvistar Dashboard Features" className="w-full h-full object-contain" />
             </div>
 
             <p className="text-[18px] text-[#0f172a] leading-[1.8] mb-6 font-normal">
@@ -377,6 +384,16 @@ export default function BlogPost() {
           
         </div>
       </main>
+
+      {/* Related Blogs using Bento Grid */}
+      <div className="w-full bg-gray-50 py-12 md:py-24 border-t border-gray-200 mt-12">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 mb-8">
+           <h2 className="text-[32px] md:text-[40px] font-black font-sans text-gray-900 tracking-tight">
+             Explore more articles
+           </h2>
+        </div>
+        <BlogBentoGrid posts={ALL_BLOG_POSTS.slice(0, 6)} />
+      </div>
 
       <Footer />
     </div>

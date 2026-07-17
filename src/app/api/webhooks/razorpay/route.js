@@ -328,6 +328,35 @@ export async function POST(req) {
       console.log(`[Webhook] Payment Failed: ${payment.id}, reason: ${payment.error_description}`);
       // We don't change subscription status here — Razorpay will fire 
       // subscription.halted after all retries are exhausted
+
+      // Notify the user about the payment failure
+      try {
+        const notes = payment.notes || {};
+        const userId = notes.user_id;
+        if (userId) {
+          // Find user's website to attach notification
+          const { data: website } = await supabaseAdmin
+            .from('websites')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1)
+            .maybeSingle();
+
+          if (website) {
+            await supabaseAdmin.from('notifications').insert({
+              website_id: website.id,
+              type: 'payment_failed',
+              title: 'Payment Failed',
+              message: `Your payment could not be processed: ${payment.error_description || 'Unknown error'}. Please update your payment method to keep your website online.`,
+              data: { payment_id: payment.id, error: payment.error_description },
+              is_read: false
+            });
+            console.log(`[Webhook] Payment failure notification created for user ${userId}`);
+          }
+        }
+      } catch (notifErr) {
+        console.error('[Webhook] Failed to create payment failure notification:', notifErr);
+      }
     }
 
     // ============================================================

@@ -23,10 +23,11 @@ export default async function sitemap() {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  // Fetch all websites (user requested "all of it")
+  // Fetch published websites only
   const { data: websites, error } = await supabaseAdmin
     .from('websites')
-    .select('site_slug, updated_at');
+    .select('site_slug, updated_at')
+    .eq('is_published', true);
 
   if (error) {
     console.error('Error fetching websites for sitemap:', error);

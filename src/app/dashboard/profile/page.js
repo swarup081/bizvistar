@@ -41,12 +41,6 @@ function ProfileContent() {
     companyName: '',
     gstNumber: '',
     deliveryType: 'fixed',
-    deliveryCost: 0,
-    deliveryThreshold: 0,
-    deliveryType: 'fixed',
-    deliveryCost: 0,
-    deliveryThreshold: 0,
-    deliveryType: 'fixed',
     deliveryCost: 100,
     deliveryThreshold: 0
   });

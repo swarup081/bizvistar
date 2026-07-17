@@ -7,39 +7,7 @@ import Footer from '@/components/Footer';
 import { Marquee } from "@/components/marquee";
 import BlogSecondaryNav from '@/components/blogs/BlogSecondaryNav';
 import BlogBentoGrid from '@/components/blogs/BlogBentoGrid';
-
-const BLOG_POSTS = [
-  {
-    title: "How to Handle 50+ WhatsApp Orders Daily Without Going Crazy",
-    image: "/blogs/blog_club_1778965424607.png",
-    href: "/blogs/how-to-handle-whatsapp-orders-daily",
-  },
-  {
-    title: "Instagram DM vs. A Professional Website: Where Should Your Customers Shop?",
-    image: "/blogs/blog_gummy_1778965453467.png",
-    href: "/blogs/instagram-dm-vs-website-comparison",
-  },
-  {
-    title: "The Cost of Chasing Payments: How Manual UPI Sharing is Costing You Orders",
-    image: "/blogs/blog_sneaker_1778965493480.png",
-    href: "/blogs/cost-of-manual-upi-sharing",
-  },
-  {
-    title: "Why \"DM for Price\" is Secretly Killing Your Instagram Business",
-    image: "/blogs/blog_ai_1778964944951.png",
-    href: "/blogs/why-dm-for-price-is-killing-your-business",
-  },
-  {
-    title: "How to build a website from scratch in 2026: A complete guide",
-    image: "/blogs/blog_startup_1778964908511.png",
-    href: "/blogs/how-to-build-website-from-scratch-in-bizvistar-guide",
-  },
-  {
-    title: "How much does a website cost in 2026?",
-    image: "/editorssmock.png",
-    href: "/blogs/website-cost-2026",
-  }
-];
+import { ALL_BLOG_POSTS } from '@/data/blogData';
 
 export default function BlogPost() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -64,7 +32,7 @@ export default function BlogPost() {
       <NewHeader />
 
       <div className="bg-gray-50/50 pb-8 pt-4 md:pt-12 z-[100] relative">
-        <BlogSecondaryNav posts={BLOG_POSTS} />
+        <BlogSecondaryNav posts={ALL_BLOG_POSTS.slice(0, 6)} />
       </div>
       
       {/* Top Promotional Banner */}
@@ -100,20 +68,20 @@ export default function BlogPost() {
           </div>
         </div>
 
-        {/* Hero Image */}
-        <div className="relative w-full aspect-[16/9] md:aspect-[2.2/1] mb-16 bg-[#F3F4F6] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
-           <img 
-             src="/editorssmock.png" 
-             alt="Bizvistar Website Editor Interface" 
-             className="w-full h-full object-cover object-center"
-           />
-        </div>
-
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[80px] relative">
           
           {/* Left Column: Main Article Content */}
           <div className="lg:col-span-8 pb-4 lg:pb-10">
+            
+            {/* Hero Image */}
+            <div className="relative w-full aspect-square mb-12 bg-[#B8E6C8] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
+               <img 
+                  src="/blogs/blog_hero_website_cost.png" 
+                  alt="Website Cost Breakdown in 2026 - Calculator and Pricing Cards" 
+                  className="w-full h-full object-contain"
+                />
+            </div>
             
             <p className="text-[18px] text-[#0f172a] leading-[1.8] mb-6 font-normal">
               Finding out the real cost of building a website in India can feel confusing with so many hidden fees. While flashy ads promise working sites for very little money, growing a business online is often much different. From necessary tools to important security steps, a cheap project can quickly become very expensive. To protect your business, you need complete honesty about what goes into a modern website and exactly what you should pay for it.
@@ -262,6 +230,10 @@ export default function BlogPost() {
               This is exactly why complete platforms like Bizvistar prove their massive value. By working inside a closed and carefully managed system, compatibility issues are completely removed. Every single part, from your mobile image galleries to your secure payment gateways, is looked after by a dedicated team of engineers. Your subscription is an investment in total reliability, automatic security updates, and the peace of mind that your site will simply work.
             </p>
 
+            <div className="relative w-full aspect-square md:aspect-[4/3] mb-8 mt-8 bg-[#B8E6C8] rounded-xl overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center p-8">
+               <img src="/blogs/blog_mid_website_cost.png" alt="E-Commerce and Marketing Analytics" className="w-full h-full object-contain" />
+            </div>
+
             {/* Additional Content Image Placeholder */}
             <div className="w-full min-h-[300px] md:min-h-0 md:aspect-[21/9] bg-[#E5E0FA] rounded-2xl mb-12 mt-12 flex flex-col items-center justify-center overflow-hidden relative shadow-inner">
                <img src="/landing/bgwaveytexture.png" className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none" alt="Texture" />
@@ -398,7 +370,7 @@ export default function BlogPost() {
              Explore more articles
            </h2>
         </div>
-        <BlogBentoGrid posts={BLOG_POSTS} />
+        <BlogBentoGrid posts={ALL_BLOG_POSTS.slice(0, 6)} />
       </div>
 
       <Footer />

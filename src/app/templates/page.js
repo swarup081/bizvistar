@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react'; 
+import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone, LayoutGrid, Package, Tag } from 'lucide-react'; 
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 import Footer from '@/components/Footer';
@@ -117,6 +117,36 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
                              <MessageSquare size={18} className="text-gray-500" />
                              Contact Support
                            </a>
+
+                    <Link 
+                      href="/dashboard/profile"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <User size={18} className="text-gray-400" />
+                      Manage Profile
+                    </Link>
+                    <Link 
+                      href="/dashboard"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <LayoutGrid size={18} className="text-gray-400" />
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/dashboard/orders"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Package size={18} className="text-gray-400" />
+                      All Orders
+                    </Link>
+                    <Link 
+                      href="/dashboard/products"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Tag size={18} className="text-gray-400" />
+                      Manage Products
+                    </Link>
+                    <div className="h-px bg-gray-100 my-1"></div>
 
                           <button 
                             onClick={handleLogOut}

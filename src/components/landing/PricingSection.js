@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { activateFreeTier } from '@/app/actions/freeActivationAction';
 
 function PricingContent() {
   const [currentPlan, setCurrentPlan] = useState(null);
@@ -14,6 +15,8 @@ function PricingContent() {
   const isUpdateFlow = searchParams.get('update') === 'true';
   const [isYearly, setIsYearly] = useState(false);
   const scrollRef = useRef(null);
+  const router = useRouter();
+  const [isActivatingFree, setIsActivatingFree] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,11 +62,12 @@ function PricingContent() {
       {
         name: 'Starter',
         subtitle: 'Best for individual creators and hobbyists testing new side-hustles with a basic item catalog',
-        originalPrice: '499',
-        price: '299',
-        discount: '40% off',
-        dailyRate: 'Billed monthly. Total freedom to pause or cancel anytime.',
-        cta: 'Choose plan',
+        originalPrice: null,
+        price: '0',
+        discount: null,
+        dailyRate: 'Free forever. No credit card required.',
+        cta: 'Get Started Free',
+        isFree: true,
         isRecommended: false,
         features: [
           'Professional Website Builder',
@@ -81,8 +85,8 @@ function PricingContent() {
       {
         name: 'Pro',
         subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
-        originalPrice: '1599',
-        price: '799',
+        originalPrice: '599',
+        price: '299',
         discount: '51% off',
         dailyRate: 'Billed monthly. Zero long-term commitment. Switch to yearly anytime.',
         cta: 'Choose plan',
@@ -102,9 +106,9 @@ function PricingContent() {
       {
         name: 'Growth',
         subtitle: 'Best for established enterprises needing high-volume operations and multi-channel scaling',
-        originalPrice: '1999',
-        price: '1499',
-        discount: '24% off',
+        originalPrice: '1599',
+        price: '799',
+        discount: '51% off',
         dailyRate: 'Billed monthly. Enterprise power with total flexibility. Cancel whenever you want.',
         cta: 'Choose plan',
         isRecommended: false,
@@ -126,11 +130,12 @@ function PricingContent() {
       {
         name: 'Starter',
         subtitle: 'Best for individual creators and hobbyists testing new side-hustles with a basic item catalog',
-        originalPrice: '499',
-        price: '249',
-        discount: '51% off',
-        yearlyTotal: 'Get 12 months for ₹2,990 (regularly ₹5,988). Includes 2 months free. Cancel anytime.',
-        cta: 'Choose plan',
+        originalPrice: null,
+        price: '0',
+        discount: null,
+        yearlyTotal: 'Free forever. No credit card required.',
+        cta: 'Get Started Free',
+        isFree: true,
         isRecommended: false,
         features: [
           'Professional Website Builder',
@@ -148,10 +153,10 @@ function PricingContent() {
       {
         name: 'Pro',
         subtitle: 'Best for serious shop owners and service brands automating daily sales and business growth',
-        originalPrice: '1599',
-        price: '666',
+        originalPrice: '599',
+        price: '249',
         discount: '60% off',
-        yearlyTotal: 'Get 12 months for ₹7,990 (regularly ₹19,188). Includes 2 months free. Cancel anytime.',
+        yearlyTotal: 'Get 12 months for ₹2,990 (regularly ₹7,188). Includes 2 months free. Cancel anytime.',
         cta: 'Choose plan',
         isRecommended: true,
         features: [
@@ -169,10 +174,10 @@ function PricingContent() {
       {
         name: 'Growth',
         subtitle: 'Best for established enterprises needing high-volume operations and multi-channel scaling',
-        originalPrice: '1999',
-        price: '1249',
-        discount: '38% off',
-        yearlyTotal: 'Get 12 months for ₹14,990 (regularly ₹23,988). Includes 2 months free. Cancel anytime.',
+        originalPrice: '1599',
+        price: '666',
+        discount: '60% off',
+        yearlyTotal: 'Get 12 months for ₹7,990 (regularly ₹19,188). Includes 2 months free. Cancel anytime.',
         cta: 'Choose plan',
         isRecommended: false,
         features: [
@@ -192,6 +197,28 @@ function PricingContent() {
   };
   const activePlans = isYearly ? plans.yearly : plans.monthly;
   const maxSavings = 17;
+
+  const handleActivateFree = async () => {
+    setIsActivatingFree(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Not logged in — redirect to sign-in
+        router.push('/sign-in?redirect=/pricing&auto_activate=starter');
+        return;
+      }
+      const result = await activateFreeTier();
+      if (result.success) {
+        router.push('/dashboard?payment_success=true&free=true');
+      } else {
+        alert(result.error || 'Failed to activate free plan. Please try again.');
+      }
+    } catch (err) {
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsActivatingFree(false);
+    }
+  };
 
   return (
     <div id="pricing" className="py-20 sm:py-25 bg-[#fdfdfd] font-sans text-gray-900 scroll-mt-20">
@@ -278,6 +305,8 @@ function PricingContent() {
                 isYearly={isYearly}
                 isUpdateFlow={isUpdateFlow}
                 isCurrentPlan={isCurrentPlan}
+                onActivateFree={handleActivateFree}
+                isActivatingFree={isActivatingFree}
                 className={index === 1 
                   ? 'md:scale-[1.05] md:-translate-y-2 lg:scale-110 lg:-translate-y-4 z-10 md:min-w-[400px] md:w-[400px] lg:min-w-0 lg:w-full md:snap-center shrink-0 w-full' 
                   : 'lg:scale-100 md:min-w-[400px] md:w-[400px] lg:min-w-0 lg:w-full md:snap-center shrink-0 w-full'}
@@ -349,11 +378,10 @@ function PricingContent() {
   );
 }
 
-// --- Sub-component: PlanCard (UPDATED WITH NEW STYLES) ---
-// --- Sub-component: PlanCard (UPDATED WITH NEW STYLES) ---
-const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) => {
+// --- Sub-component: PlanCard (UPDATED FOR SCREENSHOT LAYOUT) ---
+const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan, onActivateFree, isActivatingFree }) => {
 
-  // Create the inner content blocks to reuse
+  // Create the inner content blocks to reuse, matching the exact flow of the screenshot
   const innerCardContent = (
     <div className="flex flex-col h-full text-left">
       <div className="px-8 pt-8 pb-6 flex-grow flex flex-col relative">
@@ -361,7 +389,6 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
         {/* Top row: Title and Badge (Savings or Promos aligned to right) */}
         <div className="flex justify-between items-start mb-3 gap-4">
           <span className="text-3xl font-bold text-gray-900 leading-tight">{plan.name}</span>
-          {/* FIX: Removed 'isYearly' check and changed 'plan.savings' to 'plan.discount' */}
           {plan.discount && (
             <div className="inline-flex bg-[#f4f1fa] text-[#7554b3] text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap mt-1">
               {plan.discount}
@@ -371,7 +398,6 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
 
         {/* Price Section */}
         <div className="mb-6 flex flex-col">
-          {/* FIX: Removed 'isYearly &&' so the original price shows on monthly too */}
           {plan.originalPrice ? (
             <p className="text-lg font-medium text-gray-400 line-through mb-1">
               ₹{plan.originalPrice}/mo
@@ -381,8 +407,14 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
             <p className="text-lg font-medium text-transparent mb-1 select-none" aria-hidden="true">-</p>
           )}
           <div className="flex items-baseline gap-1">
-            <span className="text-[44px] font-extrabold text-gray-900 tracking-tight leading-none">₹{plan.price}</span>
-            <span className="text-lg font-medium text-gray-500">/mo</span>
+            {plan.isFree ? (
+              <span className="text-[44px] font-extrabold text-gray-900 tracking-tight leading-none">Free</span>
+            ) : (
+              <>
+                <span className="text-[44px] font-extrabold text-gray-900 tracking-tight leading-none">₹{plan.price}</span>
+                <span className="text-lg font-medium text-gray-500">/mo</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -392,10 +424,22 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan }) =>
             <button
               disabled
               className={cn(
-                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-300 text-gray-500 bg-gray-50'
+                'w-full py-3.5 rounded-xl text-[17px] font-bold cursor-not-allowed opacity-60 border-2 border-gray-400 text-gray-500 bg-gray-100'
               )}
             >
               Current Plan
+            </button>
+          ) : plan.isFree ? (
+            <button
+              onClick={onActivateFree}
+              disabled={isActivatingFree}
+              className={cn(
+                'w-full py-3.5 rounded-xl text-[17px] font-bold transition-all duration-200',
+                'bg-white border-2 hover:bg-[#8a63d2] hover:text-white border-[#8a63d2] text-[#7554b3] hover:border-[#8a63d2]',
+                isActivatingFree && 'opacity-60 cursor-not-allowed'
+              )}
+            >
+              {isActivatingFree ? 'Activating...' : plan.cta}
             </button>
           ) : (
             <Link href={{
