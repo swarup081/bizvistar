@@ -137,7 +137,7 @@ return planId;
 export const getKeyId = () => {
   const mode = getRazorpayMode();
   if (mode === 'live') {
-      return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_Live_Key_ID;
+      return process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID || process.env.RAZORPAY_LIVE_KEY_ID;
   }
   return process.env.NEXT_PUBLIC_RAZORPAY_TEST_KEY_ID || process.env.RAZORPAY_TEST_KEY_ID || 'rzp_test_invalid';
 };

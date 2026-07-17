@@ -78,7 +78,7 @@ export default function BenefitsSection() {
               
               {/* === PLACE YOUR SCREENSHOT HERE === */}
               <img 
-                src="/editorssmock.png" 
+                src="/dashboard.png" 
                 alt="Website Builder Editor Interface" 
                 className="w-full h-auto object-cover block"
               />

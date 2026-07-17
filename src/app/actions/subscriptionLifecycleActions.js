@@ -46,7 +46,7 @@ function getRazorpayInstance() {
   let keyId, keySecret;
 
   if (mode === 'live') {
-    keyId = process.env.RAZORPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
+    keyId = process.env.RAZORPAY_LIVE_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
     keySecret = process.env.RAZORPAY_LIVE_KEY_SECRET;
   } else {
     keyId = getKeyId();

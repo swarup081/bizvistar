@@ -205,8 +205,7 @@ export async function verifyPaymentAction(paymentId, subscriptionId, signature) 
         if (mode === 'live') {
             // User provided: RAZORPAY_LIVE_KEY_SECRET (Standardized)
             keySecret = process.env.RAZORPAY_LIVE_KEY_SECRET;
-            // Use helper or direct env var (RAZORPAY_Live_Key_ID)
-            keyId = process.env.RAZORPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
+            keyId = process.env.RAZORPAY_LIVE_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID;
         } else {
             // User provided: RAZORPAY_TEST_KEY_SECRET (Standardized)
             keySecret = process.env.RAZORPAY_TEST_KEY_SECRET;
@@ -419,7 +418,7 @@ export async function createSubscriptionAction(planName, billingCycle, couponCod
     let razorpayInstance;
     if (mode === 'live') {
          razorpayInstance = new Razorpay({
-            key_id: process.env.RAZORPAY_Live_Key_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID,
+            key_id: process.env.RAZORPAY_LIVE_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_LIVE_KEY_ID,
             key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
         });
     } else {

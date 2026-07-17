@@ -81,7 +81,13 @@ const ReviewCard = ({
     >
       {/* Top Header: Scaled down avatar and text */}
       <div className="flex items-center gap-4">
-
+        <img
+          className="size-14 rounded-full object-cover border border-gray-100 dark:border-white/10"
+          width="56"
+          height="56"
+          alt={authorName}
+          src={avatarUrl}
+        />
         <div className="flex flex-col flex-1">
           <figcaption className="text-lg font-bold text-gray-950 dark:text-white leading-tight">
             {headline}
@@ -111,19 +117,19 @@ const ReviewCard = ({
 // 4. MAIN EXPORT COMPONENT
 export default function ThrivingSection() {
   return (
-    
+
     // Reduced vertical padding (py-10) to compress the section height
     <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
-         {/* Header */}
-         <div className="text-center max-w-3xl  mx-auto mt-10 md:mt-20 mb-16">
-           <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
-            Customers are our most valuable <br/>asset for you &amp; us
-            </h2>
-           <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light mb-10">
-           Don’t just take our word for it hear from customers who trusted us, built with us, and saw real growth through their experience.
-                      </p>
-        </div>
-      
+      {/* Header */}
+      <div className="text-center max-w-3xl  mx-auto mt-10 md:mt-20 mb-16">
+        <h2 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6">
+          Customers are our most valuable <br />asset for you &amp; us
+        </h2>
+        <p className="text-md md:text-xl text-gray-600 leading-relaxed font-light mb-10">
+          Don’t just take our word for it hear from customers who trusted us, built with us, and saw real growth through their experience.
+        </p>
+      </div>
+
       {/* Tighter bottom margins (mb-6) between the rows */}
       <Marquee pauseOnHover className="[--duration:40s] mb-6">
         {firstRow.map((review, index) => (
@@ -136,7 +142,7 @@ export default function ThrivingSection() {
           <ReviewCard key={index} {...review} />
         ))}
       </Marquee>
-      
+
       {/* Gradient blur divs have been completely removed from here */}
     </div>
   )

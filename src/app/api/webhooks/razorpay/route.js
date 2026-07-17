@@ -420,6 +420,6 @@ export async function POST(req) {
 
   } catch (err) {
     console.error('[Webhook] Unhandled Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
