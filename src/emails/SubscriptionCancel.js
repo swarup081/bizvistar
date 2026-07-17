@@ -40,7 +40,7 @@ export default function SubscriptionCancelEmail({
             </Section>
 
             <Text style={text}>
-              After this date, your website will be paused. We'd love to hear your feedback on why you decided to cancel. Simply reply to this email to let us know.
+              After this date, your website will be paused. We&apos;d love to hear your feedback on why you decided to cancel. Simply reply to this email to let us know.
             </Text>
             
             <Text style={text}>

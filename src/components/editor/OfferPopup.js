@@ -128,7 +128,7 @@ export default function OfferPopup({ websiteId, websiteData }) {
                         </>
                     ) : (
                         <div className="animate-in slide-in-from-bottom-4 pt-4">
-                            <h2 className="text-2xl font-bold mb-2" style={{ color: textColor }}>It's yours!</h2>
+                            <h2 className="text-2xl font-bold mb-2" style={{ color: textColor }}>It&apos;s yours!</h2>
                             <p className="text-sm mb-6" style={{ color: textLightColor }}>Use this code at checkout to claim your discount.</p>
                             
                             <div className="border border-dashed rounded-xl p-5 mb-6 relative group bg-black/5" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
