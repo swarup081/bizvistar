@@ -81,13 +81,7 @@ const ReviewCard = ({
     >
       {/* Top Header: Scaled down avatar and text */}
       <div className="flex items-center gap-4">
-        <img
-          className="size-14 rounded-full object-cover border border-gray-100 dark:border-white/10"
-          width="56"
-          height="56"
-          alt={authorName}
-          src={avatarUrl}
-        />
+
         <div className="flex flex-col flex-1">
           <figcaption className="text-lg font-bold text-gray-950 dark:text-white leading-tight">
             {headline}
