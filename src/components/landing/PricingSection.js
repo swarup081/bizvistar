@@ -466,7 +466,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan, onAc
         </div>
 
         {/* Subtext (Renewals / Rate) placed under the button */}
-        <p className="text-[12px] font-medium text-gray-600 mb-6 min-h-[18px]">
+        <p className="text-[12px] font-medium text-gray-600 mb-6">
           {!isYearly ? plan.dailyRate : plan.yearlyTotal}
         </p>
 
@@ -478,15 +478,15 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan, onAc
 
       {/* Features List */}
       <div className="px-8 pb-8 pt-2">
-        <span className="text-[17px] font-bold text-gray-900 mb-5 block">
-          {plan.name === 'Starter' && "Includes:"}
-          {plan.name === 'Pro' && "Includes:"}
-          {plan.name === 'Growth' && "Includes:"}
+        <span className="text-[17px] font-bold text-gray-900 mb-5">
+          {plan.name === 'Starter' && "Included:"}
+          {plan.name === 'Pro' && "Included:"}
+          {plan.name === 'Growth' && "Included:"}
         </span>
         <ul className="space-y-3.5 mt-5">
           {plan.features.map((feature, i) => (
             <li key={i} className="flex items-start text-left">
-              <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-[#000]")} strokeWidth={2.5} />
+              <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-gray-900")} strokeWidth={2.5} />
               <span className="text-gray-700 font-medium text-[15px] leading-snug">{feature}</span>
             </li>
           ))}
