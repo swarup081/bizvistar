@@ -4,7 +4,10 @@ import SubscriptionCancelEmail from '@/emails/SubscriptionCancel';
 
 // Initialize Resend
 // Note: You must add RESEND_API to your .env file
-const resend = new Resend(process.env.RESEND_API);
+// Use a fallback during build time if the env variable is missing to prevent build crashes
+const resend = process.env.RESEND_API 
+  ? new Resend(process.env.RESEND_API) 
+  : new Resend('re_dummy_key_to_pass_build');
 
 // Default sender - must be a verified domain in Resend
 const SENDER_EMAIL = 'support@bizvistar.in'; 
