@@ -1,6 +1,7 @@
 export const runtime = 'edge';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { sendPaymentReceipt, sendSubscriptionCancel } from '@/lib/email';
 
 export async function POST(req) {
   try {
@@ -234,6 +235,44 @@ export async function POST(req) {
         } catch (e) {
           console.error('[Webhook] Failed to clean up old subscriptions:', e);
         }
+      }
+
+      // --- SEND TRANSACTIONAL EMAILS ---
+      try {
+        if (eventName === 'subscription.charged' || eventName === 'subscription.cancelled' || eventName === 'subscription.halted') {
+          const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId);
+          if (user && user.email) {
+            const userEmail = user.email;
+            const customerName = user.user_metadata?.full_name || user.user_metadata?.name || 'Customer';
+            const planName = planData?.name || 'BizVistar Pro'; // fallback if name not selected
+            
+            if (eventName === 'subscription.charged') {
+              const paymentEntity = payload.payment?.entity;
+              const amount = paymentEntity ? (paymentEntity.amount / 100).toFixed(2) : '0.00';
+              const currency = paymentEntity?.currency || 'INR';
+              const invoiceId = paymentEntity?.invoice_id || paymentEntity?.id || 'N/A';
+              
+              await sendPaymentReceipt({
+                to: userEmail,
+                customerName,
+                amount,
+                currency,
+                invoiceId,
+                date: new Date().toLocaleDateString(),
+                planName
+              });
+            } else if (eventName === 'subscription.cancelled' || eventName === 'subscription.halted') {
+              await sendSubscriptionCancel({
+                to: userEmail,
+                customerName,
+                planName,
+                endDate: currentPeriodEnd.toLocaleDateString()
+              });
+            }
+          }
+        }
+      } catch (emailError) {
+        console.error('[Webhook] Failed to send email:', emailError);
       }
 
       // --- PUBLISH / UNPUBLISH WEBSITE ---

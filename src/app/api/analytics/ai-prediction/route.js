@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'edge';
 
 export async function POST(req) {
   try {
+    const rateLimit = await checkRateLimit(req, 'ai');
+    if (!rateLimit.success) {
+      return NextResponse.json({ error: 'Too many requests. Please try again in a minute.' }, { status: 429 });
+    }
+
     const cookieStore = await cookies();
 
     const supabase = createServerClient(
