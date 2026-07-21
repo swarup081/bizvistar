@@ -20,7 +20,6 @@ const nextConfig = {
     bodySizeLimit: '5mb',
   },
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
