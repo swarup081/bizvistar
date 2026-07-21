@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const revalidate = 3600; // ISR: cache sitemap for 1 hour
 
 import { createClient } from '@supabase/supabase-js';
 

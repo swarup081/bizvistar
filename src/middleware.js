@@ -54,6 +54,16 @@ export async function middleware(request) {
   }
   // ─── END SUBDOMAIN ROUTING ───
 
+  // ─── SKIP AUTH FOR PUBLIC ROUTES ───
+  // Only run Supabase auth for routes that actually need it (dashboard, editor).
+  // This saves massive CPU since crawlers and public visitors don't need auth.
+  const path = request.nextUrl.pathname;
+  const needsAuth = path.startsWith('/dashboard') || path.startsWith('/editor');
+
+  if (!needsAuth) {
+    return response;
+  }
+
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
      console.error('[Middleware] Missing Supabase Environment Variables');
@@ -87,8 +97,6 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname;
-
   if ((path.startsWith('/dashboard') || path.startsWith('/editor')) && !user) {
     const signInUrl = new URL('/sign-in', request.url);
     signInUrl.searchParams.set('redirect', path);
@@ -117,7 +125,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    // Match subdomain requests (any path that isn't a static file)
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Match subdomain requests (any path that isn't a static file, API, or monitoring)
+    '/((?!_next/static|_next/image|favicon.ico|api/|monitoring).*)',
   ],
 }
