@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { checkRateLimit } from '@/lib/rateLimit';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export async function POST(req) {
   try {

@@ -1,5 +1,5 @@
 'use client';
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';

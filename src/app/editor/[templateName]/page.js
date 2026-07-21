@@ -1,5 +1,5 @@
 'use client';
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 import { useParams } from 'next/navigation';
 import EditorLayout from '@/components/editor/EditorLayout';

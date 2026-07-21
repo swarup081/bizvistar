@@ -125,7 +125,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    // Match subdomain requests (any path that isn't a static file, API, or monitoring)
-    '/((?!_next/static|_next/image|favicon.ico|api/|monitoring).*)',
+    // Match subdomain requests (exclude static files, API, monitoring, and specific file types)
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|ico|woff|woff2|ttf|eot)).*)',
   ],
 }
