@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Search, Upload, Coins, ShoppingBag, DollarSign, Filter, X } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { subDays, isAfter, isBefore } from "date-fns";
-import Fuse from "fuse.js";
+// Fuse.js is lazy-loaded only when user searches (see search effect below)
 import dynamic from 'next/dynamic';
 
 import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
@@ -67,22 +67,27 @@ export default function DashboardPage() {
             return;
         }
 
-        try {
-            const fuse = new Fuse(data.orders, {
-                keys: [
-                    "id",
-                    "customers.name",
-                    "total_amount",
-                    "status"
-                ],
-                threshold: 0.3
-            });
-            const result = fuse.search(searchQuery);
-            setFilteredOrders(result.map(r => r.item));
-        } catch (e) {
-            console.error("Search Error", e);
+        // Lazy-load Fuse.js only when user actually searches
+        import('fuse.js').then(({ default: Fuse }) => {
+            try {
+                const fuse = new Fuse(data.orders, {
+                    keys: [
+                        "id",
+                        "customers.name",
+                        "total_amount",
+                        "status"
+                    ],
+                    threshold: 0.3
+                });
+                const result = fuse.search(searchQuery);
+                setFilteredOrders(result.map(r => r.item));
+            } catch (e) {
+                console.error("Search Error", e);
+                setFilteredOrders(data.orders);
+            }
+        }).catch(() => {
             setFilteredOrders(data.orders);
-        }
+        });
     }, [searchQuery, data.orders]);
 
     // Recalculate Metrics based on Time Filter
@@ -134,8 +139,11 @@ export default function DashboardPage() {
     const fetchCoreData = async () => {
         setLoading(true);
         try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            // Use getSession() instead of getUser() — middleware already verified auth.
+            // getSession() reads cookies (instant), getUser() makes a network call (2-5s).
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+            const user = session.user;
 
             const { data: website } = await supabase
                 .from("websites")
@@ -146,10 +154,24 @@ export default function DashboardPage() {
                 .limit(1)
                 .maybeSingle();
 
-            if (!website) {
-                setLoading(false);
-                setAnalyticsLoading(false);
-                return;
+            let targetWebsite = website;
+
+            if (!targetWebsite) {
+                // No published website — check if they have ANY website (draft)
+                const { data: anyWebsite } = await supabase
+                    .from("websites")
+                    .select("id")
+                    .eq("user_id", user.id)
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (!anyWebsite) {
+                    // No website at all — redirect to templates
+                    window.location.href = '/templates';
+                    return;
+                }
+                targetWebsite = anyWebsite;
             }
 
             // Parallel Request: Core Data
@@ -157,12 +179,12 @@ export default function DashboardPage() {
                 supabase
                     .from("onboarding_data")
                     .select("owner_name")
-                    .eq("website_id", website.id)
+                    .eq("website_id", targetWebsite.id)
                     .maybeSingle(),
                 supabase
                     .from("orders")
                     .select("*")
-                    .eq("website_id", website.id)
+                    .eq("website_id", targetWebsite.id)
                     .neq("status", "canceled") 
                     .order("created_at", { ascending: false })
                     .limit(500)
@@ -183,20 +205,22 @@ export default function DashboardPage() {
 
             const [
                 { data: customersRes },
-                { data: itemsRes }
+                { data: itemsRes },
+                { data: products }
             ] = await Promise.all([
                  customerIds.length > 0 ? supabase.from('customers').select('*').in('id', customerIds) : Promise.resolve({ data: [] }),
-                 orderIds.length > 0 ? supabase.from('order_items').select('*').in('order_id', orderIds) : Promise.resolve({ data: [] })
+                 orderIds.length > 0 ? supabase.from('order_items').select('*').in('order_id', orderIds) : Promise.resolve({ data: [] }),
+                 // Fetch products in parallel (was sequential before)
+                 orderIds.length > 0 ? supabase.from('order_items').select('product_id').in('order_id', orderIds).then(async ({ data: itemsForIds }) => {
+                     const pIds = [...new Set((itemsForIds || []).map(i => i.product_id))];
+                     if (pIds.length === 0) return { data: [] };
+                     return supabase.from('products').select('id, name, image_url, price').in('id', pIds);
+                 }).then(res => res.data || []).catch(() => []) : Promise.resolve([])
             ]);
 
             const customers = customersRes || [];
             let items = itemsRes || [];
 
-            const productIds = [...new Set(items.map(i => i.product_id))];
-            const { data: products } = productIds.length > 0 
-                ? await supabase.from('products').select('id, name, image_url, price').in('id', productIds)
-                : { data: [] };
-            
             const productsMap = (products || []).reduce((acc, p) => ({ ...acc, [p.id]: p }), {});
             const customersMap = (customers || []).reduce((acc, c) => ({ ...acc, [c.id]: c }), {});
 

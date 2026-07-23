@@ -38,9 +38,18 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Use passive listener instead of active getSession() call
+    // Middleware already validates auth — this is just for displaying user email
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+    // Also get current session synchronously from cache if available
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSignOut = async () => {

@@ -16,16 +16,16 @@ function WebsiteDashboardContent() {
   const slugParam = searchParams.get('slug');
 
   useEffect(() => {
-    async function fetchUserWebsite() {
+    const fetchUserWebsite = async () => {
+      setLoading(true);
       try {
-        // 1. Get current user
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (authError || !user) {
-            setError("Please log in to view your website.");
-            setLoading(false);
-            return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setError("User not authenticated.");
+          setLoading(false);
+          return;
         }
+        const user = session.user;
 
         // 2. Fetch website for this user
         let site = null;
@@ -72,21 +72,11 @@ function WebsiteDashboardContent() {
         if (site) {
              let templateName = 'flara'; // Default
 
-             if (site.template_id) {
-                 // Fetch template name
-                 const { data: templateData, error: templateError } = await supabase
-                    .from('templates')
-                    .select('name')
-                    .eq('id', site.template_id)
-                    .maybeSingle();
-                 
-                 if (templateData) {
-                     templateName = templateData.name;
-                 }
-             }
-
-             // --- INJECT REAL PRODUCTS & CATEGORIES ---
-             const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
+             // Parallel: Fetch template name + products + categories all at once
+             const [templateResult, { data: realProducts }, { data: realCategories }] = await Promise.all([
+                 site.template_id 
+                     ? supabase.from('templates').select('name').eq('id', site.template_id).maybeSingle()
+                     : Promise.resolve({ data: null }),
                  supabase
                     .from('products')
                     .select('id, name, price, category_id, description, image_url, stock, additional_images, variants')
@@ -98,6 +88,10 @@ function WebsiteDashboardContent() {
                     .eq('website_id', site.id)
                     .order('name')
              ]);
+
+             if (templateResult?.data?.name) {
+                 templateName = templateResult.data.name;
+             }
 
              const rawData = site.draft_data || site.website_data || {};
              const finalData = { ...rawData };

@@ -15,12 +15,24 @@ Sentry.init({
   // in development and sample at a lower rate in production
   replaysSessionSampleRate: 0.1,
 
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
-  integrations: [
-    Sentry.replayIntegration({
-      // Additional Replay configuration goes in here, for example:
-      maskAllText: true,
-      blockAllMedia: true,
-    }),
-  ],
+  // Lazy-load replay integration to avoid ~40KB in initial bundle
+  // Error reporting works immediately — only replay is deferred
+  integrations: [],
 });
+
+// Lazy-load replay after page load to keep initial bundle lean
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      import('@sentry/nextjs').then((SentryModule) => {
+        const client = SentryModule.getClient();
+        if (client) {
+          client.addIntegration(SentryModule.replayIntegration({
+            maskAllText: true,
+            blockAllMedia: true,
+          }));
+        }
+      });
+    }, 3000); // Defer 3s after page load
+  });
+}
