@@ -36,7 +36,8 @@ export default function BillGeneratorPage() {
                 let userEmail = '';
 
                 try {
-                    const { data: { user } } = await supabase.auth.getUser();
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const user = session?.user;
                     if (user) {
                         userEmail = user.email;
                         const { data: profile } = await supabase

@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
@@ -340,6 +341,20 @@ export async function publishWebsite(websiteId) {
     // 6. Re-sync products/categories from DB into the published website_data
     await resyncProductsIntoWebsiteData(supabaseAdmin, websiteId);
 
+    // 7. Bust ISR cache so the live site reflects changes immediately
+    try {
+      const { data: siteForSlug } = await supabaseAdmin
+        .from('websites')
+        .select('site_slug')
+        .eq('id', websiteId)
+        .single();
+      if (siteForSlug?.site_slug) {
+        revalidatePath(`/site/${siteForSlug.site_slug}`, 'layout');
+      }
+    } catch (e) {
+      console.warn('Revalidation skipped:', e.message);
+    }
+
     return { success: true };
 
   } catch (error) {
@@ -369,6 +384,21 @@ export async function unpublishWebsite(websiteId) {
         .eq('id', websiteId);
 
     if (error) throw error;
+
+    // Bust ISR cache so the live site goes offline immediately
+    try {
+      const { data: siteForSlug } = await supabaseAdmin
+        .from('websites')
+        .select('site_slug')
+        .eq('id', websiteId)
+        .single();
+      if (siteForSlug?.site_slug) {
+        revalidatePath(`/site/${siteForSlug.site_slug}`, 'layout');
+      }
+    } catch (e) {
+      console.warn('Revalidation skipped:', e.message);
+    }
+
     return { success: true };
   } catch (error) {
     console.error('Unpublish Error:', error);

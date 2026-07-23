@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+// Static page — no runtime needed, renders at build time
 
 export const metadata = {
   title: 'Website Unavailable | Bizvistar',

@@ -51,9 +51,9 @@ export default function BlogBentoGrid({ posts = [] }) {
         <div className="w-[38%] flex flex-col">
           <div className="h-[500px] lg:h-[500px] lg:h-[646px] relative">
             {p0 && (
-              <div className="relative rounded-[32px] overflow-hidden bg-gray-100 h-full group">
+              <div className="relative rounded-[32px] overflow-hidden h-full group" style={{ backgroundColor: p0.bgColor || '#f3f4f6' }}>
                 <Link href={p0.href || "#"} className="absolute inset-0 z-30"></Link>
-                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p0.image || '/blogs/blog_club_1778965424607.png'})` }}></div>
+                <div className="absolute inset-0 bg-contain bg-no-repeat bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p0.image || '/blogs/blog_club_1778965424607.png'})` }}></div>
 
                 <div className="absolute bottom-0 left-0 flex flex-col items-start z-30 w-full pointer-events-none">
                   <div className="bg-white rounded-tr-[20px] lg:rounded-tr-[20px] lg:rounded-tr-[24px] pl-4 pr-6 pt-5 pb-1 relative z-20 w-max">
@@ -142,7 +142,7 @@ export default function BlogBentoGrid({ posts = [] }) {
             {/* RIGHT BLUE (30% of Right Area) */}
             <div className="w-[30%] h-full relative">
               {p4 && (
-                <div className="relative bg-[#cfdef2] rounded-[32px] p-6 xl:p-8 h-full flex flex-col group transition-all overflow-hidden hover:bg-[#b8cce6]">
+                <div className="relative rounded-[32px] p-6 xl:p-8 h-full flex flex-col group transition-all overflow-hidden hover:opacity-90" style={{ backgroundColor: p4.bgColor || '#cfdef2' }}>
                   <Link href={p4.href || "#"} className="absolute inset-0 z-20"></Link>
 
                   <div className="relative z-10 flex items-center gap-2 text-[11px] font-bold mb-2">
@@ -159,7 +159,7 @@ export default function BlogBentoGrid({ posts = [] }) {
                     {getBentoTitle(p4)}
                   </h3>
 
-                  <div className="absolute bottom-0 right-0 left-0 h-[40%] lg:h-[50%] bg-[length:contain] lg:bg-[length:cover] bg-no-repeat bg-bottom lg:bg-top z-0 transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p4.image || '/blogs/blog_sneaker_1778965493480.png'})` }}></div>
+                  <div className="absolute bottom-0 right-0 left-0 h-[40%] lg:h-[50%] bg-contain bg-no-repeat bg-bottom lg:bg-center z-0 transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p4.image || '/blogs/blog_sneaker_1778965493480.png'})` }}></div>
                 </div>
               )}
             </div>
@@ -171,9 +171,9 @@ export default function BlogBentoGrid({ posts = [] }) {
             {/* BOTTOM VIDEO (55% of Right Area) */}
             <div className="w-[55%] h-full">
               {p5 && (
-                <div className="relative bg-gray-200 rounded-[32px] h-full overflow-hidden group transition-all">
+                <div className="relative rounded-[32px] h-full overflow-hidden group transition-all" style={{ backgroundColor: p5.bgColor || '#e5e7eb' }}>
                   <Link href={p5.href || "#"} className="absolute inset-0 z-20"></Link>
-                  <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p5.image || '/blogs/blog_startup_1778964908511.png'})` }}></div>
+                  <div className="absolute inset-0 bg-contain bg-no-repeat bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url(${p5.image || '/blogs/blog_startup_1778964908511.png'})` }}></div>
                   <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
 
                   <div className="absolute top-6 left-8 z-10 text-[11px] font-bold text-white">
@@ -226,9 +226,9 @@ export default function BlogBentoGrid({ posts = [] }) {
       <div className="flex md:hidden flex-col gap-4">
 
         {p0 && (
-          <div className="relative rounded-[32px] overflow-hidden bg-gray-100 h-[400px] group">
+          <div className="relative rounded-[32px] overflow-hidden h-[400px] group" style={{ backgroundColor: p0.bgColor || '#f3f4f6' }}>
             <Link href={p0.href || "#"} className="absolute inset-0 z-30"></Link>
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${p0.image || '/blogs/blog_club_1778965424607.png'})` }}></div>
+            <div className="absolute inset-0 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: `url(${p0.image || '/blogs/blog_club_1778965424607.png'})` }}></div>
             <div className="absolute bottom-0 left-0 flex flex-col items-start z-30 w-full pointer-events-none">
               <div className="bg-white rounded-tr-[24px] pl-3 pr-5 pt-4 pb-1 relative z-20 w-max">
                 <svg className="absolute left-0 w-[20px] h-[20px] pointer-events-none bottom-full -mb-[1px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -296,7 +296,7 @@ export default function BlogBentoGrid({ posts = [] }) {
         </div>
 
         {p4 && (
-          <div className="relative bg-[#cfdef2] rounded-[32px] p-6 h-[400px] overflow-hidden">
+          <div className="relative rounded-[32px] p-6 h-[400px] overflow-hidden" style={{ backgroundColor: p4.bgColor || '#cfdef2' }}>
             <Link href={p4.href || "#"} className="absolute inset-0 z-20"></Link>
             
             <div className="absolute top-0 right-0 bg-white rounded-bl-[24px] pl-5 pr-4 pt-4 pb-3 z-20 w-max">
@@ -316,14 +316,14 @@ export default function BlogBentoGrid({ posts = [] }) {
               {getBentoTitle(p4)}
             </h3>
             
-            <div className="absolute bottom-[-10px] right-0 left-0 h-[55%] bg-contain bg-no-repeat bg-bottom z-0 scale-[1.3] origin-bottom" style={{ backgroundImage: `url(${p4.image || '/blogs/posblogs.png'})` }}></div>
+            <div className="absolute bottom-[-10px] right-0 left-0 h-[55%] bg-contain bg-no-repeat bg-center z-0 scale-[1.3] origin-bottom" style={{ backgroundImage: `url(${p4.image || '/blogs/posblogs.png'})` }}></div>
           </div>
         )}
 
         {p5 && (
-          <div className="relative bg-gray-200 rounded-[32px] h-[300px] overflow-hidden">
+          <div className="relative rounded-[32px] h-[300px] overflow-hidden" style={{ backgroundColor: p5.bgColor || '#e5e7eb' }}>
             <Link href={p5.href || "#"} className="absolute inset-0 z-20"></Link>
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${p5.image || '/blogs/blog_startup_1778964908511.png'})` }}></div>
+            <div className="absolute inset-0 bg-contain bg-no-repeat bg-center" style={{ backgroundImage: `url(${p5.image || '/blogs/blog_startup_1778964908511.png'})` }}></div>
             <div className="absolute inset-0 bg-black/30"></div>
             <div className="absolute top-6 left-6 z-10 text-[11px] font-bold text-white">{getCategoryLabel(p5)}</div>
             <div className="absolute bottom-6 left-6 right-6 z-10">

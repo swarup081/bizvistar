@@ -2,17 +2,20 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import NewHeader from '@/components/landing/NewHeader';
-import LandingEditor from '@/components/landing/LandingEditor';
 import TemplateCarousel from '@/components/landing/TemplateCarousel';
 import StickySubNav from '@/components/landing/StickySubNav';
 import PricingSection from '@/components/landing/PricingSection';
-import HowItWorks from '@/components/landing/HowItWorks';
-import MarqueeDemo from '@/components/landing/MarqueeDemo';
-import BenefitsSection from '@/components/landing/BenefitsSection';
-import FaqSection from '@/components/checkout/FaqSection';
-import Footer from '@/components/Footer';
 import TemplatesShowcaseUI from '@/components/templatemarquee';
+
+// Code-split below-fold components (still SSR — no blank gaps)
+const LandingEditor = dynamic(() => import('@/components/landing/LandingEditor'));
+const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks'));
+const MarqueeDemo = dynamic(() => import('@/components/landing/MarqueeDemo'));
+const BenefitsSection = dynamic(() => import('@/components/landing/BenefitsSection'));
+const FaqSection = dynamic(() => import('@/components/checkout/FaqSection'));
+const Footer = dynamic(() => import('@/components/Footer'));
 
 export default function LandingPage() {
   return (

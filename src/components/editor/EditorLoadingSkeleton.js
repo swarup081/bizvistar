@@ -1,8 +1,11 @@
 'use client';
 
-export default function TestSkeletonPage() {
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+
+function SkeletonContent() {
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] h-screen w-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col lg:grid lg:grid-cols-[1fr_auto] h-screen w-full bg-gray-50 overflow-hidden fixed top-0 left-0 z-[9999]">
       {/* Column 1: Main Content Skeleton (Nav + Preview) */}
       <div className="flex flex-col overflow-hidden relative h-full">
         {/* Topbar Skeleton (Two rows to match EditorTopNav) */}
@@ -70,14 +73,31 @@ export default function TestSkeletonPage() {
         </div>
         {/* Sidebar Content Items */}
         <div className="p-4 lg:p-6 space-y-4 overflow-hidden flex-1 flex flex-col">
-             {/* Mobile: One large card. Desktop: First small card */}
-             <div className="flex-1 lg:flex-none lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             {/* Desktop only cards */}
-             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
-             <div className="hidden lg:block h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
+           {/* Mobile: One large card. Desktop: First small card */}
+           <div className="flex-1 lg:flex-none lg:h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+           {/* Desktop only cards */}
+           <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+           <div className="hidden lg:block h-14 w-full bg-gray-100 rounded-xl animate-pulse"></div>
+           <div className="hidden lg:block h-40 w-full bg-gray-100 rounded-xl animate-pulse mt-8"></div>
         </div>
       </aside>
     </div>
   );
+}
+
+export default function EditorLoadingSkeleton() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use portal to render directly into document.body
+  // This escapes framer-motion transform parents that break position:fixed
+  if (mounted) {
+    return createPortal(<SkeletonContent />, document.body);
+  }
+
+  // SSR / first render fallback — render inline (still works, just might be clipped)
+  return <SkeletonContent />;
 }

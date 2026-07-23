@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation'; 
 import { supabase } from '@/lib/supabaseClient'; 
-import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone } from 'lucide-react'; 
+import { User, ChevronDown, Search, X, LogOut, MessageSquare, Phone, LayoutGrid, Package, Tag } from 'lucide-react'; 
 import { cn } from '@/lib/utils'; // Assuming cn is available
 import Logo from '@/lib/logo/logoOfBizVistar';
 import Footer from '@/components/Footer';
@@ -117,6 +117,36 @@ const PrimaryHeader = ({ session, onLoginClick }) => {
                              <MessageSquare size={18} className="text-gray-500" />
                              Contact Support
                            </a>
+
+                    <Link 
+                      href="/dashboard/profile"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <User size={18} className="text-gray-400" />
+                      Manage Profile
+                    </Link>
+                    <Link 
+                      href="/dashboard"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <LayoutGrid size={18} className="text-gray-400" />
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/dashboard/orders"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Package size={18} className="text-gray-400" />
+                      All Orders
+                    </Link>
+                    <Link 
+                      href="/dashboard/products"
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Tag size={18} className="text-gray-400" />
+                      Manage Products
+                    </Link>
+                    <div className="h-px bg-gray-100 my-1"></div>
 
                           <button 
                             onClick={handleLogOut}
@@ -419,6 +449,7 @@ const SecondaryNav = ({ filter, setFilter }) => {
 
 // --- Data for the templates (Extended with keywords and recommended status) ---
 import { templates } from '@/lib/data/templates';
+import EditorLoadingSkeleton from '@/components/editor/EditorLoadingSkeleton';
 
 // --- Reusable Template Card Component with Hover Logic ---
 const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, isRecommended }) => {
@@ -438,34 +469,28 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
   const handleStartEditing = async () => {
     setIsCreating(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
-
     try {
-      // Look up the template ID for this template name (case-insensitive)
-      const { data: template, error: templateError } = await supabase
-        .from('templates')
-        .select('id')
-        .ilike('name', title) 
-        .limit(1)
-        .maybeSingle();
+      // Parallel: Check auth AND look up template ID simultaneously
+      const [{ data: { user } }, { data: template, error: templateError }] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from('templates').select('id').ilike('name', title).limit(1).maybeSingle()
+      ]);
+
+      if (!user) {
+        // Smart Auth Redirect: Send user to the specific editor they want
+        router.push(`/sign-in?redirect=${encodeURIComponent(`/editor/${title}`)}`);
+        return;
+      }
 
       if (templateError || !template) {
         throw new Error('This template is not available yet. Please try another one.');
       }
 
-      // Check if user already has a website with THIS template — if so, re-edit it
-      const { data: existingSite } = await supabase
-        .from('websites')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('template_id', template.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Parallel: Check for existing site with THIS template AND any existing site
+      const [{ data: existingSite }, { data: anyExistingSite }] = await Promise.all([
+        supabase.from('websites').select('id').eq('user_id', user.id).eq('template_id', template.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('websites').select('id, site_slug').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
+      ]);
 
       if (existingSite) {
           // Re-enter the editor for the existing website (no blocking!)
@@ -473,16 +498,7 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
           return;
       }
 
-      // Check if user has ANY existing website (published or draft)
-      // If yes, UPDATE its template_id instead of creating a new row — keeps the same slug
-      const { data: anyExistingSite } = await supabase
-        .from('websites')
-        .select('id, site_slug')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
+      // anyExistingSite was already fetched in parallel above
       if (anyExistingSite) {
         // Update the existing website to use the new template
         // Clear draft_data so the editor starts fresh with the new template defaults
@@ -566,6 +582,9 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       setIsCreating(false);
     }
   };
+  if (isCreating) {
+    return <EditorLoadingSkeleton />;
+  }
 
   return (
     <motion.div
@@ -573,6 +592,7 @@ const TemplateCard = ({ title, description, url, previewUrl, editor, keywords, i
       whileHover={!isMobile ? "hover" : undefined}
       initial="initial"
       animate="initial"
+      onMouseEnter={() => router.prefetch(`/editor/${title}`)}
     >
       
       {/* Recommended Badge */}

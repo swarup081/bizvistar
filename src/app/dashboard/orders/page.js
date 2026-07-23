@@ -62,8 +62,9 @@ function OrdersContent() {
   const fetchOrders = async () => {
     setLoading(true);
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return; 
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const user = session.user;
 
     // Fetch website and slug
     const { data: website } = await supabase
@@ -82,21 +83,22 @@ function OrdersContent() {
     
     setWebsiteId(website.id); // Set ID for Wizard
 
-    // Fetch business name from onboarding
-    const { data: onboarding } = await supabase
-        .from('onboarding_data')
-        .select('owner_name')
-        .eq('website_id', website.id)
-        .maybeSingle();
-    
-    setBusinessName(onboarding?.owner_name || website.site_slug || 'Us');
-
     try {
-        const { data: orders, error: ordersError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('website_id', website.id)
-            .order('created_at', { ascending: false });
+        // Parallel: Fetch onboarding name + orders at the same time
+        const [{ data: onboarding }, { data: orders, error: ordersError }] = await Promise.all([
+            supabase
+                .from('onboarding_data')
+                .select('owner_name')
+                .eq('website_id', website.id)
+                .maybeSingle(),
+            supabase
+                .from('orders')
+                .select('id, customer_id, total_amount, status, source, created_at, payment_method, notes')
+                .eq('website_id', website.id)
+                .order('created_at', { ascending: false })
+        ]);
+    
+        setBusinessName(onboarding?.owner_name || website.site_slug || 'Us');
 
         if (ordersError) throw ordersError;
         
@@ -109,6 +111,7 @@ function OrdersContent() {
         const orderIds = orders.map(o => o.id);
         const customerIds = [...new Set(orders.map(o => o.customer_id).filter(Boolean))];
 
+        // Parallel: Fetch all related data in one batch (including products)
         const [
             { data: customers },
             { data: deliveries },
@@ -119,6 +122,7 @@ function OrdersContent() {
              supabase.from('order_items').select('*').in('order_id', orderIds)
         ]);
 
+        // Fetch products (depends on items, but runs immediately after)
         const productIds = [...new Set((items || []).map(i => i.product_id))];
         const { data: products } = productIds.length > 0 
             ? await supabase.from('products').select('id, name, image_url').in('id', productIds)

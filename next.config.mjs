@@ -47,42 +47,87 @@ const nextConfig = {
       },
     ],
   },
+
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          // Removed X-Frame-Options: DENY to allow editor iframes
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      // Cache immutable build assets aggressively (content-hashed, safe to cache forever)
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Cache public static files (favicon, manifest, icons, fonts) for 1 day
+      {
+        source: '/:path*.(ico|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|mp4)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+    ];
+  },
+
 };
 
-export default withSentryConfig(
-  nextConfig,
-  {
-    // For all available options, see:
-    // https://github.com/getsentry/sentry-webpack-plugin#options
+const sentryWebpackPluginOptions = {
+  // For all available options, see:
+  // https://github.com/getsentry/sentry-webpack-plugin#options
 
-    // Suppresses source map uploading logs during build
-    silent: true,
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-  },
-  {
-    // For all available options, see:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+  // Suppresses source map uploading logs during build
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+};
 
-    // Upload a larger set of source maps for prettier stack traces (increases build time)
-    widenClientFileUpload: true,
+const sentryOptions = {
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
-    // Transpiles SDK to be compatible with IE11 (increases bundle size)
-    transpileClientSDK: true,
+  // Disabled widenClientFileUpload to reduce build time
+  widenClientFileUpload: false,
 
-    // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers (increases server load)
-    tunnelRoute: "/monitoring",
+  // IE11 is EOL since June 2022 — no need to transpile for it
+  transpileClientSDK: false,
 
-    // Hides source maps from generated client bundles
-    hideSourceMaps: true,
+  // Disabled to save Vercel function CPU on Hobby plan.
+  // Sentry still works via direct client-side reporting.
+  // tunnelRoute: "/monitoring",
 
-    // Automatically tree-shake Sentry logger statements to reduce bundle size
-    disableLogger: true,
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
 
-    // Enables automatic instrumentation of Vercel Cron Monitors.
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true,
-  }
-);
+  // Automatically tree-shake Sentry logger statements to reduce bundle size
+  disableLogger: true,
+
+  // Enables automatic instrumentation of Vercel Cron Monitors.
+  automaticVercelMonitors: true,
+};
+
+// Export plain Next.js config in dev to save massive amounts of RAM.
+// Only apply Sentry Webpack plugin in production builds.
+export default process.env.NODE_ENV === 'development' 
+  ? nextConfig 
+  : withSentryConfig(nextConfig, sentryWebpackPluginOptions, sentryOptions);

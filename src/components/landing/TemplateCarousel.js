@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { templates } from '@/lib/data/templates';
@@ -38,21 +38,23 @@ const templateDetailsMap = {
 export default function TemplateCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % templates.length);
+  }, []);
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
+  }, []);
+
   // Auto-slide logic
   useEffect(() => {
     const interval = setInterval(() => {
       handleNext();
     }, 5000); 
     return () => clearInterval(interval);
-  }, [currentIndex]);
+  }, [currentIndex, handleNext]);
 
-  function handleNext() {
-    setCurrentIndex((prev) => (prev + 1) % templates.length);
-  }
 
-  function handlePrev() {
-    setCurrentIndex((prev) => (prev - 1 + templates.length) % templates.length);
-  }
 
   return (
     <div className="w-full py-0 bg-[#fdfdfd] overflow-hidden relative group">

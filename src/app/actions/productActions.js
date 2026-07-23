@@ -3,9 +3,26 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import { validateUserSubscription } from './subscriptionUtils';
 import { getPlanLimits } from '../config/razorpay-config';
 import { createNotification } from '@/lib/notificationUtils';
+
+// Helper: Bust ISR cache for all storefront pages of a website
+async function revalidateStorefront(websiteId) {
+  try {
+    const { data: site } = await supabaseAdmin
+      .from('websites')
+      .select('site_slug')
+      .eq('id', websiteId)
+      .single();
+    if (site?.site_slug) {
+      revalidatePath(`/site/${site.site_slug}`, 'layout');
+    }
+  } catch (e) {
+    console.warn('Revalidation skipped:', e.message);
+  }
+}
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -170,6 +187,7 @@ export async function addCategory(name) {
         if (error) throw error;
 
         await syncWebsiteData(websiteId);
+        await revalidateStorefront(websiteId);
 
         return { success: true, category: data };
     } catch (err) {
@@ -212,6 +230,7 @@ export async function deleteCategory(categoryId) {
         if (error) throw error;
 
         await syncWebsiteData(websiteId);
+        await revalidateStorefront(websiteId);
 
         return { success: true };
     } catch (err) {
@@ -233,6 +252,7 @@ export async function updateProductCategory(productIds, categoryId) {
         if (error) throw error;
 
         await syncWebsiteData(websiteId);
+        await revalidateStorefront(websiteId);
 
         return { success: true };
     } catch (err) {
@@ -358,6 +378,7 @@ export async function addProduct(productData) {
     if (error) throw error;
 
     await syncWebsiteData(websiteId);
+    await revalidateStorefront(websiteId);
 
     // Notification: Low Stock or Out of Stock (if newly added product is low)
     if (finalStock !== -1 && finalStock <= 5) {
@@ -527,6 +548,7 @@ export async function updateProduct(productId, productData) {
     if (error) throw error;
 
     await syncWebsiteData(websiteId);
+    await revalidateStorefront(websiteId);
 
     return { success: true };
   } catch (err) {
@@ -550,6 +572,7 @@ export async function deleteProduct(productId) {
     if (error) throw error;
 
     await syncWebsiteData(websiteId);
+    await revalidateStorefront(websiteId);
 
     return { success: true };
   } catch (err) {

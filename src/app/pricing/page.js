@@ -636,7 +636,7 @@ const PlanCard = ({ plan, isYearly, className, isUpdateFlow, isCurrentPlan, onAc
         <ul className="space-y-3.5 mt-5">
           {plan.features.map((feature, i) => (
             <li key={i} className="flex items-start text-left">
-              <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-black-900")} strokeWidth={2.5} />
+              <Check className={cn("w-[22px] h-[22px] mt-[2px] mr-3 flex-shrink-0", plan.isRecommended ? "text-[#7554b3]" : "text-gray-900")} strokeWidth={2.5} />
               <span className="text-gray-700 font-medium text-[15px] leading-snug">{feature}</span>
             </li>
           ))}

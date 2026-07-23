@@ -2,12 +2,18 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import dynamic from 'next/dynamic';
 import EditorTopNav from './EditorTopNav';
 import EditorSidebar from './EditorSidebar';
-import WizardModal from './WizardModal';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 import { getOnboardingStatus } from '@/app/actions/onboardingActions';
 import { saveDraft, revertToPublished, publishWebsite, unpublishWebsite, getWebsiteDraft, getSubscriptionStatus, checkTemplateChangeAllowance } from '@/app/actions/editorActions';
+
+// Lazy-load WizardModal — only shown for first-time users
+const WizardModal = dynamic(() => import('./WizardModal'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Import all template data
 import { businessData as flaraData } from '@/app/templates/flara/data.js';
@@ -113,68 +119,65 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const searchParams = useSearchParams();
   const websiteId = propWebsiteId || searchParams.get('site_id');
 
-  // Check Onboarding Status
-  useEffect(() => {
-    if (websiteId && mode !== 'dashboard') { // Don't show in dashboard preview mode if applicable
-        const checkStatus = async () => {
-            const { success, isCompleted, data, websiteData } = await getOnboardingStatus();
-            if (success && !isCompleted) {
-                setWizardInitialData({ data, websiteData });
-                setShowWizard(true);
-            }
-        };
-        checkStatus();
-    }
-  }, [websiteId, mode]);
-  
-  const [saveStatus, setSaveStatus] = useState('Saved'); // To show save status
+  const [saveStatus, setSaveStatus] = useState('Saved');
   const [isPublished, setIsPublished] = useState(initialIsPublished);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [planTier, setPlanTier] = useState('starter');
   const [editorSiteSlug, setEditorSiteSlug] = useState(siteSlug || null);
-  const debounceTimer = useRef(null); // For debouncing save
-  const dbDataLoaded = useRef(false); // Prevent re-loading DB data
+  const debounceTimer = useRef(null);
+  const dbDataLoaded = useRef(false);
 
-  // Load data from DB in standalone editor mode (when no initialData is provided)
-  // This fixes the bug where the standalone editor starts with template defaults
-  // and the auto-save overwrites saved data in the DB
-  useEffect(() => {
-    if (mode === 'dashboard' || !websiteId || dbDataLoaded.current) return;
-    
-    const loadFromDB = async () => {
-      try {
-        const result = await getWebsiteDraft(websiteId);
-        if (result.success && result.data && Object.keys(result.data).length > 0) {
-          dbDataLoaded.current = true;
-          const merged = mergeWithDefaults(result.data, defaultData);
-          setBusinessData(merged);
-          setHistory([merged]);
-          setHistoryIndex(0);
-          sendDataToIframe(merged);
-          setIsPublished(result.isPublished || false);
-          if (result.siteSlug) setEditorSiteSlug(result.siteSlug);
-          
-          // Also update localStorage so it stays in sync
-          localStorage.setItem(editorDataKey, JSON.stringify(merged));
-        }
-      } catch (err) {
-        console.error('[EditorLayout] Failed to load draft from DB:', err);
-      }
-    };
-    
-    loadFromDB();
-  }, [websiteId, mode]);
-
-  // Check subscription status (for standalone editor to know if user can publish)
+  // --- PARALLEL INIT: Run onboarding + draft load + subscription check simultaneously ---
   useEffect(() => {
     if (!websiteId) return;
-    const checkSub = async () => {
-      const status = await getSubscriptionStatus();
-      setHasActiveSubscription(status.hasActiveSubscription);
-      setPlanTier(status.planTier);
+    
+    const parallelInit = async () => {
+      const promises = [];
+
+      // 1. Onboarding status check
+      if (mode !== 'dashboard') {
+        promises.push(
+          getOnboardingStatus().then(({ success, isCompleted, data, websiteData }) => {
+            if (success && !isCompleted) {
+              setWizardInitialData({ data, websiteData });
+              setShowWizard(true);
+            }
+          }).catch(err => console.error('[EditorLayout] Onboarding check failed:', err))
+        );
+      }
+
+      // 2. Load draft from DB (standalone editor mode)
+      if (mode !== 'dashboard' && !dbDataLoaded.current) {
+        promises.push(
+          getWebsiteDraft(websiteId).then(result => {
+            if (result.success && result.data && Object.keys(result.data).length > 0) {
+              dbDataLoaded.current = true;
+              const merged = mergeWithDefaults(result.data, defaultData);
+              setBusinessData(merged);
+              setHistory([merged]);
+              setHistoryIndex(0);
+              sendDataToIframe(merged);
+              setIsPublished(result.isPublished || false);
+              if (result.siteSlug) setEditorSiteSlug(result.siteSlug);
+              localStorage.setItem(editorDataKey, JSON.stringify(merged));
+            }
+          }).catch(err => console.error('[EditorLayout] Failed to load draft from DB:', err))
+        );
+      }
+
+      // 3. Subscription status
+      promises.push(
+        getSubscriptionStatus().then(status => {
+          setHasActiveSubscription(status.hasActiveSubscription);
+          setPlanTier(status.planTier);
+        }).catch(err => console.error('[EditorLayout] Subscription check failed:', err))
+      );
+
+      await Promise.all(promises);
     };
-    checkSub();
-  }, [websiteId]);
+
+    parallelInit();
+  }, [websiteId, mode]);
 
   const editorDataKey = `editorData_${templateName}_${websiteId || 'new'}`;
   const cartDataKey = `${templateName}Cart`; 

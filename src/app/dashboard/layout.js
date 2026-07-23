@@ -17,7 +17,9 @@ import {
   LogOut
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/lib/supabaseClient';
 import Logo from '@/lib/logo/logoOfBizVistar';
 import { NotificationManager } from '@/components/dashboard/notifications/NotificationManager';
 import NotificationBell from '@/components/dashboard/notifications/NotificationBell';
@@ -30,14 +32,37 @@ export default function DashboardLayout({ children }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false); // Safe hook for window width
+  const [session, setSession] = useState(null);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Use passive listener instead of active getSession() call
+    // Middleware already validates auth — this is just for displaying user email
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+    // Also get current session synchronously from cache if available
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/sign-in');
+  };
 
   const navItems = [
     { name: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
     { name: 'Website', icon: Globe, href: '/dashboard/website' },
     { name: 'Orders', icon: Package, href: '/dashboard/orders' },
     { name: 'Products', icon: Tag, href: '/dashboard/products' },
-    
+    { name: 'Analytics', icon: PieChart, href: '/dashboard/analytics' },
     { name: 'Apps', icon: AppWindow, href: '/dashboard/apps' },
   ];
 
@@ -121,11 +146,75 @@ export default function DashboardLayout({ children }) {
         <div className="hidden lg:flex items-center gap-4">
           <UpdatePlanNavButton isMobile={false} />
           <NotificationBell />
-          <Link href="/dashboard/profile" className="h-10 w-10 rounded-full bg-gray-300 overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-             <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
-               <User size={20} />
-             </div>
-          </Link>
+          <div className="relative">
+            <button 
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="h-10 w-10 rounded-full bg-gray-50 border-2 border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-center"
+            >
+               <User size={20} className="text-gray-600" />
+            </button>
+
+            <AnimatePresence>
+              {isProfileDropdownOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden origin-top-right"
+                >
+                  <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
+                     <p className="text-sm font-bold text-gray-900 truncate" title={session?.user?.email}>
+                       {session?.user?.email || 'Loading...'}
+                     </p>
+                  </div>
+                  <div className="py-2">
+                    <Link 
+                      href="/dashboard/profile"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <User size={18} className="text-gray-400" />
+                      Manage Profile
+                    </Link>
+                    <Link 
+                      href="/dashboard"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <LayoutGrid size={18} className="text-gray-400" />
+                      Dashboard
+                    </Link>
+                    <Link 
+                      href="/dashboard/orders"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Package size={18} className="text-gray-400" />
+                      All Orders
+                    </Link>
+                    <Link 
+                      href="/dashboard/products"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="w-full text-left px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                      <Tag size={18} className="text-gray-400" />
+                      Manage Products
+                    </Link>
+                    <div className="h-px bg-gray-100 my-1"></div>
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full text-left px-5 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-3"
+                    >
+                       <LogOut size={18} />
+                       Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Right: Hamburger (Mobile) */}
@@ -173,7 +262,7 @@ export default function DashboardLayout({ children }) {
                     <User size={20} className="text-gray-500" />
                     Profile
                 </Link>
-                <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 text-base font-medium text-left w-full">
+                <button onClick={handleSignOut} className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 text-base font-medium text-left w-full">
                     <LogOut size={20} />
                     Sign Out
                 </button>

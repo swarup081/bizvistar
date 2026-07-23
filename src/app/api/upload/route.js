@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { v2 as cloudinary } from 'cloudinary';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -31,6 +32,12 @@ const ALLOWED_TYPES = [
  */
 export async function POST(request) {
   try {
+    // 0. Rate Limiting
+    const rateLimit = await checkRateLimit(request, 'upload');
+    if (!rateLimit.success) {
+      return NextResponse.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
+    }
+
     // 1. Authenticate user
     const cookieStore = await cookies();
     const supabase = createServerClient(

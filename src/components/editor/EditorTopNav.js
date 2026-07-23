@@ -8,9 +8,13 @@ import {
   Monitor, Smartphone, ChevronDown, Info, Check, RotateCcw, Save, Globe, GlobeLock, Plus, ExternalLink
 } from 'lucide-react';
 import Logo from '@/lib/logo/logoOfBizVistar';
-import AIContentModal from './AIContentModal';
+import dynamic from 'next/dynamic';
 import { generateAIContent } from '@/app/actions/onboardingActions';
 import { checkTemplateChangeAllowance } from '@/app/actions/editorActions';
+
+const AIContentModal = dynamic(() => import('./AIContentModal'), {
+  ssr: false,
+});
 
 // A simple reusable button component for the nav
 const NavButton = ({ children, className = '', ...props }) => (

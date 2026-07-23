@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 export async function GET() {
   const now = Date.now();
@@ -35,7 +35,7 @@ export async function GET() {
   return new Response(JSON.stringify({ targetDate }), {
     headers: { 
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
     },
   });
 }

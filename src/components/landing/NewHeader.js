@@ -132,16 +132,12 @@ export default function NewHeader() {
         Don’t miss the limited-time deals!
         <span className="md:hidden inline-block animate-bounce text-xs">↓</span>
       </span>
-      {isTimerLoaded ? (
-        <span className="flex items-baseline gap-1 font-sans font-bold text-[18px] md:text-[20px] text-[#8a63d2] tracking-wider pointer-events-none">
-          {formatTime(timeLeft.days)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">D</span>&nbsp;
-          {formatTime(timeLeft.hours)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">H</span>&nbsp;
-          {formatTime(timeLeft.minutes)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">M</span>&nbsp;
-          {formatTime(timeLeft.seconds)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">S</span>
-        </span>
-      ) : (
-        <span className="opacity-0 w-24">00D 00H 00M 00S</span>
-      )}
+      <span suppressHydrationWarning className="flex items-baseline gap-1 font-sans font-bold text-[18px] md:text-[20px] text-[#8a63d2] tracking-wider pointer-events-none">
+        {formatTime(timeLeft.days)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">D</span>&nbsp;
+        {formatTime(timeLeft.hours)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">H</span>&nbsp;
+        {formatTime(timeLeft.minutes)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">M</span>&nbsp;
+        {formatTime(timeLeft.seconds)}<span className="text-[11px] md:text-[12px] font-sans font-medium text-gray-300 -ml-0.5">S</span>
+      </span>
       <Link
         href="/pricing#pricing"
         onClick={(e) => e.stopPropagation()}

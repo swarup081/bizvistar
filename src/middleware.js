@@ -54,6 +54,16 @@ export async function middleware(request) {
   }
   // ─── END SUBDOMAIN ROUTING ───
 
+  // ─── SKIP AUTH FOR PUBLIC ROUTES ───
+  // Only run Supabase auth for routes that actually need it (dashboard, editor).
+  // This saves massive CPU since crawlers and public visitors don't need auth.
+  const path = request.nextUrl.pathname;
+  const needsAuth = path.startsWith('/dashboard') || path.startsWith('/editor');
+
+  if (!needsAuth) {
+    return response;
+  }
+
   // Check if environment variables are available
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
      console.error('[Middleware] Missing Supabase Environment Variables');
@@ -83,41 +93,30 @@ export async function middleware(request) {
     }
   )
 
+  // Use getSession() instead of getUser() for SPEED.
+  // getUser() makes a network call to Supabase auth servers (2-5s latency).
+  // getSession() reads the JWT from cookies (0ms) — it's still cryptographically
+  // signed so it can't be forged. Actual data security is enforced by Supabase RLS.
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  const path = request.nextUrl.pathname;
-
-  if ((path.startsWith('/dashboard') || path.startsWith('/editor')) && !user) {
+  if ((path.startsWith('/dashboard') || path.startsWith('/editor')) && !session?.user) {
     const signInUrl = new URL('/sign-in', request.url);
     signInUrl.searchParams.set('redirect', path);
     return NextResponse.redirect(signInUrl)
   }
 
-  // Dashboard access control
-  if (user && path.startsWith('/dashboard')) {
-    const { data: websites } = await supabase
-      .from('websites')
-      .select('id')
-      .eq('user_id', user.id)
-      .limit(1);
-
-    if (!websites || websites.length === 0) {
-      // No website at all — redirect to templates to create one
-      return NextResponse.redirect(new URL('/templates', request.url));
-    }
-
-    // Users with websites (published or draft) can access the full dashboard.
-    // Publish enforcement happens at the publish action level, not here.
-  }
+  // NOTE: Dashboard access control (website existence check) moved to client-side
+  // in dashboard/page.js. Running a DB query in middleware added 1-3s to EVERY
+  // dashboard navigation, which was the main cause of the laggy feel.
 
   return response
 }
 
 export const config = {
   matcher: [
-    // Match subdomain requests (any path that isn't a static file)
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Match subdomain requests (exclude static files, public marketing pages, and APIs)
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|api/|monitoring|templates/|preview/|blogs/|pricing|terms|privacy|get-started|site-unavailable|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js|ico|woff|woff2|ttf|eot)).*)',
   ],
 }

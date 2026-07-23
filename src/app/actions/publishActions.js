@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
-import { getKeyId } from '../config/razorpay-config';
+import { getKeyId, getRazorpayMode } from '../config/razorpay-config';
 
 // Admin client for DB updates (bypassing RLS)
 const supabaseAdmin = createClient(
@@ -66,7 +66,8 @@ export async function verifyAndPublishUserSite(fallbackSubscriptionId = null) {
         console.log(`[PublishAction] DB check failed. Checking Razorpay API for sub ${fallbackSubscriptionId}...`);
         try {
             const keyId = getKeyId();
-            const keySecret = process.env.RAZORPAY_TEST_KEY_SECRET;
+            const mode = getRazorpayMode();
+            const keySecret = mode === 'live' ? process.env.RAZORPAY_LIVE_KEY_SECRET : process.env.RAZORPAY_TEST_KEY_SECRET;
             
             if (keyId && keySecret) {
                 const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });

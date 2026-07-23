@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const revalidate = 60; // ISR: cache for 60s, then revalidate in background
 // src/app/site/[slug]/shop/page.js
 import { createClient } from '@supabase/supabase-js';
 

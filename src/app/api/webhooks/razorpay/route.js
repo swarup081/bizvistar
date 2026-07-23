@@ -1,6 +1,7 @@
-export const runtime = 'edge';
+// export const runtime = 'edge';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { sendPaymentReceipt, sendSubscriptionCancel } from '@/lib/email';
 
 export async function POST(req) {
   try {
@@ -236,6 +237,44 @@ export async function POST(req) {
         }
       }
 
+      // --- SEND TRANSACTIONAL EMAILS ---
+      try {
+        if (eventName === 'subscription.charged' || eventName === 'subscription.cancelled' || eventName === 'subscription.halted') {
+          const { data: { user } } = await supabaseAdmin.auth.admin.getUserById(userId);
+          if (user && user.email) {
+            const userEmail = user.email;
+            const customerName = user.user_metadata?.full_name || user.user_metadata?.name || 'Customer';
+            const planName = planData?.name || 'BizVistar Pro'; // fallback if name not selected
+            
+            if (eventName === 'subscription.charged') {
+              const paymentEntity = payload.payment?.entity;
+              const amount = paymentEntity ? (paymentEntity.amount / 100).toFixed(2) : '0.00';
+              const currency = paymentEntity?.currency || 'INR';
+              const invoiceId = paymentEntity?.invoice_id || paymentEntity?.id || 'N/A';
+              
+              await sendPaymentReceipt({
+                to: userEmail,
+                customerName,
+                amount,
+                currency,
+                invoiceId,
+                date: new Date().toLocaleDateString(),
+                planName
+              });
+            } else if (eventName === 'subscription.cancelled' || eventName === 'subscription.halted') {
+              await sendSubscriptionCancel({
+                to: userEmail,
+                customerName,
+                planName,
+                endDate: currentPeriodEnd.toLocaleDateString()
+              });
+            }
+          }
+        }
+      } catch (emailError) {
+        console.error('[Webhook] Failed to send email:', emailError);
+      }
+
       // --- PUBLISH / UNPUBLISH WEBSITE ---
       if (shouldPublish) {
         try {
@@ -328,6 +367,35 @@ export async function POST(req) {
       console.log(`[Webhook] Payment Failed: ${payment.id}, reason: ${payment.error_description}`);
       // We don't change subscription status here — Razorpay will fire 
       // subscription.halted after all retries are exhausted
+
+      // Notify the user about the payment failure
+      try {
+        const notes = payment.notes || {};
+        const userId = notes.user_id;
+        if (userId) {
+          // Find user's website to attach notification
+          const { data: website } = await supabaseAdmin
+            .from('websites')
+            .select('id')
+            .eq('user_id', userId)
+            .limit(1)
+            .maybeSingle();
+
+          if (website) {
+            await supabaseAdmin.from('notifications').insert({
+              website_id: website.id,
+              type: 'payment_failed',
+              title: 'Payment Failed',
+              message: `Your payment could not be processed: ${payment.error_description || 'Unknown error'}. Please update your payment method to keep your website online.`,
+              data: { payment_id: payment.id, error: payment.error_description },
+              is_read: false
+            });
+            console.log(`[Webhook] Payment failure notification created for user ${userId}`);
+          }
+        }
+      } catch (notifErr) {
+        console.error('[Webhook] Failed to create payment failure notification:', notifErr);
+      }
     }
 
     // ============================================================
@@ -352,6 +420,6 @@ export async function POST(req) {
 
   } catch (err) {
     console.error('[Webhook] Unhandled Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

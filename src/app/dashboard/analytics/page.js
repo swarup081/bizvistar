@@ -50,7 +50,8 @@ export default function AnalyticsPage() {
     setError(null);
 
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      const user = session?.user;
       if (authError || !user) {
         setLoading(false);
         return;

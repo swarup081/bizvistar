@@ -5,6 +5,9 @@ import Link from 'next/link';
 import NewHeader from '@/components/landing/NewHeader';
 import Footer from '@/components/Footer';
 import { Marquee } from "@/components/marquee";
+import BlogSecondaryNav from '@/components/blogs/BlogSecondaryNav';
+import BlogBentoGrid from '@/components/blogs/BlogBentoGrid';
+import { ALL_BLOG_POSTS } from '@/data/blogData';
 
 export default function BlogPost() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -26,6 +29,10 @@ export default function BlogPost() {
     <div className="bg-white text-gray-900 min-h-screen flex flex-col relative overflow-clip antialiased font-sans">
       
       <NewHeader />
+
+      <div className="bg-gray-50/50 pb-8 pt-4 md:pt-12 z-[100] relative">
+        <BlogSecondaryNav posts={ALL_BLOG_POSTS.slice(0, 6)} />
+      </div>
       
       {/* Top Promotional Banner */}
       <div className="max-w-[1240px] w-[calc(100%-32px)] md:w-full mx-auto bg-[#d7e9b9] py-4 px-4 md:px-12 text-center z-10 mt-[24px] md:mt-[80px] rounded-xl sm:rounded-2xl mb-4 sm:mb-8 shadow-sm">
@@ -56,20 +63,20 @@ export default function BlogPost() {
           </div>
         </div>
 
-        {/* Hero Image */}
-        <div className="relative w-full aspect-[16/9] md:aspect-[2.2/1] mb-16 bg-[#F3F4F6] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
-           <img 
-             src="/editorssmock.png" 
-             alt="Instagram vs Website" 
-             className="w-full h-full object-cover object-center filter hue-rotate-60"
-           />
-        </div>
-
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-[80px] relative">
           
           {/* Left Column: Main Article Content */}
           <div className="lg:col-span-8 pb-4 lg:pb-10">
+            
+            {/* Hero Image */}
+            <div className="relative w-full aspect-square mb-12 bg-[#F5E6A3] rounded-2xl overflow-hidden flex items-center justify-center border border-gray-200">
+               <img 
+                  src="/blogs/blog_hero_instagram_vs_website.png" 
+                  alt="Instagram DM vs Professional Website - Where Should Customers Shop" 
+                  className="w-full h-full object-contain"
+                />
+            </div>
             
             <p className="text-[18px] text-[#0f172a] leading-[1.8] mb-6 font-normal">
               Instagram is arguably the greatest discovery engine ever built for small businesses. Its algorithm is incredibly efficient at finding people who might be interested in your aesthetic, your products, and your story. Visuals pop, communities form rapidly in comment sections, and trends can take a micro-business viral overnight. But there is a massive difference between a discovery engine designed to keep people scrolling, and a conversion engine designed to get them to checkout.
@@ -128,6 +135,10 @@ export default function BlogPost() {
             </div>
 
             <h3 id="discovery" className="text-[26px] md:text-[28px] font-bold font-sans text-gray-900 mb-6 mt-12">02. Why Instagram is the ultimate hook</h3>
+            <div className="relative w-full aspect-square md:aspect-[4/3] mb-8 mt-12 bg-[#F5E6A3] rounded-xl overflow-hidden border border-gray-200 shadow-sm flex items-center justify-center p-8">
+               <img src="/blogs/blog_mid_instagram_vs_website.png" alt="Instagram DM vs Website Comparison" className="w-full h-full object-contain" />
+            </div>
+
             <p className="text-[18px] text-[#0f172a] leading-[1.8] mb-6 font-normal">
               You should absolutely be heavily invested in Instagram marketing. The platform's algorithm is a masterpiece of machine learning, designed to put your highly engaging visual content in front of thousands of highly targeted potential customers who have never heard of you—completely for free. The organic reach of a well-crafted Reel is something that would have cost thousands of dollars in traditional advertising a decade ago.
             </p>
@@ -293,6 +304,17 @@ export default function BlogPost() {
           </div>
         </div>
       </main>
+
+      {/* Related Blogs using Bento Grid */}
+      <div className="w-full bg-gray-50 py-12 md:py-24 border-t border-gray-200 mt-12">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-6 mb-8">
+           <h2 className="text-[32px] md:text-[40px] font-black font-sans text-gray-900 tracking-tight">
+             Explore more articles
+           </h2>
+        </div>
+        <BlogBentoGrid posts={ALL_BLOG_POSTS.slice(0, 6)} />
+      </div>
+
       <Footer />
     </div>
   );
