@@ -52,9 +52,9 @@ function SignInForm() {
       setLoading(false);
     } else {
       if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
-        router.push(redirect);
+        window.location.href = redirect;
       } else {
-        router.push('/templates');
+        window.location.href = '/templates';
       }
     }
   };
@@ -156,7 +156,7 @@ function SignInForm() {
 
         <div className="text-center pt-2">
             <p className="text-[15px] text-gray-900 font-medium">
-                Don't have an account? <Link href={signUpUrl} className="text-[#8A63D2] hover:text-[#7c59bd] font-bold ml-1">Register</Link>
+                Don't have an account? <a href={signUpUrl} className="text-[#8A63D2] hover:text-[#7c59bd] font-bold ml-1">Register</a>
             </p>
         </div>
       </form>

@@ -30,12 +30,15 @@ export async function POST(req) {
   try {
     const { messages, language } = await req.json();
     
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ reply: "I'm currently offline for maintenance. Please contact support via WhatsApp." });
     }
 
-    const openai = new OpenAI({ apiKey });
+    const openai = new OpenAI({ 
+      apiKey,
+      baseURL: process.env.GEMINI_API_KEY ? "https://generativelanguage.googleapis.com/v1beta/openai/" : undefined
+    });
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
@@ -43,22 +46,42 @@ export async function POST(req) {
 
     const langInstruction = language === 'hi' ? '\n\nIMPORTANT: The user is speaking Hindi/Hinglish. Respond in Hindi/Hinglish.' : '';
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT + langInstruction },
-        ...messages.slice(-6) // Only send last 6 messages to save tokens
-      ],
-      temperature: 0.7,
-      max_tokens: 120,
-    });
+    let completion;
+    for (let i = 0; i < 2; i++) {
+        try {
+            completion = await openai.chat.completions.create({
+              model: process.env.GEMINI_API_KEY ? "gemini-3.5-flash" : "gpt-4o-mini",
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT + langInstruction },
+                ...messages.slice(-6)
+              ],
+              temperature: 0.7,
+              max_tokens: 120,
+            });
+            break; // Success
+        } catch (err) {
+            if (i === 1) throw err; // Throw on last attempt
+            await new Promise(r => setTimeout(r, 3000)); // Wait 3 seconds on 429
+        }
+    }
 
-    const aiResponse = completion.choices[0].message.content;
+    const aiResponse = completion.choices[0].message.content || "";
+    
+    if (!aiResponse) {
+        throw new Error("AI returned an empty response. It might have triggered a safety filter.");
+    }
 
     return NextResponse.json({ reply: aiResponse });
 
   } catch (error) {
+    require('fs').appendFileSync('ai_error.log', new Date().toISOString() + ' Support API Error: ' + (error.stack || error.message || error) + '\n');
     console.error("Support API Error:", error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    
+    // Graceful handling for Gemini 15 RPM Rate Limit
+    if (error.message && error.message.includes('429')) {
+      return NextResponse.json({ reply: "I'm receiving a lot of requests right now! Please wait a minute and try again. ⏳" });
+    }
+    
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

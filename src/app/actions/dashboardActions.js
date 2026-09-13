@@ -3,6 +3,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createSupabaseClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -36,7 +37,7 @@ const createClient = async () => {
 
 export async function getWebsiteDetails() {
   const supabase = await createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } = await getAuthUserContext(supabase);
   
   if (userError || !user) {
     return { success: false, error: 'Not authenticated' };
@@ -74,4 +75,24 @@ export async function getWebsiteDetails() {
   }
 
   return { success: true, data };
+}
+
+export async function getSessionContext() {
+  const supabase = await createClient();
+  const { data: { user }, error: userError, isImpersonating, realUser } = await getAuthUserContext(supabase);
+  
+  if (userError || !user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  return {
+    success: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      // Pass real user email if impersonating to show in banner
+      realEmail: realUser?.email
+    },
+    isImpersonating: isImpersonating || false
+  };
 }

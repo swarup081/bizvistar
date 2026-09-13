@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createNotification } from '@/lib/notificationUtils';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,7 +23,7 @@ async function getUser() {
       },
     }
   );
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getAuthUserContext(supabase);
   return user;
 }
 

@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import { validateUserSubscription } from './subscriptionUtils';
 import { TEMPLATE_CHANGE_LIMITS, getPlanTierFromName } from '@/app/config/razorpay-config';
 import { tryActivateFreeTierForUser } from './freeActivationAction';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 // Helper: Re-sync products/categories from DB into website_data JSON after publish
 async function resyncProductsIntoWebsiteData(supabaseAdmin, websiteId) {
@@ -84,7 +85,7 @@ async function getUserId() {
     }
   );
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await getAuthUserContext(supabase);
   if (error || !user) throw new Error('Unauthorized');
   return user.id;
 }

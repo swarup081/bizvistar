@@ -58,7 +58,7 @@ export async function middleware(request) {
   // Only run Supabase auth for routes that actually need it (dashboard, editor).
   // This saves massive CPU since crawlers and public visitors don't need auth.
   const path = request.nextUrl.pathname;
-  const needsAuth = path.startsWith('/dashboard') || path.startsWith('/editor');
+  const needsAuth = path.startsWith('/dashboard') || path.startsWith('/editor') || path.startsWith('/admin') || /^\/claim\/[^/]+\/activate/.test(path);
 
   if (!needsAuth) {
     return response;

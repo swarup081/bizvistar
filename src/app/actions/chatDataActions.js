@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -27,7 +28,7 @@ async function getAuthContext() {
     }
   );
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await getAuthUserContext(supabase);
   if (error || !user) return null;
 
   // Get website

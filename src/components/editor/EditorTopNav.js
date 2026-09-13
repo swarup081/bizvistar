@@ -161,7 +161,9 @@ export default function EditorTopNav({
     onUnpublish, // <-- ADDED
     isPublished = false, // <-- ADDED
     hasActiveSubscription = false, // <-- ADDED
-    planTier = 'starter' // <-- ADDED
+    planTier = 'starter', // <-- ADDED
+    adminMode, // 'create' or 'edit'
+    onSaveTemplate // function to handle saving admin template
 }) {
   const [isPageDropdownOpen, setIsPageDropdownOpen] = useState(false);
   const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
@@ -403,8 +405,20 @@ export default function EditorTopNav({
             </Tooltip>
           )}
           
-          {/* --- PUBLISH BUTTON / DROPDOWN --- */}
-          {isLandingMode ? (
+          {adminMode ? (
+            <button
+              onClick={async () => {
+                setIsPublishing(true);
+                await onSaveTemplate();
+                setIsPublishing(false);
+              }}
+              disabled={isPublishing}
+              className="flex items-center gap-2 bg-[#8A63D2] text-white text-sm font-medium px-6 py-2.5 rounded-4xl transition-colors disabled:opacity-50 hover:bg-[#7e57c2]"
+            >
+              <Save size={16} />
+              {isPublishing ? 'Saving...' : 'Save Template'}
+            </button>
+          ) : isLandingMode ? (
              <Tooltip title="Just a demo" description="Unlock full potential in the editor">
                 <button
                   onClick={onLandingDummyClick}

@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -30,7 +31,7 @@ async function getWebsiteId() {
     }
   );
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await getAuthUserContext(supabase);
 
   if (authError || !user) {
     throw new Error('Unauthorized: Please sign in.');

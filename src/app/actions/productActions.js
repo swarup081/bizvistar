@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { validateUserSubscription } from './subscriptionUtils';
 import { getPlanLimits } from '../config/razorpay-config';
 import { createNotification } from '@/lib/notificationUtils';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 // Helper: Bust ISR cache for all storefront pages of a website
 async function revalidateStorefront(websiteId) {
@@ -50,7 +51,7 @@ async function getWebsiteId() {
     }
   );
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await getAuthUserContext(supabase);
 
   if (authError || !user) {
     throw new Error('Unauthorized: Please sign in.');
@@ -322,7 +323,7 @@ export async function addProduct(productData) {
         },
       }
     );
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getAuthUserContext(supabase);
     if (!user) throw new Error("Unauthorized");
 
     const websiteId = await getWebsiteId(); // Note: getWebsiteId also fetches user internally, but we need user.id here.

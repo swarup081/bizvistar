@@ -8,6 +8,7 @@ import EditorSidebar from './EditorSidebar';
 import { supabase } from '@/lib/supabaseClient'; // Import your client
 import { getOnboardingStatus } from '@/app/actions/onboardingActions';
 import { saveDraft, revertToPublished, publishWebsite, unpublishWebsite, getWebsiteDraft, getSubscriptionStatus, checkTemplateChangeAllowance } from '@/app/actions/editorActions';
+import { getSharedTemplateByShareId } from '@/app/actions/sharedTemplateActions';
 
 // Lazy-load WizardModal — only shown for first-time users
 const WizardModal = dynamic(() => import('./WizardModal'), {
@@ -96,7 +97,7 @@ function mergeWithDefaults(userData, defaultData) {
 
 
 // Main component updated to read site_id
-export default function EditorLayout({ templateName, mode, websiteId: propWebsiteId, initialData, siteSlug, syncVersion = 0, isPublished: initialIsPublished = false }) {
+export default function EditorLayout({ templateName, mode, adminMode, shareId, websiteId: propWebsiteId, initialData, siteSlug, syncVersion = 0, isPublished: initialIsPublished = false }) {
   // Initialize view state lazily to match window width on client
   // Default to 'desktop' for SSR safety, then update in effect
   const [view, setView] = useState('desktop'); 
@@ -126,6 +127,9 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
   const [editorSiteSlug, setEditorSiteSlug] = useState(siteSlug || null);
   const debounceTimer = useRef(null);
   const dbDataLoaded = useRef(false);
+  
+  // State for admin edit mode to track the database record for conflict detection
+  const [sharedTemplateRecord, setSharedTemplateRecord] = useState(null);
 
   // --- PARALLEL INIT: Run onboarding + draft load + subscription check simultaneously ---
   useEffect(() => {
@@ -148,21 +152,39 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
 
       // 2. Load draft from DB (standalone editor mode)
       if (mode !== 'dashboard' && !dbDataLoaded.current) {
-        promises.push(
-          getWebsiteDraft(websiteId).then(result => {
-            if (result.success && result.data && Object.keys(result.data).length > 0) {
-              dbDataLoaded.current = true;
-              const merged = mergeWithDefaults(result.data, defaultData);
-              setBusinessData(merged);
-              setHistory([merged]);
-              setHistoryIndex(0);
-              sendDataToIframe(merged);
-              setIsPublished(result.isPublished || false);
-              if (result.siteSlug) setEditorSiteSlug(result.siteSlug);
-              localStorage.setItem(editorDataKey, JSON.stringify(merged));
-            }
-          }).catch(err => console.error('[EditorLayout] Failed to load draft from DB:', err))
-        );
+        if (adminMode === 'edit' && shareId) {
+          promises.push(
+            getSharedTemplateByShareId(shareId).then(result => {
+              if (result.success && result.template?.data) {
+                dbDataLoaded.current = true;
+                setSharedTemplateRecord(result.template);
+                const merged = mergeWithDefaults(result.template.data, defaultData);
+                setBusinessData(merged);
+                setHistory([merged]);
+                setHistoryIndex(0);
+                sendDataToIframe(merged);
+                // Save it to localStorage for admin session
+                localStorage.setItem(editorDataKey, JSON.stringify(merged));
+              }
+            }).catch(err => console.error('[EditorLayout] Failed to load shared template:', err))
+          );
+        } else if (!adminMode && websiteId) {
+          promises.push(
+            getWebsiteDraft(websiteId).then(result => {
+              if (result.success && result.data && Object.keys(result.data).length > 0) {
+                dbDataLoaded.current = true;
+                const merged = mergeWithDefaults(result.data, defaultData);
+                setBusinessData(merged);
+                setHistory([merged]);
+                setHistoryIndex(0);
+                sendDataToIframe(merged);
+                setIsPublished(result.isPublished || false);
+                if (result.siteSlug) setEditorSiteSlug(result.siteSlug);
+                localStorage.setItem(editorDataKey, JSON.stringify(merged));
+              }
+            }).catch(err => console.error('[EditorLayout] Failed to load draft from DB:', err))
+          );
+        }
       }
 
       // 3. Subscription status
@@ -317,42 +339,48 @@ export default function EditorLayout({ templateName, mode, websiteId: propWebsit
     console.log('[EditorLayout] Synced from another device (syncVersion:', syncVersion, ')');
   }, [syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
-// Auto-save logic
-useEffect(() => {
-  // 1. Save to localStorage immediately
-  try {
-    const dataToSave = JSON.stringify(businessData);
-    localStorage.setItem(editorDataKey, dataToSave);
-    setSaveStatus('Saving...');
-  } catch (error) {
-    console.error("Failed to save data to localStorage:", error);
-  }
-
-  // 2. Debounce saving to Supabase
-  if (debounceTimer.current) {
-    clearTimeout(debounceTimer.current);
-  }
-
-  debounceTimer.current = setTimeout(async () => {
-    if (websiteId) {
-        
-      // Use Server Action to save draft
-      const { success, error } = await saveDraft(websiteId, businessData);
-
-      if (!success) {
-        setSaveStatus('Error');
-        console.error('Error saving draft:', error);
-      } else {
-        setSaveStatus('Saved');
-      }
-    } else {
-      setSaveStatus('Saved (Local)');
+  // Auto-save logic
+  useEffect(() => {
+    // 1. Save to localStorage immediately
+    try {
+      const dataToSave = JSON.stringify(businessData);
+      localStorage.setItem(editorDataKey, dataToSave);
+      setSaveStatus(adminMode ? 'Unsaved Changes' : 'Saving...');
+    } catch (error) {
+      console.error("Failed to save data to localStorage:", error);
     }
-  }, 1500); // Save 1.5 seconds after last change
 
-  return () => clearTimeout(debounceTimer.current);
+    // If we are in Admin Shared Template mode, DO NOT autosave to the database.
+    // The admin must manually save via the TopNav.
+    if (adminMode) {
+      return;
+    }
 
-}, [businessData, editorDataKey, websiteId]);
+    // 2. Debounce saving to Supabase
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(async () => {
+      if (websiteId) {
+          
+        // Use Server Action to save draft
+        const { success, error } = await saveDraft(websiteId, businessData);
+
+        if (!success) {
+          setSaveStatus('Error');
+          console.error('Error saving draft:', error);
+        } else {
+          setSaveStatus('Saved');
+        }
+      } else {
+        setSaveStatus('Saved (Local)');
+      }
+    }, 1500); // Save 1.5 seconds after last change
+
+    return () => clearTimeout(debounceTimer.current);
+
+  }, [businessData, editorDataKey, websiteId, adminMode]);
   
   const handleDataUpdate = (updaterFn) => {
     setBusinessData(prevData => {
@@ -619,6 +647,52 @@ useEffect(() => {
             isPublished={isPublished}
             hasActiveSubscription={hasActiveSubscription}
             planTier={planTier}
+            adminMode={adminMode}
+            onSaveTemplate={async () => {
+              if (adminMode === 'create') {
+                const { createSharedTemplate } = await import('@/app/actions/sharedTemplateActions');
+                const result = await createSharedTemplate({
+                  templateName: templateName,
+                  businessName: businessData.name || 'New Template',
+                  tagline: businessData.tagline || '',
+                  theme: businessData.theme || '',
+                  customizations: businessData,
+                });
+                if (result.success) {
+                  alert(`Template created! Share URL: ${window.location.origin}${result.shareUrl}`);
+                  // Redirect to edit mode
+                  window.location.href = `/admin/editor/edit/${result.data.share_id}`;
+                } else {
+                  alert('Error saving template: ' + result.error);
+                }
+              } else if (adminMode === 'edit') {
+                if (!sharedTemplateRecord) {
+                  alert('Template record not loaded properly.');
+                  return;
+                }
+                const { updateSharedTemplate } = await import('@/app/actions/sharedTemplateActions');
+                
+                const result = await updateSharedTemplate(sharedTemplateRecord.id, {
+                  businessName: businessData.name || 'Updated Template',
+                  tagline: businessData.tagline || '',
+                  theme: businessData.theme || '',
+                  customizations: businessData,
+                  updatedAtCheck: sharedTemplateRecord.updated_at
+                });
+                
+                if (result.success) {
+                  alert('Template updated successfully!');
+                  // Update the local record to have the new updated_at
+                  setSharedTemplateRecord(result.data);
+                } else {
+                  if (result.error === 'CONFLICT') {
+                    alert(result.message);
+                  } else {
+                    alert('Error saving template: ' + result.error);
+                  }
+                }
+              }
+            }}
           />
         </div>
 

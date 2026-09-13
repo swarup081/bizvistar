@@ -2,6 +2,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 export async function saveMonthlyTarget(websiteId, targetAmount) {
     if (!websiteId) return { error: "Missing website ID" };
@@ -25,7 +26,7 @@ export async function saveMonthlyTarget(websiteId, targetAmount) {
     );
 
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await getAuthUserContext(supabase);
     if (authError || !user) return { error: "Unauthorized" };
 
     // Verify ownership
@@ -97,7 +98,7 @@ export async function getMonthlyTarget(websiteId) {
     );
 
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await getAuthUserContext(supabase);
     if (authError || !user) return { error: "Unauthorized" };
 
     // Verify ownership

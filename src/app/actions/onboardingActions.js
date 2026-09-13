@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { jsonCompletion, deepMerge, stripImageFields, restoreImageFields, AI_MODELS } from '@/lib/ai';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -18,7 +19,7 @@ export async function verifyWebsiteOwnership(websiteId) {
         { cookies: { getAll() { return cookieStore.getAll(); }, setAll(cookiesToSet) { try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch(e) {} } } }
     );
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await getAuthUserContext(supabase);
     if (authError || !user) return { success: false };
 
     const { data, error } = await supabaseAdmin
@@ -48,7 +49,7 @@ async function getWebsiteId() {
     }
   );
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await getAuthUserContext(supabase);
 
   if (authError || !user) {
     throw new Error('Unauthorized: Please sign in.');
@@ -482,8 +483,9 @@ ${JSON.stringify(stripped)}
         return { success: true, data: finalData };
 
     } catch (err) {
+        try { require('fs').appendFileSync('ai_error.log', new Date().toISOString() + ' generateAIContent Error: ' + (err.stack || err.message || err) + '\n'); } catch(e){}
         console.error("AI Generation Error:", err);
-        return { success: false, error: err.message };
+        return { success: false, error: err.message || 'AI Generation Error' };
     }
 }
 

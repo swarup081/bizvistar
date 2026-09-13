@@ -141,9 +141,9 @@ export async function POST(req) {
         summary: "Your store is gathering data; review basic metrics to improve performance."
     };
 
-    const openAiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
 
-    if (!openAiKey) {
+    if (!apiKey) {
        // Return fallback immediately if no API key is set
        return NextResponse.json({ data: fallbackInsight });
     }
@@ -176,14 +176,20 @@ Required JSON format:
     let parsedInsight = fallbackInsight;
 
     try {
-        const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+        const fetchUrl = process.env.GEMINI_API_KEY 
+          ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" 
+          : "https://api.openai.com/v1/chat/completions";
+          
+        const modelName = process.env.GEMINI_API_KEY ? "gemini-3.5-flash" : "gpt-4o-mini";
+
+        const openaiRes = await fetch(fetchUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${openAiKey}`
+            "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini",
+            model: modelName,
             response_format: { type: "json_object" },
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,

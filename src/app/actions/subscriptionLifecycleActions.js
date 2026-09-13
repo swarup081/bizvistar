@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
 import { getKeyId, getRazorpayMode, isFreeTierSubscription } from '../config/razorpay-config';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 // Lazy Initialize Supabase Admin
 const getSupabaseAdmin = () => {
@@ -32,7 +33,7 @@ async function getUser() {
         },
       }
     );
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error } = await getAuthUserContext(supabase);
     if (error || !user) return null;
     return user;
   } catch (e) {

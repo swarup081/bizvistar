@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { FREE_TIER_PLAN_ID, FREE_TIER_SUB_PREFIX } from '@/app/config/razorpay-config';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -35,7 +36,7 @@ export async function activateFreeTier() {
       }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await getAuthUserContext(supabase);
     if (authError || !user) {
       return { success: false, error: 'Unauthorized. Please sign in.' };
     }

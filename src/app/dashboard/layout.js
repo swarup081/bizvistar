@@ -33,13 +33,22 @@ export default function DashboardLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false); // Safe hook for window width
   const [session, setSession] = useState(null);
+  const [sessionContext, setSessionContext] = useState(null);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    // Use passive listener instead of active getSession() call
-    // Middleware already validates auth — this is just for displaying user email
+    // 1. Fetch the server-side context which understands impersonation
+    import('@/app/actions/dashboardActions').then(({ getSessionContext }) => {
+      getSessionContext().then(result => {
+        if (result.success) {
+          setSessionContext(result);
+        }
+      });
+    });
+
+    // 2. We can still listen to client auth state changes for real sign outs
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -53,6 +62,13 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   const handleSignOut = async () => {
+    // If impersonating, just stop impersonating instead of signing out completely
+    if (sessionContext?.isImpersonating) {
+      const { stopImpersonating } = await import('@/app/actions/adminActions');
+      await stopImpersonating();
+      window.location.href = '/admin/users';
+      return;
+    }
     await supabase.auth.signOut();
     router.push('/sign-in');
   };
@@ -104,6 +120,19 @@ export default function DashboardLayout({ children }) {
     <div className={`min-h-screen font-sans text-[#333333] bg-[#F3F4F6]
         ${pathname === '/dashboard/website' ? 'p-0 lg:p-7' : 'p-0 lg:p-7'} 
     `}>
+      
+      {sessionContext?.isImpersonating && (
+        <div className="bg-red-500 text-white px-4 py-2 text-center text-sm font-semibold flex items-center justify-center gap-2">
+          <span>Viewing dashboard as {sessionContext?.user?.email}</span>
+          <button 
+            onClick={handleSignOut} 
+            className="ml-4 bg-white/20 hover:bg-white/30 px-3 py-1 rounded text-xs transition-colors"
+          >
+            Stop Impersonating
+          </button>
+        </div>
+      )}
+
       {/* <Suspense fallback={null}>
         <PostPaymentManager />
       </Suspense> */}
@@ -164,10 +193,15 @@ export default function DashboardLayout({ children }) {
                   className="absolute right-0 mt-3 w-64 bg-white border border-gray-100 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 overflow-hidden origin-top-right"
                 >
                   <div className="px-5 py-4 border-b border-gray-50 bg-gray-50/50">
-                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Signed in as</p>
-                     <p className="text-sm font-bold text-gray-900 truncate" title={session?.user?.email}>
-                       {session?.user?.email || 'Loading...'}
+                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                       {sessionContext?.isImpersonating ? 'Impersonating' : 'Signed in as'}
                      </p>
+                     <p className="text-sm font-bold text-gray-900 truncate" title={sessionContext?.user?.email || session?.user?.email}>
+                       {sessionContext?.user?.email || session?.user?.email || 'Loading...'}
+                     </p>
+                     {sessionContext?.isImpersonating && (
+                       <p className="text-xs text-red-500 mt-1 font-medium">Admin: {sessionContext?.user?.realEmail}</p>
+                     )}
                   </div>
                   <div className="py-2">
                     <Link 
@@ -208,7 +242,7 @@ export default function DashboardLayout({ children }) {
                       className="w-full text-left px-5 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-3"
                     >
                        <LogOut size={18} />
-                       Sign Out
+                       {sessionContext?.isImpersonating ? 'Stop Impersonating' : 'Sign Out'}
                     </button>
                   </div>
                 </motion.div>

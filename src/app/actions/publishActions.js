@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
 import { getKeyId, getRazorpayMode } from '../config/razorpay-config';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 // Admin client for DB updates (bypassing RLS)
 const supabaseAdmin = createClient(
@@ -25,7 +26,7 @@ async function getUser() {
       },
     }
   );
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await getAuthUserContext(supabase);
   return user;
 }
 

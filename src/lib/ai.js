@@ -15,9 +15,9 @@ import OpenAI from 'openai';
 // Change the model here and it updates everywhere.
 export const AI_MODELS = {
   /** Primary model for content generation (AI Writer, analytics insights) */
-  PRIMARY: 'gpt-4o-mini',
+  PRIMARY: 'gemini-3.5-flash',
   /** Lightweight model for chat/support (short responses) */
-  CHAT: 'gpt-4o-mini',
+  CHAT: 'gemini-3.5-flash',
 };
 
 // ─── OPENAI CLIENT (Singleton) ──────────────────────────────────────
@@ -25,9 +25,13 @@ let _client = null;
 
 export function getOpenAIClient() {
   if (!_client) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) throw new Error('OPENAI_API_KEY is not set');
-    _client = new OpenAI({ apiKey });
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error('GEMINI_API_KEY or OPENAI_API_KEY is not set');
+    _client = new OpenAI({ 
+      apiKey,
+      // If using Gemini key, route to Google's OpenAI-compatible endpoint
+      baseURL: process.env.GEMINI_API_KEY ? "https://generativelanguage.googleapis.com/v1beta/openai/" : undefined
+    });
   }
   return _client;
 }
@@ -74,7 +78,15 @@ export async function jsonCompletion({
         max_tokens: maxTokens,
       });
 
-      const raw = completion.choices[0].message.content;
+      let raw = completion.choices[0].message.content || "";
+      if (!raw) {
+          throw new Error("AI returned an empty response. It might have triggered a safety filter.");
+      }
+      
+      // Strip markdown code blocks (e.g. ```json ... ```) which Gemini sometimes returns
+      if (raw.trim().startsWith('```')) {
+        raw = raw.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/i, '').trim();
+      }
       const parsed = JSON.parse(raw);
 
       // Run custom validator if provided
@@ -85,9 +97,23 @@ export async function jsonCompletion({
 
       return { success: true, data: parsed };
     } catch (err) {
-      if (attempt < retries) continue; // retry on error
+      if (attempt < retries) {
+        // Wait 2 seconds before retrying to handle 429 rate limits
+        await new Promise(resolve => setTimeout(resolve, 2000 * (attempt + 1)));
+        continue; // retry on error
+      }
+      
+      // Log to file for debugging
+      try { require('fs').appendFileSync('ai_error.log', new Date().toISOString() + ' jsonCompletion Error: ' + (err.stack || err.message || err) + '\n'); } catch(e){}
+      
       console.error(`[AI Framework] jsonCompletion failed after ${attempt + 1} attempts:`, err);
-      return { success: false, error: err.message };
+      
+      // Graceful handling for Gemini 15 RPM Rate Limit
+      if (err.message && err.message.includes('429')) {
+        return { success: false, error: "Our AI is experiencing high demand. Please wait a minute and try again. ⏳" };
+      }
+      
+      return { success: false, error: err.message || String(err) };
     }
   }
 
@@ -124,8 +150,8 @@ export function deepMerge(target, source) {
     ) {
       // Recursively merge nested objects
       result[key] = deepMerge(targetVal, sourceVal);
-    } else {
-      // Overwrite for primitives, arrays, and nulls
+    } else if (sourceVal !== undefined && sourceVal !== null) {
+      // Overwrite for primitives and arrays, but IGNORE null/undefined from source
       result[key] = sourceVal;
     }
   }

@@ -16,9 +16,7 @@ const nextConfig = {
       },
     ];
   },
-  serverActions: {
-    bodySizeLimit: '5mb',
-  },
+
   images: {
     remotePatterns: [
       {

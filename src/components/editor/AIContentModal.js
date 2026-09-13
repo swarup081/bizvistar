@@ -26,7 +26,8 @@ export default function AIContentModal({ isOpen, onClose, onGenerate }) {
         onClose(); // Close on success
         setDescription(''); // Reset
     } catch (err) {
-        setError("Failed to generate content. Please try again.");
+        console.error("AI Generation failed:", err.message);
+        setError(err.message || "Failed to generate content. Please try again.");
     } finally {
         setLoading(false);
     }

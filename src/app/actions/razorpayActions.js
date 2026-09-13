@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import RAZORPAY_CONFIG, { getPlanId, getKeyId, getRazorpayMode, getStandardPlanId, COUPON_CONFIG } from '../config/razorpay-config';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 // Lazy Initialize Supabase Admin
 const getSupabaseAdmin = () => {
@@ -30,7 +31,7 @@ async function getUser(accessToken = null) {
             }
         }
       );
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user }, error } = await getAuthUserContext(supabase);
       if (error || !user) return null;
       return user;
   }
@@ -53,7 +54,7 @@ async function getUser(accessToken = null) {
         }
       );
 
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user }, error } = await getAuthUserContext(supabase);
       if (error || !user) return null;
       return user;
   } catch (e) {

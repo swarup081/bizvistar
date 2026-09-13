@@ -3,6 +3,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+import { getAuthUserContext } from '@/lib/authUtils';
 
 const getSupabaseAdmin = () => {
     return createClient(
@@ -27,7 +28,7 @@ export async function updateProfileDataAction(formData) {
             }
         );
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await getAuthUserContext(supabase);
         if (authError || !user) throw new Error("Unauthorized");
 
         const supabaseAdmin = getSupabaseAdmin();

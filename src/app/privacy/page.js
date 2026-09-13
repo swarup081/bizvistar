@@ -97,7 +97,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <p className="font-bold mb-2">4.2. Third-Party AI Services</p>
                 <p className="mb-4">
-                  Bizvistar utilizes third-party artificial intelligence service providers, such as OpenAI, to offer advanced features like text generation and analytics. By using these features, you acknowledge that non-sensitive business data, product descriptions, and user prompts may be transmitted to these AI providers to generate the requested content.
+                  Bizvistar utilizes third-party artificial intelligence service providers, such as Google Gemini and OpenAI, to offer advanced features like text generation and analytics. By using these features, you acknowledge that non-sensitive business data, product descriptions, and user prompts may be transmitted to these AI providers to generate the requested content.
                 </p>
                 <p className="font-bold mb-2">4.3. Legal Compliance</p>
                 <p>
@@ -108,7 +108,7 @@ export default function PrivacyPolicy() {
             plainEnglish={
               <>
                 <p>We share your data with trusted companies that help us run our business (like server hosts and payment processors).</p>
-                <p><strong>Important:</strong> When you use our AI writing tools, the text you enter is sent to companies like OpenAI to generate the response.</p>
+                <p><strong>Important:</strong> When you use our AI writing tools, the text you enter is sent to companies like Google and OpenAI to generate the response.</p>
                 <p>We will also share data if the law or police require us to.</p>
               </>
             }

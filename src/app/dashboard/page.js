@@ -139,11 +139,12 @@ export default function DashboardPage() {
     const fetchCoreData = async () => {
         setLoading(true);
         try {
-            // Use getSession() instead of getUser() — middleware already verified auth.
-            // getSession() reads cookies (instant), getUser() makes a network call (2-5s).
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.user) return;
-            const user = session.user;
+            // Use getSessionContext which handles impersonation logic
+            const { getSessionContext } = await import('@/app/actions/dashboardActions');
+            const sessionResult = await getSessionContext();
+            
+            if (!sessionResult.success || !sessionResult.user) return;
+            const user = sessionResult.user;
 
             const { data: website } = await supabase
                 .from("websites")

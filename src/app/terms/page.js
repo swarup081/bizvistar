@@ -287,7 +287,7 @@ export default function TermsOfService() {
                 <div>
                   <span className="block text-lg font-bold text-gray-900 mb-2">8.1. AI Integrations</span>
                   <p className="text-gray-700 leading-relaxed">
-                    Bizvistar may provide access to artificial intelligence tools (e.g., powered by OpenAI) to help generate text, insights, or content (&quot;AI Services&quot;).
+                    Bizvistar may provide access to artificial intelligence tools (e.g., powered by Google Gemini or OpenAI) to help generate text, insights, or content (&quot;AI Services&quot;).
                   </p>
                 </div>
                 <div>
@@ -306,7 +306,7 @@ export default function TermsOfService() {
             }
             plainEnglish={
               <>
-                <p>We use AI tools (like OpenAI) to help you write text and get insights for your website.</p>
+                <p>We use AI tools (like Google Gemini and OpenAI) to help you write text and get insights for your website.</p>
                 <p>AI isn&apos;t perfect. Always double-check what the AI writes before publishing it on your site.</p>
                 <p>Please don&apos;t type highly sensitive or private personal information into the AI generators.</p>
               </>
