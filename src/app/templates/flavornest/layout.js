@@ -43,14 +43,18 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
         decreaseQuantity,
         removeFromCart
     } = useCart();
+    const theme = businessData?.theme || {};
+    const colorPalette = theme.colorPalette || 'default';
+    const fontHeading = theme.font?.heading || 'sans-serif';
+    const fontBody = theme.font?.body || 'sans-serif';
 
     useEffect(() => {
         if (serverData) return; // 3. Add this line
 
-        document.body.style.fontFamily = `'${businessData.theme.font.body}', sans-serif`;
+        document.body.style.fontFamily = `'${fontBody}', sans-serif`;
         const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
         headings.forEach(heading => {
-            heading.style.fontFamily = `'${businessData.theme.font.heading}', sans-serif`;
+            heading.style.fontFamily = `'${fontHeading}', sans-serif`;
         });
 
         document.body.classList.forEach(className => {
@@ -58,7 +62,7 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
                 document.body.classList.remove(className);
             }
         });
-        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
+        document.body.classList.add(`theme-${colorPalette}`);
 
         // --- NEW CONTEXT-AWARE LOGIC ---
         let parentPath = '';
@@ -114,18 +118,21 @@ function FlavorNestLayout({ children, serverData, websiteId }) { // 1. Accept se
         return () => {
             headings.forEach(heading => heading.style.fontFamily = '');
             document.body.style.fontFamily = '';
-            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
+            document.body.classList.remove(`theme-${colorPalette}`);
         };
-    }, [businessData.theme.font.body, businessData.theme.font.heading, businessData.theme.colorPalette, router, serverData]); // 4. Add serverData
+    }, [fontBody, fontHeading, colorPalette, router, serverData]); // 4. Add serverData
 
-    const createFontVariable = (fontName) => `var(--font-${fontName.toLowerCase().replace(' ', '-')})`;
+    const createFontVariable = (fontName) => {
+        if (!fontName) return '';
+        return `var(--font-${fontName.toLowerCase().replace(' ', '-')})`;
+    };
     
     const fontVariables = {
-        '--font-heading': createFontVariable(businessData.theme.font.heading),
-        '--font-body': createFontVariable(businessData.theme.font.body),
+        '--font-heading': createFontVariable(fontHeading),
+        '--font-body': createFontVariable(fontBody),
     };
 
-    const themeClassName = `theme-${businessData.theme.colorPalette}`;
+    const themeClassName = `theme-${colorPalette}`;
     
     return (
         <TemplateContext.Provider value={{ businessData, setBusinessData, websiteId, basePath }}>

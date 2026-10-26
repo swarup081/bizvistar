@@ -1,5 +1,6 @@
 // export const runtime = 'edge';
-import OpenAI from 'openai';
+import { getOpenAIClient, AI_MODELS } from '@/lib/ai';
+import { checkRateLimit } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 
 const SYSTEM_PROMPT = `
@@ -28,17 +29,20 @@ KNOWLEDGE BASE
 
 export async function POST(req) {
   try {
-    const { messages, language } = await req.json();
-    
-    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ reply: "I'm currently offline for maintenance. Please contact support via WhatsApp." });
+    // Rate limit check (AI type = stricter limits + daily cap)
+    const rateLimit = await checkRateLimit(req, 'ai');
+    if (!rateLimit.success) {
+      return NextResponse.json({ reply: "I'm receiving too many requests right now. Please wait a minute and try again. ⏳" });
     }
 
-    const openai = new OpenAI({ 
-      apiKey,
-      baseURL: process.env.GEMINI_API_KEY ? "https://generativelanguage.googleapis.com/v1beta/openai/" : undefined
-    });
+    const { messages, language } = await req.json();
+    
+    let openai;
+    try {
+      openai = getOpenAIClient();
+    } catch (e) {
+      return NextResponse.json({ reply: "I'm currently offline for maintenance. Please contact support via WhatsApp." });
+    }
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
@@ -50,7 +54,7 @@ export async function POST(req) {
     for (let i = 0; i < 2; i++) {
         try {
             completion = await openai.chat.completions.create({
-              model: process.env.GEMINI_API_KEY ? "gemini-3.5-flash" : "gpt-4o-mini",
+              model: AI_MODELS.CHAT,
               messages: [
                 { role: "system", content: SYSTEM_PROMPT + langInstruction },
                 ...messages.slice(-6)
@@ -77,7 +81,7 @@ export async function POST(req) {
     require('fs').appendFileSync('ai_error.log', new Date().toISOString() + ' Support API Error: ' + (error.stack || error.message || error) + '\n');
     console.error("Support API Error:", error);
     
-    // Graceful handling for Gemini 15 RPM Rate Limit
+    // Graceful handling for rate limits
     if (error.message && error.message.includes('429')) {
       return NextResponse.json({ reply: "I'm receiving a lot of requests right now! Please wait a minute and try again. ⏳" });
     }
@@ -85,3 +89,4 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
+

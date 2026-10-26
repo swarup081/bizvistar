@@ -30,18 +30,23 @@ function AvenixContent({ children }) {
         showToast
     } = useCart();
 
+    const theme = businessData?.theme || {};
+    const colorPalette = theme.colorPalette || 'default';
+    const fontHeading = theme.font?.heading;
+    const fontBody = theme.font?.body;
+
     useEffect(() => {
         document.body.classList.forEach(className => {
             if (className.startsWith('theme-')) {
                 document.body.classList.remove(className);
             }
         });
-        document.body.classList.add(`theme-${businessData.theme.colorPalette}`);
+        document.body.classList.add(`theme-${colorPalette}`);
 
         return () => {
-            document.body.classList.remove(`theme-${businessData.theme.colorPalette}`);
+            document.body.classList.remove(`theme-${colorPalette}`);
         };
-    }, [businessData.theme.colorPalette]);
+    }, [colorPalette]);
 
     const createFontVariable = (fontName) => {
         if (!fontName) return '';
@@ -49,11 +54,11 @@ function AvenixContent({ children }) {
     };
     
     const fontVariables = {
-        '--font-heading': createFontVariable(businessData.theme.font.heading),
-        '--font-body': createFontVariable(businessData.theme.font.body),
+        '--font-heading': createFontVariable(fontHeading),
+        '--font-body': createFontVariable(fontBody),
     };
 
-    const themeClassName = `theme-${businessData.theme.colorPalette}`;
+    const themeClassName = `theme-${colorPalette}`;
     
     return (
         <div 
@@ -63,7 +68,7 @@ function AvenixContent({ children }) {
             <AnalyticsTracker websiteId={websiteId} />
             <OfferPopup websiteId={websiteId} websiteData={businessData} />
             <Header 
-                business={{ logoText: businessData.logoText, navigation: businessData.navigation }} 
+                business={{ logoText: businessData?.logoText, navigation: businessData?.navigation }} 
                 cartCount={cartCount}
                 onCartClick={openCart}
             />

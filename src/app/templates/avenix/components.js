@@ -67,7 +67,7 @@ export const Header = ({ cartCount, onCartClick }) => {
             <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 flex justify-between items-center relative">
                 {/* Left Nav */}
                 <nav className="hidden md:flex items-center gap-8">
-                    {businessData.navigation.main.map(navItem => (
+                    {(businessData?.navigation?.main || []).map(navItem => (
                         <a key={navItem.label} href={resolveLink(navItem.href)} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
                             {navItem.label}
                         </a>
@@ -77,14 +77,14 @@ export const Header = ({ cartCount, onCartClick }) => {
                 {/* Center Logo */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                     <a href={resolveLink("")} className="text-[5vw] md:text-3xl font-bold text-brand-text tracking-wider font-serif">
-                        {businessData.logoText}
+                        {businessData?.logoText}
                     </a>
                 </div>
                 
                  {/* Right Nav & Icons */}
                 <div className="flex-1 flex justify-end items-center gap-4 md:gap-8">
                     <nav className="hidden md:flex items-center gap-8">
-                        {businessData.navigation.secondary.map(navItem => (
+                        {(businessData?.navigation?.secondary || []).map(navItem => (
                             <a key={navItem.label} href={resolveLink(navItem.href)} className="text-sm font-medium tracking-widest uppercase text-brand-text hover:opacity-70 transition-opacity">
                                 {navItem.label}
                             </a>
@@ -150,7 +150,7 @@ export const ProductCard = ({ item, templateName }) => {
     };
     
     // Find the category name from the master list
-    const category = businessData.categories.find(c => c.id === item.category);
+    const category = (businessData?.categories || []).find(c => c.id === item.category);
     const productUrl = `${basePath && basePath !== '.' ? basePath : ''}/product/${item.id}`;
 
     return (
@@ -228,6 +228,11 @@ export const Footer = () => {
         return `${cleanBasePath}${path}` || '/';
     };
 
+    const footer = businessData?.footer || {};
+    const footerLinks = footer.links || {};
+    const footerSubscribe = footer.subscribe || {};
+    const footerContact = footer.contact || {};
+
     return (
         <footer id="contact" className="py-12 md:py-20 pb-8 md:pb-12 bg-brand-secondary text-brand-bg font-sans">
             <div className="container mx-auto px-4 md:px-6">
@@ -235,12 +240,12 @@ export const Footer = () => {
                     
                     {/* Column 1: Brand & Socials */}
                     <div className="col-span-2 md:col-span-1">
-                        <h3 className="text-[6vw] md:text-3xl font-bold tracking-wider mb-2 md:mb-4 font-serif">{businessData.footer.logo}</h3>
-                        <p className="text-brand-bg/70 text-[2.5vw] md:text-sm mb-4 md:mb-6">{businessData.footer.description}</p>
+                        <h3 className="text-[6vw] md:text-3xl font-bold tracking-wider mb-2 md:mb-4 font-serif">{footer.logo}</h3>
+                        <p className="text-brand-bg/70 text-[2.5vw] md:text-sm mb-4 md:mb-6">{footer.description}</p>
                         
                         {/* NEW: Social Icons */}
                         <div className="flex items-center gap-4 md:gap-5">
-                            {businessData.footer.socials.map((social) => (
+                            {(footer.socials || []).map((social) => (
                                 social.url && social.url !== "#" && (
                                     <a 
                                         key={social.platform} 
@@ -261,7 +266,7 @@ export const Footer = () => {
                     <div>
                         <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">LINKS</h4>
                         <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
-                            {businessData.footer.links.main.map(link => (
+                            {(footerLinks.main || []).map(link => (
                                 <li key={link.name}>
                                     <a href={resolveLink(link.url)} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
                                 </li>
@@ -273,7 +278,7 @@ export const Footer = () => {
                     <div>
                         <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">UTILITY PAGES</h4>
                         <ul className="space-y-1 md:space-y-3 text-[2.5vw] md:text-sm">
-                            {businessData.footer.links.utility.map(link => (
+                            {(footerLinks.utility || []).map(link => (
                                 <li key={link.name}>
                                     <a href={resolveLink(link.url)} className="text-brand-bg/70 hover:text-brand-bg transition-colors">{link.name}</a>
                                 </li>
@@ -283,7 +288,7 @@ export const Footer = () => {
 
                     {/* Column 4: Subscribe & Contact */}
                     <div className="col-span-2 md:col-span-1">
-                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">{businessData.footer.subscribe.title}</h4>
+                        <h4 className="text-[2.5vw] md:text-sm font-semibold mb-2 md:mb-5 uppercase tracking-wider">{footerSubscribe.title}</h4>
                         <form className="flex mb-4 md:mb-6">
                             <input 
                                 type="email" 
@@ -294,21 +299,21 @@ export const Footer = () => {
                                 type="submit" 
                                 className="px-4 md:px-6 py-2 md:py-3 bg-brand-bg text-brand-secondary font-semibold text-[2.5vw] md:text-sm hover:opacity-80"
                             >
-                                {businessData.footer.subscribe.cta}
+                                {footerSubscribe.cta}
                             </button>
                         </form>
                         
                         <h4 className="text-[2.5vw] md:text-sm font-semibold mt-4 md:mt-8 mb-2 md:mb-4 uppercase tracking-wider">CONTACT</h4>
                         <ul className="space-y-1 md:space-y-2 text-brand-bg/70 text-[2.5vw] md:text-sm">
-                            <li>{businessData.footer.contact.phone}</li>
-                            <li>{businessData.footer.contact.email}</li>
+                            <li>{footerContact.phone}</li>
+                            <li>{footerContact.email}</li>
                         </ul>
                     </div>
                 </div>
 
                 {/* Bottom Footer Bar */}
                 <div className="text-center border-t border-brand-bg/20 mt-8 md:mt-16 pt-4 md:pt-8 text-[2vw] md:text-sm">
-                    <p className="text-brand-bg/70">{businessData.footer.copyright}</p>
+                    <p className="text-brand-bg/70">{footer.copyright}</p>
                 </div>
             </div>
         </footer>

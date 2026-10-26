@@ -14,6 +14,7 @@ export function AnimatedSection({ children, className, id, style }) {
         // if we are NOT in the dashboard/editor route.
         const isLive = window.location.pathname.startsWith('/preview') || window.parent === window;
         if (isLive) {
+            // eslint-disable-next-line
             setIsEditor(false);
         }
     }, []);

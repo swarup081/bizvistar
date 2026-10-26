@@ -46,22 +46,55 @@ export default async function LiveCheckoutPage(props) {
   }
 
   const templateName = site.template.name;
-  const websiteData = site.website_data;
+  const rawWebsiteData = site.website_data;
+
+  // --- INJECT REAL PRODUCTS & CATEGORIES (same as site/[slug]/page.js) ---
+  const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
+     supabaseAdmin
+        .from("products")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("id", { ascending: false }),
+     supabaseAdmin
+        .from("categories")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("name")
+  ]);
+
+  const finalData = rawWebsiteData ? { ...rawWebsiteData } : {};
+  
+  finalData.allProducts = (realProducts || []).map(p => ({
+      ...p,
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      category: p.category_id ? String(p.category_id) : 'uncategorized',
+      description: p.description,
+      image: p.image_url,
+      stock: p.stock,
+      additional_images: p.additional_images || [],
+      variants: p.variants || []
+  }));
+  
+  finalData.allCategories = realCategories || [];
+  finalData.categories = finalData.allCategories;
+  // -----------------------------------------------
 
   // Render the correct template's checkout page
   switch (templateName) {
     case 'flara':
-      return <FlaraLayout serverData={websiteData} websiteId={site.id}><FlaraCheckoutPage /></FlaraLayout>;
+      return <FlaraLayout serverData={finalData} websiteId={site.id}><FlaraCheckoutPage /></FlaraLayout>;
     case 'avenix':
-      return <AvenixLayout serverData={websiteData} websiteId={site.id}><AvenixCheckoutPage /></AvenixLayout>;
+      return <AvenixLayout serverData={finalData} websiteId={site.id}><AvenixCheckoutPage /></AvenixLayout>;
     case 'blissly':
-      return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyCheckoutPage /></BlisslyLayout>;
+      return <BlisslyLayout serverData={finalData} websiteId={site.id}><BlisslyCheckoutPage /></BlisslyLayout>;
     case 'flavornest':
-      return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestCheckoutPage /></FlavornestLayout>;
+      return <FlavornestLayout serverData={finalData} websiteId={site.id}><FlavornestCheckoutPage /></FlavornestLayout>;
     case 'aurora':
-      return <AuroraLayout serverData={websiteData} websiteId={site.id}><AuroraCheckoutPage /></AuroraLayout>;
+      return <AuroraLayout serverData={finalData} websiteId={site.id}><AuroraCheckoutPage /></AuroraLayout>;
     case 'frostify':
-      return <FrostifyLayout serverData={websiteData} websiteId={site.id}><FrostifyCheckoutPage /></FrostifyLayout>;
+      return <FrostifyLayout serverData={finalData} websiteId={site.id}><FrostifyCheckoutPage /></FrostifyLayout>;
     default:
       return <div>Checkout not found for this template.</div>;
   }

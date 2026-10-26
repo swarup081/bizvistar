@@ -472,6 +472,32 @@ ${JSON.stringify(stripped)}
         // Step 4: Deep merge (preserves nested objects like hero, about, footer)
         const mergedData = deepMerge(currentData, newContent);
 
+        // Step 4.5: Force-restore critical structural fields the AI should never modify.
+        // The AI sometimes returns partial objects that overwrite navigation, theme, etc.
+        // These fields are structural (not content) and must always come from the original.
+        const PROTECTED_FIELDS = [
+            'theme',           // colorPalette, fonts — controls entire site appearance
+            'navigation',      // header nav links — structural, not content
+            'allProducts',     // product catalog from Supabase
+            'allCategories',   // category list from Supabase
+            'payment',         // UPI/COD payment config
+        ];
+        for (const field of PROTECTED_FIELDS) {
+            if (currentData[field] !== undefined) {
+                mergedData[field] = currentData[field];
+            }
+        }
+
+        // For footer, preserve the structure (links, socials, contact, subscribe)
+        // but allow AI to update footer.description text
+        if (currentData.footer) {
+            const aiFooterDesc = mergedData.footer?.description;
+            mergedData.footer = { ...currentData.footer };
+            if (aiFooterDesc && typeof aiFooterDesc === 'string') {
+                mergedData.footer.description = aiFooterDesc;
+            }
+        }
+
         // Step 5: Force-restore all original images/URLs (final safety net)
         const finalData = restoreImageFields(mergedData, imageMap);
 

@@ -56,22 +56,55 @@ export default async function LiveShopPage(props) {
   }
 
   const templateName = site.template.name;
-  const websiteData = site.website_data;
+  const rawWebsiteData = site.website_data;
+
+  // --- INJECT REAL PRODUCTS & CATEGORIES (same as site/[slug]/page.js) ---
+  const [ { data: realProducts }, { data: realCategories } ] = await Promise.all([
+     supabaseAdmin
+        .from("products")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("id", { ascending: false }),
+     supabaseAdmin
+        .from("categories")
+        .select("*")
+        .eq("website_id", site.id)
+        .order("name")
+  ]);
+
+  const finalData = rawWebsiteData ? { ...rawWebsiteData } : {};
+  
+  finalData.allProducts = (realProducts || []).map(p => ({
+      ...p,
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+      category: p.category_id ? String(p.category_id) : 'uncategorized',
+      description: p.description,
+      image: p.image_url,
+      stock: p.stock,
+      additional_images: p.additional_images || [],
+      variants: p.variants || []
+  }));
+  
+  finalData.allCategories = realCategories || [];
+  finalData.categories = finalData.allCategories;
+  // -----------------------------------------------
 
   // Render the correct template's shop page
   switch (templateName) {
     case 'flara':
-      return <FlaraLayout serverData={websiteData} websiteId={site.id}><FlaraShopPage /></FlaraLayout>;
+      return <FlaraLayout serverData={finalData} websiteId={site.id}><FlaraShopPage /></FlaraLayout>;
     case 'avenix':
-      return <AvenixLayout serverData={websiteData} websiteId={site.id}><AvenixShopPage /></AvenixLayout>;
+      return <AvenixLayout serverData={finalData} websiteId={site.id}><AvenixShopPage /></AvenixLayout>;
     case 'blissly':
-      return <BlisslyLayout serverData={websiteData} websiteId={site.id}><BlisslyShopPage /></BlisslyLayout>;
+      return <BlisslyLayout serverData={finalData} websiteId={site.id}><BlisslyShopPage /></BlisslyLayout>;
     case 'flavornest':
-      return <FlavornestLayout serverData={websiteData} websiteId={site.id}><FlavornestShopPage /></FlavornestLayout>;
+      return <FlavornestLayout serverData={finalData} websiteId={site.id}><FlavornestShopPage /></FlavornestLayout>;
     case 'aurora':
-      return <AuroraLayout serverData={websiteData} websiteId={site.id}><AuroraShopPage /></AuroraLayout>;
+      return <AuroraLayout serverData={finalData} websiteId={site.id}><AuroraShopPage /></AuroraLayout>;
     case 'frostify':
-      return <FrostifyLayout serverData={websiteData} websiteId={site.id}><FrostifyShopPage /></FrostifyLayout>;
+      return <FrostifyLayout serverData={finalData} websiteId={site.id}><FrostifyShopPage /></FrostifyLayout>;
     default:
       return <div>Shop not found for this template.</div>;
   }

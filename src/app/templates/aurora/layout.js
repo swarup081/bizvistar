@@ -22,7 +22,7 @@ const fontMap = {
     'Lato': { url: 'family=Lato:wght@300;400;700', family: "'Lato', sans-serif" },
     'Playfair_Display': { url: 'family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500', family: "'Playfair Display', serif" },
     'Cormorant_Garamond': { url: 'family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400', family: "'Cormorant Garamond', serif" },
-    'DM_Sans': { url: 'family=DM+Sans:opsz,wght@9..40,300;400;500;700', family: "'DM Sans', sans-serif" },
+    'DM_Sans': { url: 'family=DM+Sans:wght@300;400;500;700', family: "'DM Sans', sans-serif" },
     'Kalam': { url: 'family=Kalam:wght@300;400;700', family: "'Kalam', cursive" },
     'Roboto': { url: 'family=Roboto:wght@300;400;500;700', family: "'Roboto', sans-serif" },
     'Inter': { url: 'family=Inter:wght@300;400;500;600;700', family: "'Inter', sans-serif" },
@@ -30,6 +30,7 @@ const fontMap = {
 
 function CartLayout({ children, serverData, websiteId }) {
     // Legacy support if needed
+
     return <AuroraContent>{children}</AuroraContent>;
 }
 

@@ -113,6 +113,7 @@ export default function RootLayout({ children }) {
         }} />
       </head>
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${playfair.variable} ${roboto.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} ${lora.variable} ${cormorantGaramond.variable} ${dmSans.variable} ${boiling.variable} ${kalam.variable} antialiased`}
       >
         <PwaRegistration />

@@ -1,39 +1,96 @@
 /**
  * BizVistar AI Framework
- * Centralized AI utilities for all OpenAI interactions.
+ * Centralized AI utilities for all AI interactions.
+ * 
+ * Provider priority: Groq (free, no card) → Gemini → OpenAI
  * 
  * Single source of truth for:
  * - Model selection
  * - JSON completions with validation
  * - Deep merge utilities
  * - Image/URL field preservation
+ * - Daily usage limits
  */
 
 import OpenAI from 'openai';
 
 // ─── MODEL CONFIGURATION ────────────────────────────────────────────
+// Groq free tier: No card needed. 30 RPM, 1000 RPD.
 // Change the model here and it updates everywhere.
 export const AI_MODELS = {
   /** Primary model for content generation (AI Writer, analytics insights) */
-  PRIMARY: 'gemini-3.5-flash',
+  PRIMARY: 'qwen/qwen3.8-27b',
   /** Lightweight model for chat/support (short responses) */
-  CHAT: 'gemini-3.5-flash',
+  CHAT: 'qwen/qwen3.8-27b',
 };
 
-// ─── OPENAI CLIENT (Singleton) ──────────────────────────────────────
+// ─── DAILY USAGE LIMIT ──────────────────────────────────────────────
+// In-memory daily call counter as a fallback if Upstash is down.
+// Groq free tier hard-caps at 1000 RPD and returns 429 beyond that.
+// No card = no charges, ever. This is purely for graceful error handling.
+const DAILY_AI_CALL_LIMIT = 900;
+let _dailyCallCount = 0;
+let _dailyResetDate = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+function _checkAndIncrementDailyLimit() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (today !== _dailyResetDate) {
+    // New day — reset counter
+    _dailyCallCount = 0;
+    _dailyResetDate = today;
+  }
+  if (_dailyCallCount >= DAILY_AI_CALL_LIMIT) {
+    return false; // Limit exceeded
+  }
+  _dailyCallCount++;
+  return true;
+}
+
+// ─── AI CLIENT (Singleton) ──────────────────────────────────────────
+// Priority: GROQ_API_KEY → GEMINI_API_KEY → OPENAI_API_KEY
 let _client = null;
+
+function _getProviderConfig() {
+  if (process.env.GROQ_API_KEY) {
+    return { apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1', provider: 'groq' };
+  }
+  if (process.env.GEMINI_API_KEY) {
+    return { apiKey: process.env.GEMINI_API_KEY, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/', provider: 'gemini' };
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return { apiKey: process.env.OPENAI_API_KEY, baseURL: undefined, provider: 'openai' };
+  }
+  return null;
+}
 
 export function getOpenAIClient() {
   if (!_client) {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
-    if (!apiKey) throw new Error('GEMINI_API_KEY or OPENAI_API_KEY is not set');
+    const config = _getProviderConfig();
+    if (!config) throw new Error('No AI API key set. Add GROQ_API_KEY, GEMINI_API_KEY, or OPENAI_API_KEY to .env.local');
     _client = new OpenAI({ 
-      apiKey,
-      // If using Gemini key, route to Google's OpenAI-compatible endpoint
-      baseURL: process.env.GEMINI_API_KEY ? "https://generativelanguage.googleapis.com/v1beta/openai/" : undefined
+      apiKey: config.apiKey,
+      baseURL: config.baseURL,
     });
   }
   return _client;
+}
+
+/** Get the correct model name for the current provider */
+function _getModelForProvider(requestedModel) {
+  const config = _getProviderConfig();
+  if (!config) return requestedModel;
+  
+  // If using Groq, use Groq model names
+  if (config.provider === 'groq') {
+    // qwen/qwen3.8-27b works for all use cases on Groq free tier
+    return 'qwen/qwen3.8-27b';
+  }
+  // If using Gemini, use Gemini model names
+  if (config.provider === 'gemini') {
+    return 'gemini-2.0-flash';
+  }
+  // OpenAI fallback
+  return 'gpt-4o-mini';
 }
 
 // ─── JSON COMPLETION ────────────────────────────────────────────────
@@ -59,8 +116,14 @@ export async function jsonCompletion({
   validate,
   retries = 1,
 }) {
+  // ── Free tier protection: check daily limit ──
+  if (!_checkAndIncrementDailyLimit()) {
+    console.warn(`[AI Framework] Daily AI call limit reached (${DAILY_AI_CALL_LIMIT}). Blocking call to protect free tier.`);
+    return { success: false, error: "AI daily limit reached. Please try again tomorrow." };
+  }
+
   const client = getOpenAIClient();
-  const selectedModel = model || AI_MODELS.PRIMARY;
+  const selectedModel = _getModelForProvider(model || AI_MODELS.PRIMARY);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -119,6 +182,7 @@ export async function jsonCompletion({
 
   return { success: false, error: 'Unexpected failure' };
 }
+
 
 // ─── DEEP MERGE ─────────────────────────────────────────────────────
 /**

@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { getOpenAIClient, AI_MODELS } from '@/lib/ai';
 
 // export const runtime = 'edge';
 
@@ -141,14 +142,16 @@ export async function POST(req) {
         summary: "Your store is gathering data; review basic metrics to improve performance."
     };
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+    const apiKey = (() => {
+      try { return !!getOpenAIClient(); } catch { return false; }
+    })();
 
     if (!apiKey) {
        // Return fallback immediately if no API key is set
        return NextResponse.json({ data: fallbackInsight });
     }
 
-    // Call OpenAI API
+    // Call AI API using centralized client
     const prompt = `
 You are an expert e-commerce business analyst. Analyze the following data for an online store over the last 30 days and provide 3 highly actionable, specific, numerical recommendations to improve sales, stock management, or customer experience.
 Output MUST be valid JSON in the exact structure below, without any markdown formatting or extra text.
@@ -176,54 +179,35 @@ Required JSON format:
     let parsedInsight = fallbackInsight;
 
     try {
-        const fetchUrl = process.env.GEMINI_API_KEY 
-          ? "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" 
-          : "https://api.openai.com/v1/chat/completions";
-          
-        const modelName = process.env.GEMINI_API_KEY ? "gemini-3.5-flash" : "gpt-4o-mini";
-
-        const openaiRes = await fetch(fetchUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: modelName,
-            response_format: { type: "json_object" },
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 500,
-          })
+        const aiClient = getOpenAIClient();
+        const completion = await aiClient.chat.completions.create({
+          model: AI_MODELS.PRIMARY,
+          response_format: { type: "json_object" },
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+          max_tokens: 500,
         });
 
-        if (openaiRes.ok) {
-            const aiData = await openaiRes.json();
-            let rawContent = aiData.choices[0].message.content;
-            
-            let jsonStr = rawContent.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
-            let aiResult;
-            try {
-                aiResult = JSON.parse(jsonStr);
-                parsedInsight = {
-                   summary: aiResult.summary || fallbackInsight.summary,
-                   recommendations: (aiResult.recommendations || []).map((rec, i) => ({
-                       title: rec.title || fallbackInsight.recommendations[i]?.title || "Review Metric",
-                       description: rec.description || fallbackInsight.recommendations[i]?.description || "Check your store stats.",
-                       detailed_insight: rec.detailed_insight || fallbackInsight.recommendations[i]?.detailed_insight || "Maintain good inventory buffers.",
-                       icon: rec.icon || fallbackInsight.recommendations[i]?.icon || "Sparkles"
-                   }))
-                };
-            } catch (parseError) {
-                console.error("OpenAI JSON Parse Error:", parseError, rawContent);
-                parsedInsight = fallbackInsight;
-            }
-        } else {
-            console.error("OpenAI API returned non-ok status:", await openaiRes.text());
+        let rawContent = completion.choices[0].message.content;
+        let jsonStr = rawContent.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+        let aiResult;
+        try {
+            aiResult = JSON.parse(jsonStr);
+            parsedInsight = {
+               summary: aiResult.summary || fallbackInsight.summary,
+               recommendations: (aiResult.recommendations || []).map((rec, i) => ({
+                   title: rec.title || fallbackInsight.recommendations[i]?.title || "Review Metric",
+                   description: rec.description || fallbackInsight.recommendations[i]?.description || "Check your store stats.",
+                   detailed_insight: rec.detailed_insight || fallbackInsight.recommendations[i]?.detailed_insight || "Maintain good inventory buffers.",
+                   icon: rec.icon || fallbackInsight.recommendations[i]?.icon || "Sparkles"
+               }))
+            };
+        } catch (parseError) {
+            console.error("AI JSON Parse Error:", parseError, rawContent);
             parsedInsight = fallbackInsight;
         }
     } catch (e) {
-        console.error("Failed to parse or fetch OpenAI response:", e);
+        console.error("Failed to parse or fetch AI response:", e);
         parsedInsight = fallbackInsight;
     }
 
